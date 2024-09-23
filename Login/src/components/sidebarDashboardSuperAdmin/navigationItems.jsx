@@ -6,7 +6,6 @@ import IconAssetGambar from "../../assets/icon/iconSidebar/iconAssetGambar.png";
 import IconAssetGame from "../../assets/icon/iconSidebar/iconAssetGame.png";
 import IconAssetDataset from "../../assets/icon/iconSidebar/iconAssetDataset.png";
 import IconManageAdmin from "../../assets/icon/iconSidebar/iconManageAdmin.png.png";
-import IconLogout from "../../assets/icon/iconSidebar/iconLogout.png";
 
 const navigationItems = [
   {
@@ -51,8 +50,6 @@ const navigationItems = [
     ],
   },
 
- , // test
-
   {
     section: "Admin Management",
     items: [
@@ -60,16 +57,6 @@ const navigationItems = [
         href: "/addAdmin",
         label: "Manage Admin",
         icon: <img src={IconManageAdmin} alt="iconManageAdmin" />,
-      },
-    ],
-  },
-  {
-    section: "Logout",
-    items: [
-      {
-        href: "/login",
-        label: "Log Out",
-        icon: <img src={IconLogout} alt="iconLogout" />,
       },
     ],
   },

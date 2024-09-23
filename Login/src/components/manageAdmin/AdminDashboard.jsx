@@ -32,7 +32,7 @@ function AdminDashboard() {
 
   return (
     <>
-      <div className="bg-primary-10 dark:bg-gray-900 min-h-screen">
+      <div className="bg-primary-10 dark:bg-gray-900 min-h-screen font-poppins">
         <section className="bg-primary-6 dark:bg-gray-800 h-[100px] w-full z-40 fixed top-0 left-0 pt-0 flex items-center justify-between">
           <div>
             <button

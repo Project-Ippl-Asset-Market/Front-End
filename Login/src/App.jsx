@@ -13,7 +13,7 @@ import ErrorPage from "./pages/errorPage";
 export default function App() {
   const router = createBrowserRouter([
     {
-      path: "/login",
+      path: "*",
       element: <Login />,
       errorElement: <ErrorPage />,
     },
@@ -49,7 +49,7 @@ export default function App() {
     },
 
     {
-      path: "*",
+      path: "/",
       element: <ErrorPage />,
     },
   ]);

@@ -53,7 +53,7 @@ const navigationItems = [
     section: "Log Out",
     items: [
       {
-        href: "/login",
+        href: "*",
         label: "Log Out",
         icon: <img src={IconLogout} alt="iconLogout" />,
       },

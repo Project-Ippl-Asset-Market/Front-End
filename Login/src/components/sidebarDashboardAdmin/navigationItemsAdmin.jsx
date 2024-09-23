@@ -51,6 +51,8 @@ const navigationItems = [
     ],
   },
 
+  // buat logout
+
   {
     section: "Logout",
     items: [

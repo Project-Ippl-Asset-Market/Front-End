@@ -23,17 +23,17 @@ const navigationItems = [
     section: "Manage Assets",
     items: [
       {
-        href: "/adminDashboard",
+        href: "/manageAssetVideo",
         label: "Manage Asset Video",
         icon: <img src={IconAssetVideo} alt="iconAssetVideo" />,
       },
       {
-        href: "/",
+        href: "/manageAssetGambar",
         label: "Manage Asset Gambar",
         icon: <img src={IconAssetGambar} alt="iconAssetGambar" />,
       },
       {
-        href: "/",
+        href: "/manageAssetDataset",
         label: "Manage Asset Dataset",
         icon: <img src={IconAssetDataset} alt="iconAssetDataset" />,
       },
@@ -43,7 +43,7 @@ const navigationItems = [
         icon: <img src={IconAssetGame} alt="iconAssetGame" />,
         // nnti kita masukkan page tujuannya
         children: [
-          { href: "/", label: "Add Asset 2D" },
+          { href: "/asset-2d", label: "Add Asset 2D" },
           { href: "/asset-3d", label: "Add Asset 3D" },
           { href: "/asset-audio", label: "Add Asset Audio" },
         ],
@@ -55,7 +55,7 @@ const navigationItems = [
     section: "Admin Management",
     items: [
       {
-        href: "/addAdmin",
+        href: "/adminDashboard",
         label: "Manage Admin",
         icon: <img src={IconManageAdmin} alt="iconManageAdmin" />,
       },

@@ -5,7 +5,7 @@ import IconAssetVideo from "../../assets/icon/iconSidebar/iconAssetVideo.png";
 import IconAssetGambar from "../../assets/icon/iconSidebar/iconAssetGambar.png";
 import IconAssetGame from "../../assets/icon/iconSidebar/iconAssetGame.png";
 import IconAssetDataset from "../../assets/icon/iconSidebar/iconAssetDataset.png";
-import IconManageAdmin from "../../assets/icon/iconSidebar/iconManageAdmin.png.png";
+import IconLogout from "../../assets/icon/iconSidebar/iconLogOut.svg";
 
 const navigationItems = [
   {
@@ -46,6 +46,16 @@ const navigationItems = [
           { href: "/asset-3d", label: "Add Asset 3D" },
           { href: "/asset-audio", label: "Add Asset Audio" },
         ],
+      },
+    ],
+  },
+  {
+    section: "Log Out",
+    items: [
+      {
+        href: "/login",
+        label: "Log Out",
+        icon: <img src={IconLogout} alt="iconLogout" />,
       },
     ],
   },

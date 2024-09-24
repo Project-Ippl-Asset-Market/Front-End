@@ -21,7 +21,7 @@ const AutoLogout = () => {
       }
 
       const timeDiff = (currentTime - lastActivity) / 1000;
-      // Set Waktu untuk Auto Logout 24 jam (86400 detik)
+      // Set Waktu untuk Auto Logout jadi 24 jam (86400 detik) tinggal ganti angka yang 120
       if (timeDiff >= 120 && user && !loggedOut) {
         handleLogout();
       }

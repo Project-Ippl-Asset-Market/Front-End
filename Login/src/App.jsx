@@ -9,6 +9,7 @@ import { auth } from "./firebase/firebaseConfig";
 import { signOut } from "firebase/auth";
 import AutoLogout from "./components/auto/autoLogout";
 import Register from "./pages/register";
+import LupaPassword from "./pages/lupaPassword";
 
 const App = () => {
   const handleLogout = async () => {
@@ -30,6 +31,7 @@ const App = () => {
         {/*nnati kita ubah/ganti (/) jadi (/login) mengarah ke halman login jika sudah membuat home pagenya */}
         <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/lupaPassword" element={<LupaPassword />} />
         <Route
           path="/adminDashboard"
           element={

@@ -7,6 +7,8 @@ import AddAdmin from "../components/manageAdmin/AddAdmin";
 import AdminDashboard from "../components/manageAdmin/AdminDashboard";
 import SuperAdminDashboard from "../components/mySuperAdmin/SuperAdminDashboard";
 import ErrorPage from "../pages/errorPage";
+import PrivateRoute from "../components/PrivateRoute";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
@@ -16,7 +18,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/landingPage",
-    element: <LandingPage />,
+    element: (
+      <PrivateRoute>
+        <LandingPage />
+      </PrivateRoute>
+    ),
     errorElement: <ErrorPage />,
   },
   {
@@ -31,17 +37,35 @@ const router = createBrowserRouter([
   },
   {
     path: "/addAdmin",
-    element: <AddAdmin />,
+    element: (
+      <PrivateRoute>
+        <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+          <AddAdmin />
+        </ProtectedRoute>
+      </PrivateRoute>
+    ),
     errorElement: <ErrorPage />,
   },
   {
     path: "/adminDashboard",
-    element: <AdminDashboard />,
+    element: (
+      <PrivateRoute>
+        <ProtectedRoute allowedRoles={["admin"]}>
+          <AdminDashboard />
+        </ProtectedRoute>
+      </PrivateRoute>
+    ),
     errorElement: <ErrorPage />,
   },
   {
     path: "/superAdminDashboard",
-    element: <SuperAdminDashboard />,
+    element: (
+      <PrivateRoute>
+        <ProtectedRoute allowedRoles={["superadmin"]}>
+          <SuperAdminDashboard />
+        </ProtectedRoute>
+      </PrivateRoute>
+    ),
     errorElement: <ErrorPage />,
   },
 

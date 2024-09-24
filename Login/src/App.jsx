@@ -45,7 +45,7 @@ const App = () => {
           }
         />
         <Route path="/landingPage" element={<LandingPage />} />
-        <Route path="/errorPage" element={<ErrorPage />} />
+        <Route path="*" element={<ErrorPage />} />
       </Routes>
     </Router>
   );

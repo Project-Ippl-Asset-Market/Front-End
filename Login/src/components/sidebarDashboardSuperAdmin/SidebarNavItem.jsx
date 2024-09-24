@@ -1,8 +1,8 @@
 /* eslint-disable react/prop-types */
+// eslint-disable-next-line no-unused-vars
 import React, { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 
-// eslint-disable-next-line react/prop-types
 const SidebarNavItem = ({ item }) => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -11,7 +11,6 @@ const SidebarNavItem = ({ item }) => {
     return null;
   }
 
-  // eslint-disable-next-line react/prop-types
   const isActive = item?.href && location.pathname === item.href;
   const itemClass = `flex items-center w-full p-2 text-primary-12 font-normal rounded-r-full hover:text-primary-12 hover:font-semibold hover:rounded-lg dark:text-primary-12 hover:bg-primary-2 dark:hover:bg-primary-2 ${
     isActive ? "bg-primary-2 dark:bg-primary-2" : ""
@@ -19,7 +18,6 @@ const SidebarNavItem = ({ item }) => {
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
-  // eslint-disable-next-line react/prop-types
   if (item.type === "dropdown") {
     return (
       <div>
@@ -72,7 +70,7 @@ const SidebarNavItem = ({ item }) => {
 
   if (item?.href) {
     return (
-      <Link to={item.href} className={itemClass}>
+      <Link to={item.href} className={itemClass} onClick={item.onClick}>
         {item.icon}
         <span className="ml-3">{item.label}</span>
       </Link>

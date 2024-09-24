@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React from "react";
 import SidebarNavItem from "./SidebarNavItem";
 import IconDashboard from "../../assets/icon/iconSidebar/iconDashboard.png";
@@ -7,8 +8,11 @@ import IconAssetGame from "../../assets/icon/iconSidebar/iconAssetGame.png";
 import IconAssetDataset from "../../assets/icon/iconSidebar/iconAssetDataset.png";
 import IconManageAdmin from "../../assets/icon/iconSidebar/iconManageAdmin.png.png";
 import IconLogout from "../../assets/icon/iconSidebar/iconLogOut.svg";
+import { auth } from "../../firebase/firebaseConfig";
+import { signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
-const navigationItems = [
+const navigationItems = (onLogout) => [
   {
     section: "Dashboard",
     items: [
@@ -41,7 +45,6 @@ const navigationItems = [
         type: "dropdown",
         label: "Manage Asset Game",
         icon: <img src={IconAssetGame} alt="iconAssetGame" />,
-        // nnti kita masukkan page tujuannya
         children: [
           { href: "/asset-2d", label: "Add Asset 2D" },
           { href: "/asset-3d", label: "Add Asset 3D" },
@@ -50,7 +53,6 @@ const navigationItems = [
       },
     ],
   },
-
   {
     section: "Admin Management",
     items: [
@@ -65,18 +67,34 @@ const navigationItems = [
     section: "Log Out",
     items: [
       {
-        href: "*",
+        // nnati kita ubah/ganti (/) jadi (/login) mengarah ke halman login jika sudah membuat home pagenya
+        href: "/", // Prevent navigation
         label: "Log Out",
         icon: <img src={IconLogout} alt="iconLogout" />,
+        onClick: onLogout, // Add onClick handler
       },
     ],
   },
 ];
 
 const Sidebar = () => {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userRole");
+      // nnati kita ubah/ganti (/) jadi (/login) mengarah ke halman login jika sudah membuat home pagenya
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error.message);
+    }
+  };
+
   return (
     <nav className="space-y-4">
-      {navigationItems.map((section, sectionIndex) => (
+      {navigationItems(handleLogout).map((section, sectionIndex) => (
         <div key={sectionIndex}>
           <h2 className="text-xs font-semibold text-primary-12 mb-4 uppercase mt-10">
             {section.section}
@@ -85,7 +103,11 @@ const Sidebar = () => {
             <div
               className={section.section === "Manage Assets" ? "mb-2" : ""}
               key={itemIndex}>
-              <SidebarNavItem item={item} isActive={false} />
+              <SidebarNavItem
+                item={item}
+                isActive={false}
+                onClick={item.onClick} // Pass onClick prop
+              />
             </div>
           ))}
         </div>

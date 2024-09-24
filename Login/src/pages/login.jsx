@@ -21,7 +21,7 @@ function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [modalMessage, setModalMessage] = useState(null);
-  const [errorModal, setErrorModal] = useState(false);
+  const [errorModal, setErrorModal] = useState("");
 
   const handleChange = (e) => {
     if (e.target.name === "email") {
@@ -61,26 +61,32 @@ function Login() {
       localStorage.setItem("authToken", token);
 
       const adminRole = await checkAdminRole(user.email);
+      console.log("Admin Role:", adminRole); // Debugging line
 
       if (adminRole === "superadmin") {
         setModalMessage("Login sebagai Superadmin berhasil!");
         setTimeout(() => {
+          setModalMessage(null); // Hide modal before navigating
+          localStorage.setItem("userRole", "superadmin");
           navigate("/superAdminDashboard");
-        }, 3000);
+        }, 2000);
       } else if (adminRole === "admin") {
-        console.log("Logging in as Admin");
         setModalMessage("Login sebagai Admin berhasil!");
         setTimeout(() => {
+          setModalMessage(null);
+          localStorage.setItem("userRole", "admin");
           navigate("/adminDashboard");
-        }, 3000);
+        }, 2000);
       } else {
-        setModalMessage("Login as regular user successful");
+        setModalMessage("Login sebagai pengguna biasa berhasil!");
         setTimeout(() => {
+          setModalMessage(null);
+          localStorage.setItem("userRole", "user");
           navigate("/landingPage");
-        }, 3000);
+        }, 2000);
       }
-    } catch (errorModal) {
-      console.error("Login failed:", errorModal.message);
+    } catch (error) {
+      console.error("Login failed:", error.message);
       setErrorModal("Email atau password tidak valid. Silakan coba lagi.");
     } finally {
       setLoading(false);
@@ -99,20 +105,27 @@ function Login() {
       localStorage.setItem("authToken", token);
 
       const adminRole = await checkAdminRole(user.email);
+      console.log("Admin Role:", adminRole);
 
       if (adminRole === "superadmin") {
-        setModalMessage("Success login sebagai Superadmin dengan Google.");
+        setModalMessage("Login sebagai Superadmin dengan Google berhasil!");
         setTimeout(() => {
+          setModalMessage(null);
+          localStorage.setItem("userRole", "superadmin");
           navigate("/superAdminDashboard");
         }, 2000);
       } else if (adminRole === "admin") {
-        setModalMessage("Success login sebagai Admin dengan Google.");
+        setModalMessage("Login sebagai Admin dengan Google berhasil!");
         setTimeout(() => {
+          setModalMessage(null);
+          localStorage.setItem("userRole", "admin");
           navigate("/adminDashboard");
         }, 2000);
       } else {
-        setModalMessage("Login as regular user successful");
+        setModalMessage("Login sebagai pengguna biasa berhasil!");
         setTimeout(() => {
+          setModalMessage(null);
+          localStorage.setItem("userRole", "user");
           navigate("/landingPage");
         }, 2000);
       }

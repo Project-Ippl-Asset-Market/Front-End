@@ -1,63 +1,54 @@
-import { RouterProvider } from "react-router-dom";
-// import router from "./routes/routes";
-import { createBrowserRouter } from "react-router-dom";
-import Register from "./pages/register";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/login";
-import LupaPassword from "./pages/lupaPassword";
-import LandingPage from "./pages/landingPage";
-import AddAdmin from "./components/manageAdmin/AddAdmin";
 import AdminDashboard from "./components/manageAdmin/AdminDashboard";
 import SuperAdminDashboard from "./components/mySuperAdmin/SuperAdminDashboard";
+import LandingPage from "./pages/landingPage";
 import ErrorPage from "./pages/errorPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { auth } from "./firebase/firebaseConfig";
+import { signOut } from "firebase/auth";
+import AutoLogout from "./components/auto/autoLogout";
 
-export default function App() {
-  const router = createBrowserRouter([
-    {
-      path: "*",
-      element: <Login />,
-      errorElement: <ErrorPage />,
-    },
-    {
-      path: "/landingPage",
-      element: <LandingPage />,
-      errorElement: <ErrorPage />,
-    },
-    {
-      path: "/register",
-      element: <Register />,
-      errorElement: <ErrorPage />,
-    },
-    {
-      path: "/lupaPassword",
-      element: <LupaPassword />,
-      errorElement: <ErrorPage />,
-    },
-    {
-      path: "/addAdmin",
-      element: <AddAdmin />,
-      errorElement: <ErrorPage />,
-    },
-    {
-      path: "/adminDashboard",
-      element: <AdminDashboard />,
-      errorElement: <ErrorPage />,
-    },
-    {
-      path: "/superAdminDashboard",
-      element: <SuperAdminDashboard />,
-      errorElement: <ErrorPage />,
-    },
+const App = () => {
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userRole");
+      // nnati kita ubah/ganti (/) jadi (/login) mengarah ke halman login jika sudah membuat home pagenya
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
-    {
-      path: "/",
-      element: <ErrorPage />,
-    },
-  ]);
   return (
-    <>
-      <div>
-        <RouterProvider router={router} />
-      </div>
-    </>
+    <Router>
+      <AutoLogout />
+      <Routes>
+        {/*nnati kita ubah/ganti (/) jadi (/login) mengarah ke halman login jika sudah membuat home pagenya */}
+        <Route path="/" element={<Login />} />
+        <Route
+          path="/adminDashboard"
+          element={
+            <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+              <AdminDashboard onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/superAdminDashboard"
+          element={
+            <ProtectedRoute allowedRoles={["superadmin"]}>
+              <SuperAdminDashboard onLogout={handleLogout} />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/landingPage" element={<LandingPage />} />
+        <Route path="/errorPage" element={<ErrorPage />} />
+      </Routes>
+    </Router>
   );
-}
+};
+
+export default App;

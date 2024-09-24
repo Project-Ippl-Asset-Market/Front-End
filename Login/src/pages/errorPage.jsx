@@ -28,7 +28,7 @@ export default function Error() {
       </div>
       <Link
         className="btn btn-form-secondary bg-primary-2 border-primary-2 text-primary-12 font-semobold hover:bg-secondary-8 text-xs mt-[46px]"
-        to="/superAdminDashboard"
+        to="/login"
         end>
         Back to Home
       </Link>

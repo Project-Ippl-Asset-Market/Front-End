@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { auth } from "./firebase/firebaseConfig";
 import { signOut } from "firebase/auth";
 import AutoLogout from "./components/auto/autoLogout";
+import Register from "./pages/register";
 
 const App = () => {
   const handleLogout = async () => {
@@ -28,6 +29,7 @@ const App = () => {
       <Routes>
         {/*nnati kita ubah/ganti (/) jadi (/login) mengarah ke halman login jika sudah membuat home pagenya */}
         <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route
           path="/adminDashboard"
           element={

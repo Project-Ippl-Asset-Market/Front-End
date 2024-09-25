@@ -8,6 +8,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { auth } from "./firebase/firebaseConfig";
 import { signOut } from "firebase/auth";
 import AutoLogout from "./components/auto/autoLogout";
+import Register from "./pages/register";
+import AssetVideo from "./components/assetVideo/assetVideo";
+import AssetDataset from "./components/AssetDataset/AssetDataset";
 
 const App = () => {
   const handleLogout = async () => {
@@ -44,8 +47,16 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+        <Route path="/register" element={<Register />}/>
+
         <Route path="/landingPage" element={<LandingPage />} />
+
+        <Route path="/assetVideo" element={<AssetVideo />}/>
+
+        <Route path="/AssetDataset" element={<AssetDataset />}/>
+        
         <Route path="*" element={<ErrorPage />} />
+        
       </Routes>
     </Router>
   );

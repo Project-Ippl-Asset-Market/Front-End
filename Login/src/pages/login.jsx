@@ -259,9 +259,8 @@ function Login() {
               <span className="text-primary-12 text-2xl">
                 Belum Punya Akun?
               </span>
-              <Link
-                className="ml-4 text-primary-1 text-2xl hover:text-error-1"
-                to="/register">
+              <Link to="/register"
+                className="ml-4 text-primary-1 text-2xl hover:text-error-1">
                 Daftar
               </Link>
             </div>

@@ -12,6 +12,7 @@ import Register from "./pages/register";
 import AssetVideo from "./components/assetVideo/assetVideo";
 import AssetDataset from "./components/AssetDataset/AssetDataset";
 
+
 const App = () => {
   const handleLogout = async () => {
     try {
@@ -54,7 +55,7 @@ const App = () => {
         <Route path="/assetVideo" element={<AssetVideo />}/>
 
         <Route path="/AssetDataset" element={<AssetDataset />}/>
-        
+
         <Route path="*" element={<ErrorPage />} />
         
       </Routes>

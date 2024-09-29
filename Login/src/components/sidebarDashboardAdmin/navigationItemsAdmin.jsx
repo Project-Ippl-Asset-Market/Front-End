@@ -7,8 +7,8 @@ import IconAssetVideoDark from "../../assets/icon/iconSidebar/iconAssetVideo.png
 import IconAssetGambarDark from "../../assets/icon/iconSidebar/iconAssetGambar.png";
 import IconAssetGameDark from "../../assets/icon/iconSidebar/iconAssetGame.png";
 import IconAssetDatasetDark from "../../assets/icon/iconSidebar/iconAssetDataset.png";
-import IconLogoutDark from "../../assets/icon/iconSidebar/iconLogOut.svg";
-import IconManageAdminDark from "../../assets/icon/iconSidebar/iconManageAdmin.png";
+import IconManageAdminDark from "../../assets/icon/iconSidebarLigthMode/iconManageAdminDark.svg";
+import IconManageAdminLight from "../../assets/icon/iconSidebar/iconManageAdmin.png";
 // Icon untuk LightMode
 import IconDashboardLight from "../../assets/icon/iconSidebarLigthMode/iconDashboardLightMode.png";
 import IconAssetVideoLightMode from "../../assets/icon/iconSidebarLigthMode/iconAssetVideoLightMode.png";
@@ -16,7 +16,7 @@ import IconAssetGambarLightMode from "../../assets/icon/iconSidebarLigthMode/ico
 import IconAssetDatasetLightMode from "../../assets/icon/iconSidebarLigthMode/iconAssetDatasetLightMode.png";
 import IconAssetGameLightMode from "../../assets/icon/iconSidebarLigthMode/iconAssetGameLightMode.png";
 import IconlogoutLightMode from "../../assets/icon/iconSidebarLigthMode/iconLogoutLightMode.png";
-import IconManageAdminLightMode from "../../assets/icon/iconSidebarLigthMode/iconAdminLightMode.png";
+import IconlogoutDarkMode from "../../assets/icon/iconSidebarLigthMode/iconLogOutDarkMode.png";
 
 import { auth } from "../../firebase/firebaseConfig";
 import { signOut } from "firebase/auth";
@@ -124,10 +124,7 @@ const Sidebar = () => {
           icon: darkMode ? (
             <img src={IconManageAdminDark} alt="iconManageAdminDark" />
           ) : (
-            <img
-              src={IconManageAdminLightMode}
-              alt="iconManageAdminLightMode"
-            />
+            <img src={IconManageAdminLight} alt="iconlightMode" />
           ),
           children: [
             {
@@ -145,7 +142,7 @@ const Sidebar = () => {
           href: "/",
           label: "Log Out",
           icon: darkMode ? (
-            <img src={IconLogoutDark} alt="iconLogoutDark" />
+            <img src={IconlogoutDarkMode} alt="iconlogoutDarkMode" />
           ) : (
             <img src={IconlogoutLightMode} alt="iconLogoutLightMode" />
           ),

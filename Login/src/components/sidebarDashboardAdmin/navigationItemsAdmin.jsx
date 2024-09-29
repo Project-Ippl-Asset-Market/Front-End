@@ -7,16 +7,16 @@ import IconAssetVideoDark from "../../assets/icon/iconSidebar/iconAssetVideo.png
 import IconAssetGambarDark from "../../assets/icon/iconSidebar/iconAssetGambar.png";
 import IconAssetGameDark from "../../assets/icon/iconSidebar/iconAssetGame.png";
 import IconAssetDatasetDark from "../../assets/icon/iconSidebar/iconAssetDataset.png";
-import IconManageAdminDark from "../../assets/icon/iconSidebarLigthMode/iconManageAdminDark.svg";
-import IconManageAdminLight from "../../assets/icon/iconSidebar/iconManageAdmin.png";
+import IconManageAdminDark from "../../assets/icon/iconSidebar/iconManageAdmin.png";
+import IconManageAdminLight from "../../assets/icon/iconSidebarLigthMode/iconManageAdminDark.svg";
 // Icon untuk LightMode
 import IconDashboardLight from "../../assets/icon/iconSidebarLigthMode/iconDashboardLightMode.png";
 import IconAssetVideoLightMode from "../../assets/icon/iconSidebarLigthMode/iconAssetVideoLightMode.png";
 import IconAssetGambarLightMode from "../../assets/icon/iconSidebarLigthMode/iconAssetGambarLightMode.png";
 import IconAssetDatasetLightMode from "../../assets/icon/iconSidebarLigthMode/iconAssetDatasetLightMode.png";
 import IconAssetGameLightMode from "../../assets/icon/iconSidebarLigthMode/iconAssetGameLightMode.png";
-import IconlogoutLightMode from "../../assets/icon/iconSidebar/iconLogOut.svg";
-import IconlogoutDarkMode from "../../assets/icon/iconSidebarLigthMode/iconLogOutDarkMode.png";
+import IconlogoutLightMode from "../../assets/icon/iconSidebarLigthMode/iconLogOutDarkMode.png";
+import IconlogoutDarkMode from "../../assets/icon/iconSidebar/iconLogOut.svg";
 
 import { auth } from "../../firebase/firebaseConfig";
 import { signOut } from "firebase/auth";

@@ -7,61 +7,48 @@ const SidebarNavItem = ({ item }) => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
 
-  if (!item) {
-    return null;
-  }
+  if (!item) return null;
 
+  // ini akan menentukan apakah item ini aktif berdasarkan rute saat ini
   const isActive = item?.href && location.pathname === item.href;
-  const itemClass = `flex items-center w-full p-2 text-primary-12 font-normal rounded-r-full hover:text-primary-12 hover:font-semibold hover:rounded-lg dark:text-primary-12 hover:bg-primary-2 dark:hover:bg-primary-2 ${
-    isActive ? "bg-primary-2 dark:bg-primary-2" : ""
+  const isChildActive = item.children?.some(
+    (child) => location.pathname === child.href
+  );
+  const isOpenDropdown = isOpen || isChildActive;
+
+  const itemClass = `font-poppins flex items-center w-full p-2 text-neutral-10 font-semibold rounded-r-full hover:text-primary-100 hover:font-semibold hover:rounded-lg dark:text-primary-100 hover:bg-secondary-40 dark:hover:bg-secondary-40 ${
+    isActive ? "bg-secondary-40 dark:bg-secondary-40" : ""
   }`;
 
   const toggleDropdown = () => setIsOpen(!isOpen);
 
+  // Jika item yang di clik adalah dropdown
   if (item.type === "dropdown") {
     return (
       <div>
         <button className={itemClass} onClick={toggleDropdown}>
           {item.icon}
           <span className="ml-3">{item.label}</span>
-          <span className="ml-auto">
-            {isOpen ? (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 font-bold -ml-32 mt-2"
-                viewBox="0 0 20 20"
-                fill="currentColor">
-                <path
-                  fillRule="evenodd"
-                  d="M5.292 7.292a1 1 0 011.416 0L10 10.586l3.292-3.294a1 1 0 011.416 1.416l-4 4a1 1 0 01-1.416 0l-4-4a1 1 0 010-1.416z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 font-bold -ml-32 mt-2"
-                viewBox="0 0 20 20"
-                fill="currentColor">
-                <path
-                  fillRule="evenodd"
-                  d="M14.707 7.707a1 1 0 00-1.414-1.414L10 9.586 6.707 6.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l4-4z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            )}
-          </span>
+          <span className="ml-2">v</span>
         </button>
-        {isOpen && (
-          <ul className="pl-6 mt-2 space-y-2">
-            {item.children?.map((child, index) => (
-              <li key={index}>
-                <Link to={child.href || "#"} className={itemClass}>
-                  {child.icon}
-                  <span className="ml-3">{child.label}</span>
-                </Link>
-              </li>
-            ))}
+        {isOpenDropdown && (
+          <ul className="pl-6 mt-2 space-y-2 overflow-y-auto max-h-40">
+            {item.children?.map((child, index) => {
+              const isChildActive =
+                child.href && location.pathname === child.href;
+              return (
+                <li key={index}>
+                  <Link
+                    to={child.href || "#"}
+                    className={`font-poppins flex items-center w-full p-2 text-neutral-10 font-semibold rounded-r-full hover:text-primary-100 hover:font-semibold hover:rounded-lg dark:text-primary-100 hover:bg-secondary-40 dark:hover:bg-secondary-40 ${
+                      isChildActive ? "bg-secondary-40" : ""
+                    }`}>
+                    {child.icon}
+                    <span className="ml-3">{child.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>

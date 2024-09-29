@@ -1,101 +1,185 @@
 // eslint-disable-next-line no-unused-vars
-import React from "react";
-import SidebarNavItem from "./SidebarNavItemAdmin";
-import IconDashboard from "../../assets/icon/iconSidebar/iconDashboard.png";
-import IconAssetVideo from "../../assets/icon/iconSidebar/iconAssetVideo.png";
-import IconAssetGambar from "../../assets/icon/iconSidebar/iconAssetGambar.png";
-import IconAssetGame from "../../assets/icon/iconSidebar/iconAssetGame.png";
-import IconAssetDataset from "../../assets/icon/iconSidebar/iconAssetDataset.png";
-import IconLogout from "../../assets/icon/iconSidebar/iconLogOut.svg";
+import React, { Children } from "react";
+import { useTheme } from "../../contexts/ThemeContext";
+import SidebarNavItem from "../../components/sidebarDashboardAdmin/SidebarNavItemAdmin";
+import IconDashboardDark from "../../assets/icon/iconSidebar/iconDashboard.png";
+import IconAssetVideoDark from "../../assets/icon/iconSidebar/iconAssetVideo.png";
+import IconAssetGambarDark from "../../assets/icon/iconSidebar/iconAssetGambar.png";
+import IconAssetGameDark from "../../assets/icon/iconSidebar/iconAssetGame.png";
+import IconAssetDatasetDark from "../../assets/icon/iconSidebar/iconAssetDataset.png";
+import IconLogoutDark from "../../assets/icon/iconSidebar/iconLogOut.svg";
+import IconManageAdminDark from "../../assets/icon/iconSidebar/iconManageAdmin.png";
+// Icon untuk LightMode
+import IconDashboardLight from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconDashboardLightMode.png";
+import IconAssetVideoLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconAssetVideoLightMode.png";
+import IconAssetGambarLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconAssetGambarLightMode.png";
+import IconAssetDatasetLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconAssetDatasetLightMode.png";
+import IconAssetGameLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconAssetGameLightMode.png";
+import IconlogoutLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconLogoutLightMode.png";
+import IconManageAdminLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconAdminLightMode.png";
+
 import { auth } from "../../firebase/firebaseConfig";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
-const navigationItems = (onLogout) => [
-  {
-    section: "Dashboard",
-    items: [
-      {
-        href: "/superAdminDashboard",
-        label: "Dashboard",
-        icon: <img src={IconDashboard} alt="iconDashboard" />,
-      },
-    ],
-  },
-  {
-    section: "Manage Assets",
-    items: [
-      {
-        href: "/manageAssetVideo",
-        label: "Manage Asset Video",
-        icon: <img src={IconAssetVideo} alt="iconAssetVideo" />,
-      },
-      {
-        href: "/manageAssetGambar",
-        label: "Manage Asset Gambar",
-        icon: <img src={IconAssetGambar} alt="iconAssetGambar" />,
-      },
-      {
-        href: "/manageAssetDataset",
-        label: "Manage Asset Dataset",
-        icon: <img src={IconAssetDataset} alt="iconAssetDataset" />,
-      },
-      {
-        type: "dropdown",
-        label: "Manage Asset Game",
-        icon: <img src={IconAssetGame} alt="iconAssetGame" />,
-        children: [
-          { href: "/asset-2d", label: "Add Asset 2D" },
-          { href: "/asset-3d", label: "Add Asset 3D" },
-          { href: "/asset-audio", label: "Add Asset Audio" },
-        ],
-      },
-    ],
-  },
-  {
-    section: "Log Out",
-    items: [
-      {
-        // nnati kita ubah/ganti (/) jadi (/login) mengarah ke halman login jika sudah membuat home pagenya
-        href: "/",
-        label: "Log Out",
-        icon: <img src={IconLogout} alt="iconLogout" />,
-        onClick: onLogout,
-      },
-    ],
-  },
-];
-
 const Sidebar = () => {
   const navigate = useNavigate();
+  const { darkMode } = useTheme();
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       localStorage.removeItem("authToken");
       localStorage.removeItem("userRole");
-      // nnati kita ubah/ganti (/) jadi (/login) mengarah ke halman login jika sudah membuat home pagenya
       navigate("/");
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
   };
+  const userRole = localStorage.getItem("userRole");
+
+  const navigationItems = [
+    {
+      section: "Dashboard",
+      items: [
+        {
+          href: "/dashboard",
+          label: "Dashboard",
+          icon: darkMode ? (
+            <img src={IconDashboardDark} alt="iconDashboardDark" />
+          ) : (
+            <img src={IconDashboardLight} alt="iconDashboardLight" />
+          ),
+        },
+      ],
+    },
+    {
+      section: "Manage Assets",
+      items: [
+        {
+          href: "/manageAssetVideo",
+          label: "Manage Asset Video",
+          icon: darkMode ? (
+            <img src={IconAssetVideoDark} alt="iconAssetVideoDark" />
+          ) : (
+            <img src={IconAssetVideoLightMode} alt="iconAssetVideoLightMode" />
+          ),
+        },
+        {
+          href: "/manageAssetGambar",
+          label: "Manage Asset Gambar",
+          icon: darkMode ? (
+            <img src={IconAssetGambarDark} alt="iconAssetGambarDark" />
+          ) : (
+            <img
+              src={IconAssetGambarLightMode}
+              alt="iconAssetGambarLightMode"
+            />
+          ),
+        },
+        {
+          href: "/manageAssetDataset",
+          label: "Manage Asset Dataset",
+          icon: darkMode ? (
+            <img src={IconAssetDatasetDark} alt="iconAssetDatasetDark" />
+          ) : (
+            <img
+              src={IconAssetDatasetLightMode}
+              alt="iconAssetDatasetLightMode"
+            />
+          ),
+        },
+        {
+          type: "dropdown",
+          href: "#",
+          label: "Manage Asset Game",
+          icon: darkMode ? (
+            <img src={IconAssetGameDark} alt="iconAssetGameDark" />
+          ) : (
+            <img src={IconAssetGameLightMode} alt="iconAssetGameLightMode" />
+          ),
+          children: [
+            {
+              href: "/manageAsset2D",
+              label: "Manage Asset 2D",
+            },
+            {
+              href: "/manageAssetGame/manageAsset3D",
+              label: "Manage Asset 3D",
+            },
+            {
+              href: "/manageAssetGame/manageAssetAudio",
+              label: "Manage Asset Audio",
+            },
+          ],
+        },
+      ],
+    },
+    userRole === "superadmin" && {
+      section: "Admin Management",
+      items: [
+        {
+          href: "/manageAdmin",
+          label: "Manage Admin",
+          icon: darkMode ? (
+            <img src={IconManageAdminDark} alt="iconManageAdminDark" />
+          ) : (
+            <img
+              src={IconManageAdminLightMode}
+              alt="iconManageAdminLightMode"
+            />
+          ),
+          children: [
+            {
+              href: "/manageAdmin/add",
+              label: "Manage Admin",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      section: "Log Out",
+      items: [
+        {
+          href: "/",
+          label: "Log Out",
+          icon: darkMode ? (
+            <img src={IconLogoutDark} alt="iconLogoutDark" />
+          ) : (
+            <img src={IconlogoutLightMode} alt="iconLogoutLightMode" />
+          ),
+          onClick: handleLogout,
+        },
+      ],
+    },
+  ].filter(Boolean); // Kita gunakan Bolean dengan memfilter untuk menghapus nilai false jika bukan superadmin
 
   return (
-    <nav className="space-y-4">
-      {navigationItems(handleLogout).map((section, sectionIndex) => (
-        <div key={sectionIndex}>
-          <h2 className="text-xs font-semibold text-primary-12 mb-4 uppercase mt-10">
+    <nav className="space-y-4 overflow-y-auto min-h-screen h-[1000vh] p-4 bg-neutral-100 dark:bg-neutral-10 font-poppins  ">
+      <div className="h-[80px] flex items-center justify-center gap-4">
+        <img
+          alt="Logo"
+          src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+          className="w-20 h-20 rounded-full"
+        />
+        <h1 className="text-xl text-center font-bold text-neutral-20 dark:text-primary-100 py-8">
+          LOGO
+        </h1>
+      </div>
+      {navigationItems.map((section, sectionIndex) => (
+        <div key={sectionIndex} className="text-xs ">
+          <h2 className="text-xs font-semibold text-neutral-10 dark:text-primary-100 mb-2 uppercase mt-8">
             {section.section}
           </h2>
           {section.items.map((item, itemIndex) => (
             <div
-              className={section.section === "Manage Assets" ? "mb-2" : ""}
-              key={itemIndex}>
+              key={itemIndex}
+              className={section.section === "Manage Assets" ? "mb-2" : ""}>
               <SidebarNavItem
                 item={item}
                 isActive={false}
-                onClick={item.onClick} // Pass onClick prop
+                onClick={item.onClick}
               />
             </div>
           ))}

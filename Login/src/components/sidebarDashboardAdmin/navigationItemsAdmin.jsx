@@ -10,13 +10,13 @@ import IconAssetDatasetDark from "../../assets/icon/iconSidebar/iconAssetDataset
 import IconLogoutDark from "../../assets/icon/iconSidebar/iconLogOut.svg";
 import IconManageAdminDark from "../../assets/icon/iconSidebar/iconManageAdmin.png";
 // Icon untuk LightMode
-import IconDashboardLight from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconDashboardLightMode.png";
-import IconAssetVideoLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconAssetVideoLightMode.png";
-import IconAssetGambarLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconAssetGambarLightMode.png";
-import IconAssetDatasetLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconAssetDatasetLightMode.png";
-import IconAssetGameLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconAssetGameLightMode.png";
-// import IconlogoutLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconLogoutLightMode.png";
-import IconManageAdminLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconAdminLightMode.png";
+import IconDashboardLight from "../../assets/icon/iconSidebarLigthMode/iconDashboardLightMode.png";
+import IconAssetVideoLightMode from "../../assets/icon/iconSidebarLigthMode/iconAssetVideoLightMode.png";
+import IconAssetGambarLightMode from "../../assets/icon/iconSidebarLigthMode/iconAssetGambarLightMode.png";
+import IconAssetDatasetLightMode from "../../assets/icon/iconSidebarLigthMode/iconAssetDatasetLightMode.png";
+import IconAssetGameLightMode from "../../assets/icon/iconSidebarLigthMode/iconAssetGameLightMode.png";
+import IconlogoutLightMode from "../../assets/icon/iconSidebarLigthMode/iconLogoutLightMode.png";
+import IconManageAdminLightMode from "../../assets/icon/iconSidebarLigthMode/iconAdminLightMode.png";
 
 import { auth } from "../../firebase/firebaseConfig";
 import { signOut } from "firebase/auth";
@@ -147,7 +147,7 @@ const Sidebar = () => {
           icon: darkMode ? (
             <img src={IconLogoutDark} alt="iconLogoutDark" />
           ) : (
-            <img src="" alt="iconLogoutLightMode" />
+            <img src={IconlogoutLightMode} alt="iconLogoutLightMode" />
           ),
           onClick: handleLogout,
         },

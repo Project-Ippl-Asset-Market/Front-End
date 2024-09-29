@@ -15,7 +15,7 @@ import IconAssetVideoLightMode from "../../assets/icon/iconSidebarLigthMode/icon
 import IconAssetGambarLightMode from "../../assets/icon/iconSidebarLigthMode/iconAssetGambarLightMode.png";
 import IconAssetDatasetLightMode from "../../assets/icon/iconSidebarLigthMode/iconAssetDatasetLightMode.png";
 import IconAssetGameLightMode from "../../assets/icon/iconSidebarLigthMode/iconAssetGameLightMode.png";
-import IconlogoutLightMode from "../../assets/icon/iconSidebarLigthMode/iconLogoutLightMode.png";
+import IconlogoutLightMode from "../../assets/icon/iconSidebar/iconLogOut.svg";
 import IconlogoutDarkMode from "../../assets/icon/iconSidebarLigthMode/iconLogOutDarkMode.png";
 
 import { auth } from "../../firebase/firebaseConfig";

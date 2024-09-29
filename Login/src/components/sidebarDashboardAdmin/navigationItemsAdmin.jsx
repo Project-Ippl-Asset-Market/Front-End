@@ -15,7 +15,7 @@ import IconAssetVideoLightMode from "../../assets/icon/iconDarkMode&LigthMode/ic
 import IconAssetGambarLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconAssetGambarLightMode.png";
 import IconAssetDatasetLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconAssetDatasetLightMode.png";
 import IconAssetGameLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconAssetGameLightMode.png";
-import IconlogoutLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconLogoutLightMode.png";
+// import IconlogoutLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconLogoutLightMode.png";
 import IconManageAdminLightMode from "../../assets/icon/iconDarkMode&LigthMode/iconSidebarLigthMode/iconAdminLightMode.png";
 
 import { auth } from "../../firebase/firebaseConfig";
@@ -147,7 +147,7 @@ const Sidebar = () => {
           icon: darkMode ? (
             <img src={IconLogoutDark} alt="iconLogoutDark" />
           ) : (
-            <img src={IconlogoutLightMode} alt="iconLogoutLightMode" />
+            <img src="" alt="iconLogoutLightMode" />
           ),
           onClick: handleLogout,
         },

@@ -199,10 +199,10 @@ function LupaPassword() {
             </div>
           </div>
           {errorModal && (
-            <div className="modal modal-open pr-5">
-              <div className="modal-box w-[250px] sm:w-[350px] md:w-[350px] lg:w-[350px] xl:w-[350px] h-[260px] sm:h-[350px] md:h-[280px] lg:h-[300px] xl:h-[300px] bg-neutral-90">
+            <div className="modal modal-open pr-5 ">
+              <div className="modal-box w-[250px] sm:w-[350px] md:w-[350px] lg:w-[350px] xl:w-[350px] h-[280px] sm:h-[280px] md:h-[290px] lg:h-[300px] xl:h-[300px] bg-neutral-90">
                 <img
-                  className="w-24 sm:w-24 md:w-32 lg:w-32 xl:w-32 2xl:w-32 h-24 sm:h-24 md:h-32 lg:h-32 xl:h-32 2xl:h-32 mx-auto mb-6"
+                  className="w-20 sm:w-24 md:w-32 lg:w-32 xl:w-32 2xl:w-32 h-20 sm:h-24 md:h-32 lg:h-32 xl:h-32 2xl:h-32 mx-auto mb-6"
                   src={IconModalError}
                   alt="icon pop up error"
                 />
@@ -221,9 +221,9 @@ function LupaPassword() {
           )}
           {modalMessage && (
             <div className="modal modal-open pr-5">
-              <div className="modal-box w-[250px] sm:w-[350px] md:w-[350px] lg:w-[350px] xl:w-[350px] h-[260px] sm:h-[350px] md:h-[280px] lg:h-[300px] xl:h-[300px] bg-neutral-90">
+              <div className="modal-box w-[250px] sm:w-[350px] md:w-[350px] lg:w-[350px] xl:w-[350px] h-[280px] sm:h-[280px] md:h-[290px] lg:h-[300px] xl:h-[300px] bg-neutral-90">
                 <img
-                  className="h-24 w-24 mx-auto mb-4"
+                  className="w-20 sm:w-24 md:w-32 lg:w-32 xl:w-32 2xl:w-32 h-20 sm:h-24 md:h-32 lg:h-32 xl:h-32 2xl:h-32 mx-auto mb-6"
                   src={IconModalSuccess}
                   alt="icon pop up error"
                 />

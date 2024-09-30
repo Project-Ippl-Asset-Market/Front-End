@@ -93,7 +93,7 @@ function Register() {
             </div>
 
             <form onSubmit={registerAction} className="mx-auto w-full max-w-md">
-              <div className="flex flex-col space-x-0 mx-auto lg:flex-row lg:space-x-2 ">
+              <div className="flex flex-col space-x-0 mx-auto lg:flex-row lg:space-x-2 gap-4 ">
                 <div className="form-control flex-1">
                   <label className="label">
                     <span className="label-text text-[16px] sm:text-[14px] md:text-[14px] lg:text-[18px]  xl:text-[18px] sm:text-base text-primary-100 text-start">
@@ -125,7 +125,7 @@ function Register() {
                   />
                 </div>
               </div>
-              <div className="form-control">
+              <div className="form-contro mt-4">
                 <label className="label">
                   <span className="label-text text-[16px] sm:text-[14px] md:text-[14px] lg:text-[18px]  xl:text-[18px] sm:text-base text-primary-100 text-start">
                     Email
@@ -141,7 +141,7 @@ function Register() {
                 />
               </div>
 
-              <div className="form-control">
+              <div className="form-control mt-4">
                 <label className="label">
                   <span className="label-text text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-xl sm:text-base text-primary-100">
                     Username
@@ -157,7 +157,7 @@ function Register() {
                 />
               </div>
 
-              <div className="form-control">
+              <div className="form-control mt-4">
                 <label className="label">
                   <span className="label-text text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-xl sm:text-base text-primary-100">
                     Password

@@ -95,8 +95,8 @@ function LupaPassword() {
                 </h2>
               </div>
             </div>
-            <form onSubmit={handleSubmit} className="space-y-4 mx-auto mt-8">
-              <div className="form-control">
+            <form onSubmit={handleSubmit} className="mx-auto w-full max-w-md">
+              <div className="form-control items-start">
                 <label className="label">
                   <span className="label-text text-[14px] sm:text-[14px] md:text-[14px] lg:text-[18px]  xl:text-[18px] sm:text-base text-primary-100 text-start">
                     Email
@@ -106,12 +106,12 @@ function LupaPassword() {
                   type="email"
                   placeholder="email"
                   onChange={handleChangeEmail}
-                  className=" border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[10px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
+                  className=" border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
                   required
                   value={email}
                 />
               </div>
-              <div className="form-control">
+              <div className="form-control mt-4">
                 <label className="label">
                   <span className="label-text text-[14px] sm:text-[14px] md:text-[14px] lg:text-[18px]  xl:text-[18px] sm:text-base text-primary-100 text-start">
                     Masukkan Password Baru
@@ -122,7 +122,7 @@ function LupaPassword() {
                     type={showPassword ? "text" : "password"}
                     placeholder="minimal 8 karakter"
                     onChange={handleChangeNewPassword}
-                    className="border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[10px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
+                    className="border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
                     required
                     value={newPassword}
                   />
@@ -141,7 +141,7 @@ function LupaPassword() {
                 </div>
               </div>
 
-              <div className="form-control">
+              <div className="form-control mt-4">
                 <label className="label">
                   <span className="label-text text-[14px] sm:text-[14px] md:text-[14px] lg:text-[18px]  xl:text-[18px] sm:text-base text-primary-100 text-start">
                     konfirmasi Password Baru
@@ -151,7 +151,7 @@ function LupaPassword() {
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="minimal 8 karakter"
-                    className="  border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[10px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
+                    className=" border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
                     required
                     value={confirmPassword}
                     onChange={handleChangeConfirmPassword}

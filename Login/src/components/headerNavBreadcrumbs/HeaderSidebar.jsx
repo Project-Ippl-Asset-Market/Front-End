@@ -5,32 +5,29 @@ import { nameMap } from "../breadcrumbs/PathMap";
 import { useLocation } from "react-router-dom";
 import IconToggelMenu from "../../assets/icon/iconHeader/iconMenu.svg";
 
-function HeaderSidebar() {
+function HeaderSidebar({ toggleSidebar }) {
   const { darkMode, toggleDarkMode } = useTheme();
-  const location = useLocation(); // Kita akan mengambil lokasi saat ini dari router
-  const currentPath = location.pathname; // Path aktif saat ini
+  const location = useLocation();
+  const currentPath = location.pathname;
 
-  // Ambil nama halaman berdasarkan currentPath dari nameMap
   const pageName = nameMap[currentPath] || "Unknown Page";
 
   return (
-    <section className="navbar h-24 fixed z-40 top-0 left-0 pt-0 text-neutral-10  shadow-md font-poppins font-semibold dark:text-primary-100 bg-neutral-90 dark:bg-neutral-20 dark:shadow-lg dark:shadow-neutral-10 gap-6">
+    <section className="navbar h-24 fixed z-40 top-0 left-0 pt-0 text-neutral-10 shadow-md font-poppins font-semibold dark:text-primary-100 bg-neutral-90 dark:bg-neutral-20 dark:shadow-lg dark:shadow-neutral-10 gap-6">
       <div className="flex-1">
         <button
-          data-drawer-target="sidebar-multi-level-sidebar"
-          data-drawer-toggle="sidebar-multi-level-sidebar"
-          aria-controls="sidebar-multi-level-sidebar"
+          onClick={toggleSidebar}
           type="button"
-          className="inline-flex items-center p-2 ms-3 text-sm  rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-neutral-90 dark:bg-neutral-10 dark:hover:bg-gray-700 dark:focus:ring-gray-600 ">
+          className="inline-flex items-center p-2 ms-3 text-sm rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-neutral-90 dark:bg-neutral-10 dark:hover:bg-gray-700 dark:focus:ring-gray-600">
           <img
             src={IconToggelMenu}
             alt="iconToggelMenu"
-            className="w-10 h-5 mx-auto "
+            className="w-10 h-5 mx-auto"
           />
         </button>
         <ul className="breadcrumb text-xl">
           <li
-            className="breadcrumb-item active hidden md:block  text-xl text-neutral-20 dark:text-primary-100 font-semibold md:ml-[210px] lg:ml-[220px] xl:ml-[230px]"
+            className="breadcrumb-item active hidden md:block text-xl text-neutral-20 dark:text-primary-100 font-semibold sm:ml-[200px] md:ml-[240px] lg:ml-[240px] xl:ml-[230px]"
             aria-current="page">
             {pageName}
           </li>

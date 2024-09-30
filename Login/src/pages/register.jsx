@@ -51,15 +51,15 @@ function Register() {
   };
 
   return (
-    <div className="font-poppins min-h-screen flex justify-center items-center">
-      <div className="flex flex-col lg:flex-row w-full max-w-[1920px] lg:h-[768px] h-auto">
-        <div className="relative text-center w-full lg:w-1/2  flex flex-col justify-center items-center p-6">
+    <div className="bg-neutral-20 min-h-screen h-full flex justify-center items-center font-poppins">
+      <div className="flex flex-col lg:flex-row w-full max-w-[1920px] lg:h-[768px] h-auto min-h-screen">
+        <div className="relative hidden sm:block lg:flex h-full text-center w-full lg:w-1/2 flex-col justify-center items-center p-6 ">
           <img
             src={BgLogin}
             alt="Login background"
             className="absolute w-full h-full inset-0 object-cover opacity-80"
           />
-          <div className=" relative z-40 w-[60%] sm:w-[50%] md:w-[40%] lg:w-1/2 opacity-100 rounded-lg p-4 sm:p-6">
+          <div className="relative mx-auto z-40 w-[60%] sm:w-[50%] md:w-[40%] lg:w-1/2 opacity-100 rounded-lg p-4 sm:p-6">
             <img
               src={Logo}
               alt="Logo"
@@ -68,16 +68,17 @@ function Register() {
             <h2 className="relative z-50 text-1xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary-100 mt-4">
               PixelStore
             </h2>
-            <p className="text-justify relative z-50 py-2 sm:py-4 lg:py-6 text-[10px] sm:text-[12px] md:text-[14px] lg:text-xl  text-primary-100">
+            <p className="text-center relative z-50 py-2 sm:py-4 lg:py-6 text-[10px] sm:text-[12px] md:text-[14px] lg:text-xl  text-primary-100">
               PixelStore, Sumber Inspirasi footage menarik di website kami untuk
               Project Anda!
             </p>
           </div>
         </div>
+
         <div className="card bg-neutral-90 w-full lg:w-1/2 flex justify-center items-center">
           <div className="card-body w-full px-4 sm:px-8 lg:px-16 py-8 lg:py-0 bg-neutral-20">
             <div className="mt-8 sm:mt-[3%] md:mt-[4%] lg:mt-[10%]  text-center">
-              <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-primary-100 mt-2 mb-2">
+              <h1 className="text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl font-bold text-primary-100 mt-2 mb-2">
                 Register
               </h1>
             </div>
@@ -88,73 +89,74 @@ function Register() {
               </h2>
             </div>
 
-            <form onSubmit={registerAction} className="space-y-4 mx-auto">
+            <form onSubmit={registerAction} className="mx-auto w-full max-w-md">
               <div className="flex flex-col space-x-0 mx-auto lg:flex-row lg:space-x-2 ">
                 <div className="form-control flex-1">
                   <label className="label">
-                    <span className="label-text text-sm sm:text-base text-primary-100">
+                    <span className="label-text sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-xl sm:text-base text-primary-100">
                       First Name
                     </span>
                   </label>
                   <input
                     type="text"
                     placeholder="First Name"
-                    className="w-[245px] sm:w-[100%] md:w-[450px] lg:w-[215px] h-[45px] input input-bordered bg-primary-100 text-neutral-20"
+                    className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[14px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
                     required
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                   />
                 </div>
-                <div className="form-control flex-1 ">
+                <div className="form-control flex-1">
                   <label className="label">
-                    <span className="label-text text-sm sm:text-base text-primary-100">
+                    <span className="label-text sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-xl sm:text-base text-primary-100">
                       Last Name
                     </span>
                   </label>
                   <input
                     type="text"
                     placeholder="Last Name"
-                    className="w-[245px] sm:w-[100%] md:w-[450px] lg:w-[215px] h-[45px] input input-bordered bg-primary-100 text-neutral-20"
+                    className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[14px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
                     required
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                   />
                 </div>
               </div>
-
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text text-sm sm:text-base text-primary-100">
-                    Username
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Username"
-                  className="w-[450px] max-sm:w-[250px] min-md:w-[400px] min-lg:w-[400px] h-[45px] input input-bordered bg-primary-100 text-neutral-20"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-              </div>
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text text-sm sm:text-base text-primary-100">
+                  <span className="label-text sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-xl sm:text-base text-primary-100">
                     Email
                   </span>
                 </label>
                 <input
                   type="email"
                   placeholder="Email"
-                  className="w-[450px] max-sm:w-[250px] min-md:w-[400px] min-lg:w-[400px] h-[45px] input input-bordered bg-primary-100 text-neutral-20"
+                  className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[14px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
+
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text text-sm sm:text-base text-primary-100">
+                  <span className="label-text text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-xl sm:text-base text-primary-100">
+                    Username
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Username"
+                  className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[14px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
+                  required
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-xl sm:text-base text-primary-100">
                     Password
                   </span>
                 </label>
@@ -162,7 +164,7 @@ function Register() {
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="Password"
-                    className="w-[450px] max-sm:w-[250px] min-md:w-[400px] min-lg:w-[400px] h-[45px] input input-bordered bg-primary-100 text-neutral-20"
+                    className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[14px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -185,17 +187,17 @@ function Register() {
               <div className="form-control mt-6">
                 <button
                   type="submit"
-                  className="w-[450px] max-sm:w-[250px] min-md:w-[400px] min-lg:w-[400px] h-[45px] btn bg-secondary-40 hover:bg-secondary-50 text-primary-100 font-bold mt-4">
+                  className="w-full h-[40px] input input-bordered bg-secondary-40 hover:bg-secondary-50 text-primary-100 text-[16px] sm:text-[16px] md:text-[20px] lg:text-[24px] xl:text-xl mt-6">
                   Register
                 </button>
               </div>
             </form>
             <div className="text-2xl text-center mt-5">
-              <span className="text-primary-100 text-2xl">
+              <span className="text-primary-100 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl">
                 Sudah Punya Akun?
               </span>
               <Link
-                className="ml-4 text-primary-30 text-2xl hover:text-error-1"
+                className="ml-4 text-primary-30  hover:text-primary-30   text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
                 to="/">
                 Login
               </Link>

@@ -11,6 +11,7 @@ export default {
         poppins: ["Poppins", "sans-serif"],
         roboto: ["Roboto", "sans-serif"],
       },
+
       // Color Guidance Asset Market
       colors: {
         primary: {

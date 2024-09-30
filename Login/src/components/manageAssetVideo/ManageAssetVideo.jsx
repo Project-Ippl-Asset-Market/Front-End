@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
 import IconSearch from "../../assets/icon/iconHeader/iconSearch.svg";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
@@ -7,15 +8,46 @@ import IconEdit from "../../assets/icon/iconCRUD/iconEdit.png";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
 
 function ManageAssetVideo() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const sidebarRef = useRef(null);
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleClickOutside = (event) => {
+    if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+      setIsSidebarOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isSidebarOpen]);
   return (
     <>
       <div className=" dark:bg-neutral-90 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
-        <HeaderSidebar />
+        <HeaderSidebar
+          isSidebarOpen={isSidebarOpen}
+          toggleSidebar={toggleSidebar}
+        />
+
         <aside
+          ref={sidebarRef}
           id="sidebar-multi-level-sidebar"
-          className="fixed top-0 left-0 z-40 w-[280px] transition-transform -translate-x-full sm:translate-x-0  "
+          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } sm:translate-x-0`}
           aria-label="Sidebar">
-          <div className="h-full px-3 py-4 overflow-y-auto  dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
+          <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
             <NavigationItem />
           </div>
         </aside>

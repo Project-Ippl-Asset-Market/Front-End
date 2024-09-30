@@ -140,13 +140,13 @@ function Login() {
   return (
     <div className="bg-neutral-20 min-h-screen h-full flex justify-center items-center font-poppins">
       <div className="flex flex-col lg:flex-row w-full max-w-[1920px] lg:h-[768px] h-auto min-h-screen">
-        <div className="relative h-full text-center w-full lg:w-1/2 flex flex-col justify-center items-center p-6 ">
+        <div className="relative hidden sm:block lg:flex h-full text-center w-full lg:w-1/2 flex-col justify-center items-center p-6 ">
           <img
             src={BgLogin}
             alt="Login background"
             className="absolute w-full h-full inset-0 object-cover opacity-80"
           />
-          <div className="relative z-40 w-[60%] sm:w-[50%] md:w-[40%] lg:w-1/2 opacity-100 rounded-lg p-4 sm:p-6">
+          <div className="relative mx-auto z-40 w-[60%] sm:w-[50%] md:w-[40%] lg:w-1/2 opacity-100 rounded-lg p-4 sm:p-6">
             <img
               src={Logo}
               alt="Logo"
@@ -155,30 +155,31 @@ function Login() {
             <h2 className="relative z-50 text-1xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary-100 mt-4">
               PixelStore
             </h2>
-            <p className="text-justify relative z-50 py-2 sm:py-4 lg:py-6 text-[10px] sm:text-[12px] md:text-[14px] lg:text-xl  text-primary-100">
+            <p className="text-center relative z-50 py-2 sm:py-4 lg:py-6 text-[10px] sm:text-[12px] md:text-[14px] lg:text-xl  text-primary-100">
               PixelStore, Sumber Inspirasi footage menarik di website kami untuk
               Project Anda!
             </p>
           </div>
         </div>
-        <div className="card bg-neutral-20 w-full lg:w-1/2 flex justify-center items-center min-h-screen">
-          <div className="card-body w-full px-4 sm:px-8 lg:px-16 py-8 lg:py-0 bg-neutral-20">
-            <div className="mt-8 sm:mt-[3%] md:mt-[4%] lg:mt-[10%]  text-center">
-              <h1 className="text-xl sm:text-4xl md:text-5xl lg:text-5xl font-bold text-primary-100 mt-2 mb-2">
-                LOGIN
-              </h1>
-            </div>
+
+        <div className="card bg-neutral-20 w-full lg:w-1/2 flex justify-center items-center min-h-screen ">
+          <div className="card-body w-full px-4 sm:px-8 lg:px-26 xl:px-2 py-8 lg:py-0 bg-neutral-20 ">
             <div className="relative w-full mx-auto ">
-              <h2 className=" ml-[12px] sm:ml-[90px] md:ml-[110px] lg:ml-[80px] xl:ml-[100px] sm:w-2/3 text-[12px] sm:text-[14px] md:text-[16px] lg:text-xl text-center text-neutral-90 mb-10">
+              <div className="mt-2 sm:mt-[3%] md:mt-[4%] lg:mt-[10%]  text-center mb-4">
+                <h1 className="text-xl sm:text-4xl md:text-5xl lg:text-5xl font-bold text-primary-100">
+                  LOGIN
+                </h1>
+              </div>
+              <h2 className=" ml-[12px] sm:ml-[100px] md:ml-[130px] lg:ml-[80px] xl:ml-[100px] sm:w-2/3 text-[12px] sm:text-[14px] md:text-[16px] lg:text-xl text-center text-neutral-90 mb-10">
                 Selamat Datang di PixelStore, Surga Kreatif untuk Asset
                 Berkualitas!
               </h2>
             </div>
 
-            <form onSubmit={loginAction} className="mx-auto">
+            <form onSubmit={loginAction} className="mx-auto w-full max-w-md">
               <div className="form-control items-start">
                 <label className="label">
-                  <span className="label-text text-sm sm:text-base text-primary-100 text-start">
+                  <span className="label-text text-lg sm:text-base text-primary-100 text-start">
                     Email
                   </span>
                 </label>
@@ -186,7 +187,7 @@ function Login() {
                   type="email"
                   name="email"
                   placeholder="Enter email"
-                  className="w-[500px] max-sm:w-[250px] min-md:w-[400px] lg:w-[400px] h-[45px] input input-bordered bg-primary-100 text-neutral-20"
+                  className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
                   required
                   value={loginEmail}
                   onChange={handleChange}
@@ -203,13 +204,13 @@ function Login() {
                     type={showPassword ? "text" : "password"}
                     name="password"
                     placeholder="Enter password"
-                    className="w-[500px] max-sm:w-[250px] min-md:w-[400px] lg:w-[400px] h-[45px] input input-bordered bg-primary-100 100  pr-10"
+                    className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
                     required
                     value={loginPassword}
                     onChange={handleChange}
                   />
 
-                  {/*  Icon mata start */}
+                  {/* Icon mata start */}
                   <button
                     type="button"
                     className="absolute  inset-y-0 right-0 pr-5 flex items-center text-gray-600"
@@ -220,21 +221,21 @@ function Login() {
                       <EyeIcon className="h-6 w-6 text-gray-500" />
                     )}
                   </button>
-                  {/*  Icon mata End */}
+                  {/* Icon mata End */}
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <label className="label cursor-pointer">
                     <input
                       type="checkbox"
-                      className="checkbox checkbox-md  rounded-[2px] bg-primary-100 border-primary-100"
+                      className="checkbox checkbox-md rounded-[2px] bg-primary-100 border-primary-100 "
                     />
-                    <span className="label-text text-sm text-primary-100 ml-2">
+                    <span className="label-text text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl text-primary-100 ml-2">
                       Remember me
                     </span>
                   </label>
                   <Link
                     to="/lupaPassword"
-                    className="text-lg text-primary-30 hover:text-error-1 ">
+                    className="text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl text-primary-30 hover:text-error-1">
                     Lupa Password?
                   </Link>
                 </div>
@@ -242,30 +243,30 @@ function Login() {
               <button
                 type="button"
                 onClick={signInWithGoogle}
-                className="w-[500px] max-sm:w-[250px] min-md:w-[400px] lg:w-[400px] h-[45px]  input input-bordered btn btn-outline  mt-6 bg-neutral-60 hover:bg-neutral-70 hover:font-bold hover:text-primary-100 text-primary-100">
+                className="w-full h-[40px] input input-bordered btn btn-outline mt-6 bg-neutral-60 text-neutral-20 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl">
                 <img src={IconGoogle} alt="Google" className="w-5 h-5 mr-2" />
                 Masuk menggunakan google
               </button>
-
               <div className="form-control mt-6">
                 <button
                   type="submit"
-                  className={`w-[500px] max-sm:w-[250px] min-md:w-[400px] rounded-lg lg:w-[400px] h-[45px] text-primary-100 font-bold ${
+                  className={`w-full h-[40px] input input-bordered bg-neutral-90 text-primary-100 text-[16px] sm:text-[16px] md:text-[20px] lg:text-[24px] xl:text-xl ${
                     loading
                       ? "bg-secondary-40 cursor-not-allowed"
-                      : "bg-secondary-40 hover:bg-secondary-50 hover:font-bold hover:text-primary-100 hover:text-xl"
+                      : "bg-secondary-40 hover:bg-secondary-50 hover:text-primary-100"
                   }`}
                   disabled={loading}>
                   {loading ? "Loading..." : "masuk"}
                 </button>
               </div>
             </form>
-            <div className="text-2xl text-center mt-5">
-              <span className="text-primary-100 text-2xl">
+
+            <div className="text-2xl text-center mt-2">
+              <span className="text-primary-100 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl">
                 Belum Punya Akun?
               </span>
               <Link
-                className="ml-4 text-primary-30 text-2xl hover:text-primary-30"
+                className="ml-4 text-primary-30  hover:text-primary-30   text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
                 to="/register">
                 Daftar
               </Link>

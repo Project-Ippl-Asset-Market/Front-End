@@ -60,15 +60,15 @@ function LupaPassword() {
   };
 
   return (
-    <div className="font-poppins bg-neutral-90 min-h-screen flex justify-center items-center">
-      <div className="flex flex-col lg:flex-row w-full max-w-[1920px] lg:h-[768px] h-auto">
-        <div className="relative text-center w-full lg:w-1/2  flex flex-col justify-center items-center p-6">
+    <div className="bg-neutral-20 min-h-screen h-full flex justify-center items-center font-poppins">
+      <div className="flex flex-col lg:flex-row w-full max-w-[1920px] lg:h-[768px] h-auto min-h-screen">
+        <div className="relative hidden sm:block lg:flex h-full text-center w-full lg:w-1/2 flex-col justify-center items-center p-6 ">
           <img
             src={BgLogin}
             alt="Login background"
-            className="absolute w-full h-full inset-0 object-cover opacity-100"
+            className="absolute w-full h-full inset-0 object-cover opacity-80"
           />
-          <div className=" relative z-40 w-[60%] sm:w-[50%] md:w-[40%] lg:w-1/2 opacity-100 rounded-lg p-4 sm:p-6">
+          <div className="relative mx-auto z-40 w-[60%] sm:w-[50%] md:w-[40%] lg:w-1/2 opacity-100 rounded-lg p-4 sm:p-6">
             <img
               src={Logo}
               alt="Logo"
@@ -77,7 +77,7 @@ function LupaPassword() {
             <h2 className="relative z-50 text-1xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary-100 mt-4">
               PixelStore
             </h2>
-            <p className="text-justify relative z-50 py-2 sm:py-4 lg:py-6 text-[10px] sm:text-[12px] md:text-[14px] lg:text-xl  text-primary-100">
+            <p className="text-center relative z-50 py-2 sm:py-4 lg:py-6 text-[10px] sm:text-[12px] md:text-[14px] lg:text-xl  text-primary-100">
               PixelStore, Sumber Inspirasi footage menarik di website kami untuk
               Project Anda!
             </p>
@@ -92,7 +92,7 @@ function LupaPassword() {
             </div>
             <div className="relative w-full mx-auto ">
               <h2 className=" ml-[12px] sm:ml-[90px] md:ml-[110px] lg:ml-[80px] xl:ml-[100px] sm:w-2/3 text-[12px] sm:text-[14px] md:text-[16px] lg:text-xl text-center text-neutral-50 mb-8">
-                Silahkan Masukkan Password Baru Anda
+                Silahkan Masukkan Email Password Baru Anda
               </h2>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4 mx-auto mt-8">
@@ -106,7 +106,7 @@ function LupaPassword() {
                   type="email"
                   placeholder="email"
                   onChange={handleChangeEmail}
-                  className="w-[450px] max-sm:w-[250px] min-md:w-[400px] min-lg:w-[400px] h-[45px] input input-bordered bg-primary-100 text-neutral-20"
+                  className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl sm:w-[250px] md:w-[400px] lg:w-[400px] xl:w-[500px]"
                   required
                   value={email}
                 />
@@ -116,16 +116,16 @@ function LupaPassword() {
                   <span className="label-text text-sm sm:text-base text-primary-100">
                     Masukkan Password Baru
                   </span>
-                </label>{" "}
+                </label>
                 <div className="relative ">
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="minimal 8 karakter"
                     onChange={handleChangeNewPassword}
-                    className="w-[450px] max-sm:w-[250px] min-md:w-[400px] min-lg:w-[400px] h-[45px] input input-bordered bg-primary-100 text-neutral-20"
+                    className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl sm:w-[250px] md:w-[400px] lg:w-[400px] xl:w-[500px]"
                     required
                     value={newPassword}
-                  />{" "}
+                  />
                   {/*  Icon mata start */}
                   <button
                     type="button"
@@ -151,11 +151,11 @@ function LupaPassword() {
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="minimal 8 karakter"
-                    className="w-[450px] max-sm:w-[250px] min-md:w-[400px] min-lg:w-[400px] h-[45px] input input-bordered bg-primary-100 text-neutral-20"
+                    className=" h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl w-[300px] sm:w-[400px] md:w-[400px] lg:w-[400px] xl:w-[500px]"
                     required
                     value={confirmPassword}
                     onChange={handleChangeConfirmPassword}
-                  />{" "}
+                  />
                   {/*  Icon mata start */}
                   <button
                     type="button"
@@ -174,7 +174,7 @@ function LupaPassword() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-[450px] max-sm:w-[250px] min-md:w-[400px] min-lg:w-[400px] h-[45px] btn bg-secondary-40 hover:bg-secondary-50 hover:text-bold text-primary-100 font-bold mt-4">
+                  className="sm:w-[250px] md:w-[400px] lg:w-[400px] xl:w-[500px] h-[45px] btn bg-secondary-40 hover:bg-secondary-50 hover:text-bold text-primary-100 font-bold mt-4">
                   {loading ? "Loading..." : "Simpan"}
                 </button>
               </div>

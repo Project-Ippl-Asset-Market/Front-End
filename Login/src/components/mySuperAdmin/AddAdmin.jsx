@@ -5,7 +5,7 @@ import IconField from "../../assets/icon/iconField/icon.svg";
 function AddAdmin() {
   return (
     <>
-      <div className="bg-primary-100 dark:bg-neutral-20 font-poppins w-auto h-auto min-h-screen">
+      <div className="bg-primary-100 dark:bg-neutral-20 font-poppins  h-auto min-h-screen">
         <div className="bg-primary-100 p-4 mt-12">
           <HeaderNav />
         </div>
@@ -16,18 +16,18 @@ function AddAdmin() {
           </div>
         </div>
 
-        <div className="sm:w-[640px] md:w-[770px] lg:w-[1020px] xl:w-[1180px] 2xl:w-[1250px]  h-[1434px] gap-[50px] mx-auto  overflow-hidden  mt-10">
+        <div className="sm:w-[640px] md:w-[750px] lg:w-[1000px] xl:w-[1180px] 2xl:w-[1250px]  h-[1434px] gap-[50px] mx-auto  overflow-hidden  mt-10">
           <div>
             <h1 className="text-[24px] font-bold text-neutral-10 dark:text-primary-100 p-4">
               Add New Video
             </h1>
           </div>
-          <div className="p-8 mt-2 bg-primary-100 dark:bg-neutral-20 rounded-sm shadow-md">
+          <div className="p-8 mt-2  bg-primary-100  dark:bg-neutral-20 rounded-sm shadow-lg">
             <h2 className="text-[20px] font-bold text-neutral-20 dark:text-primary-100">
               Profile Information
             </h2>
             <div className="flex flex-col md:flex-row md:gap-[149px] mt-10">
-              <div className="w-full sm:w-full md:w-[160px] lg:w-[180px] xl:w-[230px] 2xl:w-[170px]">
+              <div className="w-full sm:w-full md:w-[135px] lg:w-[155px] xl:w-[235px] 2xl:w-full">
                 <h3 className="text-[20px] font-bold text-neutral-20 dark:text-primary-100">
                   Photo Profile
                 </h3>

@@ -5,7 +5,7 @@ import IconDarkMode from "../../assets/icon/iconHeader/iconDarkMode.png";
 import Logo from "../../assets/icon/logo.jpg";
 import IconSearch from "../../assets/icon/iconHeader/iconSearch.svg";
 import Dataset from "../../assets/icon/iconSidebar/dataset.png";
-import IconLike from "../../assets/icon/iconSidebarLigthMode/iconLike.png";
+import IconLike from "../../assets/icon/iconSidebar/iconLike.png";
 
 // Modal Component
 function AssetModal({ isOpen, onClose, asset }) {

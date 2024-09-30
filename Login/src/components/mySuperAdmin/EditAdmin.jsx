@@ -5,7 +5,7 @@ import IconField from "../../assets/icon/iconField/icon.svg";
 function AddAdmin() {
   return (
     <>
-      <div className="bg-primary-100 dark:bg-neutral-20 font-poppins w-auto h-auto min-h-screen">
+      <div className="bg-primary-100 dark:bg-neutral-20 font-poppins  h-full min-h-screen">
         <div className="bg-primary-100 p-4 mt-12">
           <HeaderNav />
         </div>
@@ -16,18 +16,18 @@ function AddAdmin() {
           </div>
         </div>
 
-        <div className="sm:w-[640px] md:w-[770px] lg:w-[1020px] xl:w-[1180px] 2xl:w-[1250px]  h-[1434px] gap-[50px] mx-auto  overflow-hidden  mt-10">
+        <div className="sm:w-[640px] md:w-[750px] lg:w-[1000px] xl:w-[1180px] 2xl:w-[1250px]  h-[1434px] gap-[50px] mx-auto  overflow-hidden  mt-10">
           <div>
             <h1 className="text-[24px] font-bold text-neutral-10 dark:text-primary-100 p-4">
               Edit New Video
             </h1>
           </div>
-          <div className="p-8 mt-2 bg-primary-100 dark:bg-neutral-20 rounded-sm shadow-md">
+          <div className="p-8 mt-2  bg-primary-100  dark:bg-neutral-20 rounded-sm shadow-lg">
             <h2 className="text-[20px] font-bold text-neutral-20 dark:text-primary-100">
               Profile Information
             </h2>
             <div className="flex flex-col md:flex-row md:gap-[149px] mt-10">
-              <div className="w-full sm:w-full md:w-[160px] lg:w-[180px] xl:w-[230px] 2xl:w-[170px]">
+              <div className="w-full sm:w-full md:w-[135px] lg:w-[200px] xl:w-[235px] 2xl:w-[300px]">
                 <h3 className="text-[20px] font-bold text-neutral-20 dark:text-primary-100">
                   Photo Profile
                 </h3>
@@ -36,23 +36,100 @@ function AddAdmin() {
                   px.
                 </p>
               </div>
-              <div className="mt-2 flex justify-center items-center border border-dashed border-neutral-60 w-full md:w-[150px] h-[150px] ">
-                <label
-                  htmlFor="fileUpload"
-                  className="flex flex-col justify-center items-center cursor-pointer text-center ">
-                  <img alt="" className="w-6 h-6" src="path_to_your_icon" />
-                  <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                    Upload Foto
-                  </span>
-                  <input
-                    type="file"
-                    id="fileUpload"
-                    name="product_images.image_url"
-                    multiple
-                    accept="image/jpeg,image/png,image/jpg"
-                    className="hidden"
-                  />
-                </label>
+
+              <div className="overflow-scroll ">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-10 sm:gap-2 md:gap-2 lg:gap-6 xl:gap-6 2xl:gap-10">
+                  <div className="mt-2 flex justify-center items-center border border-dashed border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px] xl:h-[150px] 2xl:h-[200px]">
+                    <label
+                      htmlFor="fileUpload"
+                      className="flex flex-col justify-center items-center cursor-pointer text-center ">
+                      <img alt="" className="w-6 h-6" src="path_to_your_icon" />
+                      <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
+                        Upload Foto
+                      </span>
+                      <input
+                        type="file"
+                        id="fileUpload"
+                        name="product_images.image_url"
+                        multiple
+                        accept="image/jpeg,image/png,image/jpg"
+                        className="hidden"
+                      />
+                    </label>
+                  </div>{" "}
+                  <div className="mt-2 flex justify-center items-center border border-dashed border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px] xl:h-[150px] 2xl:h-[200px]">
+                    <label
+                      htmlFor="fileUpload"
+                      className="flex flex-col justify-center items-center cursor-pointer text-center ">
+                      <img alt="" className="w-6 h-6" src="path_to_your_icon" />
+                      <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
+                        Upload Foto
+                      </span>
+                      <input
+                        type="file"
+                        id="fileUpload"
+                        name="product_images.image_url"
+                        multiple
+                        accept="image/jpeg,image/png,image/jpg"
+                        className="hidden"
+                      />
+                    </label>
+                  </div>{" "}
+                  <div className="mt-2 flex justify-center items-center border border-dashed border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px] xl:h-[150px] 2xl:h-[200px]">
+                    <label
+                      htmlFor="fileUpload"
+                      className="flex flex-col justify-center items-center cursor-pointer text-center ">
+                      <img alt="" className="w-6 h-6" src="path_to_your_icon" />
+                      <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
+                        Upload Foto
+                      </span>
+                      <input
+                        type="file"
+                        id="fileUpload"
+                        name="product_images.image_url"
+                        multiple
+                        accept="image/jpeg,image/png,image/jpg"
+                        className="hidden"
+                      />
+                    </label>
+                  </div>{" "}
+                  <div className="mt-2 flex justify-center items-center border border-dashed border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px] xl:h-[150px] 2xl:h-[200px]">
+                    <label
+                      htmlFor="fileUpload"
+                      className="flex flex-col justify-center items-center cursor-pointer text-center ">
+                      <img alt="" className="w-6 h-6" src="path_to_your_icon" />
+                      <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
+                        Upload Foto
+                      </span>
+                      <input
+                        type="file"
+                        id="fileUpload"
+                        name="product_images.image_url"
+                        multiple
+                        accept="image/jpeg,image/png,image/jpg"
+                        className="hidden"
+                      />
+                    </label>
+                  </div>{" "}
+                  <div className="mt-2 flex justify-center items-center border border-dashed border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px] xl:h-[150px] 2xl:h-[200px]">
+                    <label
+                      htmlFor="fileUpload"
+                      className="flex flex-col justify-center items-center cursor-pointer text-center ">
+                      <img alt="" className="w-6 h-6" src="path_to_your_icon" />
+                      <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
+                        Upload Foto
+                      </span>
+                      <input
+                        type="file"
+                        id="fileUpload"
+                        name="product_images.image_url"
+                        multiple
+                        accept="image/jpeg,image/png,image/jpg"
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
             <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-10 ">
@@ -187,7 +264,7 @@ function AddAdmin() {
               </div>
             </div>
           </div>
-          <div className="w-full inline-flex sm:gap-6 xl:gap-[21px] justify-center sm:justify-center md:justify-end mt-10 gap-6 sm:mt-10 md:mt-10 lg:mt-16 xl:mt-20  ">
+          <div className="w-full inline-flex sm:gap-6 xl:gap-[21px] justify-center sm:justify-center md:justify-end mt-6 gap-6 sm:mt-8 md:mt-8 lg:mt-10 xl:mt-20  ">
             <button className="btn bg-neutral-60 border-neutral-60 hover:bg-neutral-60 hover:border-neutral-60 rounded-lg  font-semibold text-[18px] leading-[24px]  text-primary-100 text-center xl:w-[200px] xl:h-[60px] lg:w-[200px] lg:h-[60px] md:w-[200px] md:h-[60px] sm:w-[150px] sm:h-[50px] w-[120px] h-[45px]">
               Cancel
             </button>

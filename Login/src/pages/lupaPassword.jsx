@@ -85,35 +85,35 @@ function LupaPassword() {
         </div>
         <div className="card bg-neutral-90 w-full lg:w-1/2 flex justify-center items-center">
           <div className="card-body w-full px-4 sm:px-8 lg:px-16 py-8 lg:py-0 bg-neutral-20">
-            <div className="mt-8 sm:mt-[3%] md:mt-[4%] lg:mt-[10%]  text-center">
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary-100 mt-2 mb-2">
+            <div className="mt-8 sm:mt-[3%] md:mt-[4%] lg:mt-[10%] text-center">
+              <h1 className="text-[24px] sm:text-[24px] md:text-[26px] lg:text-[36px] text-center font-bold text-primary-100">
                 Pulihkan Akun Anda!
               </h1>
-            </div>
-            <div className="relative w-full mx-auto ">
-              <h2 className=" ml-[12px] sm:ml-[90px] md:ml-[110px] lg:ml-[80px] xl:ml-[100px] sm:w-2/3 text-[12px] sm:text-[14px] md:text-[16px] lg:text-xl text-center text-neutral-50 mb-8">
-                Silahkan Masukkan Email Password Baru Anda
-              </h2>
+              <div className="relative flex justify-center">
+                <h2 className="w-3/4 text-[14px] sm:text-[14px] md:text-[16px] lg:text-xl text-center text-neutral-90 mb-8">
+                  Silahkan Masukkan Email dan Password Baru Anda
+                </h2>
+              </div>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4 mx-auto mt-8">
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text text-sm sm:text-base text-primary-100">
-                    email
+                  <span className="label-text text-[14px] sm:text-[14px] md:text-[14px] lg:text-[18px]  xl:text-[18px] sm:text-base text-primary-100 text-start">
+                    Email
                   </span>
                 </label>
                 <input
                   type="email"
                   placeholder="email"
                   onChange={handleChangeEmail}
-                  className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl sm:w-[250px] md:w-[400px] lg:w-[400px] xl:w-[500px]"
+                  className=" border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[10px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
                   required
                   value={email}
                 />
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text text-sm sm:text-base text-primary-100">
+                  <span className="label-text text-[14px] sm:text-[14px] md:text-[14px] lg:text-[18px]  xl:text-[18px] sm:text-base text-primary-100 text-start">
                     Masukkan Password Baru
                   </span>
                 </label>
@@ -122,7 +122,7 @@ function LupaPassword() {
                     type={showPassword ? "text" : "password"}
                     placeholder="minimal 8 karakter"
                     onChange={handleChangeNewPassword}
-                    className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl sm:w-[250px] md:w-[400px] lg:w-[400px] xl:w-[500px]"
+                    className="border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[10px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
                     required
                     value={newPassword}
                   />
@@ -143,15 +143,15 @@ function LupaPassword() {
 
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text text-sm sm:text-base text-primary-100">
-                    Masukkan Kembali Password Baru
+                  <span className="label-text text-[14px] sm:text-[14px] md:text-[14px] lg:text-[18px]  xl:text-[18px] sm:text-base text-primary-100 text-start">
+                    konfirmasi Password Baru
                   </span>
                 </label>
                 <div className="relative ">
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="minimal 8 karakter"
-                    className=" h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl w-[300px] sm:w-[400px] md:w-[400px] lg:w-[400px] xl:w-[500px]"
+                    className="  border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[10px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
                     required
                     value={confirmPassword}
                     onChange={handleChangeConfirmPassword}
@@ -173,38 +173,46 @@ function LupaPassword() {
               <div className="form-control mt-6">
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="sm:w-[250px] md:w-[400px] lg:w-[400px] xl:w-[500px] h-[45px] btn bg-secondary-40 hover:bg-secondary-50 hover:text-bold text-primary-100 font-bold mt-4">
-                  {loading ? "Loading..." : "Simpan"}
+                  className={`rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] text-[16px] sm:text-[16px] md:text-[16px] lg:text-[18px]  xl:text-[18px] mt-4   ${
+                    loading ? "bg-secondary-40 " : "bg-secondary-40  "
+                  } text-primary-100`}
+                  disabled={loading}>
+                  {loading ? (
+                    <span className="loading loading-infinity loading-lg"></span>
+                  ) : (
+                    "masuk"
+                  )}
                 </button>
               </div>
             </form>
             <div className="text-2xl text-center mt-5">
-              <span className="text-primary-100 text-2xl">
+              <span className="text-primary-100 text-[14px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl">
                 Sudah Ingat Password?
               </span>
               <Link
-                className="ml-4 text-primary-30 text-2xl hover:text-error-30"
-                to="/">
-                Login
+                to="/"
+                className="relative ml-4 inline-block text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-[18px] text-primary-40 hover:text-error-1 group">
+                Login ?
+                <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-primary-40 transition-all duration-1000 transform group-hover:left-0 group-hover:w-1/2"></span>
+                <span className="absolute bottom-0 right-1/2 w-0 h-[2px] bg-primary-40 transition-all duration-1000 transform group-hover:right-0 group-hover:w-1/2"></span>
               </Link>
             </div>
           </div>
           {errorModal && (
-            <div className="modal modal-open ">
-              <div className="modal-box sm:w-[400px] md:w-[700px] lg:w-[700px] h-[250px] bg-primary-10">
+            <div className="modal modal-open pr-5">
+              <div className="modal-box w-[250px] sm:w-[350px] md:w-[350px] lg:w-[350px] xl:w-[350px] h-[250px] sm:h-[350px] md:h-[280px] lg:h-[290px] xl:h-[300px] bg-neutral-90">
                 <img
-                  className="h-[90px] w-[90px] mx-auto mb-6"
+                  className="w-24 sm:w-24 md:w-32 lg:w-32 xl:w-32 2xl:w-32 h-24 sm:h-24 md:h-32 lg:h-32 xl:h-32 2xl:h-32 mx-auto mb-6"
                   src={IconModalError}
                   alt="icon pop up error"
                 />
-                <h3 className=" text-lg text-primary-3 w-3/2 mx-auto text-center">
+                <h3 className=" text-[12px] sm:text-[16px] md:text-[16px] lg:text-[18px]  xl:text-[18px] text-primary-0 w-3/2 mx-auto text-center">
                   {errorModal}
                 </h3>
                 <div className="modal-action">
                   <button
                     onClick={() => setErrorModal(null)}
-                    className="btn bg-primary-1 border-primary-1 hover:bg-error-1 hover:border-error-1 hover:font-bold mx-auto mt-2 w-[79px] text-primary-100">
+                    className="btn bg-secondary-40 border-secondary-40 hover:bg-secondary-50 hover:border-secondary-50 hover:font-bold mx-auto mt-4 w-[79px] text-primary-100">
                     OK
                   </button>
                 </div>
@@ -212,23 +220,22 @@ function LupaPassword() {
             </div>
           )}
           {modalMessage && (
-            <div className="modal modal-open ">
-              <div className="modal-box sm:w-[400px] md:w-[700px] lg:w-[700px] h-[250px] bg-primary-10">
+            <div className="modal modal-open pr-5">
+              <div className="modal-box w-[250px] sm:w-[350px] md:w-[350px] lg:w-[350px] xl:w-[350px] h-[250px] sm:h-[350px] md:h-[280px] lg:h-[290px] xl:h-[300px] bg-neutral-90">
                 <img
-                  className="h-32 w-32 mx-auto mb-6"
+                  className="h-24 w-24 mx-auto mb-4"
                   src={IconModalSuccess}
                   alt="icon pop up error"
                 />
-                <h3 className=" text-lg text-primary-3 w-3/2 mx-auto text-center">
+                <h3 className=" text-[12px] sm:text-[16px] md:text-[16px] lg:text-[18px]  xl:text-[18px] text-primary-0 w-3/2 mx-auto text-center">
                   {modalMessage}
                 </h3>
                 <div className="modal-action">
-                  <Link
-                    to="/"
+                  <button
                     onClick={() => setModalMessage(null)}
-                    className="btn bg-success-50 border-success-1 hover:bg-success-1 hover:border-success-1 hover:font-bold mx-auto mt-4 w-[79px] text-primary-100">
+                    className="btn bg-secondary-40 border-secondary-40 hover:bg-secondary-50 hover:border-secondary-50 hover:font-bold mx-auto mt-4 w-[79px] text-primary-100">
                     OK
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>

@@ -146,7 +146,7 @@ function Login() {
             alt="Login background"
             className="absolute w-full h-full inset-0 object-cover opacity-80"
           />
-          <div className="relative mx-auto z-40 w-[60%] sm:w-[50%] md:w-[40%] lg:w-1/2 opacity-100 rounded-lg p-4 sm:p-6">
+          <div className="relative mx-auto z-40 w-[60%] sm:w-[50%] md:w-[40%] lg:w-1/2 opacity-100 rounded-md p-4 sm:p-6">
             <img
               src={Logo}
               alt="Logo"
@@ -166,7 +166,7 @@ function Login() {
           <div className="card-body w-full px-4 sm:px-8 lg:px-26 xl:px-2 py-8 lg:py-0 bg-neutral-20 ">
             <div className="relative w-full mx-auto ">
               <div className="mt-2 sm:mt-[3%] md:mt-[4%] lg:mt-[10%]  text-center mb-4">
-                <h1 className="text-xl sm:text-4xl md:text-5xl lg:text-5xl font-bold text-primary-100">
+                <h1 className="text-[26px] sm:text-[26px] md:text-[28px] lg:text-[36px] text-center font-bold text-primary-100">
                   LOGIN
                 </h1>
               </div>
@@ -179,7 +179,7 @@ function Login() {
             <form onSubmit={loginAction} className="mx-auto w-full max-w-md">
               <div className="form-control items-start">
                 <label className="label">
-                  <span className="label-text text-lg sm:text-base text-primary-100 text-start">
+                  <span className="label-text text-[16px] sm:text-[14px] md:text-[14px] lg:text-[18px]  xl:text-[18px] sm:text-base text-primary-100 text-start">
                     Email
                   </span>
                 </label>
@@ -187,7 +187,7 @@ function Login() {
                   type="email"
                   name="email"
                   placeholder="Enter email"
-                  className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
+                  className=" border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
                   required
                   value={loginEmail}
                   onChange={handleChange}
@@ -195,7 +195,7 @@ function Login() {
               </div>
               <div className="form-control mt-4">
                 <label className="label">
-                  <span className="label-text text-sm sm:text-base text-primary-100">
+                  <span className="label-text  sm:text-base text-primary-100 text-[16px] sm:text-[14px] md:text-[14px] lg:text-[18px]  xl:text-[18px]">
                     Password
                   </span>
                 </label>
@@ -204,7 +204,7 @@ function Login() {
                     type={showPassword ? "text" : "password"}
                     name="password"
                     placeholder="Enter password"
-                    className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
+                    className="border border-neutral-90 rounded-md  w-full  h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
                     required
                     value={loginPassword}
                     onChange={handleChange}
@@ -213,7 +213,7 @@ function Login() {
                   {/* Icon mata start */}
                   <button
                     type="button"
-                    className="absolute  inset-y-0 right-0 pr-5 flex items-center text-gray-600"
+                    className="absolute  inset-y-0 right-0 pr-4 flex items-center text-gray-600"
                     onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? (
                       <EyeSlashIcon className="h-6 w-6 text-gray-500" />
@@ -229,34 +229,39 @@ function Login() {
                       type="checkbox"
                       className="checkbox checkbox-md rounded-[2px] bg-primary-100 border-primary-100 "
                     />
-                    <span className="label-text text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl text-primary-100 ml-2">
+                    <span className="label-text text-[12px] sm:text-[12px] md:text-[14px] lg:text-[16px]  xl:text-[18px] sm:text-base text-primary-100 ml-2">
                       Remember me
                     </span>
                   </label>
+
                   <Link
                     to="/lupaPassword"
-                    className="text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl text-primary-30 hover:text-error-1">
-                    Lupa Password?
+                    className="relative inline-block text-[12px] sm:text-[12px] md:text-[14px] lg:text-[16px] xl:text-[18px] text-primary-40 hover:text-error-1 group">
+                    Lupa Password ?
+                    <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-primary-40 transition-all duration-1000 transform group-hover:left-0 group-hover:w-1/2"></span>
+                    <span className="absolute bottom-0 right-1/2 w-0 h-[2px] bg-primary-40 transition-all duration-1000 transform group-hover:right-0 group-hover:w-1/2"></span>
                   </Link>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={signInWithGoogle}
-                className="w-full h-[40px] input input-bordered btn btn-outline mt-6 bg-neutral-60 text-neutral-20 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl">
-                <img src={IconGoogle} alt="Google" className="w-5 h-5 mr-2" />
+                className="border border-neutral-80 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-80 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]  btn btn-outline mt-6 ">
+                <img src={IconGoogle} alt="Google" className="w-6 h-6 mr-2" />
                 Masuk menggunakan google
               </button>
               <div className="form-control mt-6">
                 <button
                   type="submit"
-                  className={`w-full h-[40px] input input-bordered bg-neutral-90 text-primary-100 text-[16px] sm:text-[16px] md:text-[20px] lg:text-[24px] xl:text-xl ${
-                    loading
-                      ? "bg-secondary-40 cursor-not-allowed"
-                      : "bg-secondary-40 hover:bg-secondary-50 hover:text-primary-100"
-                  }`}
+                  className={`rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] text-[16px] sm:text-[16px] md:text-[16px] lg:text-[18px]  xl:text-[18px] mt-4   ${
+                    loading ? "bg-secondary-40 " : "bg-secondary-40  "
+                  } text-primary-100`}
                   disabled={loading}>
-                  {loading ? "Loading..." : "masuk"}
+                  {loading ? (
+                    <span className="loading loading-infinity loading-lg"></span>
+                  ) : (
+                    "masuk"
+                  )}
                 </button>
               </div>
             </form>
@@ -265,22 +270,25 @@ function Login() {
               <span className="text-primary-100 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl">
                 Belum Punya Akun?
               </span>
+
               <Link
-                className="ml-4 text-primary-30  hover:text-primary-30   text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
-                to="/register">
-                Daftar
+                to="/register"
+                className="relative ml-4 inline-block text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-[18px] text-primary-40 hover:text-error-1 group">
+                Daftar ?
+                <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-primary-40 transition-all duration-1000 transform group-hover:left-0 group-hover:w-1/2"></span>
+                <span className="absolute bottom-0 right-1/2 w-0 h-[2px] bg-primary-40 transition-all duration-1000 transform group-hover:right-0 group-hover:w-1/2"></span>
               </Link>
             </div>
           </div>
           {errorModal && (
-            <div className="modal modal-open ">
-              <div className="modal-box sm:w-[400px] md:w-[700px] lg:w-[700px] h-[250px] bg-neutral-90">
+            <div className="modal modal-open pr-5">
+              <div className="modal-box w-[250px] sm:w-[350px] md:w-[350px] lg:w-[350px] xl:w-[350px] h-[250px] sm:h-[350px] md:h-[280px] lg:h-[290px] xl:h-[300px] bg-neutral-90">
                 <img
-                  className="h-32 w-32 mx-auto mb-6"
+                  className="w-24 sm:w-24 md:w-32 lg:w-32 xl:w-32 2xl:w-32 h-24 sm:h-24 md:h-32 lg:h-32 xl:h-32 2xl:h-32 mx-auto mb-6"
                   src={IconModalError}
                   alt="icon pop up error"
                 />
-                <h3 className=" text-lg text-primary-0 w-3/2 mx-auto text-center">
+                <h3 className=" text-[12px] sm:text-[16px] md:text-[16px] lg:text-[18px]  xl:text-[18px] text-primary-0 w-3/2 mx-auto text-center">
                   {errorModal}
                 </h3>
                 <div className="modal-action">
@@ -294,14 +302,14 @@ function Login() {
             </div>
           )}
           {modalMessage && (
-            <div className="modal modal-open ">
-              <div className="modal-box sm:w-[400px] md:w-[700px] lg:w-[700px] h-[250px] bg-neutral-90">
+            <div className="modal modal-open pr-5">
+              <div className="modal-box w-[250px] sm:w-[350px] md:w-[350px] lg:w-[350px] xl:w-[350px] h-[250px] sm:h-[350px] md:h-[280px] lg:h-[290px] xl:h-[300px] bg-neutral-90">
                 <img
                   className="h-24 w-24 mx-auto mb-4"
                   src={IconModalSuccess}
                   alt="icon pop up error"
                 />
-                <h3 className=" text-lg text-primary-0 w-3/2 mx-auto text-center">
+                <h3 className=" text-[12px] sm:text-[16px] md:text-[16px] lg:text-[18px]  xl:text-[18px] text-primary-0 w-3/2 mx-auto text-center">
                   {modalMessage}
                 </h3>
                 <div className="modal-action">

@@ -19,11 +19,13 @@ function Register() {
   const [modalMessage, setModalMessage] = useState(null);
   const [errorModal, setErrorModal] = useState(false);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const registerAction = async (e) => {
     e.preventDefault();
     setModalMessage("");
     setErrorModal("");
+    setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -47,6 +49,7 @@ function Register() {
       }, 5000);
     } catch (error) {
       setErrorModal("Registration failed. Please try again.");
+      setLoading(false);
     }
   };
 
@@ -78,7 +81,7 @@ function Register() {
         <div className="card bg-neutral-90 w-full lg:w-1/2 flex justify-center items-center">
           <div className="card-body w-full px-4 sm:px-8 lg:px-16 py-8 lg:py-0 bg-neutral-20">
             <div className="mt-8 sm:mt-[3%] md:mt-[4%] lg:mt-[10%]  text-center">
-              <h1 className="text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl font-bold text-primary-100 mt-2 mb-2">
+              <h1 className="text-[26px] sm:text-[26px] md:text-[28px] lg:text-[36px] text-center font-bold text-primary-100">
                 Register
               </h1>
             </div>
@@ -93,14 +96,14 @@ function Register() {
               <div className="flex flex-col space-x-0 mx-auto lg:flex-row lg:space-x-2 ">
                 <div className="form-control flex-1">
                   <label className="label">
-                    <span className="label-text sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-xl sm:text-base text-primary-100">
+                    <span className="label-text text-[16px] sm:text-[14px] md:text-[14px] lg:text-[18px]  xl:text-[18px] sm:text-base text-primary-100 text-start">
                       First Name
                     </span>
                   </label>
                   <input
                     type="text"
                     placeholder="First Name"
-                    className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[14px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
+                    className=" border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
                     required
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
@@ -108,14 +111,14 @@ function Register() {
                 </div>
                 <div className="form-control flex-1">
                   <label className="label">
-                    <span className="label-text sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-xl sm:text-base text-primary-100">
+                    <span className="label-text text-[16px] sm:text-[14px] md:text-[14px] lg:text-[18px]  xl:text-[18px] sm:text-base text-primary-100 text-start">
                       Last Name
                     </span>
                   </label>
                   <input
                     type="text"
                     placeholder="Last Name"
-                    className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[14px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
+                    className=" border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
                     required
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
@@ -124,14 +127,14 @@ function Register() {
               </div>
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-xl sm:text-base text-primary-100">
+                  <span className="label-text text-[16px] sm:text-[14px] md:text-[14px] lg:text-[18px]  xl:text-[18px] sm:text-base text-primary-100 text-start">
                     Email
                   </span>
                 </label>
                 <input
                   type="email"
                   placeholder="Email"
-                  className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[14px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
+                  className=" border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -147,7 +150,7 @@ function Register() {
                 <input
                   type="text"
                   placeholder="Username"
-                  className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[14px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
+                  className=" border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
@@ -164,7 +167,7 @@ function Register() {
                   <input
                     type={showPassword ? "text" : "password"}
                     placeholder="Password"
-                    className="w-full h-[40px] input input-bordered bg-neutral-90 text-neutral-20 text-[14px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
+                    className=" border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -187,8 +190,15 @@ function Register() {
               <div className="form-control mt-6">
                 <button
                   type="submit"
-                  className="w-full h-[40px] input input-bordered bg-secondary-40 hover:bg-secondary-50 text-primary-100 text-[16px] sm:text-[16px] md:text-[20px] lg:text-[24px] xl:text-xl mt-6">
-                  Register
+                  className={`rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] text-[16px] sm:text-[16px] md:text-[16px] lg:text-[18px]  xl:text-[18px] mt-4   ${
+                    loading ? "bg-secondary-40 " : "bg-secondary-40  "
+                  } text-primary-100`}
+                  disabled={loading}>
+                  {loading ? (
+                    <span className="loading loading-infinity loading-lg"></span>
+                  ) : (
+                    "masuk"
+                  )}
                 </button>
               </div>
             </form>
@@ -204,14 +214,14 @@ function Register() {
             </div>
           </div>
           {errorModal && (
-            <div className="modal modal-open ">
-              <div className="modal-box sm:w-[400px] md:w-[700px] lg:w-[700px] h-[250px] bg-primary-90">
+            <div className="modal modal-open pr-5">
+              <div className="modal-box w-[250px] sm:w-[350px] md:w-[350px] lg:w-[350px] xl:w-[350px] h-[220px] sm:h-[350px] md:h-[280px] lg:h-[290px] xl:h-[300px] bg-neutral-90">
                 <img
-                  className="h-[90px] w-[90px] mx-auto mb-6"
+                  className="w-24 sm:w-24 md:w-32 lg:w-32 xl:w-32 2xl:w-32 h-24 sm:h-24 md:h-32 lg:h-32 xl:h-32 2xl:h-32 mx-auto mb-6"
                   src={IconModalError}
                   alt="icon pop up error"
                 />
-                <h3 className=" text-lg text-primary-0 w-3/2 mx-auto text-center">
+                <h3 className=" text-[12px] sm:text-[16px] md:text-[16px] lg:text-[18px]  xl:text-[18px] text-primary-0 w-3/2 mx-auto text-center">
                   {errorModal}
                 </h3>
                 <div className="modal-action">
@@ -225,23 +235,22 @@ function Register() {
             </div>
           )}
           {modalMessage && (
-            <div className="modal modal-open ">
-              <div className="modal-box sm:w-[400px] md:w-[700px] lg:w-[700px] h-[250px] bg-primary-90">
+            <div className="modal modal-open pr-5">
+              <div className="modal-box w-[250px] sm:w-[350px] md:w-[350px] lg:w-[350px] xl:w-[350px] h-[220px] sm:h-[350px] md:h-[280px] lg:h-[290px] xl:h-[300px] bg-neutral-90">
                 <img
-                  className="h-32 w-32 mx-auto mb-6"
+                  className="h-24 w-24 mx-auto mb-4"
                   src={IconModalSuccess}
                   alt="icon pop up error"
                 />
-                <h3 className=" text-lg text-primary-0 w-3/2 mx-auto text-center">
+                <h3 className=" text-[12px] sm:text-[16px] md:text-[16px] lg:text-[18px]  xl:text-[18px] text-primary-0 w-3/2 mx-auto text-center">
                   {modalMessage}
                 </h3>
                 <div className="modal-action">
-                  <Link
-                    to="/"
+                  <button
                     onClick={() => setModalMessage(null)}
                     className="btn bg-secondary-40 border-secondary-40 hover:bg-secondary-50 hover:border-secondary-50 hover:font-bold mx-auto mt-4 w-[79px] text-primary-100">
                     OK
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>

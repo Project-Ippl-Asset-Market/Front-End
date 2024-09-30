@@ -66,7 +66,7 @@ function AddAdmin() {
                     <img
                       src={IconField}
                       alt=""
-                      className="w-2 sm:w-2 md:w-4 lg:w-4 xl:w-4 2xl:w-4 h-2 h:w-2 md:h-4 lg:h-4 xl:h-4 2xl:h-4 -mt-5"
+                      className="w-2 sm:w-2 md:w-4 lg:w-4 xl:w-4 2xl:w-4 h-2 sm:h-2 md:h-4 lg:h-4 xl:h-4 2xl:h-4 -mt-5"
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[14px] mb-2">

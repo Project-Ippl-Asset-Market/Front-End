@@ -15,7 +15,7 @@ function HeaderNav() {
   return (
     <section className="navbar h-20 fixed z-40 top-0 left-0 pt-0 text-neutral-10  shadow-md font-poppins font-semibold dark:text-primary-100 bg-neutral-90 dark:bg-neutral-20 dark:shadow-lg dark:shadow-neutral-10 gap-6">
       <div className="flex-1">
-        <ul className="breadcrumb text-xl">
+        <ul className="breadcrumb text-[12px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[20px] ">
           <li className="breadcrumb-item active ml-6" aria-current="page">
             {pageName}
           </li>

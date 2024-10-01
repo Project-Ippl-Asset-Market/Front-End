@@ -104,11 +104,11 @@ const Sidebar = () => {
               label: "Manage Asset 2D",
             },
             {
-              href: "/manageAssetGame/manageAsset3D",
+              href: "/manageAsset3D",
               label: "Manage Asset 3D",
             },
             {
-              href: "/manageAssetGame/manageAssetAudio",
+              href: "/manageAssetAudio",
               label: "Manage Asset Audio",
             },
           ],

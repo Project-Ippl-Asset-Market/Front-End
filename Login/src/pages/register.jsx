@@ -93,8 +93,8 @@ function Register() {
             </div>
 
             <form onSubmit={registerAction} className="mx-auto w-full max-w-md">
-              <div className="flex flex-col space-x-0 mx-auto lg:flex-row lg:space-x-2 gap-4 ">
-                <div className="form-control flex-1">
+              <div className="flex flex-col md:flex-row gap-4 ">
+                <div className="form-control flex items-center  sm:-ml-0 md:-ml-0 lg:-ml-0 xl:-ml-0 2xl:-ml-3">
                   <label className="label">
                     <span className="label-text text-[16px] sm:text-[14px] md:text-[14px] lg:text-[18px]  xl:text-[18px] sm:text-base text-primary-100 text-start">
                       First Name
@@ -214,17 +214,17 @@ function Register() {
             </div>
           </div>
           {errorModal && (
-            <div className="modal modal-open pr-5 ">
-              <div className="modal-box w-[250px] sm:w-[350px] md:w-[350px] lg:w-[350px] xl:w-[350px] h-[280px] sm:h-[280px] md:h-[290px] lg:h-[300px] xl:h-[300px] bg-neutral-90">
+            <div className="modal modal-open fixed inset-0 flex items-center justify-center z-50 pr-5">
+              <div className="modal-box w-[90%] max-w-[250px] sm:max-w-[350px] md:max-w-[350px] lg:max-w-[400px] xl:max-w-[450px] h-auto sm:h-[280px] md:h-[290px] lg:h-[300px] xl:h-[360px] bg-neutral-90 rounded-lg">
                 <img
                   className="w-20 sm:w-24 md:w-32 lg:w-32 xl:w-32 2xl:w-32 h-20 sm:h-24 md:h-32 lg:h-32 xl:h-32 2xl:h-32 mx-auto mb-6"
                   src={IconModalError}
                   alt="icon pop up error"
                 />
-                <h3 className=" text-[12px] sm:text-[16px] md:text-[16px] lg:text-[18px]  xl:text-[18px] text-primary-0 w-3/2 mx-auto text-center">
+                <h3 className="text-center text-[12px] sm:text-[16px] md:text-[16px] lg:text-[18px] xl:text-[18px] text-primary-0 mx-auto">
                   {errorModal}
                 </h3>
-                <div className="modal-action">
+                <div className="modal-action flex justify-center">
                   <button
                     onClick={() => setErrorModal(null)}
                     className="btn bg-secondary-40 border-secondary-40 hover:bg-secondary-50 hover:border-secondary-50 hover:font-bold mx-auto mt-4 w-[79px] text-primary-100">
@@ -234,18 +234,19 @@ function Register() {
               </div>
             </div>
           )}
+
           {modalMessage && (
-            <div className="modal modal-open pr-5">
-              <div className="modal-box w-[250px] sm:w-[350px] md:w-[350px] lg:w-[350px] xl:w-[350px] h-[280px] sm:h-[280px] md:h-[290px] lg:h-[300px] xl:h-[300px] bg-neutral-90">
+            <div className="modal modal-open fixed inset-0 flex items-center justify-center z-50 pr-5">
+              <div className="modal-box w-[90%] max-w-[250px] sm:max-w-[350px] md:max-w-[350px] lg:max-w-[400px] xl:max-w-[450px] h-auto sm:h-[280px] md:h-[290px] lg:h-[300px] xl:h-[370px] bg-neutral-90 rounded-lg">
                 <img
                   className="w-20 sm:w-24 md:w-32 lg:w-32 xl:w-32 2xl:w-32 h-20 sm:h-24 md:h-32 lg:h-32 xl:h-32 2xl:h-32 mx-auto mb-6"
                   src={IconModalSuccess}
-                  alt="icon pop up error"
+                  alt="icon pop up success"
                 />
-                <h3 className=" text-[12px] sm:text-[16px] md:text-[16px] lg:text-[18px]  xl:text-[18px] text-primary-0 w-3/2 mx-auto text-center">
+                <h3 className="text-center text-[12px] sm:text-[16px] md:text-[16px] lg:text-[18px] xl:text-[18px] text-primary-0 mx-auto">
                   {modalMessage}
                 </h3>
-                <div className="modal-action">
+                <div className="modal-action flex justify-center">
                   <button
                     onClick={() => setModalMessage(null)}
                     className="btn bg-secondary-40 border-secondary-40 hover:bg-secondary-50 hover:border-secondary-50 hover:font-bold mx-auto mt-4 w-[79px] text-primary-100">

@@ -13,6 +13,8 @@ import ManageAssetVideo from "../components/manageAssetVideo/ManageAssetVideo";
 import ManageAssetImage from "../components/manageAssetImage/ManageAssetImage";
 import ManageAssetDataset from "../components/manageAssetDataset/ManageAssetDataset";
 import ManageAsset2D from "../components/manageAssetGame/ManageAsset2D";
+import ManageAsset3D from "../components/manageAssetGame/ManageAsset3D";
+import ManageAssetAudio from "../components/manageAssetGame/ManageAssetAudio";
 import ManageAdmin from "../components/mySuperAdmin/ManageAdmin";
 import AddFormAssetVideo from "../components/manageAssetVideo/AddFormAssetVideo";
 import AddFormAssetImage from "../components/manageAssetImage/AddAssetImage";
@@ -39,6 +41,7 @@ const AppRoutes = ({ handleLogout }) => {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/manageAssetImage"
             element={
@@ -65,6 +68,7 @@ const AppRoutes = ({ handleLogout }) => {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/manageAssetVideo/add"
             element={
@@ -91,6 +95,7 @@ const AppRoutes = ({ handleLogout }) => {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/manageAsset2D"
             element={
@@ -99,6 +104,25 @@ const AppRoutes = ({ handleLogout }) => {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/manageAsset3D"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+                <ManageAsset3D onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/manageAssetAudio"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+                <ManageAssetAudio onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/manageAdmin"
             element={
@@ -107,6 +131,7 @@ const AppRoutes = ({ handleLogout }) => {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/manageAdmin/add"
             element={
@@ -115,6 +140,7 @@ const AppRoutes = ({ handleLogout }) => {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/manageAdmin/edit"
             element={

@@ -7,7 +7,7 @@ import IconHapus from "../../assets/icon/iconCRUD/iconHapus.png";
 import IconEdit from "../../assets/icon/iconCRUD/iconEdit.png";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
 
-function ManageAssetVideo() {
+function ManageAsset2D() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
 
@@ -64,9 +64,9 @@ function ManageAssetVideo() {
               <div className="flex items-center justify-center md:justify-start">
                 <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
                   <Link
-                    to="/manageAssetVideo/add"
+                    to="/manageAssetAudio/add"
                     className=" rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
-                    + Add Video
+                    + Add Audio
                   </Link>
                 </div>
               </div>
@@ -94,7 +94,7 @@ function ManageAssetVideo() {
               <thead className="text-xs text-neutral-20 uppercase  dark:bg-neutral-25 dark:text-neutral-90 border-b dark:border-neutral-20">
                 <tr>
                   <th scope="col" className="px-6 py-3">
-                    Video
+                    2D
                   </th>
                   <th scope="col" className="px-6 py-3">
                     Category
@@ -185,4 +185,4 @@ function ManageAssetVideo() {
   );
 }
 
-export default ManageAssetVideo;
+export default ManageAsset2D;

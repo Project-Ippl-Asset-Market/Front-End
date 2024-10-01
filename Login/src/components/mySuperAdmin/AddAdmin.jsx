@@ -71,7 +71,7 @@ function AddAdmin() {
 
           <form
             onSubmit={handleSubmit}
-            className="sm:w-[640px] md:w-[750px] lg:w-[1000px] xl:w-[1180px] 2xl:w-[1250px]  h-[1434px] gap-[50px] mx-auto  overflow-hidden  mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+            className="w-full  h-[1434px] gap-[50px] sm:p-0 md:p-0 lg:p-0 xl:p-0 2xl:p-28 overflow-hidden  mt-4 sm:mt-10 md:mt-0 lg:mt-0 xl:mt-0 2xl:-mt-20">
             <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[20px] font-bold text-neutral-10 dark:text-primary-100 p-4">
               Add New Video
             </h1>
@@ -79,8 +79,9 @@ function AddAdmin() {
               <h2 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[20px] font-bold text-neutral-20 dark:text-primary-100">
                 Profile Information
               </h2>
-              <div className="flex flex-col md:flex-row md:gap-[149px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
-                <div className="w-full sm:w-full md:w-[135px] lg:w-[160px] xl:w-[235px] 2xl:w-[300px]">
+
+              <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+                <div className="w-[200px] sm:w-[200px] md:w-[165px] lg:w-[200px] xl:w-[225px] 2xl:w-[175px]">
                   <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[20px] font-bold text-neutral-20 dark:text-primary-100">
                     Photo Profile
                   </h3>
@@ -91,7 +92,7 @@ function AddAdmin() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-10 sm:gap-2 md:gap-2 lg:gap-6 xl:gap-6 2xl:gap-10">
-                  <div className="mt-2 flex justify-center items-center border border-dashed border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px] xl:h-[150px] 2xl:h-[200px]">
+                  <div className="mt-2 md:ml-0 lg:ml-4 xl:ml-0 flex justify-center items-center border border-dashed  border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px] xl:h-[150px] 2xl:h-[160px]">
                     <label
                       htmlFor="fileUpload"
                       className="flex flex-col justify-center items-center cursor-pointer text-center">
@@ -237,7 +238,7 @@ function AddAdmin() {
                 </div>
               </div>
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10 ">
-                <div className="w-full sm:w-full md:w-[220px] lg:w-[220px] xl:w-[350px] 2xl:w-[220px]">
+                <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-2">
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[20px]  font-bold text-neutral-20 dark:text-primary-100">
                       Roles
@@ -253,10 +254,10 @@ function AddAdmin() {
                     masing-masing.
                   </p>
                 </div>
-                <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
-                  <label className="input input-bordered flex items-center gap-2 w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
+                <div className="flex justify-start items-start w-full  sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
+                  <label className="input input-bordered flex items-center gap-2 w-[686px]  sm:w-[686px] md:w-[420px] lg:w-[650px] xl:w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <select
-                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px] bg-primary-100 dark:bg-neutral-20 dark:text-primary-100"
+                      className="input border-0 focus:outline-none h-10 focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px] bg-primary-100 dark:bg-neutral-20 dark:text-primary-100"
                       name="role"
                       value={admin.role}
                       onChange={handleChange}

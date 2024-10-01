@@ -73,7 +73,7 @@ function AddAdmin() {
             onSubmit={handleSubmit}
             className="w-full  h-[1434px] gap-[50px] sm:p-0 md:p-0 lg:p-0 xl:p-0 2xl:p-28 overflow-hidden  mt-4 sm:mt-10 md:mt-0 lg:mt-0 xl:mt-0 2xl:-mt-20">
             <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[20px] font-bold text-neutral-10 dark:text-primary-100 p-4">
-              Add New Video
+              Add New Admin
             </h1>
             <div className="p-8 -mt-4  bg-primary-100  dark:bg-neutral-20 rounded-sm shadow-lg">
               <h2 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[20px] font-bold text-neutral-20 dark:text-primary-100">
@@ -254,10 +254,10 @@ function AddAdmin() {
                     masing-masing.
                   </p>
                 </div>
-                <div className="flex justify-start items-start w-full  sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
-                  <label className="input input-bordered flex items-center gap-2 w-[686px]  sm:w-[686px] md:w-[420px] lg:w-[650px] xl:w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
+                <div className="flex justify-center items-start w-full  sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
+                  <label className="input input-bordered flex items-center gap-2 w-[686px] sm:w-[686px] md:w-[420px] lg:w-[650px] xl:w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100 mx-auto">
                     <select
-                      className="input border-0 focus:outline-none h-10 focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px] bg-primary-100 dark:bg-neutral-20 dark:text-primary-100"
+                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px] bg-primary-100 dark:bg-neutral-20 dark:text-primary-100 h-[30px] sm:h-[32px] md:h-[34px] lg:h-[36px] xl:h-[36px] p-1"
                       name="role"
                       value={admin.role}
                       onChange={handleChange}

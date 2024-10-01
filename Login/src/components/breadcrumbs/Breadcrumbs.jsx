@@ -14,13 +14,17 @@ export default function BreadcrumbComponent() {
   return (
     <Breadcrumb aria-label="breadcrumb">
       <Breadcrumb.Item href="/dashboard" as={RouterLink}>
-        Dashboard
+        <span className="text-[8px] sm:text-[10px] md:text-[12px] lg:text-[14px]">
+          Dashboard
+        </span>
       </Breadcrumb.Item>
       {pathnames.map((value, index) => {
         const to = `/${pathnames.slice(0, index + 1).join("/")}`;
         return (
           <Breadcrumb.Item key={to} href={to} as={RouterLink}>
-            {getBreadcrumbName(to)}
+            <span className="text-[8px] sm:text-[10px] md:text-[12px] lg:text-[14px]">
+              {getBreadcrumbName(to)}
+            </span>
           </Breadcrumb.Item>
         );
       })}

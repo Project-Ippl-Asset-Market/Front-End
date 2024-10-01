@@ -66,8 +66,8 @@ const Sidebar = () => {
           ),
         },
         {
-          href: "/manageAssetGambar",
-          label: "Manage Asset Gambar",
+          href: "/manageAssetImage",
+          label: "Manage Asset Image",
           icon: darkMode ? (
             <img src={IconAssetGambarDark} alt="iconAssetGambarDark" />
           ) : (

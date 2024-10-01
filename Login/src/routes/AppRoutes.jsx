@@ -10,12 +10,12 @@ import HomePage from "../components/web/web_User-LandingPage/HomePage";
 import LandingPage from "../pages/landingPage";
 import AdminDashboard from "../components/myAdmin/AdminDashboard";
 import ManageAssetVideo from "../components/manageAssetVideo/ManageAssetVideo";
-import ManageAssetGambar from "../components/manageAssetGambar/ManageAssetGambar";
+import ManageAssetImage from "../components/manageAssetImage/ManageAssetImage";
 import ManageAssetDataset from "../components/manageAssetDataset/ManageAssetDataset";
 import ManageAsset2D from "../components/manageAssetGame/ManageAsset2D";
 import ManageAdmin from "../components/mySuperAdmin/ManageAdmin";
 import AddFormAssetVideo from "../components/manageAssetVideo/AddFormAssetVideo";
-import AddFormAssetGambar from "../components/manageAssetGambar/AddAssetGambar";
+import AddFormAssetImage from "../components/manageAssetImage/AddAssetImage";
 import AddFormAssetDataset from "../components/manageAssetDataset/AddAssetDataset";
 import AddFormAdmin from "../components/mySuperAdmin/AddAdmin";
 import EditFormAdmin from "../components/mySuperAdmin/EditAdmin";
@@ -40,19 +40,19 @@ const AppRoutes = ({ handleLogout }) => {
             }
           />
           <Route
-            path="/manageAssetGambar"
+            path="/manageAssetImage"
             element={
               <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
-                <ManageAssetGambar onLogout={handleLogout} />
+                <ManageAssetImage onLogout={handleLogout} />
               </ProtectedRoute>
             }
           />
 
           <Route
-            path="/manageAssetGambar/add"
+            path="/manageAssetImage/add"
             element={
               <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
-                <AddFormAssetGambar onLogout={handleLogout} />
+                <AddFormAssetImage onLogout={handleLogout} />
               </ProtectedRoute>
             }
           />

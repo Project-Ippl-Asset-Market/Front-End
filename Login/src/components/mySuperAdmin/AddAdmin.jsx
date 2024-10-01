@@ -1,8 +1,60 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { collection, addDoc } from "firebase/firestore";
+import { auth, db } from "../../firebase/firebaseConfig";
 import HeaderNav from "../headerNavBreadcrumbs/Header";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconField from "../../assets/icon/iconField/icon.svg";
 
 function AddAdmin() {
+  const [admin, setAdmin] = useState({
+    email: "",
+    password: "",
+    firstName: "",
+    lastName: "",
+    username: "",
+    role: "",
+  });
+
+  const handleChange = (e) => {
+    setAdmin({
+      ...admin,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      // 1. Create user in Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        admin.email,
+        admin.password
+      );
+      const user = userCredential.user;
+
+      // 2. Save user details along with role to Firestore
+      await addDoc(collection(db, "admins"), {
+        uid: user.uid, // Store the Firebase Authentication UID
+        email: admin.email,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
+        username: admin.username,
+        role: admin.role, // Save the selected role (admin or superadmin)
+      });
+
+      alert("Admin successfully created and data saved to Firestore");
+      navigate("/loginAdmin");
+    } catch (error) {
+      console.error("Error creating admin: ", error);
+      alert("Error creating admin");
+    }
+  };
   return (
     <>
       <div className="bg-primary-100 dark:bg-neutral-20 font-poppins  h-full min-h-screen">
@@ -17,7 +69,9 @@ function AddAdmin() {
             </div>
           </div>
 
-          <div className="sm:w-[640px] md:w-[750px] lg:w-[1000px] xl:w-[1180px] 2xl:w-[1250px]  h-[1434px] gap-[50px] mx-auto  overflow-hidden  mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+          <form
+            onSubmit={handleSubmit}
+            className="sm:w-[640px] md:w-[750px] lg:w-[1000px] xl:w-[1180px] 2xl:w-[1250px]  h-[1434px] gap-[50px] mx-auto  overflow-hidden  mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
             <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[20px] font-bold text-neutral-10 dark:text-primary-100 p-4">
               Add New Video
             </h1>
@@ -85,6 +139,8 @@ function AddAdmin() {
                     </svg>
                     <input
                       type="email"
+                      value={admin.email}
+                      onChange={handleChange}
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
                       placeholder="Email"
                       required
@@ -113,6 +169,8 @@ function AddAdmin() {
                   <label className="input input-bordered flex items-center gap-2 w-[686px]  sm:w-[686px] md:w-[420px] lg:w-[650px] xl:w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <input
                       type="text"
+                      value={admin.username}
+                      onChange={handleChange}
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
                       placeholder="Username"
                       required
@@ -140,6 +198,8 @@ function AddAdmin() {
                   <label className="input input-bordered flex items-center gap-2 w-[686px]  sm:w-[686px] md:w-[420px] lg:w-[650px] xl:w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <input
                       type="text"
+                      value={admin.firstName}
+                      onChange={handleChange}
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
                       placeholder="First Name"
                       required
@@ -167,10 +227,46 @@ function AddAdmin() {
                   <label className="input input-bordered flex items-center gap-2 w-[686px]  sm:w-[686px] md:w-[420px] lg:w-[650px] xl:w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <input
                       type="text"
+                      value={admin.lastName}
+                      onChange={handleChange}
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
                       placeholder="Last Name"
                       required
                     />
+                  </label>
+                </div>
+              </div>
+              <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10 ">
+                <div className="w-full sm:w-full md:w-[220px] lg:w-[220px] xl:w-[350px] 2xl:w-[220px]">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[20px]  font-bold text-neutral-20 dark:text-primary-100">
+                      Roles
+                    </h3>
+                    <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-4 lg:w-4 xl:w-4 2xl:w-4 h-2 h:w-2 md:h-4 lg:h-4 xl:h-4 2xl:h-4 -mt-5"
+                    />
+                  </div>
+                  <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[14px]">
+                    masukan Role untuk memberikan akses berdasarkan role
+                    masing-masing.
+                  </p>
+                </div>
+                <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
+                  <label className="input input-bordered flex items-center gap-2 w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
+                    <select
+                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px] bg-primary-100 dark:bg-neutral-20 dark:text-primary-100"
+                      name="role"
+                      value={admin.role}
+                      onChange={handleChange}
+                      defaultValue="">
+                      <option value="" disabled>
+                        Select Role
+                      </option>
+                      <option value="admin">Admin</option>
+                      <option value="superadmin">Superadmin</option>
+                    </select>
                   </label>
                 </div>
               </div>
@@ -196,6 +292,8 @@ function AddAdmin() {
                   <label className="input input-bordered flex items-center gap-2 w-[686px]  sm:w-[686px] md:w-[420px] lg:w-[650px] xl:w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <input
                       type="password"
+                      value={admin.password}
+                      onChange={handleChange}
                       className="input border-0 focus:outline-none focus:ring-0  w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
                       placeholder="password"
                       required
@@ -214,7 +312,7 @@ function AddAdmin() {
                 Save
               </button>
             </div>
-          </div>
+          </form>
         </div>
       </div>
     </>

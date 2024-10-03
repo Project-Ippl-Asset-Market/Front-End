@@ -7,7 +7,7 @@ import IconHapus from "../../assets/icon/iconCRUD/iconHapus.png";
 import IconEdit from "../../assets/icon/iconCRUD/iconEdit.png";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
 
-function MenageAdmin() {
+function ManageUsers() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
 
@@ -189,4 +189,4 @@ function MenageAdmin() {
   );
 }
 
-export default MenageAdmin;
+export default ManageUsers;

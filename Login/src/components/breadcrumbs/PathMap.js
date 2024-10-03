@@ -16,6 +16,9 @@ export const nameMap = {
   "/manageAdmin/add": "Add New Admin",
   // "/manageAdmin/edit/:id": "Edit Admin", // nnati kita edit nembak id data nya
   "/manageAdmin/edit": "Edit Admin",
+  "/manageUsers": "Manage Users",
+  "/manageUsers/sale": "Sales",
+  "/manageUsers/revenue": "Revenue",
   "/landingPage": "Landing Page",
   "*": "Error Page 404",
 };

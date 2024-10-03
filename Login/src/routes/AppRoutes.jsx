@@ -35,7 +35,7 @@ const AppRoutes = ({ handleLogout }) => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/lupaPassword" element={<LupaPassword />} />
-          <Route path="/homePage" element={<HomePage />} />
+          <Route path="/" element={<HomePage />} />
           <Route
             path="/dashboard"
             element={
@@ -178,7 +178,7 @@ const AppRoutes = ({ handleLogout }) => {
             }
           />
 
-          <Route path="/homePage" element={<HomePage />} />
+          <Route path="/" element={<HomePage />} />
           <Route path="*" element={<ErrorPage />} />
         </Routes>
       </ThemeProvider>

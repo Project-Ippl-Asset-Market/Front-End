@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { auth } from "../../firebase/firebaseConfig";
 import { signOut } from "firebase/auth";
 import { useTheme } from "../../contexts/ThemeContext";
@@ -29,7 +30,7 @@ function HeaderSidebar({ toggleSidebar }) {
       await signOut(auth);
       localStorage.removeItem("authToken");
       localStorage.removeItem("userRole");
-      navigate("/");
+      navigate("/homePage");
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
@@ -189,10 +190,10 @@ function HeaderSidebar({ toggleSidebar }) {
                   <summary className="cursor-pointer">Hello, Sign in</summary>
                   <ul className="bg-neutral-90 dark:bg-neutral-20 rounded-t-none p-2">
                     <li>
-                      <a href="/login">Login</a>
+                      <Link to="/login">Login</Link>
                     </li>
                     <li>
-                      <a href="/register">Register</a>
+                      <Link to="/register">Register</Link>
                     </li>
                   </ul>
                 </details>

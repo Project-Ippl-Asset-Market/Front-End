@@ -30,7 +30,7 @@ const Sidebar = () => {
       await signOut(auth);
       localStorage.removeItem("authToken");
       localStorage.removeItem("userRole");
-      navigate("/");
+      navigate("/homePage");
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
@@ -185,7 +185,7 @@ const Sidebar = () => {
       section: "Log Out",
       items: [
         {
-          href: "/",
+          href: "/homePage",
           label: "Log Out",
           icon: darkMode ? (
             <img src={IconlogoutDarkMode} alt="iconlogoutDarkMode" />

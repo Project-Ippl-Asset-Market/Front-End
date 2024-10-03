@@ -58,7 +58,7 @@ function AddAdmin() {
   return (
     <>
       <div className="bg-primary-100 dark:bg-neutral-20 font-poppins  h-full min-h-screen">
-        <div className="bg-primary-100 p-4 mt-12">
+        <div className="bg-primary-100 p-4 mt-[18px] sm:mt-[18px] md:mt-[50px] lg:mt-[40px] xl:mt-[48px] 2xl:mt-[36px]">
           <HeaderNav />
         </div>
 
@@ -71,21 +71,21 @@ function AddAdmin() {
 
           <form
             onSubmit={handleSubmit}
-            className="w-full  h-[1434px] gap-[50px] sm:p-0 md:p-0 lg:p-0 xl:p-28 2xl:p-28 overflow-hidden  mt-4 sm:mt-10 md:mt-0 lg:mt-0 xl:mt-0 2xl:-mt-20">
-            <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-10 dark:text-primary-100 p-4">
+            className="w-full  h-[1434px] gap-[50px] sm:p-0 md:p-0 lg:p-0 xl:p-28 2xl:p-28 overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:mt-0 xl:-mt-20 2xl:-mt-20">
+            <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[14px]  xl:text-[14px] font-bold text-neutral-10 dark:text-primary-100 p-4">
               Add New Admin
             </h1>
             <div className="p-8 -mt-4  bg-primary-100  dark:bg-neutral-20 rounded-sm shadow-lg">
-              <h2 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+              <h2 className="text-[14px] sm:text-[14px] md:text-[15px] lg:text-[15px]  xl:text-[15px] font-bold text-neutral-20 dark:text-primary-100">
                 Profile Information
               </h2>
 
               <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
-                <div className="w-full sm:w-[200px] md:w-[165px] lg:w-[200px] xl:w-[225px] 2xl:w-[175px]">
-                  <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+                <div className="w-full sm:w-[200px] md:w-[185px] lg:w-[200px] xl:w-[225px] 2xl:w-[175px]">
+                  <h3 className="text-[14px] sm:text-[14px] md:text-[15px] lg:text-[15px]  xl:text-[15px] font-bold text-neutral-20 dark:text-primary-100">
                     Photo Profile
                   </h3>
-                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
+                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px]  xl:text-[12px] mb-2">
                     Format foto harus .jpg, jpeg, png dan ukuran minimal 300 x
                     300 px.
                   </p>
@@ -115,16 +115,16 @@ function AddAdmin() {
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10 ">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px] ">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px]  font-bold text-neutral-20 dark:text-primary-100">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[15px] lg:text-[15px]  xl:text-[15px] font-bold text-neutral-20 dark:text-primary-100">
                       Email
                     </h3>
                     <img
                       src={IconField}
                       alt=""
-                      className="w-2 sm:w-2 md:w-4 lg:w-4 xl:w-4 2xl:w-4 h-2 sm:h-2 md:h-4 lg:h-4 xl:h-4 2xl:h-4 -mt-5"
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
                     />
                   </div>
-                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
+                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px]  xl:text-[12px] mb-2">
                     Masukan Email untuk melakukan verifikasi.
                   </p>
                 </div>
@@ -142,7 +142,7 @@ function AddAdmin() {
                       type="email"
                       value={admin.email}
                       onChange={handleChange}
-                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
+                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[12px] lg:text-[12px]  xl:text-[12px]"
                       placeholder="Email"
                       required
                     />
@@ -152,16 +152,16 @@ function AddAdmin() {
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10 ">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px]  font-bold text-neutral-20 dark:text-primary-100">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[15px] lg:text-[15px]  xl:text-[15px] font-bold text-neutral-20 dark:text-primary-100">
                       Username
                     </h3>
                     <img
                       src={IconField}
                       alt=""
-                      className="w-2 sm:w-2 md:w-4 lg:w-4 xl:w-4 2xl:w-4 h-2 h:w-2 md:h-4 lg:h-4 xl:h-4 2xl:h-4 -mt-5"
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
                     />
                   </div>
-                  <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px]">
+                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px]  xl:text-[12px] mb-2">
                     Nama username maximal 100 karakter dan jangan menggunakan
                     simbol atau angka.
                   </p>
@@ -172,7 +172,7 @@ function AddAdmin() {
                       type="text"
                       value={admin.username}
                       onChange={handleChange}
-                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
+                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[12px] lg:text-[12px]  xl:text-[12px]"
                       placeholder="Username"
                       required
                     />
@@ -182,16 +182,16 @@ function AddAdmin() {
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10 ">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px]  font-bold text-neutral-20 dark:text-primary-100">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[15px] lg:text-[15px]  xl:text-[15px] font-bold text-neutral-20 dark:text-primary-100">
                       First Name
                     </h3>
                     <img
                       src={IconField}
                       alt=""
-                      className="w-2 sm:w-2 md:w-4 lg:w-4 xl:w-4 2xl:w-4 h-2 h:w-2 md:h-4 lg:h-4 xl:h-4 2xl:h-4 -mt-5"
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
                     />
                   </div>
-                  <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px]">
+                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px]  xl:text-[12px] mb-2">
                     Nama username maximal 100 karakter.
                   </p>
                 </div>
@@ -201,7 +201,7 @@ function AddAdmin() {
                       type="text"
                       value={admin.firstName}
                       onChange={handleChange}
-                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
+                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[12px] lg:text-[12px]  xl:text-[12px]"
                       placeholder="First Name"
                       required
                     />
@@ -211,16 +211,16 @@ function AddAdmin() {
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10 ">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px]  font-bold text-neutral-20 dark:text-primary-100">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[15px] lg:text-[15px]  xl:text-[15px] font-bold text-neutral-20 dark:text-primary-100">
                       Last Name
                     </h3>
                     <img
                       src={IconField}
                       alt=""
-                      className="w-2 sm:w-2 md:w-4 lg:w-4 xl:w-4 2xl:w-4 h-2 h:w-2 md:h-4 lg:h-4 xl:h-4 2xl:h-4 -mt-5"
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
                     />
                   </div>
-                  <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px]">
+                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px]  xl:text-[12px] mb-2">
                     Nama LastName maximal 100 karakter.
                   </p>
                 </div>
@@ -230,7 +230,7 @@ function AddAdmin() {
                       type="text"
                       value={admin.lastName}
                       onChange={handleChange}
-                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
+                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[12px] lg:text-[12px]  xl:text-[12px]"
                       placeholder="Last Name"
                       required
                     />
@@ -240,16 +240,16 @@ function AddAdmin() {
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10 ">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px]  font-bold text-neutral-20 dark:text-primary-100">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[15px] lg:text-[15px]  xl:text-[15px] font-bold text-neutral-20 dark:text-primary-100">
                       Roles
                     </h3>
                     <img
                       src={IconField}
                       alt=""
-                      className="w-2 sm:w-2 md:w-4 lg:w-4 xl:w-4 2xl:w-4 h-2 h:w-2 md:h-4 lg:h-4 xl:h-4 2xl:h-4 -mt-5"
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
                     />
                   </div>
-                  <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px]">
+                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px]  xl:text-[12px] mb-2">
                     masukan Role untuk memberikan akses berdasarkan role
                     masing-masing.
                   </p>
@@ -257,7 +257,7 @@ function AddAdmin() {
                 <div className="flex justify-center items-start w-full  sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
                   <label className="input input-bordered flex items-center gap-2 w-[686px] sm:w-[686px] md:w-[420px] lg:w-[650px] xl:w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100 mx-auto ml-0">
                     <select
-                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px] bg-primary-100 dark:bg-neutral-20 dark:text-primary-100 h-[30px] sm:h-[32px] md:h-[34px] lg:h-[36px] xl:h-[36px] p-1 "
+                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[12px] lg:text-[12px] xl:text-[12px] bg-primary-100 dark:bg-neutral-20 dark:text-primary-100 h-[30px] sm:h-[32px] md:h-[34px] lg:h-[36px] xl:h-[36px] p-1 "
                       name="role"
                       value={admin.role}
                       onChange={handleChange}
@@ -274,16 +274,16 @@ function AddAdmin() {
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10 ">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px]  font-bold text-neutral-20 dark:text-primary-100">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[15px] lg:text-[15px]  xl:text-[15px] font-bold text-neutral-20 dark:text-primary-100">
                       Password
                     </h3>
                     <img
                       src={IconField}
                       alt=""
-                      className="w-2 sm:w-2 md:w-4 lg:w-4 xl:w-4 2xl:w-4 h-2 h:w-2 md:h-4 lg:h-4 xl:h-4 2xl:h-4 -mt-5"
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
                     />
                   </div>
-                  <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px]">
+                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px]  xl:text-[12px] mb-2">
                     masukan password dengan minimal 1 huruf kapital, wajib
                     menggunakan angka dan jangan menggunakan simbol @#$%^&* :;
                     dan minimal 8 karakter.
@@ -295,7 +295,7 @@ function AddAdmin() {
                       type="password"
                       value={admin.password}
                       onChange={handleChange}
-                      className="input border-0 focus:outline-none focus:ring-0  w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
+                      className="input border-0 focus:outline-none focus:ring-0  w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[12px] lg:text-[12px]  xl:text-[12px]"
                       placeholder="password"
                       required
                     />

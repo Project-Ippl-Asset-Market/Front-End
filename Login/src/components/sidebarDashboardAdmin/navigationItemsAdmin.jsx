@@ -17,7 +17,6 @@ import IconAssetDatasetLightMode from "../../assets/icon/iconSidebarLigthMode/ic
 import IconAssetGameLightMode from "../../assets/icon/iconSidebarLigthMode/iconAssetGameLightMode.png";
 import IconlogoutLightMode from "../../assets/icon/iconSidebarLigthMode/iconLogOutDarkMode.png";
 import IconlogoutDarkMode from "../../assets/icon/iconSidebar/iconLogOut.svg";
-
 import { auth } from "../../firebase/firebaseConfig";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
@@ -113,8 +112,55 @@ const Sidebar = () => {
             },
           ],
         },
+
+        {
+          href: "/manageUsers/sale",
+          label: "Sales",
+          icon: darkMode ? (
+            <img src={IconAssetDatasetDark} alt="iconAssetDatasetDark" />
+          ) : (
+            <img
+              src={IconAssetDatasetLightMode}
+              alt="iconAssetDatasetLightMode"
+            />
+          ),
+        },
+        {
+          href: "/manageUsers/revenue",
+          label: "Revenue",
+          icon: darkMode ? (
+            <img src={IconAssetDatasetDark} alt="iconAssetDatasetDark" />
+          ) : (
+            <img
+              src={IconAssetDatasetLightMode}
+              alt="iconAssetDatasetLightMode"
+            />
+          ),
+        },
       ],
     },
+
+    (userRole === "superadmin" || userRole === "admin") && {
+      section: "User Management",
+      items: [
+        {
+          href: "/manageUsers",
+          label: "Manage Users",
+          icon: darkMode ? (
+            <img src={IconManageAdminDark} alt="iconManageAdminDark" />
+          ) : (
+            <img src={IconManageAdminLight} alt="iconlightMode" />
+          ),
+          children: [
+            {
+              href: "/manageAdmin/add",
+              label: "Manage Admin",
+            },
+          ],
+        },
+      ],
+    },
+
     userRole === "superadmin" && {
       section: "Admin Management",
       items: [

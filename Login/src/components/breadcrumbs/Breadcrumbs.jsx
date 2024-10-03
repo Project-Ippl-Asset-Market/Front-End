@@ -14,7 +14,7 @@ export default function BreadcrumbComponent() {
   return (
     <Breadcrumb aria-label="breadcrumb">
       <Breadcrumb.Item href="/dashboard" as={RouterLink}>
-        <span className="text-[8px] sm:text-[10px] md:text-[12px] lg:text-[14px]">
+        <span className="text-[8px] sm:text-[8px] md:text-[8px] lg:text-[8px] xl:text-[10px]">
           Dashboard
         </span>
       </Breadcrumb.Item>
@@ -22,7 +22,7 @@ export default function BreadcrumbComponent() {
         const to = `/${pathnames.slice(0, index + 1).join("/")}`;
         return (
           <Breadcrumb.Item key={to} href={to} as={RouterLink}>
-            <span className="text-[8px] sm:text-[10px] md:text-[12px] lg:text-[14px]">
+            <span className="text-[8px] sm:text-[8px] md:text-[8px] lg:text-[8px] xl:text-[10px]">
               {getBreadcrumbName(to)}
             </span>
           </Breadcrumb.Item>

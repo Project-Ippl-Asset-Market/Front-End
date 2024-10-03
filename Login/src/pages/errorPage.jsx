@@ -1,20 +1,21 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 export default function Error() {
-  const [homeLink, setHomeLink] = useState("/landingPage");
+  const [homeLink, setHomeLink] = useState("/");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const userRole = localStorage.getItem("userRole");
 
-    if (userRole === "admin") {
+    if (userRole === "admin" || userRole === "superadmin") {
       setHomeLink("/dashboard");
-    } else if (userRole === "superadmin") {
-      setHomeLink("/dashboard");
-    } else {
-      setHomeLink("/landingPage");
     }
   }, []);
+
+  const handleBack = () => {
+    navigate(-1);
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-primary-100 font-poppins">
@@ -41,11 +42,12 @@ export default function Error() {
           Sorry, page not found.
         </p>
       </div>
-      <Link
+
+      <button
         className="btn btn-form-secondary bg-secondary-40 border-primary-100 text-primary-100 font-semobold hover:bg-secondary-30 hover:font-bold text-xs mt-[46px] w-90 h-16"
-        to={homeLink}>
-        Back to Home
-      </Link>
+        onClick={handleBack}>
+        Go Back
+      </button>
     </div>
   );
 }

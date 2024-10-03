@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
 import IconSearch from "../../assets/icon/iconHeader/iconSearch.svg";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
@@ -7,7 +7,7 @@ import IconHapus from "../../assets/icon/iconCRUD/iconHapus.png";
 import IconEdit from "../../assets/icon/iconCRUD/iconEdit.png";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
 
-function MenageAdmin() {
+function SaleAssets() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
 
@@ -32,7 +32,6 @@ function MenageAdmin() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isSidebarOpen]);
-
   return (
     <>
       <div className=" dark:bg-neutral-90 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
@@ -59,15 +58,42 @@ function MenageAdmin() {
             <Breadcrumb />
           </div>
 
+          {/* <div className="flex flex-col md:flex-row gap-4 ">
+            <div className="flex items-center  sm:-ml-0 md:-ml-0 lg:-ml-0 xl:-ml-0 2xl:-ml-3">
+              <div className="flex bg-primary-2 rounded-lg items-center w-36 ">
+                <Link
+                  to="/manageAssetDataset"
+                  className="btn btn-ghost text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[40px]">
+                  <p className="font-bold text-primary-100">+</p>
+                  Add New Dataset
+                </Link>
+              </div>
+            </div>
+            <div className="form-control w-full flex-grow">
+              <div className="relative h-[48px]  bg-primary-100 dark:bg-neutral-20 rounded-lg border border-neutral-90 dark:border-neutral-25 dark:border-2">
+                <img
+                  src={IconSearch}
+                  alt="iconSearch"
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-6 h-6"
+                />
+                <input
+                  type="text"
+                  placeholder="Search"
+                  className="input border-none mx-auto bg-primary-100  dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10  h-[30px] sm:h-[50px] md:h-[60px] lg:h-[40px] xl:h-[40px] 2xl:h-[40px] focus:outline-none focus:border-neutral-20 w-full"
+                />
+              </div>
+            </div>
+          </div> */}
+
           <div className="flex flex-col gap-4 md:flex-row">
             {/* Button Container */}
             <div className="w-full md:w-auto">
               <div className="flex items-center justify-center md:justify-start">
-                <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-48">
+                <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
                   <Link
-                    to="/manageAdmin/add"
+                    to="/manageAssetDataset/add"
                     className=" rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
-                    + Add new Admin
+                    + Add Dataset
                   </Link>
                 </div>
               </div>
@@ -90,18 +116,18 @@ function MenageAdmin() {
             </div>
           </div>
 
-          <div className="relative overflow-x-auto shadow-md sm:rounded-lg p-8 dark:bg-neutral-25 mt-4">
+          <div className="relative mt-6 overflow-x-auto shadow-md sm:rounded-lg p-8 dark:bg-neutral-25">
             <table className="w-full text-sm text-left rtl:text-right text-gray-500 bg-primary-100 dark:text-neutral-90 ">
               <thead className="text-xs text-neutral-20 uppercase  dark:bg-neutral-25 dark:text-neutral-90 border-b dark:border-neutral-20">
                 <tr>
                   <th scope="col" className="px-6 py-3">
-                    UserName
+                    2D
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Roles
+                    Category
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Email
+                    Status
                   </th>
                   <th scope="col" className="px-6 py-3">
                     Create at
@@ -116,32 +142,11 @@ function MenageAdmin() {
                   <th
                     scope="row"
                     className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 secondary-40space-nowrap">
-                    ardhy
+                    Apple MacBook Pro_17
                   </th>
-                  <td className="px-6 py-4">SuperAdmin</td>
-                  <td className="px-6 py-4">11211016@student.itk.ac.id</td>
-                  <td className="px-6 py-4">23-02-3024</td>
-                  <td className="mx-auto flex gap-4 mt-2">
-                    <Link to="/manageAdmin/edit">
-                      <img src={IconEdit} alt="icon edit" className="w-5 h-5" />
-                    </Link>
-
-                    <img
-                      src={IconHapus}
-                      alt="icon hapus "
-                      className="w-5 h-5"
-                    />
-                  </td>
-                </tr>
-                <tr className=" bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
-                  <th
-                    scope="row"
-                    className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 secondary-40space-nowrap">
-                    ardhy
-                  </th>
-                  <td className="px-6 py-4">Admin</td>
-                  <td className="px-6 py-4">11211016@student.itk.ac.id</td>
-                  <td className="px-6 py-4">23-02-3024</td>
+                  <td className="px-6 py-4">Silver</td>
+                  <td className="px-6 py-4">Laptop</td>
+                  <td className="px-6 py-4">$2999</td>
                   <td className="mx-auto flex gap-4 mt-2">
                     <img src={IconEdit} alt="icon edit" className="w-5 h-5" />
                     <img
@@ -155,11 +160,29 @@ function MenageAdmin() {
                   <th
                     scope="row"
                     className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 secondary-40space-nowrap">
-                    ardhy
+                    Apple MacBook Pro_17
                   </th>
-                  <td className="px-6 py-4">SuperAdmin</td>
-                  <td className="px-6 py-4">11211016@student.itk.ac.id</td>
-                  <td className="px-6 py-4">23-02-2024</td>
+                  <td className="px-6 py-4">Silver</td>
+                  <td className="px-6 py-4">Laptop</td>
+                  <td className="px-6 py-4">$2999</td>
+                  <td className="mx-auto flex gap-4 mt-2">
+                    <img src={IconEdit} alt="icon edit" className="w-5 h-5" />
+                    <img
+                      src={IconHapus}
+                      alt="icon hapus "
+                      className="w-5 h-5"
+                    />
+                  </td>
+                </tr>
+                <tr className=" bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
+                  <th
+                    scope="row"
+                    className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 space-nowrap">
+                    Apple MacBook Pro_17
+                  </th>
+                  <td className="px-6 py-4">Silver</td>
+                  <td className="px-6 py-4">Laptop</td>
+                  <td className="px-6 py-4">$2999</td>
                   <td className="mx-auto flex gap-4 mt-2">
                     <img src={IconEdit} alt="icon edit" className="w-5 h-5" />
                     <img
@@ -176,7 +199,7 @@ function MenageAdmin() {
             <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50  hover:border-neutral-40 opacity-70">
               «
             </button>
-            <button className="join-item btn dark:bg-neutral-30 bg-neutral-60  text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
+            <button className="join-item btn dark:bg-neutral-25 bg-neutral-60  text-primary-100 hover:bg-neutral-70 hover:border-neutral-25 border-neutral-60 dark:border-neutral-25">
               Page 1
             </button>
             <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40  opacity-70">
@@ -189,4 +212,4 @@ function MenageAdmin() {
   );
 }
 
-export default MenageAdmin;
+export default SaleAssets;

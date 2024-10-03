@@ -55,6 +55,7 @@ export default {
         },
         neutral: {
           0: "#000000",
+          5: "#201E43",
           10: "#171717",
           20: "#212121", //bg untuk dark mode
           25: "#303030", //content manage

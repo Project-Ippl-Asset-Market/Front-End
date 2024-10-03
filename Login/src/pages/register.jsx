@@ -208,7 +208,7 @@ function Register() {
               </span>
               <Link
                 className="ml-4 text-primary-30  hover:text-primary-30   text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl"
-                to="/">
+                to="/login">
                 Login
               </Link>
             </div>

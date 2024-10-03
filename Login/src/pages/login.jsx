@@ -83,7 +83,7 @@ function Login() {
         setTimeout(() => {
           setModalMessage(null);
           localStorage.setItem("userRole", "user");
-          navigate("/");
+          navigate("/homePage");
         }, 2000);
       }
     } catch (error) {
@@ -127,7 +127,7 @@ function Login() {
         setTimeout(() => {
           setModalMessage(null);
           localStorage.setItem("userRole", "user");
-          navigate("/");
+          navigate("/homePage");
         }, 2000);
       }
     } catch {

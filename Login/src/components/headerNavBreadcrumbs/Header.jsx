@@ -4,6 +4,7 @@ import { useTheme } from "../../contexts/ThemeContext";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { nameMap } from "../breadcrumbs/PathMap";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import IconLightMode from "../../assets/icon/iconDarkMode&LigthMode/ligth_mode.svg";
 import IconDarkMode from "../../assets/icon/iconDarkMode&LigthMode/dark_mode.svg";
 import IconUserDark from "../../assets/icon/iconDarkMode&LigthMode/iconUserDark.svg";
@@ -63,7 +64,7 @@ function HeaderSidebar() {
   useEffect(() => {
     if (!user) {
       console.log("User is null, navigating to home page");
-      navigate("/");
+      navigate("/homePage");
     }
   }, [user, navigate]);
 
@@ -102,8 +103,7 @@ function HeaderSidebar() {
                     <details className="relative">
                       <summary className="cursor-pointer">
                         {username} ({userRole})
-                      </summary>{" "}
-                      {/* Tampilkan role pengguna */}
+                      </summary>
                       <ul className="bg-neutral-90 dark:bg-neutral-20 rounded-lg w-48 shadow-lg">
                         <li className="flex mb-1 w-full h-8 transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none">
                           <div className="flex items-center">
@@ -198,10 +198,10 @@ function HeaderSidebar() {
                   <summary className="cursor-pointer">Hello, Sign in</summary>
                   <ul className="bg-neutral-90 dark:bg-neutral-20 rounded-t-none p-2">
                     <li>
-                      <a href="/login">Login</a>
+                      <Link to="/login">Login</Link>
                     </li>
                     <li>
-                      <a href="/register">Register</a>
+                      <Link to="/register">Register</Link>
                     </li>
                   </ul>
                 </details>

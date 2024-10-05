@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { collection, addDoc } from "firebase/firestore";
 import { auth, db } from "../../firebase/firebaseConfig";
-import HeaderNav from "../headerNavBreadcrumbs/Header";
+import HeaderNav from "../HeaderNav/HeaderNav";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconField from "../../assets/icon/iconField/icon.svg";
 

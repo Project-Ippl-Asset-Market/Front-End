@@ -10,11 +10,9 @@ import IconUserDark from "../../assets/icon/iconDarkMode&LigthMode/iconUserDark.
 import IconUserLight from "../../assets/icon/iconDarkMode&LigthMode/iconUserLight.svg";
 import IconLogoutDark from "../../assets/icon/iconDarkMode&LigthMode/logOutDark.svg";
 import IconLogoutLight from "../../assets/icon/iconDarkMode&LigthMode/logOutLight.svg";
-import IconCart from "../../assets/icon/iconHeader/iconCart.svg";
-import IconMyAsset from "../../assets/icon/iconHeader/iconMyasset.svg";
 import logoWeb from "../../assets/logo/logoWeb.png";
 
-function HeaderSidebar() {
+function HeaderNav() {
   const { darkMode, toggleDarkMode } = useTheme();
   const [user, setUser] = useState(null);
   const [username, setUsername] = useState("");
@@ -70,97 +68,13 @@ function HeaderSidebar() {
   };
 
   return (
-    <div className="h-20 sm:h-0 md:h-0 lg:h-0 xl:h-0 2xl:h-0">
-      <section className="navbar h-28 fixed z-40 top-0 left-0 pt-0 text-neutral-10  font-poppins font-semibold dark:text-primary-100 bg-primary-100 dark:bg-neutral-20 gap-2">
+    <div className="h-20 sm:h-0 md:h-0 lg:h-0 xl:h-0 2xl:h-0 -mt-8 sm:mt-6 md:mt-3 lg:mt-4 xl:mt-4 2xl:mt-8">
+      <section className="navbar h-28 fixed z-40 top-0 left-0 pt-0 text-neutral-10  font-poppins font-semibold dark:text-primary-100 bg-primary-100 dark:bg-neutral-20 gap-2 shadow-md shadow-neutral-90 dark:shadow-neutral-10">
         <div className="flex-1 gap-2 w-full">
           <img src={logoWeb} alt="logo" className="w-20 h-20" />
           <h2 className="text-[10px] sm:text-2xl md:text-2xl lg:text-2xl xl:text-2xl 2xl:text-2xl">
             PixelStore
           </h2>
-        </div>
-
-        <div className=" md:flex justify-center w-full ">
-          {/* Form Search di Layar Besar */}
-          <div className="hidden md:flex justify-center w-full ">
-            <form className="w-full  mx-auto px-20">
-              <div className="relative">
-                <div className="relative">
-                  <input
-                    type="search"
-                    id="location-search"
-                    className="block w-full p-4 pl-24 placeholder:pr-10 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
-                    placeholder=""
-                    required
-                  />
-                  <span className="absolute inset-y-0 left-2 flex items-center text-gray-500 dark:text-gray-400">
-                    Search
-                  </span>
-                  <span className="absolute inset-y-0 left-20 flex items-center text-neutral-20 dark:text-neutral-20 text-[20px]">
-                    |
-                  </span>
-                </div>
-
-                <button
-                  type="submit"
-                  className="absolute w-20 top-0 right-0 h-full p-4 mx-auto text-sm font-medium text-white bg-blue-700 rounded-r-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                  <svg
-                    className="w-5 h-5 mx-auto"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 20 20">
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                    />
-                  </svg>
-                  <span className="sr-only text-[8px] sm:text-[10px] md:text-[12px] lg:text-[12px] xl:text-[12px 2xl:text-[14px]">
-                    Search
-                  </span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-        {/* cart an my asset */}
-        <div className="gap-14 sm:gap-1 md:gap-8 lg:gap-8 xl:gap-2 2xl:gap-10 flex justify-center items-center ">
-          <Link
-            to=""
-            className="w-[45px] sm:w-[45px] md:w-[44px] lg:w-[44px] xl:w-[60px] 2xl:w-[34px] h-[20px]  sm:h-[28px] md:h-[28px] lg:h-[28px] xl:h-[28px] 2xl:h[28px] -ml-[30px]  sm:ml-1 md:ml-1 lg:ml-0 xl:ml-0 2xl:ml-2 gap-2  text-[8px] sm:text-[10px] md:text-[10px] lg:text-[10px] xl:text-[10px 2xl:text-[10px]">
-            <img
-              src={IconMyAsset}
-              alt="icon my asset"
-              className="w-[24px] h-[24px]"
-            />
-            <label className="-ml-4 ">My asset</label>
-          </Link>
-          <Link
-            to=""
-            className="w-[20px] sm:w-[45px] md:w-[28px] lg:w-[28px] xl:w-[28px] 2xl:w-[28px] h-[20px]  sm:h-[28px] md:h-[28px] lg:h-[28px] xl:h-[28px] 2xl:h[28px] -ml-[30px]  sm:ml-1 md:ml-1 lg:ml-0 xl:ml-0 2xl:ml-2 gap-2  text-[8px] sm:text-[10px] md:text-[10px] lg:text-[10px] xl:text-[10px 2xl:text-[10px]">
-            <img src={IconCart} alt="icon cart" className="w-[24px] h-[24px]" />
-            <label className="">Cart</label>
-          </Link>
-        </div>
-
-        {/* Form Search untuk layar kecil */}
-        <div className="md:hidden fixed top-16 w-full bg-primary-100 dark:bg-neutral-20 p-4 mt-12 -ml-2">
-          <form className="flex items-center w-full">
-            <input
-              type="search"
-              id="mobile-search"
-              className="block w-full p-3 text-sm text-gray-900 bg-gray-50 rounded-l-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
-              placeholder="type..."
-              required
-            />
-            <button
-              type="submit"
-              className="p-3 h-12 text-white bg-blue-700 rounded-r-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-              Search
-            </button>
-          </form>
         </div>
 
         <div className="flex-none gap-2">
@@ -286,4 +200,4 @@ function HeaderSidebar() {
   );
 }
 
-export default HeaderSidebar;
+export default HeaderNav;

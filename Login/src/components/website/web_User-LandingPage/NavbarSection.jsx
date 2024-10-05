@@ -1,10 +1,12 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 
 export const NavbarSection = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const isLoggedIn = Boolean(localStorage.getItem("authToken"));
 
   const toggleNavbar = () => {
     setIsOpen(!isOpen);
@@ -12,6 +14,13 @@ export const NavbarSection = () => {
 
   const isLinkActive = (path) => {
     return location.pathname === path;
+  };
+
+  const handleClick = (e) => {
+    if (!isLoggedIn) {
+      e.preventDefault();
+      navigate("/login", { state: { from: "/dashboard" } });
+    }
   };
 
   return (
@@ -277,7 +286,8 @@ export const NavbarSection = () => {
                   className="dropdown-content bg-neutral-90 dark:bg-neutral-20 card card-compact text-start text-primary-content z-[1] w-[200px] min-sm:w-full p-2 shadow -pr-20 ml-0 md:-ml-20 lg:-ml-24 xl:-ml-24 2xl:-ml-14  rounded-none">
                   <div className="card-body ">
                     <Link
-                      to="/dashboard"
+                      to={isLoggedIn ? "/dashboard" : "/login"}
+                      onClick={handleClick}
                       className="hover:bg-secondary-40 hover:rounded-md hover:text-primary-100 sm:hover:text-primary-100 dark:hover:bg-secondary-40 dark:text-primary-100 dark:hover:text-primary-100 text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px] xl:text-[14px] 2xl:text-[14px] h-10 p-3 transition-all duration-200 ">
                       Mulai Jual Asset
                     </Link>

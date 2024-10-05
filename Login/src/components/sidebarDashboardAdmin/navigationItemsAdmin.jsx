@@ -121,30 +121,18 @@ const Sidebar = () => {
           href: "/manageUsers/sale",
           label: "Sales",
           icon: darkMode ? (
-            <img
-              src={IconDollarLight}
-              alt="IconDollarLight"
-              className="-ml-2"
-            />
+            <img src={IconDollarLight} alt="IconDollarLight" />
           ) : (
-            <img src={IconDollarDark} alt="IconDollarDark" className="-ml-2" />
+            <img src={IconDollarDark} alt="IconDollarDark" />
           ),
         },
         {
           href: "/manageUsers/revenue",
           label: "Revenue",
           icon: darkMode ? (
-            <img
-              src={IconRevenueLight}
-              alt="IconRevenueLight"
-              className="-ml-2"
-            />
+            <img src={IconRevenueLight} alt="IconRevenueLight" />
           ) : (
-            <img
-              src={IconRevenueDark}
-              alt="IconRevenueDark"
-              className="-ml-2"
-            />
+            <img src={IconRevenueDark} alt="IconRevenueDark" />
           ),
         },
       ],

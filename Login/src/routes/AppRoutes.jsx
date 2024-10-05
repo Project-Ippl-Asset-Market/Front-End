@@ -6,7 +6,7 @@ import ErrorPage from "../pages/errorPage";
 import Register from "../pages/register";
 import Login from "../pages/login";
 import LupaPassword from "../pages/lupaPassword";
-import HomePage from "../components/web/web_User-LandingPage/HomePage";
+import HomePage from "../components/website/web_User-LandingPage/HomePage";
 // import LandingPage from "../pages/landingPage";
 import AdminDashboard from "../components/myAdmin/AdminDashboard";
 import ManageAssetVideo from "../components/manageAssetVideo/ManageAssetVideo";

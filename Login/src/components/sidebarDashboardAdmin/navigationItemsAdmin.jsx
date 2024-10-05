@@ -1,5 +1,8 @@
 // eslint-disable-next-line no-unused-vars
 import React, { Children } from "react";
+import { signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
+import { auth } from "../../firebase/firebaseConfig";
 import { useTheme } from "../../contexts/ThemeContext";
 import SidebarNavItem from "../../components/sidebarDashboardAdmin/SidebarNavItemAdmin";
 import IconDashboardDark from "../../assets/icon/iconSidebar/iconDashboard.png";
@@ -17,9 +20,10 @@ import IconAssetDatasetLightMode from "../../assets/icon/iconSidebarLigthMode/ic
 import IconAssetGameLightMode from "../../assets/icon/iconSidebarLigthMode/iconAssetGameLightMode.png";
 import IconlogoutLightMode from "../../assets/icon/iconSidebarLigthMode/iconLogOutDarkMode.png";
 import IconlogoutDarkMode from "../../assets/icon/iconSidebar/iconLogOut.svg";
-import { auth } from "../../firebase/firebaseConfig";
-import { signOut } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import IconDollarLight from "../../assets/icon/iconSidebar/iconDollarLight.svg";
+import IconDollarDark from "../../assets/icon/iconSidebar/iconDollarDark.svg";
+import IconRevenueLight from "../../assets/icon/iconSidebar/iconRevenueLight.svg";
+import IconRevenueDark from "../../assets/icon/iconSidebar/iconRevenueDark.svg";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -117,23 +121,29 @@ const Sidebar = () => {
           href: "/manageUsers/sale",
           label: "Sales",
           icon: darkMode ? (
-            <img src={IconAssetDatasetDark} alt="iconAssetDatasetDark" />
-          ) : (
             <img
-              src={IconAssetDatasetLightMode}
-              alt="iconAssetDatasetLightMode"
+              src={IconDollarLight}
+              alt="IconDollarLight"
+              className="-ml-2"
             />
+          ) : (
+            <img src={IconDollarDark} alt="IconDollarDark" className="-ml-2" />
           ),
         },
         {
           href: "/manageUsers/revenue",
           label: "Revenue",
           icon: darkMode ? (
-            <img src={IconAssetDatasetDark} alt="iconAssetDatasetDark" />
+            <img
+              src={IconRevenueLight}
+              alt="IconRevenueLight"
+              className="-ml-2"
+            />
           ) : (
             <img
-              src={IconAssetDatasetLightMode}
-              alt="iconAssetDatasetLightMode"
+              src={IconRevenueDark}
+              alt="IconRevenueDark"
+              className="-ml-2"
             />
           ),
         },

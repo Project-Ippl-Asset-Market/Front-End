@@ -13,6 +13,8 @@ import IconUserDark from "../../assets/icon/iconDarkMode&LigthMode/iconUserDark.
 import IconUserLight from "../../assets/icon/iconDarkMode&LigthMode/iconUserLight.svg";
 import IconLogoutDark from "../../assets/icon/iconDarkMode&LigthMode/logOutDark.svg";
 import IconLogoutLight from "../../assets/icon/iconDarkMode&LigthMode/logOutLight.svg";
+import IconStoreLight from "../../assets/icon/iconHeaderDashboard/iconStoreLight.svg";
+import IconStoreDark from "../../assets/icon/iconHeaderDashboard/iconStoreDark.svg";
 
 // eslint-disable-next-line react/prop-types
 function HeaderSidebar({ toggleSidebar }) {
@@ -108,6 +110,19 @@ function HeaderSidebar({ toggleSidebar }) {
                           </div>
                         </li>
 
+                        <li className="flex  mb-1 w-full h-8  transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none">
+                          <div className="flex items-center">
+                            <img
+                              src={darkMode ? IconStoreLight : IconStoreDark}
+                              alt="Logout Icon"
+                              className="w-6 h-6 me-2"
+                            />
+                            <Link to="/" alt="ast">
+                              Asset Store
+                            </Link>
+                          </div>
+                        </li>
+
                         <li>
                           <div className="flex items-center justify-center p-2 bg-neutral-90 dark:bg-neutral-20 transition-all duration-300 rounded-lg">
                             <div
@@ -127,7 +142,7 @@ function HeaderSidebar({ toggleSidebar }) {
                                 />
                               )}
                               <span
-                                className={`text-[13px] font-semibold transition-colors duration-300 hover:text-primary-100 ${
+                                className={`text-[12px] font-semibold transition-colors duration-300 hover:text-primary-100 ${
                                   darkMode
                                     ? "text-neutral-100"
                                     : "text-neutral-800"

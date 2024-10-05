@@ -76,7 +76,7 @@ const AppRoutes = ({ handleLogout }) => {
             path="/manageAssetVideo/add"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
-                <AddFormAssetVideo onLogout={handleLogout} />{" "}
+                <AddFormAssetVideo onLogout={handleLogout} />
               </ProtectedRoute>
             }
           />

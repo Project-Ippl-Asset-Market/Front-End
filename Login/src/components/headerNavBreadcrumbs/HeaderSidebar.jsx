@@ -32,7 +32,7 @@ function HeaderSidebar({ toggleSidebar }) {
       await signOut(auth);
       localStorage.removeItem("authToken");
       localStorage.removeItem("userRole");
-      navigate("/homePage");
+      navigate("/");
     } catch (error) {
       console.error("Logout failed:", error.message);
     }

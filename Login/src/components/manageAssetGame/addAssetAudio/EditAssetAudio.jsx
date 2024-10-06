@@ -1,8 +1,8 @@
-import Breadcrumb from "../breadcrumbs/Breadcrumbs";
-import IconField from "../../assets/icon/iconField/icon.svg";
-import HeaderNav from "../HeaderNav/HeaderNav";
+import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
+import IconField from "../../../assets/icon/iconField/icon.svg";
+import HeaderNav from "../../HeaderNav/HeaderNav";
 
-function AddNewVideo() {
+function EditNewAudio() {
   return (
     <>
       <div className="bg-primary-100 dark:bg-neutral-20 font-poppins h-full min-h-screen">
@@ -19,18 +19,18 @@ function AddNewVideo() {
 
           <form className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24   h-[1434px] gap-[50px]  overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0">
             <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-10 dark:text-primary-100 p-4">
-              Add New Video
+              Edit New Audio
             </h1>
             <div className="p-8 -mt-4  bg-primary-100  dark:bg-neutral-20 rounded-sm shadow-lg">
               <h2 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                Video Information
+                Audio Information
               </h2>
 
               <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-[150px] md:w-[170px] lg:w-[200px] xl:w-[220px] 2xl:w-[170px]">
                   <div className="flex items-center gap-1">
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                      Upload Video
+                      Upload Audio
                     </h3>
                     <img
                       src={IconField}
@@ -39,7 +39,7 @@ function AddNewVideo() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
-                    upload Asset Video anda dengan format mp4 sesuai ketentuan
+                    upload Asset Audio anda dengan format mp4 sesuai ketentuan
                     kami dan maksimal 500 mb.
                   </p>
                 </div>
@@ -55,14 +55,14 @@ function AddNewVideo() {
                           src="path_to_your_icon"
                         />
                         <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                          Upload video
+                          Upload Audio
                         </span>
                         <input
                           type="file"
                           id="fileUpload"
-                          name="product_images.image_url"
+                          name="product_Audios.Audio_url"
                           multiple
-                          accept="image/jpeg,image/png,image/jpg"
+                          accept="Audio/jpeg,Audio/png,Audio/jpg"
                           className="hidden"
                         />
                       </label>
@@ -75,7 +75,7 @@ function AddNewVideo() {
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-1">
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                      Video Name
+                      Audio Name
                     </h3>
                     <img
                       src={IconField}
@@ -84,7 +84,7 @@ function AddNewVideo() {
                     />
                   </div>
                   <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Masukkan Nama Untuk Video Maximal 40 Huruf
+                    Masukkan Nama Untuk Audio Maximal 40 Huruf
                   </p>
                 </div>
 
@@ -127,7 +127,7 @@ function AddNewVideo() {
                       <option value="" disabled>
                         Pick an option
                       </option>
-                      <option value="option1">Option 1</option>
+                      <option value="option1">Saund FX</option>
                       <option value="option2">Option 2</option>
                     </select>
                   </label>
@@ -151,7 +151,7 @@ function AddNewVideo() {
                     />
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px]">
-                    Berikan Deskripsi Pada Video Anda Maximal 200 Huruf
+                    Berikan Deskripsi Pada Audio Anda Maximal 200 Huruf
                   </p>
                 </div>
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
@@ -173,7 +173,7 @@ function AddNewVideo() {
                     </h3>
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Silahkan Masukkan Harga Untuk Asset Video jika asset gratis
+                    Silahkan Masukkan Harga Untuk Asset Audio jika asset gratis
                     silahkan dikosongkan.
                   </p>
                 </div>
@@ -206,4 +206,4 @@ function AddNewVideo() {
   );
 }
 
-export default AddNewVideo;
+export default EditNewAudio;

@@ -2,7 +2,7 @@ import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconField from "../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../HeaderNav/HeaderNav";
 
-function AddNewVideo() {
+function EditNewVideo() {
   return (
     <>
       <div className="bg-primary-100 dark:bg-neutral-20 font-poppins h-full min-h-screen">
@@ -19,7 +19,7 @@ function AddNewVideo() {
 
           <form className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24   h-[1434px] gap-[50px]  overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0">
             <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-10 dark:text-primary-100 p-4">
-              Add New Video
+              Edit New Video
             </h1>
             <div className="p-8 -mt-4  bg-primary-100  dark:bg-neutral-20 rounded-sm shadow-lg">
               <h2 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
@@ -206,4 +206,4 @@ function AddNewVideo() {
   );
 }
 
-export default AddNewVideo;
+export default EditNewVideo;

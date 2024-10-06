@@ -58,33 +58,6 @@ function ManageAsset2D() {
             <Breadcrumb />
           </div>
 
-          {/* <div className="flex flex-col md:flex-row gap-4 ">
-            <div className="flex items-center  sm:-ml-0 md:-ml-0 lg:-ml-0 xl:-ml-0 2xl:-ml-3">
-              <div className="flex bg-primary-2 rounded-lg items-center w-36 ">
-                <Link
-                  to="/manageAssetDataset"
-                  className="btn btn-ghost text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[40px]">
-                  <p className="font-bold text-primary-100">+</p>
-                  Add New Dataset
-                </Link>
-              </div>
-            </div>
-            <div className="form-control w-full flex-grow">
-              <div className="relative h-[48px]  bg-primary-100 dark:bg-neutral-20 rounded-lg border border-neutral-90 dark:border-neutral-25 dark:border-2">
-                <img
-                  src={IconSearch}
-                  alt="iconSearch"
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-6 h-6"
-                />
-                <input
-                  type="text"
-                  placeholder="Search"
-                  className="input border-none mx-auto bg-primary-100  dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10  h-[30px] sm:h-[50px] md:h-[60px] lg:h-[40px] xl:h-[40px] 2xl:h-[40px] focus:outline-none focus:border-neutral-20 w-full"
-                />
-              </div>
-            </div>
-          </div> */}
-
           <div className="flex flex-col gap-4 md:flex-row">
             {/* Button Container */}
             <div className="w-full md:w-auto">
@@ -148,12 +121,16 @@ function ManageAsset2D() {
                   <td className="px-6 py-4">Laptop</td>
                   <td className="px-6 py-4">$2999</td>
                   <td className="mx-auto flex gap-4 mt-2">
-                    <img src={IconEdit} alt="icon edit" className="w-5 h-5" />
-                    <img
-                      src={IconHapus}
-                      alt="icon hapus "
-                      className="w-5 h-5"
-                    />
+                    <Link to="/manageAssetDataset/edit">
+                      <img src={IconEdit} alt="icon edit" className="w-5 h-5" />
+                    </Link>
+                    <button>
+                      <img
+                        src={IconHapus}
+                        alt="icon hapus "
+                        className="w-5 h-5"
+                      />
+                    </button>
                   </td>
                 </tr>
                 <tr className=" bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">

@@ -136,7 +136,7 @@ const Navbar = () => {
               key={data.id}
               className="flex flex-col justify-center items-center gap-4">
               <div className="flex flex-col justify-start items-center gap-4">
-                <h1 className="text-[14px] sm:text-[18px] md:text-[23px] lg:text-[30px] xxs:text-[36px] font-bold">
+                <h1 className="text-[14px] sm:text-[18px] md:text-[23px] lg:text-[30px] xl:text-[36px] 2xl:text-[12px] font-bold">
                   {data.description}
                 </h1>
               </div>
@@ -152,9 +152,10 @@ const Navbar = () => {
       </div>
 
       {/* Products section */}
-      <div className="dark:text-primary-100 bg-primary-100 dark:bg-neutral-20 dark:shadow-lg dark:shadow-neutral-10">
-        <div className="flex flex-col ml-[51px]">
-          <div className="w-[225px] sm:w-[252px] md:w-[291px] lg:w-[315px] text-left mb-[18px] mt-[16px] pr-4 pt-3 text-[13px] sm:text-[15px] md:text-[18px] lg:text-[20px] font-semibold border-b-[1px] border-black dark:border-white">
+      <div>
+        <div className="container flex flex-col">
+          {/* Header section */}
+          <div className="w-[225px] sm:w-[252px] md:w-[291px] lg:w-[315px] xl:w-0 2xl:w-0 text-left mb-[18px] mt-[16px] pr-4 pt-3 text-[13px] sm:text-[15px] md:text-[18px] lg:text-[20px] font-semibold border-b-[1px] border-black dark:border-white">
             <ul>
               <li className="flex w-[386px] justify-start items-center">
                 <a
@@ -176,26 +177,29 @@ const Navbar = () => {
             </ul>
           </div>
 
-          <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-4 gap-8 md:gap-5 place-items-center">
+          {/* Body section */}
+          <div className="container mb-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-5 md:gap-5 place-items-center">
             {ProductsData.map((data) => (
               <div
                 key={data.id}
-                className="w-[190px] h-[215px] sm:w-[180px] sm:h-[205px] md:w-[230px] md:h-[265px] lg:w-[300px] lg:h-[335px] rounded-[10px] bg-[#D9D9D9] dark:bg-[#171717] group">
-                <div className="w-[190px] h-[123px] sm:w-[180px] sm:h-[113px] md:w-[230px] md:h-[155px] lg:w-[300px] lg:h-[223px]">
-                  <a href="">
+                className="w-[140px] h-[155px] ssm:w-[165px] ssm:h-[180px] sm:w-[180px] sm:h-[205px] md:w-[180px] md:h-[215px] lg:w-[260px] lg:h-[295px] rounded-[10px] bg-[#D9D9D9] dark:bg-[#171717] group">
+                {/* image section */}
+                <div className="w-[140px] h-[73px] ssm:w-[165px] ssm:h-[98px] sm:w-[180px] sm:h-[113px] md:w-[180px] md:h-[95px] lg:w-[260px] lg:h-[183px]">
+                  <a href="#" onClick={() => handleOrderPopup()}>
                     <img
                       src={data.img}
                       alt=""
-                      className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto drop-shadow-md max-h-full"
+                      className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto drop-shadow-md max-h-full cursor-pointer"
                     />
                   </a>
                 </div>
 
-                <div className="flex-col justify-start p-4">
-                  <p className="text-[13px] text-[#212121] font-light dark:text-white">
+                {/* details section */}
+                <div className="flex-col justify-start px-4 py-2 sm:p-4">
+                  <p className="text-[9px] text-[#212121] font-light dark:text-white">
                     {data.title}
                   </p>
-                  <h4 className="text-black text-[11px] sm:text-[10px] md:text-[12px] lg:text-[14px] font-semibold dark:text-white">
+                  <h4 className="text-black text-[9px] ssm:text-[11px] sm:text-[10px] md:text-[12px] lg:text-[14px] font-semibold dark:text-white">
                     {data.description}
                   </h4>
                   <div className="flex justify-between items-center ">
@@ -205,13 +209,13 @@ const Navbar = () => {
                       {likedProducts[data.id] ? (
                         <FaHeart className="text-red-600" />
                       ) : (
-                        <FaRegHeart className="text-black dark:text-white " />
+                        <FaRegHeart className="text-black text-[11px] sm:text-[14px] dark:text-white " />
                       )}
-                      <p className="ml-2 text-[12px] sm:text-[11px] md:text-[13px] lg:text-[15px]">
+                      <p className="ml-2 text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
                         ({data.likes})
                       </p>
                     </button>
-                    <p className="flex justify-end w-full text-[12px] sm:text-[11px] md:text-[13px] lg:text-[15px]">
+                    <p className="flex justify-end w-full text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
                       {data.price}
                     </p>
                   </div>
@@ -223,8 +227,8 @@ const Navbar = () => {
       </div>
 
       {/* Footer */}
-      <footer className=" bg-darknavy text-white min-h-[181px] flex flex-col items-center justify-center">
-        <div className="flex justify-center gap-4 text-[13px] sm:text-[14px] lg:text-[16px] font-semibold mb-8">
+      <footer className="bg-darknavy text-white min-h-[181px] flex flex-col items-center justify-center">
+        <div className="flex justify-center gap-4 text-[10px] ssm:text-[12px] sm:text-[14px] lg:text-[16px] font-semibold mb-8">
           <a href="#">Teams And Conditions</a>
           <a href="#">File Licenses</a>
           <a href="#">Refund Policy</a>

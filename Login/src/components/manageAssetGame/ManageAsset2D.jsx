@@ -121,12 +121,16 @@ function ManageAsset2D() {
                   <td className="px-6 py-4">Laptop</td>
                   <td className="px-6 py-4">$2999</td>
                   <td className="mx-auto flex gap-4 mt-2">
-                    <img src={IconEdit} alt="icon edit" className="w-5 h-5" />
-                    <img
-                      src={IconHapus}
-                      alt="icon hapus "
-                      className="w-5 h-5"
-                    />
+                    <Link to="/manageAsset2D/edit">
+                      <img src={IconEdit} alt="icon edit" className="w-5 h-5" />
+                    </Link>
+                    <button>
+                      <img
+                        src={IconHapus}
+                        alt="icon hapus "
+                        className="w-5 h-5"
+                      />
+                    </button>
                   </td>
                 </tr>
                 <tr className=" bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">

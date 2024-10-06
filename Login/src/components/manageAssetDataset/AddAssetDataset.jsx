@@ -1,327 +1,207 @@
-import React, { useState } from "react";
-import IconUser from "../../assets/icon/iconHeader/iconUser.png";
-import IconCart from "../../assets/icon/iconHeader/iconCart.png";
-import IconDarkMode from "../../assets/icon/iconHeader/iconDarkMode.png";
-import Logo from "../../assets/icon/logo.jpg";
-import IconSearch from "../../assets/icon/iconHeader/iconSearch.svg";
-import Dataset from "../../assets/icon/iconSidebar/dataset.png";
-import IconLike from "../../assets/icon/iconHeader/iconLove.png";
+import Breadcrumb from "../breadcrumbs/Breadcrumbs";
+import IconField from "../../assets/icon/iconField/icon.svg";
+import HeaderNav from "../HeaderNav/HeaderNav";
 
-// Modal Component
-function AssetModal({ isOpen, onClose, asset }) {
-  if (!isOpen) return null;
-
+function AddNewDataset() {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-8 rounded-lg relative w-[600px] h-[712px]">
-        <button onClick={onClose} className="absolute top-2 right-4 text-black">
-          X
-        </button>
-        <h1 className="text-center font-semibold">{asset.title}</h1>
-        <div className="relative">
-          <img
-            src={asset.image}
-            alt="Asset"
-            className="w-full h-64 object-cover mt-4 mb-4"
-          />
-          <p className="absolute bottom-0 right-0 bg-[#D9D9D9A6] opacity-85 font-bold text-black px-3 py-1 rounded-tl-[10px]">
-            {asset.price}
-          </p>
+    <>
+      <div className="bg-primary-100 dark:bg-neutral-20 font-poppins h-full min-h-screen">
+        <div className="bg-primary-100 p-4 mt-14">
+          <HeaderNav />
         </div>
 
-        <h1 className="font-bold text-xl ml-4">Deskripsi Dataset</h1>
-        <p className="text-gray-700 ml-4">{asset.description}</p>
-
-        <div className="flex flex-col mt-4 items-center justify-end h-[280px]">
-          <button className="bg-[#575859] text-white py-2 px-4 w-[400px] h-[50px] rounded-[15px] mb-5">
-            Tambahkan ke Keranjang
-          </button>
-          <button className="bg-[#2563EB] font-bold text-white py-2 px-4 w-[400px] h-[50px] rounded-[15px] mb-5 ">
-            Beli dan Download
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AssetDataset() {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedAsset, setSelectedAsset] = useState(null);
-
-  const assets = [
-    {
-      title: "Dataset Ombak Laut",
-      description: "Sore tenang...",
-      price: "Rp. 25.000,00",
-      image: Dataset,
-    },
-    {
-      title: "Dataset Ombak Laut",
-      description: "Sore tenang...",
-      price: "Rp. 30.000,00",
-      image: Dataset,
-    },
-    {
-      title: "Dataset Ombak Laut",
-      description: "Sore tenang...",
-      price: "Rp. 50.000,00",
-      image: Logo,
-    },
-    {
-      title: "Dataset Ombak Laut",
-      description: "Sore tenang...",
-      price: "Rp. 25.000,00",
-      image: Dataset,
-    },
-    {
-      title: "Dataset Ombak Laut",
-      description: "Sore tenang...",
-      price: "Rp. 25.000,00",
-      image: Dataset,
-    },
-    {
-      title: "Dataset Ombak Laut",
-      description: "Sore tenang...",
-      price: "Rp. 25.000,00",
-      image: Dataset,
-    },
-    {
-      title: "Dataset Ombak Laut",
-      description: "Sore tenang...",
-      price: "Rp. 25.000,00",
-      image: Dataset,
-    },
-    {
-      title: "Dataset Ombak Laut",
-      description: "Sore tenang...",
-      price: "Rp. 25.000,00",
-      image: Dataset,
-    },
-    {
-      title: "Dataset Ombak Laut",
-      description: "Sore tenang...",
-      price: "Rp. 25.000,00",
-      image: Dataset,
-    },
-    {
-      title: "Dataset Ombak Laut",
-      description: "Sore tenang...",
-      price: "Rp. 25.000,00",
-      image: Dataset,
-    },
-    {
-      title: "Dataset Ombak Laut",
-      description: "Sore tenang...",
-      price: "Rp. 25.000,00",
-      image: Dataset,
-    },
-    {
-      title: "Dataset Ombak Laut",
-      description: "Sore tenang...",
-      price: "Rp. 25.000,00",
-      image: Dataset,
-    },
-  ];
-
-  const openModal = (asset) => {
-    setSelectedAsset(asset);
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-    setSelectedAsset(null);
-  };
-
-  return (
-    <div>
-      {/* Header */}
-      <header className="navbar bg-[#171717] flex justify-between items-center py-8">
-        <div className="flex items-center">
-          <img src={Logo} alt="Logo" className="h-14 w-14 mr-10 ml-10" />
-          <span className="text-2xl font-semibold text-white">PixelStore</span>
-        </div>
-        <div className="ml-28 w-[660px] h-[40px] bg-[#FFFFFF] rounded-[5px]">
-          <p className="ml-4 w-16 h-[43.93px] pt-2">Search |</p>
-          <input
-            type="text"
-            placeholder="type"
-            className="input input-bordered w-[510px] h-[23px] ml-2 pt-1 bg-[#FFFFFF] border-none"
-          />
-          <div className="w-[59.96px] h-[40px] bg-[#2563EB] pt-2 ml-12 rounded-r  -[5px] ">
-            <img className="w-[25px] h-[28px] ml-4" src={IconSearch} />
-          </div>
-        </div>
-        <div className="flex gap-2 space-x-4">
-          <div className="w-10 h-10 bg-[#F2F2F2] rounded-[5px] flex items-center justify-center -mr-6">
-            <img src={IconDarkMode} alt=""></img>
-          </div>
-        </div>
-        <div className="bg-[#F2F2F2] w-[75.95] h-[40px] flex rounded-[5px] pl-2 pr-2 -mr-6">
-          <img alt="" src={IconCart} />
-          <h1 className="ml-2">Cart</h1>
-        </div>
-        <div className="dropdown dropdown-end ">
-          <div
-            tabIndex={0}
-            role="button"
-            className="btn btn-ghost btn-circle avatar flex-col mr-6 w-[140px] h-[40px] rounded-[7px] bg-[#F2F2F2] hover:bg-[white]">
-            <div className="w-[24.98px] h-[25px] rounded-full ml-2 ">
-              <img alt="" src={IconUser} />
+        <div className="overflow-scroll ">
+          <div className="bg-primary-100 dark:bg-neutral-20 dark:text-primary-100 flex flex-col">
+            <div className="text-2xl dark:text-primary-100 p-4">
+              <Breadcrumb />
             </div>
-            <div className="w-[130px] h-[30px] pt-2 -ml-7">Hello, Sign in</div>
           </div>
-          <ul
-            tabIndex={0}
-            className="menu menu-sm dropdown-content bg-[#F2F2F2] rounded-box z-[1] mt-3 w-52 p-2 shadow ">
-            <li>
-              <a className="justify-between">
-                Profile
-                <span className="badge">New</span>
-              </a>
-            </li>
-            <li>
-              <a>Settings</a>
-            </li>
-            <li>
-              <a>Logout</a>
-            </li>
-          </ul>
-        </div>
-      </header>
 
-      {/* Navigation */}
-      <nav className="bg-[#201E43] text-white py-4">
-        <ul className="flex justify-start">
-          <li className="ml-10">
-            <a href="#" className="hover:underline">
-              Telusuri Semua
-            </a>
-          </li>
-          <li className="ml-8">
-            <a> | </a>
-          </li>
-          <li className="ml-10">
-            <a href="#" className="hover:underline">
-              Asset Video
-            </a>
-          </li>
-          <li className="ml-10">
-            <a href="#" className="hover:underline">
-              Asset Gambar
-            </a>
-          </li>
-          <li className="ml-10">
-            <a href="#" className="border-b-4 border-[#2563EB] pb-1">
-              Asset Dataset
-            </a>
-          </li>
-          <li className="ml-10">
-            <a href="#" className="hover:underline">
-              Asset Game
-            </a>
-          </li>
-          <li className="ml-auto ">
-            <a> | </a>
-          </li>
-          <li className="ml-8 mr-10">
-            <a href="#" className="hover:underline">
-              Asset Gratis
-            </a>
-          </li>
-        </ul>
-      </nav>
+          <form className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24   h-[1434px] gap-[50px]  overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0">
+            <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-10 dark:text-primary-100 p-4">
+              Add New Dataset
+            </h1>
+            <div className="p-8 -mt-4  bg-primary-100  dark:bg-neutral-20 rounded-sm shadow-lg">
+              <h2 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+                Dataset Information
+              </h2>
 
-      {/* Content */}
-      <main className="mt-6">
-        <h1 className="text-xl font-semibold mb-4 ml-16">All Category</h1>
-        <div className="ml-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
-          {assets.map((asset, index) => (
-            <div
-              key={index}
-              className="bg-[#D9D9D9] w-full h-[335px] shadow-md rounded-lg p-6 cursor-pointer"
-              onClick={() => openModal(asset)}>
-              <div className="flex justify-center">
-                <img
-                  src={asset.image}
-                  alt="Product"
-                  className="w-53 h-48 object-cover mb-4"
-                />
+              <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+                <div className="w-full sm:w-[150px] md:w-[170px] lg:w-[200px] xl:w-[220px] 2xl:w-[170px]">
+                  <div className="flex items-center gap-1">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+                      Upload Dataset
+                    </h3>
+                    <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
+                    />
+                  </div>
+                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
+                    Format file harus berupa , csv, rar, zip dan ukuran maksimal
+                    5 gb.
+                  </p>
+                </div>
+                <div className="p-0">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-2 md:gap-2 lg:gap-6 xl:gap-6 2xl:gap-10">
+                    <div className="mt-2 md:ml-2 lg:ml-4 xl:ml-6 2xl:ml-4 flex justify-center items-center border border-dashed border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px] xl:h-[150px] 2xl:h-[160px]">
+                      <label
+                        htmlFor="fileUpload"
+                        className="flex flex-col justify-center items-center cursor-pointer text-center">
+                        <img
+                          alt=""
+                          className="w-6 h-6"
+                          src="path_to_your_icon"
+                        />
+                        <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
+                          Upload Dataset
+                        </span>
+                        <input
+                          type="file"
+                          id="fileUpload"
+                          name="product_Datasets.Dataset_url"
+                          multiple
+                          accept="Dataset/jpeg,Dataset/png,Dataset/jpg"
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="text-sm">
-                <p className="text-gray-500">Glicss Photograph</p>
-                <h2 className="font-semibold mb-2">{asset.title}</h2>
-                <div className="flex justify-between items-center text-gray-600">
-                  <span className="flex items-center">
-                    <img src={IconLike} className="mr-2 w-5 h-5" alt="Like" />{" "}
-                    2301
-                  </span>
-                  <span className="font-semibold">{asset.price}</span>
+
+              <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+                <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
+                  <div className="flex items-center gap-1">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+                      Dataset Name
+                    </h3>
+                    <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
+                    />
+                  </div>
+                  <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
+                    Nama Dataset minimal 100 karakter.
+                  </p>
+                </div>
+
+                <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
+                  <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
+                    <input
+                      type="text"
+                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px]"
+                      placeholder="Enter name...."
+                      required
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+                <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
+                  <div className="flex items-center gap-1">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+                      Category
+                    </h3>
+                    <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
+                    />
+                  </div>
+                  <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
+                    Silahkan Pilih Kategori Yang Sesuai Dengan Dataset Anda.
+                  </p>
+                </div>
+
+                <div className="flex justify-start items-center w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
+                  <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
+                    <select
+                      name="category"
+                      className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md">
+                      <option value="" disabled>
+                        Pick an option
+                      </option>
+                      <option value="option1">Option 1</option>
+                      <option value="option2">Option 2</option>
+                    </select>
+                  </label>
+
+                  <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
+                    +
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+                <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
+                  <div className="flex items-center gap-1">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px]  font-bold text-neutral-20 dark:text-primary-100">
+                      Deskripsi
+                    </h3>
+                    <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
+                    />
+                  </div>
+                  <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px]">
+                    Berikan Deskripsi Pada Gambar Anda Maximal 200 Huruf
+                  </p>
+                </div>
+                <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
+                  <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
+                    <textarea
+                      type="text"
+                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px] h-[48px] sm:h-[60px] md:h-[80px] lg:h-[80px] xl:h-[100px] bg-transparent"
+                      placeholder="Deskripsi"
+                      required></textarea>
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+                <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
+                  <div className="flex items-center gap-1">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+                      Harga
+                    </h3>
+                  </div>
+                  <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
+                    Silahkan Masukkan Harga Untuk Asset Dataset jika asset
+                    gratis silahkan dikosongkan.
+                  </p>
+                </div>
+                <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
+                  <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
+                    <input
+                      type="Rp"
+                      className="input border-0 focus:outline-none focus:ring-0  w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
+                      placeholder="Rp"
+                      required
+                    />
+                  </label>
                 </div>
               </div>
             </div>
-          ))}
+            <div className="w-full inline-flex sm:gap-6 xl:gap-[21px] justify-center sm:justify-center md:justify-end  gap-6 mt-12 sm:mt-12 md:mt-14 lg:mt-14 xl:mt-12  ">
+              <button className="btn bg-neutral-60 border-neutral-60 hover:bg-neutral-60 hover:border-neutral-60 rounded-lg  font-semibold   text-primary-100 text-center text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn  bg-secondary-40 border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg  font-semibold leading-[24px]  text-primary-100 text-center  text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
+                Save
+              </button>
+            </div>
+          </form>
         </div>
-      </main>
-
-      {/* Modal */}
-      <AssetModal
-        isOpen={modalOpen}
-        onClose={closeModal}
-        asset={selectedAsset}
-      />
-
-      {/* Pagination */}
-      <div className="bg-[#201E43] flex justify-center mt-16 py-5">
-        <a href="#" className="px-3 py-1 text-white hover:text-black">
-          ««
-        </a>
-        <a href="#" className="px-3 py-1 bg-[#2563EB] text-white rounded-full">
-          1
-        </a>
-        <a href="#" className="px-3 py-1 text-white hover:text-black">
-          2
-        </a>
-        <a href="#" className="px-3 py-1 text-white hover:text-black">
-          3
-        </a>
-        <a href="#" className="px-3 py-1 text-white hover:text-black">
-          4
-        </a>
-        <a href="#" className="px-3 py-1 text-white hover:text-black">
-          5
-        </a>
-        <a href="#" className="px-3 py-1 text-white hover:text-black">
-          …
-        </a>
-        <a href="#" className="px-3 py-1 text-white hover:text-black">
-          Last »
-        </a>
       </div>
-
-      {/* Footer */}
-      <footer className="bg-[#212121] text-white text-sm py-6">
-        <div className="container mx-auto flex justify-center">
-          <a href="#" className="hover:underline">
-            Teams And Conditions
-          </a>
-          <a href="#" className="hover:underline ml-12">
-            File Licenses
-          </a>
-          <a href="#" className="hover:underline ml-12">
-            Refund Policy
-          </a>
-          <a href="#" className="hover:underline ml-12">
-            Privacy Policy
-          </a>
-        </div>
-        <p className="text-center mt-4">
-          Copyright © 2024 - All rights reserved by ACME Industries Ltd
-        </p>
-      </footer>
-    </div>
+    </>
   );
 }
 
-export default AssetDataset;
+export default AddNewDataset;

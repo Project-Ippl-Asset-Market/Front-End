@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -61,28 +62,28 @@ function Login() {
       localStorage.setItem("authToken", token);
 
       const adminRole = await checkAdminRole(user.email);
-      console.log("Admin Role:", adminRole); // Debugging line
+      console.log("Admin Role:", adminRole);
 
       if (adminRole === "superadmin") {
         setModalMessage("Login sebagai Superadmin berhasil!");
         setTimeout(() => {
-          setModalMessage(null); // Hide modal before navigating
+          setModalMessage(null);
           localStorage.setItem("userRole", "superadmin");
-          navigate("/superAdminDashboard");
+          navigate("/dashboard");
         }, 2000);
       } else if (adminRole === "admin") {
         setModalMessage("Login sebagai Admin berhasil!");
         setTimeout(() => {
           setModalMessage(null);
           localStorage.setItem("userRole", "admin");
-          navigate("/adminDashboard");
+          navigate("/dashboard");
         }, 2000);
       } else {
         setModalMessage("Login sebagai pengguna biasa berhasil!");
         setTimeout(() => {
           setModalMessage(null);
           localStorage.setItem("userRole", "user");
-          navigate("/landingPage");
+          navigate("/");
         }, 2000);
       }
     } catch (error) {
@@ -112,21 +113,21 @@ function Login() {
         setTimeout(() => {
           setModalMessage(null);
           localStorage.setItem("userRole", "superadmin");
-          navigate("/superAdminDashboard");
+          navigate("/dashboard");
         }, 2000);
       } else if (adminRole === "admin") {
         setModalMessage("Login sebagai Admin dengan Google berhasil!");
         setTimeout(() => {
           setModalMessage(null);
           localStorage.setItem("userRole", "admin");
-          navigate("/adminDashboard");
+          navigate("/dashboard");
         }, 2000);
       } else {
         setModalMessage("Login sebagai pengguna biasa berhasil!");
         setTimeout(() => {
           setModalMessage(null);
           localStorage.setItem("userRole", "user");
-          navigate("/landingPage");
+          navigate("/");
         }, 2000);
       }
     } catch {
@@ -137,47 +138,48 @@ function Login() {
   };
 
   return (
-    <div className="bg-primary-10 min-h-screen h-full flex justify-center items-center font-poppins">
+    <div className="bg-neutral-20 min-h-screen h-full flex justify-center items-center font-poppins">
       <div className="flex flex-col lg:flex-row w-full max-w-[1920px] lg:h-[768px] h-auto min-h-screen">
-        <div className="relative h-full text-center w-full lg:w-1/2 bg-primary-10 flex flex-col justify-center items-center p-6 ">
+        <div className="relative hidden sm:block lg:flex h-full text-center w-full lg:w-1/2 flex-col justify-center items-center p-6 ">
           <img
             src={BgLogin}
             alt="Login background"
             className="absolute w-full h-full inset-0 object-cover opacity-80"
           />
-          <div className="bg-primary-10 relative z-40 w-[60%] sm:w-[50%] md:w-[40%] lg:w-1/2 opacity-60 rounded-lg p-4 sm:p-6">
+          <div className="relative mx-auto z-40 w-[60%] sm:w-[50%] md:w-[40%] lg:w-1/2 opacity-100 rounded-md p-4 sm:p-6">
             <img
               src={Logo}
               alt="Logo"
               className="w-44 h-44 sm:w-40 sm:h-40 z-50 rounded-t-full mx-auto mt-6 sm:mt-5"
             />
-            <h2 className="relative z-50 text-1xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary-5 mt-4">
+            <h2 className="relative z-50 text-1xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary-100 mt-4">
               PixelStore
             </h2>
-            <p className="text-justify relative z-50 py-2 sm:py-4 lg:py-6 text-[10px] sm:text-[12px] md:text-[14px] lg:text-xl  text-primary-6">
+            <p className="text-center relative z-50 py-2 sm:py-4 lg:py-6 text-[10px] sm:text-[12px] md:text-[14px] lg:text-xl  text-primary-100">
               PixelStore, Sumber Inspirasi footage menarik di website kami untuk
               Project Anda!
             </p>
           </div>
         </div>
-        <div className="card bg-primary-9 w-full lg:w-1/2 flex justify-center items-center min-h-screen">
-          <div className="card-body w-full px-4 sm:px-8 lg:px-16 py-8 lg:py-0 bg-primary-6">
-            <div className="mt-8 sm:mt-[3%] md:mt-[4%] lg:mt-[10%]  text-center">
-              <h1 className="text-xl sm:text-4xl md:text-5xl lg:text-5xl font-bold text-primary-12 mt-2 mb-2">
-                LOGIN
-              </h1>
-            </div>
+
+        <div className="card bg-neutral-20 w-full lg:w-1/2 flex justify-center items-center min-h-screen ">
+          <div className="card-body w-full px-4 sm:px-8 lg:px-26 xl:px-2 py-8 lg:py-0 bg-neutral-20 ">
             <div className="relative w-full mx-auto ">
-              <h2 className=" ml-[12px] sm:ml-[90px] md:ml-[110px] lg:ml-[80px] xl:ml-[100px] sm:w-2/3 text-[12px] sm:text-[14px] md:text-[16px] lg:text-xl text-center text-primary-12 mb-10">
+              <div className="mt-2 sm:mt-[3%] md:mt-[4%] lg:mt-[10%]  text-center mb-4">
+                <h1 className="text-[26px] sm:text-[26px] md:text-[28px] lg:text-[36px] text-center font-bold text-primary-100">
+                  LOGIN
+                </h1>
+              </div>
+              <h2 className=" ml-[12px] sm:ml-[100px] md:ml-[130px] lg:ml-[80px] xl:ml-[100px] sm:w-2/3 text-[12px] sm:text-[14px] md:text-[16px] lg:text-xl text-center text-neutral-90 mb-10">
                 Selamat Datang di PixelStore, Surga Kreatif untuk Asset
                 Berkualitas!
               </h2>
             </div>
 
-            <form onSubmit={loginAction} className="mx-auto">
+            <form onSubmit={loginAction} className="mx-auto w-full max-w-md">
               <div className="form-control items-start">
                 <label className="label">
-                  <span className="label-text text-sm sm:text-base text-primary-12 text-start">
+                  <span className="label-text text-[16px] sm:text-[14px] md:text-[14px] lg:text-[18px]  xl:text-[18px] sm:text-base text-primary-100 text-start">
                     Email
                   </span>
                 </label>
@@ -185,7 +187,7 @@ function Login() {
                   type="email"
                   name="email"
                   placeholder="Enter email"
-                  className="w-[500px] max-sm:w-[250px] min-md:w-[400px] lg:w-[400px] h-[45px] input input-bordered bg-primary-12 text-primary-6"
+                  className=" border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
                   required
                   value={loginEmail}
                   onChange={handleChange}
@@ -193,7 +195,7 @@ function Login() {
               </div>
               <div className="form-control mt-4">
                 <label className="label">
-                  <span className="label-text text-sm sm:text-base text-primary-12">
+                  <span className="label-text  sm:text-base text-primary-100 text-[16px] sm:text-[14px] md:text-[14px] lg:text-[18px]  xl:text-[18px]">
                     Password
                   </span>
                 </label>
@@ -202,16 +204,16 @@ function Login() {
                     type={showPassword ? "text" : "password"}
                     name="password"
                     placeholder="Enter password"
-                    className="w-[500px] max-sm:w-[250px] min-md:w-[400px] lg:w-[400px] h-[45px] input input-bordered bg-primary-12 text-primary-6  pr-10"
+                    className="border border-neutral-90 rounded-md  w-full  h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
                     required
                     value={loginPassword}
                     onChange={handleChange}
                   />
 
-                  {/*  Icon mata start */}
+                  {/* Icon mata start */}
                   <button
                     type="button"
-                    className="absolute  inset-y-0 right-0 pr-5 flex items-center text-gray-600"
+                    className="absolute  inset-y-0 right-0 pr-4 flex items-center text-gray-600"
                     onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? (
                       <EyeSlashIcon className="h-6 w-6 text-gray-500" />
@@ -219,88 +221,102 @@ function Login() {
                       <EyeIcon className="h-6 w-6 text-gray-500" />
                     )}
                   </button>
-                  {/*  Icon mata End */}
+                  {/* Icon mata End */}
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <label className="label cursor-pointer">
                     <input
                       type="checkbox"
-                      className="checkbox checkbox-md  rounded-[2px] bg-primary-12 border-primary-12"
+                      className="checkbox checkbox-md rounded-[2px] bg-primary-100 border-primary-100 "
                     />
-                    <span className="label-text text-sm text-primary-12 ml-2">
+                    <span className="label-text text-[12px] sm:text-[12px] md:text-[14px] lg:text-[16px]  xl:text-[18px] sm:text-base text-primary-100 ml-2">
                       Remember me
                     </span>
                   </label>
+
                   <Link
                     to="/lupaPassword"
-                    className="text-sm text-primary-1 hover:text-error-1 ">
-                    Lupa Password?
+                    className="relative inline-block text-[12px] sm:text-[12px] md:text-[14px] lg:text-[16px] xl:text-[18px] text-primary-40 hover:text-error-1 group">
+                    Lupa Password ?
+                    <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-primary-40 transition-all duration-1000 transform group-hover:left-0 group-hover:w-1/2"></span>
+                    <span className="absolute bottom-0 right-1/2 w-0 h-[2px] bg-primary-40 transition-all duration-1000 transform group-hover:right-0 group-hover:w-1/2"></span>
                   </Link>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={signInWithGoogle}
-                className="w-[500px] max-sm:w-[250px] min-md:w-[400px] lg:w-[400px] h-[45px]  input input-bordered btn btn-outline  mt-6 bg-primary-7 hover:bg-primary-8 hover:font-bold text-primary-3">
-                <img src={IconGoogle} alt="Google" className="w-5 h-5 mr-2" />
+                className="border border-neutral-80 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-80 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]  btn btn-outline mt-6 ">
+                <img src={IconGoogle} alt="Google" className="w-6 h-6 mr-2" />
                 Masuk menggunakan google
               </button>
-
               <div className="form-control mt-6">
                 <button
                   type="submit"
-                  className="w-[500px] max-sm:w-[250px] min-md:w-[400px] lg:w-[400px] h-[45px] btn bg-primary-2 hover:bg-secondary-7 text-primary-12 font-bold"
+                  className={`rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] text-[16px] sm:text-[16px] md:text-[16px] lg:text-[18px]  xl:text-[18px] mt-4   ${
+                    loading ? "bg-secondary-40 " : "bg-secondary-40  "
+                  } text-primary-100`}
                   disabled={loading}>
-                  {loading ? "Loading..." : "masuk"}
+                  {loading ? (
+                    <span className="loading loading-infinity loading-lg"></span>
+                  ) : (
+                    "masuk"
+                  )}
                 </button>
               </div>
             </form>
-            <div className="text-2xl text-center mt-5">
-              <span className="text-primary-12 text-2xl">
+
+            <div className="text-2xl text-center mt-2">
+              <span className="text-primary-100 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl">
                 Belum Punya Akun?
               </span>
-              <Link to="/register"
-                className="ml-4 text-primary-1 text-2xl hover:text-error-1">
-                Daftar
+
+              <Link
+                to="/register"
+                className="relative ml-4 inline-block text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-[18px] text-primary-40 hover:text-error-1 group">
+                Daftar ?
+                <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-primary-40 transition-all duration-1000 transform group-hover:left-0 group-hover:w-1/2"></span>
+                <span className="absolute bottom-0 right-1/2 w-0 h-[2px] bg-primary-40 transition-all duration-1000 transform group-hover:right-0 group-hover:w-1/2"></span>
               </Link>
             </div>
           </div>
           {errorModal && (
-            <div className="modal modal-open ">
-              <div className="modal-box sm:w-[400px] md:w-[700px] lg:w-[700px] h-[250px] bg-primary-10">
+            <div className="modal modal-open fixed inset-0 flex items-center justify-center z-50 pr-5">
+              <div className="modal-box w-[90%] max-w-[250px] sm:max-w-[350px] md:max-w-[350px] lg:max-w-[400px] xl:max-w-[450px] h-auto sm:h-[280px] md:h-[290px] lg:h-[300px] xl:h-[360px] bg-neutral-90 rounded-lg">
                 <img
-                  className="h-32 w-32 mx-auto mb-6"
+                  className="w-20 sm:w-24 md:w-32 lg:w-32 xl:w-32 2xl:w-32 h-20 sm:h-24 md:h-32 lg:h-32 xl:h-32 2xl:h-32 mx-auto mb-6"
                   src={IconModalError}
                   alt="icon pop up error"
                 />
-                <h3 className=" text-lg text-primary-3 w-3/2 mx-auto text-center">
+                <h3 className="text-center text-[12px] sm:text-[16px] md:text-[16px] lg:text-[18px] xl:text-[18px] text-primary-0 mx-auto">
                   {errorModal}
                 </h3>
-                <div className="modal-action">
+                <div className="modal-action flex justify-center">
                   <button
                     onClick={() => setErrorModal(null)}
-                    className="btn bg-primary-1 border-primary-1 hover:bg-error-1 hover:border-error-1 hover:font-bold mx-auto mt-4 w-[79px] text-primary-12">
+                    className="btn bg-secondary-40 border-secondary-40 hover:bg-secondary-50 hover:border-secondary-50 hover:font-bold mx-auto mt-4 w-[79px] text-primary-100">
                     OK
                   </button>
                 </div>
               </div>
             </div>
           )}
+
           {modalMessage && (
-            <div className="modal modal-open ">
-              <div className="modal-box sm:w-[400px] md:w-[700px] lg:w-[700px] h-[250px] bg-primary-10">
+            <div className="modal modal-open fixed inset-0 flex items-center justify-center z-50 pr-5">
+              <div className="modal-box w-[90%] max-w-[250px] sm:max-w-[350px] md:max-w-[350px] lg:max-w-[400px] xl:max-w-[450px] h-auto sm:h-[280px] md:h-[290px] lg:h-[300px] xl:h-[370px] bg-neutral-90 rounded-lg">
                 <img
-                  className="h-32 w-32 mx-auto mb-6"
+                  className="w-20 sm:w-24 md:w-32 lg:w-32 xl:w-32 2xl:w-32 h-20 sm:h-24 md:h-32 lg:h-32 xl:h-32 2xl:h-32 mx-auto mb-6"
                   src={IconModalSuccess}
-                  alt="icon pop up error"
+                  alt="icon pop up success"
                 />
-                <h3 className=" text-lg text-primary-3 w-3/2 mx-auto text-center">
+                <h3 className="text-center text-[12px] sm:text-[16px] md:text-[16px] lg:text-[18px] xl:text-[18px] text-primary-0 mx-auto">
                   {modalMessage}
                 </h3>
-                <div className="modal-action">
+                <div className="modal-action flex justify-center">
                   <button
                     onClick={() => setModalMessage(null)}
-                    className="btn bg-success-1 border-success-1 hover:bg-success-1 hover:border-success-1 hover:font-bold mx-auto mt-4 w-[79px] text-primary-12">
+                    className="btn bg-secondary-40 border-secondary-40 hover:bg-secondary-50 hover:border-secondary-50 hover:font-bold mx-auto mt-4 w-[79px] text-primary-100">
                     OK
                   </button>
                 </div>

@@ -22,7 +22,7 @@ const AutoLogout = () => {
 
       const timeDiff = (currentTime - lastActivity) / 1000;
       // Set Waktu untuk Auto Logout jadi 24 jam (86400 detik) tinggal ganti angka yang 120
-      if (timeDiff >= 120 && user && !loggedOut) {
+      if (timeDiff >= 86400 && user && !loggedOut) {
         handleLogout();
       }
     };
@@ -74,7 +74,7 @@ const AutoLogout = () => {
     <>
       {modalMessage && (
         <div className="modal modal-open">
-          <div className="modal-box sm:w-[400px] md:w-[700px] lg:w-[700px] h-[250px] bg-primary-10">
+          <div className="modal-box sm:w-[400px] md:w-[700px] lg:w-[700px] h-[250px] bg-neutral-90">
             <img
               className="h-28 w-28 mx-auto mb-6"
               src={IconModalError}
@@ -90,7 +90,7 @@ const AutoLogout = () => {
                   setModalMessage(null);
                   navigate("/");
                 }}
-                className="btn bg-primary-1 border-primary-1 hover:bg-primary-1 hover:border-primary-1 hover:font-bold mx-auto mt-4 w-[79px] text-primary-12">
+                className="btn bg-secondary-40 border-secondary-40 hover:bg-secondary-50 hover:border-secondary-50 hover:font-bold mx-auto mt-4 w-[79px] text-primary-100">
                 OK
               </button>
             </div>

@@ -1,7 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-
 export default {
-  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -13,6 +11,17 @@ export default {
         poppins: ["Poppins", "sans-serif"],
         roboto: ["Roboto", "sans-serif"],
       },
+
+      width: {
+        xs: "340px",
+        sm: "640px",
+        md: "768px",
+        lg: "1024px",
+        xl: "1280px",
+        "2xl": "1920px",
+      },
+
+      // Color Guidance Asset Market
       colors: {
         primary: {
           0: "#000000",
@@ -46,8 +55,10 @@ export default {
         },
         neutral: {
           0: "#000000",
+          5: "#201E43",
           10: "#171717",
           20: "#212121", //bg untuk dark mode
+          25: "#303030", //content manage
           30: "#454747",
           40: "#5D5F5F",
           50: "#767777",

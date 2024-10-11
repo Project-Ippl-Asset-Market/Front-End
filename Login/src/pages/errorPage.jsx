@@ -1,8 +1,24 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 export default function Error() {
+  const [homeLink, setHomeLink] = useState("/");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const userRole = localStorage.getItem("userRole");
+
+    if (userRole === "admin" || userRole === "superadmin") {
+      setHomeLink("/dashboard");
+    }
+  }, []);
+
+  const handleBack = () => {
+    navigate(-1);
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-primary-10">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-primary-100 font-poppins">
       <div className="gap-6 flex-col justify-center text-center items-center">
         <svg
           width="133"
@@ -19,20 +35,19 @@ export default function Error() {
             />
           </g>
         </svg>
-        <h1 className="text-primary-1 lg:text-[44px] font-bold lg:leading-[58px]">
+        <h1 className="text-primary-30 lg:text-[44px] font-bold lg:leading-[58px]">
           404 ERROR
         </h1>
-        <p className="text-black lg:text-4xl lg:leading-[46px]">
+        <p className="text-neutral-20 lg:text-4xl lg:leading-[46px]">
           Sorry, page not found.
         </p>
       </div>
-      {/*nnati kita ubah/ganti (/) jadi (/login) mengarah ke halman login jika sudah membuat home pagenya */}
-      <Link
-        className="btn btn-form-secondary bg-primary-2 border-primary-2 text-primary-12 font-semobold hover:bg-secondary-8 text-xs mt-[46px]"
-        to="/"
-        end>
-        Back to Home
-      </Link>
+
+      <button
+        className="btn btn-form-secondary bg-secondary-40 border-primary-100 text-primary-100 font-semobold hover:bg-secondary-30 hover:font-bold text-xs mt-[46px] w-90 h-16"
+        onClick={handleBack}>
+        Go Back
+      </button>
     </div>
   );
 }

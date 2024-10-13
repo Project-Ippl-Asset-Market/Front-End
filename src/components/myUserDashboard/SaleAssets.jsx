@@ -30,9 +30,10 @@ function SaleAssets() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isSidebarOpen]);
+
   return (
     <>
-      <div className=" dark:bg-neutral-90 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
+      <div className="dark:bg-neutral-20 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
         <HeaderSidebar
           isSidebarOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}
@@ -51,91 +52,83 @@ function SaleAssets() {
         </aside>
 
         {/* Isi Konten */}
-        <div className="p-8 sm:ml-[280px] h-full bg-primary-100 text-neutral-10  dark:bg-neutral-20 dark:text-neutral-10 min-h-screen pt-24">
+        <div className="p-8 sm:ml-[280px] h-full bg-primary-100 text-neutral-10 dark:bg-neutral-20 dark:text-neutral-10 min-h-screen pt-24">
+          {/* Breadcrumb */}
           <div className="breadcrumbs text-sm mt-1 mb-10">
             <Breadcrumb />
           </div>
 
-          <div className="flex flex-col gap-4 md:flex-row">
-            {/* Search Box */}
-            <div className="form-control w-full">
-              <div className="relative h-[48px] bg-primary-100 dark:bg-neutral-20 rounded-lg border border-neutral-90 dark:border-neutral-25 dark:border-2">
-                <img
-                  src={IconSearch}
-                  alt="iconSearch"
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 w-6 h-6"
-                />
-                <input
-                  type="text"
-                  placeholder="Search"
-                  className=" input border-none bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10 h-[40px] w-full focus:outline-none"
-                />
-              </div>
+          {/* Section: Cards */}
+          <div className="grid grid-cols-3 gap-6 mb-8">
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-semibold">Total Pendapatan</h3>
+              <p className="text-2xl font-bold">Rp. 45.600.000</p>
+              <span className="text-green-500">
+                +21.6% dari 7 Hari yang lalu
+              </span>
+            </div>
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-semibold">Asset Terjual</h3>
+              <p className="text-2xl font-bold">67</p>
+              <span className="text-green-500">
+                +21.6% dari 7 Hari yang lalu
+              </span>
+            </div>
+            <div className="bg-white shadow rounded-lg p-6">
+              <h3 className="text-lg font-semibold">Jumlah Disukai</h3>
+              <p className="text-2xl font-bold">+1240</p>
+              <span className="text-green-500">
+                +21.6% dari 7 Hari yang lalu
+              </span>
             </div>
           </div>
 
+          {/* Section: Table */}
           <div className="relative mt-6 overflow-x-auto shadow-md sm:rounded-lg p-8 dark:bg-neutral-25">
             <table className="w-full text-sm text-left rtl:text-right text-gray-500 bg-primary-100 dark:text-neutral-90 ">
-              <thead className="text-xs text-neutral-20 uppercase  dark:bg-neutral-25 dark:text-neutral-90 border-b dark:border-neutral-20">
+              <thead className="text-xs text-neutral-20 uppercase dark:bg-neutral-25 dark:text-neutral-90 border-b dark:border-neutral-20">
                 <tr>
                   <th scope="col" className="px-6 py-3">
-                    Package name
+                    Gambar
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Category
+                    Kategori
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Price
+                    Status
                   </th>
-                  <th scope="col" className="justify-center mx-auto">
-                    Date
+                  <th scope="col" className="px-6 py-3">
+                    Tanggal
+                  </th>
+                  <th scope="col" className="px-6 py-3">
+                    Action
                   </th>
                 </tr>
               </thead>
               <tbody>
-                <tr className=" bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
-                  <th
-                    scope="row"
-                    className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 secondary-40space-nowrap">
-                    Font 2D
-                  </th>
-                  <td className="px-6 py-4">2D</td>
-                  <td className="px-6 py-4">$2999</td>
-                  <td className="px-6 py-4">12/02/2024</td>
+                <tr className="bg-white dark:bg-neutral-25 dark:text-neutral-9">
+                  <td className="px-6 py-4">
+                    <img
+                      src="https://via.placeholder.com/40"
+                      alt="Gambar"
+                      className="w-10 h-10 rounded-full"
+                    />
+                  </td>
+                  <td className="px-6 py-4">Text</td>
+                  <td className="px-6 py-4">Berbayar</td>
+                  <td className="px-6 py-4">20-12-2024</td>
+                  <td className="px-6 py-4">
+                    <button className="text-blue-600 hover:underline">
+                      Edit
+                    </button>
+                    <button className="text-red-600 hover:underline ml-4">
+                      Hapus
+                    </button>
+                  </td>
                 </tr>
-                <tr className=" bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
-                  <th
-                    scope="row"
-                    className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 secondary-40space-nowrap">
-                    Font 2D
-                  </th>
-                  <td className="px-6 py-4">2D</td>
-                  <td className="px-6 py-4">$2999</td>
-                  <td className="px-6 py-4">12/02/2024</td>
-                </tr>
-                <tr className=" bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
-                  <th
-                    scope="row"
-                    className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 secondary-40space-nowrap">
-                    Font 2D
-                  </th>
-                  <td className="px-6 py-4">2D</td>
-                  <td className="px-6 py-4">$2999</td>
-                  <td className="px-6 py-4">12/02/2024</td>
-                </tr>
+                {/* Tambahkan lebih banyak baris di sini sesuai dengan data */}
               </tbody>
             </table>
-          </div>
-          <div className="flex join pt-72 justify-end ">
-            <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50  hover:border-neutral-40 opacity-70">
-              «
-            </button>
-            <button className="join-item btn dark:bg-neutral-25 bg-neutral-60  text-primary-100 hover:bg-neutral-70 hover:border-neutral-25 border-neutral-60 dark:border-neutral-25">
-              Page 1
-            </button>
-            <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40  opacity-70">
-              »
-            </button>
           </div>
         </div>
       </div>

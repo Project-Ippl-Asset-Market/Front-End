@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 
-export const NavbarSection = () => {
+const NavbarSection = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ export const NavbarSection = () => {
           <div className="flex-grow " />
           <button
             onClick={toggleNavbar}
-            className="p-2 pr-14 focus:outline-none mt-8 mb-2 sm:flex md:hidden lg:hidden 2xl:hidden ">
+            className="p-6 pr-14 focus:outline-none  sm:flex md:hidden lg:hidden 2xl:hidden ">
             {isOpen ? (
               <FaTimes className="text-2xl text-primary-30" />
             ) : (
@@ -83,11 +83,11 @@ export const NavbarSection = () => {
             {/* Asset Video */}
             <div className="relative group">
               <Link
-                to="/v"
+                to="/mapAssetVideo"
                 className={`relative inline-block text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px] 
                 w-full text-start rounded-md h-10 p-2
                 ${
-                  isLinkActive("/t")
+                  isLinkActive("/mapAssetVideo")
                     ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
                     : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
                 }
@@ -100,7 +100,7 @@ export const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/1")
+              isLinkActive("/mapAssetVideo")
                 ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-8 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
                 : "hidden sm:w-1/2"
             }`}></span>
@@ -108,7 +108,9 @@ export const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/1") ? "hidden" : "hidden sm:group-hover:w-1/2"
+              isLinkActive("/mapAssetVideo")
+                ? "hidden"
+                : "hidden sm:group-hover:w-1/2"
             }`}></span>
                 </span>
               </Link>
@@ -117,11 +119,11 @@ export const NavbarSection = () => {
             {/* Asset Gambar */}
             <div className="relative group">
               <Link
-                to="/a"
+                to="/mapAssetImage"
                 className={`relative inline-block text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px]
               w-full text-start rounded-md h-10 p-2
               ${
-                isLinkActive("/t")
+                isLinkActive("/mapAssetImage")
                   ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
                   : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
               }
@@ -134,7 +136,7 @@ export const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/1")
+              isLinkActive("/mapAssetImage")
                 ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-8 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
                 : "hidden sm:w-1/2"
             }`}></span>
@@ -142,7 +144,9 @@ export const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/2") ? "hidden" : "hidden sm:group-hover:w-1/2"
+              isLinkActive("/mapAssetImage")
+                ? "hidden"
+                : "hidden sm:group-hover:w-1/2"
             }`}></span>
                 </span>
               </Link>
@@ -151,11 +155,11 @@ export const NavbarSection = () => {
             {/* Asset Dataset */}
             <div className="relative group">
               <Link
-                to="/a"
+                to="/mapAssetDataset"
                 className={`relative inline-block text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px] 
             w-full text-start rounded-md h-10 p-2
             ${
-              isLinkActive("/t")
+              isLinkActive("/mapAssetDataset")
                 ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
                 : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
             }
@@ -168,7 +172,7 @@ export const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/q")
+              isLinkActive("/mapAssetDataset")
                 ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-8 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
                 : "hidden sm:w-1/2"
             }`}></span>
@@ -176,7 +180,9 @@ export const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/2") ? "hidden" : "hidden sm:group-hover:w-1/2"
+              isLinkActive("/mapAssetDataset")
+                ? "hidden"
+                : "hidden sm:group-hover:w-1/2"
             }`}></span>
                 </span>
               </Link>
@@ -185,11 +191,11 @@ export const NavbarSection = () => {
             {/* Asset Game */}
             <div className="relative group ">
               <Link
-                to="/2"
+                to="/mapAssetGame"
                 className={`relative inline-block text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px] 
             w-full text-start rounded-md h-10 p-2
             ${
-              isLinkActive("/t")
+              isLinkActive("/mapAssetGame")
                 ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
                 : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
             }
@@ -202,7 +208,7 @@ export const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/q")
+              isLinkActive("/mapAssetGame")
                 ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-8 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
                 : "hidden sm:w-1/2"
             }`}></span>
@@ -210,7 +216,9 @@ export const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/2") ? "hidden" : "hidden sm:group-hover:w-1/2"
+              isLinkActive("/mapAssetGame")
+                ? "hidden"
+                : "hidden sm:group-hover:w-1/2"
             }`}></span>
                 </span>
               </Link>
@@ -311,3 +319,6 @@ export const NavbarSection = () => {
     </>
   );
 };
+// jangan ubah udah ku costum
+
+export default NavbarSection;

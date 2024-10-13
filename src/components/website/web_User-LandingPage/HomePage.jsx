@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Image1 from "../web_User-LandingPage/Banner/bg.jpg";
 import Img1 from "../../website/web_User-LandingPage/products/image1.jpg";
 import Img2 from "../../website/web_User-LandingPage/products/image2.jpg";
@@ -7,7 +7,7 @@ import Img4 from "../../website/web_User-LandingPage/products/image4.jpg";
 import Img5 from "../../website/web_User-LandingPage/products/image1.jpg";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import Header from "../../headerNavBreadcrumbs/HeaderWebUser";
-import { NavbarSection } from "./NavbarSection";
+import NavbarSection from "./NavbarSection";
 
 // import PopUp from "./PopUp"; // Import VideoModal
 
@@ -113,7 +113,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className="font-poppins">
+    <div className="font-poppins overflow-x-hidden">
       <div className="w-full shadow-md bg-white dark:text-white relative z-40 ">
         <div className="pt-[80px]  w-full">
           <Header />
@@ -185,7 +185,7 @@ const Navbar = () => {
                 className="w-[140px] h-[155px] ssm:w-[165px] ssm:h-[180px] sm:w-[180px] sm:h-[205px] md:w-[180px] md:h-[215px] lg:w-[260px] lg:h-[295px] rounded-[10px] bg-[#D9D9D9] dark:bg-[#171717] group">
                 {/* image section */}
                 <div className="w-[140px] h-[73px] ssm:w-[165px] ssm:h-[98px] sm:w-[180px] sm:h-[113px] md:w-[180px] md:h-[95px] lg:w-[260px] lg:h-[183px]">
-                  <a href="#" onClick={() => handleOrderPopup()}>
+                  <a href="#">
                     <img
                       src={data.img}
                       alt=""
@@ -227,15 +227,15 @@ const Navbar = () => {
       </div>
 
       {/* Footer */}
-      <footer className="bg-darknavy text-white min-h-[181px] flex flex-col items-center justify-center">
-        <div className="flex justify-center gap-4 text-[10px] ssm:text-[12px] sm:text-[14px] lg:text-[16px] font-semibold mb-8">
+      <footer className="bg-[#ECECEC] dark:bg-[#171717] text-black dark:text-white h-[140px] sm:h-[181px] flex flex-col items-center justify-center">
+        <div className="flex justify-center gap-4 text-[8px] sm:text-[12px] lg:text-[16px] font-semibold mb-4 sm:mb-5">
           <a href="#">Teams And Conditions</a>
           <a href="#">File Licenses</a>
           <a href="#">Refund Policy</a>
           <a href="#">Privacy Policy</a>
         </div>
 
-        <p className="text-[10px] md:text-[12px]">
+        <p className="text-[8px] md:text-[12px]">
           Copyright © 2024 - All right reserved by ACME Industries Ltd
         </p>
       </footer>

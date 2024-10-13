@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { Breadcrumb } from "flowbite-react";
 import { Link as RouterLink } from "react-router-dom";
-import { nameMap } from "./PathMap";
+import { nameMap } from "../breadcrumbs/PathMap";
 
 export default function BreadcrumbComponent() {
   const location = useLocation();
@@ -10,8 +10,6 @@ export default function BreadcrumbComponent() {
   const getBreadcrumbName = (path) => {
     return nameMap[path] || "Page Not Found";
   };
-
-    
 
   return (
     <Breadcrumb aria-label="breadcrumb">

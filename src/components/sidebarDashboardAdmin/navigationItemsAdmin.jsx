@@ -118,7 +118,7 @@ const Sidebar = () => {
         },
 
         {
-          href: "/manageUsers/sale",
+          href: "/sale",
           label: "Sales",
           icon: darkMode ? (
             <img src={IconDollarLight} alt="IconDollarLight" />
@@ -127,7 +127,7 @@ const Sidebar = () => {
           ),
         },
         {
-          href: "/manageUsers/revenue",
+          href: "/revenue",
           label: "Revenue",
           icon: darkMode ? (
             <img src={IconRevenueLight} alt="IconRevenueLight" />

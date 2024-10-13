@@ -13,7 +13,8 @@ function EditAdmin() {
     role: "admin",
     profileImage: null,
     password: "",
-    oldProfileImageUrl: "", // Menyimpan URL gambar lama
+    oldProfileImageUrl: "",
+    uid: "",
   });
 
   const navigate = useNavigate();
@@ -39,7 +40,6 @@ function EditAdmin() {
           }));
         }
       } catch (error) {
-       
         setAlertError(true);
       }
     };
@@ -80,7 +80,8 @@ function EditAdmin() {
       formData.append("username", admin.username);
       formData.append("role", admin.role);
       formData.append("uid", admin.uid);
-      formData.append("oldProfileImageUrl", admin.oldProfileImageUrl);  
+      formData.append("oldProfileImageUrl", admin.oldProfileImageUrl);
+      formData.append("password", admin.password); // Menambahkan password
 
       if (admin.profileImage) {
         formData.append("profileImage", admin.profileImage);
@@ -100,7 +101,6 @@ function EditAdmin() {
         navigate("/manageAdmin");
       }, 2000);
     } catch (error) {
-       
       setAlertError(true);
     }
   };

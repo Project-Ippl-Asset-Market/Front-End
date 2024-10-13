@@ -1,24 +1,40 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
-import { storage, db, auth } from '../../firebase/firebaseConfig'; // Import Firebase config including auth
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Firebase Storage functions
-import { addDoc, collection } from "firebase/firestore"; // Firestore functions
-import { onAuthStateChanged } from "firebase/auth"; // Firebase Authentication functions
+// Kerjaan Fhiqi
+
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { collection, addDoc, Timestamp, doc, updateDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { onAuthStateChanged } from "firebase/auth"; 
+import { db, storage, auth, } from "../../firebase/firebaseConfig";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconField from "../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../HeaderNav/HeaderNav";
+import DefaultPreview from "../../assets/icon/iconSidebar/datasetzip.png"
+
+
 
 function AddNewDataset() {
 
-  const [datasetName, setDatasetName] = useState("");
-  const [category, setCategory] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [imageFile, setImageFile] = useState(null); // State for the selected image file
-  const [loading, setLoading] = useState(false); // State for loading indicator
-  const [user, setUser] = useState(null); // State for storing logged-in user information
-
+  const [user, setUser] = useState(null);
+  const [dataset, setDataset] = useState({
+    datasetName: "",
+    category: "",
+    description: "",
+    price: "",
+    datasetImage: null,
+  });
   const navigate = useNavigate();
+  const [previewImage, setPreviewImage] = useState(null);
+  const [alertSuccess, setAlertSuccess] = useState(false);
+  const [alertError, setAlertError] = useState(false);
+  const categories = [
+    { id: 1, name: "Nature" },
+    { id: 2, name: "Architecture" },
+    { id: 3, name: "Animals" },
+    { id: 4, name: "People" },
+    { id: 5, name: "Technology" },
+    { id: 6, name: "Food" },
+  ];
 
   useEffect(() => {
     // Listen for authentication state changes
@@ -34,79 +50,112 @@ function AddNewDataset() {
     return () => unsubscribe();
   }, []);
 
-  // Define categories
-  const categories = [
-    { id: 1, name: "Nature" },
-    { id: 2, name: "Architecture" },
-    { id: 3, name: "Animals" },
-    { id: 4, name: "People" },
-    { id: 5, name: "Technology" },
-    { id: 6, name: "Food" },
-  ];
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
 
-  const handleCancel = () => {
-    navigate(-1); // Navigate to the previous page or you can set a specific route like navigate("/dataset-list");
-  };
-
-  // CRUD (CREATE) -----------------------------------------------------------
-  // Function to handle image upload
-  const handleImageUpload = async () => {
-    if (!imageFile) {
-      alert("Please select an image file.");
-      return;
-    }
-
-    const fileExtension = imageFile.name.split('.').pop().toLowerCase();
-    const allowedExtensions = ["csv", "xlsx", "json", "xml", "txt", "zip", "tar", "rar"];
-
-    if (!allowedExtensions.includes(fileExtension)) {
-      alert("Invalid file type. Please upload a valid dataset file (csv, xlsx, json, etc.).");
-      return;
-    }
-    
-    if (!datasetName || !category || !description || !price) {
-      alert("Please fill all the required fields.");
-      return;
-    }
-
-    if (!user) {
-      alert("You must be logged in to upload a dataset.");
-      return;
-    }
-
-    setLoading(true); // Set loading to true
-    const storageRef = ref(storage, `images-dataset/${imageFile.name}`);
-
-    try {
-      await uploadBytes(storageRef, imageFile); // Upload the image to Firebase Storage
-      const downloadURL = await getDownloadURL(storageRef); // Get the download URL
-
-      // Save data to Firestore, including user info
-      await addDoc(collection(db, "assetDatasets"), {
-        datasetName,
-        category,
-        description,
-        price,
-        uploadUrlDataset: downloadURL,
-        uploadedByEmail: user.email, // Store the user's email
-        userID: user.uid, // You can set the role if you have a role management system
-        uploadedAt: new Date(), // Timestamp of the upload
+    if (name === "datasetImage" && files[0]) {
+      setDataset({
+        ...dataset,
+        datasetImage: files[0],
       });
 
-      alert("Dataset uploaded successfully!");
-
-      // Reset form fields
-      setDatasetName("");
-      setCategory("");
-      setDescription("");
-      setPrice("");
-      setImageFile(null);
-    } catch (error) {
-      console.error("Error uploading image: ", error);
-      alert("Failed to upload image.");
-    } finally {
-      setLoading(false); // Set loading to false
+      // Create image preview
+      if (files[0].type.includes("image")) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewImage(reader.result);
+        };
+        reader.readAsDataURL(files[0]);
+      } else {
+        // Reset preview jika file bukan gambar
+        setPreviewImage(DefaultPreview);
+      }
+    } else {
+      setDataset({
+        ...dataset,
+        [name]: value,
+      });
     }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+  
+    try {
+      // Konversi dataset.price menjadi number
+      const priceAsNumber = parseInt(dataset.price);
+  
+      if (isNaN(priceAsNumber)) {
+        // Validasi jika harga yang diinput tidak valid
+        throw new Error("Invalid price: must be a number.");
+      }
+  
+      // Save dataset details to Firestore
+      const docRef = await addDoc(collection(db, "assetDatasets"), {
+        category: dataset.category,
+        createdAt: Timestamp.now(),
+        datasetImage: "",
+        datasetName: dataset.datasetName,
+        description: dataset.description,
+        price: priceAsNumber, // Simpan sebagai number
+        uploadedByEmail: user.email,
+        userId: user.uid,
+      });
+  
+      const docId = docRef.id;
+  
+      // Upload dataset image/file to Firebase Storage
+      let datasetImageUrl = "";
+      if (dataset.datasetImage) {
+        // Ambil nama asli file dan ekstrak ekstensi
+        const originalFileName = dataset.datasetImage.name;
+        const fileExtension = originalFileName.split('.').pop(); // Mengambil ekstensi file
+        
+        // Ref untuk upload file ke Storage dengan ekstensi asli
+        const imageRef = ref(
+          storage,
+          `images-dataset/dataset-${docId}.${fileExtension}`
+        );
+        
+        // Upload file ke Storage
+        await uploadBytes(imageRef, dataset.datasetImage);
+        datasetImageUrl = await getDownloadURL(imageRef);
+      }
+  
+      // Update Firestore dengan URL gambar yang diupload
+      await updateDoc(doc(db, "assetDatasets", docId), {
+        datasetImage: datasetImageUrl,
+      });
+  
+      // Reset the form
+      setDataset({
+        datasetName: "",
+        category: "",
+        description: "",
+        price: "",
+        datasetImage: null,
+      });
+      setPreviewImage(null);
+  
+      // Navigate back to /manageAssetDataset
+      setAlertSuccess(true);
+      setTimeout(() => {
+        navigate("/manageAssetDataset");
+      }, 2000);
+    } catch (error) {
+      console.error("Error menambahkan dataset: ", error);
+      setAlertError(true);
+    }
+  };
+  
+  
+  
+  const handleCancel = () => {
+    navigate("/manageAssetDataset");
+  };
+
+  const closeAlert = () => {
+    setAlertError(false);
   };
 
   return (
@@ -123,21 +172,70 @@ function AddNewDataset() {
             </div>
           </div>
 
-          <form className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24   h-[1434px] gap-[50px]  overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0">
+          {/* Alert Success */}
+          {alertSuccess && (
+            <div
+              role="alert"
+              className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[10px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4  bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
+              onClick={closeAlert}>
+              <div className="flex items-center justify-center space-x-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 shrink-0 stroke-current"
+                  fill="none"
+                  viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>Dataset baru berhasil ditambahkan dan tersimpan.</span>
+              </div>
+            </div>
+          )}
+
+          {/* Alert Error */}
+          {alertError && (
+            <div
+              role="alert"
+              className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[340px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[8px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4  bg-primary-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
+              onClick={closeAlert}>
+              <div className="flex items-center justify-center space-x-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 shrink-0 stroke-current"
+                  fill="none"
+                  viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <span>Gagal menambahkan dataset baru silahkan coba lagi</span>
+              </div>
+            </div>
+          )}
+
+          <form
+            onSubmit={handleSubmit}
+            className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24   h-[1434px] gap-[50px]  overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0">
             <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-10 dark:text-primary-100 p-4">
               Add New Dataset
             </h1>
-            <div className="p-8 -mt-4 bg-primary-100 dark:bg-neutral-20 rounded-sm shadow-lg">
-              <h2 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+            <div className="p-8 -mt-4  bg-primary-100  dark:bg-neutral-20 rounded-sm shadow-lg">
+              <h2 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
                 Dataset Information
               </h2>
 
-              {/* Image Upload */}
               <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-[150px] md:w-[170px] lg:w-[200px] xl:w-[220px] 2xl:w-[170px]">
                   <div className="flex items-center gap-1">
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                      Upload Dataset
+                      Upload File
                     </h3>
                     <img
                       src={IconField}
@@ -149,7 +247,6 @@ function AddNewDataset() {
                     Format foto harus .jpg, jpeg,png dan ukuran minimal 300 x
                     300 px.
                   </p>
-                  
                 </div>
                 <div className="p-0">
                   <div className="grid grid-cols-1 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-2 md:gap-2 lg:gap-6 xl:gap-6 2xl:gap-10">
@@ -157,27 +254,47 @@ function AddNewDataset() {
                       <label
                         htmlFor="fileUpload"
                         className="flex flex-col justify-center items-center cursor-pointer text-center">
-                        {imageFile ? (
-                          <img
-                            src={URL.createObjectURL(imageFile)}
-                            alt="Preview"
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        ) : (
+                        {!previewImage && (
                           <>
-                            <img alt="" className="w-6 h-6" src='' />
+                            <img
+                              alt=""
+                              className="w-6 h-6"
+                              src="path_to_your_icon"
+                            />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                              Upload Dataset
+                              Upload Foto
                             </span>
                           </>
                         )}
+
                         <input
                           type="file"
                           id="fileUpload"
-                          onChange={(e) => setImageFile(e.target.files[0])}
-                          accept=".csv, .xlsx, .json, .xml, .txt, .zip, .tar, .rar, .png, .jpg, .jpeg"
+                          name="datasetImage"
+                          onChange={handleChange}
+                          multiple
+                          accept=".jpg,.jpeg,.png,.zip,.rar,.csv,.xls,.xlsx,.pdf"
                           className="hidden"
                         />
+
+                        {previewImage && (
+                          <div className="mt-2 relative">
+                            <img
+                              src={previewImage}
+                              alt="Preview"
+                              className="w-40 sm:w-40 md:w-40 lg:w-[150px] xl:w-[150px] 2xl:w-[150px] h-40 sm:h-40 md:h-40 lg:h-[156px] xl:h-[156px] 2xl:h-[157px] -mt-2.5 object-cover rounded"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPreviewImage(null);
+                                setDataset({ ...dataset, datasetImage: null });
+                              }}
+                              className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded">
+                              x
+                            </button>
+                          </div>
+                        )}
                       </label>
                     </div>
                   </div>
@@ -207,15 +324,16 @@ function AddNewDataset() {
                     <input
                       type="text"
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px]"
-                      value={datasetName}
-                      onChange={(e) => setDatasetName(e.target.value)}
+                      name= "datasetName"
+                      value={dataset.datasetName}
+                      onChange={handleChange}
                       placeholder="Enter name...."
                       required
                     />
                   </label>
                 </div>
               </div>
-              
+
               {/* Category */}
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
@@ -230,25 +348,31 @@ function AddNewDataset() {
                     />
                   </div>
                   <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Silahkan Pilih Kategori Yang Sesuai Dengan asset Foto Anda.
+                    Silahkan Pilih Kategori Yang Sesuai Dengan Dataset Anda.
                   </p>
                 </div>
 
                 <div className="flex justify-start items-center w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md">
-                    <option value="" disabled>
-                      Pick an option
-                    </option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.name}>
-                        {cat.name}
+                    <select
+                      name="category"
+                      value={dataset.category}
+                      onChange={(e) =>
+                        setDataset((prevState) => ({
+                          ...prevState,
+                          category: e.target.value, // Update category inside dataset state
+                        }))
+                      }
+                      className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md">
+                      <option value="" disabled>
+                        Pick an option
                       </option>
-                    ))}
-                  </select>
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.name}>
+                          {cat.name}
+                        </option>
+                      ))}
+                    </select>
                   </label>
 
                   <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
@@ -271,15 +395,16 @@ function AddNewDataset() {
                     />
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px]">
-                    Berikan Deskripsi Pada Gambar Anda Maximal 200 Huruf
+                    Berikan Deskripsi Pada Dataset Anda Maximal 200 Huruf
                   </p>
                 </div>
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <textarea
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px] h-[48px] sm:h-[60px] md:h-[80px] lg:h-[80px] xl:h-[100px] bg-transparent"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
+                      name="description"
+                      value={dataset.description}
+                      onChange={handleChange}
                       placeholder="Deskripsi"
                       rows="4"
                     />
@@ -292,21 +417,22 @@ function AddNewDataset() {
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-1">
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                      Harga
+                      Price
                     </h3>
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Silahkan Masukkan Harga Untuk Asset Foto jika asset gratis
+                    Silahkan Masukkan Harga Untuk Dataset jika asset gratis
                     silahkan dikosongkan.
                   </p>
                 </div>
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <input
-                      type="Rp"
+                      type="number"
                       className="input border-0 focus:outline-none focus:ring-0  w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
+                      name="price"
+                      value={dataset.price}
+                      onChange={handleChange}
                       placeholder="Rp"
                       required
                     />
@@ -317,17 +443,15 @@ function AddNewDataset() {
 
             {/* Buttons */}
             <div className="w-full inline-flex sm:gap-6 xl:gap-[21px] justify-center sm:justify-center md:justify-end  gap-6 mt-12 sm:mt-12 md:mt-14 lg:mt-14 xl:mt-12  ">
-              <button 
-                className="btn bg-neutral-60 border-neutral-60 hover:bg-neutral-60 hover:border-neutral-60 rounded-lg  font-semibold   text-primary-100 text-center text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]"
+              <button
                 onClick={handleCancel}
-                disabled={loading}>
+                className="btn bg-neutral-60 border-neutral-60 hover:bg-neutral-60 hover:border-neutral-60 rounded-lg  font-semibold   text-primary-100 text-center text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
                 Cancel
               </button>
               <button
-                className="btn  bg-secondary-40 border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg  font-semibold leading-[24px]  text-primary-100 text-center  text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]"
-                onClick={handleImageUpload}
-                disabled={loading}>
-                {loading ? "Uploading..." : "Save"}
+                type="submit"
+                className="btn  bg-secondary-40 border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg  font-semibold leading-[24px]  text-primary-100 text-center  text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
+                Save
               </button>
             </div>
           </form>

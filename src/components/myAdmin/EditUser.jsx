@@ -12,8 +12,8 @@ function EditUser() {
     username: "",
     profileImage: null,
     password: "",
-    oldProfileImageUrl: "", // Menyimpan URL gambar lama
-    uid: "", // Menyimpan UID user
+    oldProfileImageUrl: "",
+    uid: "",
   });
 
   const navigate = useNavigate();
@@ -32,8 +32,8 @@ function EditUser() {
         const data = await response.json();
         setUser((prev) => ({
           ...prev,
-          ...data, // Menggabungkan data baru dengan state user
-          uid: data.uid, // Pastikan UID disimpan
+          ...data,
+          uid: data.uid,
         }));
         if (data.profileImageUrl) {
           setPreviewImage(data.profileImageUrl);
@@ -81,8 +81,9 @@ function EditUser() {
       formData.append("firstName", user.firstName);
       formData.append("lastName", user.lastName);
       formData.append("username", user.username);
-      formData.append("uid", user.uid); // Menambahkan UID
+      formData.append("uid", user.uid);
       formData.append("oldProfileImageUrl", user.oldProfileImageUrl);
+      formData.append("password", user.password);
 
       if (user.profileImage) {
         formData.append("profileImage", user.profileImage);

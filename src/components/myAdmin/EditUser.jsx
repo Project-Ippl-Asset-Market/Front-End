@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
@@ -149,7 +150,7 @@ function EditUser() {
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>user baru berhasil ditambahkan dan tersimpan.</span>
+                <span>user baru berhasil di Uptodate.</span>
               </div>
             </div>
           )}

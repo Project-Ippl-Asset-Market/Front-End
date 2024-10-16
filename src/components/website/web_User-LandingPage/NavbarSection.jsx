@@ -26,11 +26,11 @@ const NavbarSection = () => {
   return (
     <>
       <nav className="dark:bg-neutral-5 dark:text-primary-100 text-neutral-10 w-full fixed font-poppins  bg-neutral-90 bg-opacity-90">
-        <div className="mx-[20px] flex justify-between items-center mt-0 w-full  ">
+        <div className="mx-[20px] flex justify-between items-center mt-0 w-full   ">
           <div className="flex-grow " />
           <button
             onClick={toggleNavbar}
-            className="p-6 pr-14 focus:outline-none  sm:flex md:hidden lg:hidden 2xl:hidden ">
+            className="p-8 sm:p-2 md:p-16 lg:p-16 xl:p-16 2xl:p-16 pr-14 focus:outline-none  sm:flex md:hidden lg:hidden 2xl:hidden ">
             {isOpen ? (
               <FaTimes className="text-2xl text-primary-30" />
             ) : (
@@ -48,11 +48,11 @@ const NavbarSection = () => {
             {/* Telusuri Semua */}
             <div className="relative group mt-4 flex">
               <Link
-                to="/t"
+                to="/"
                 className={`relative flex text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px]
                 w-full text-start rounded-md h-10 p-2
                 ${
-                  isLinkActive("/t")
+                  isLinkActive("/")
                     ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
                     : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
                 }
@@ -68,14 +68,14 @@ const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
       ${
-        isLinkActive("/1")
+        isLinkActive("/")
           ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-10 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
           : "hidden sm:w-1/2"
       }`}></span>
 
                   <span
                     className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
-      ${isLinkActive("/2") ? "hidden" : "hidden sm:group-hover:w-1/2"}`}></span>
+      ${isLinkActive("/") ? "hidden" : "hidden sm:group-hover:w-1/2"}`}></span>
                 </span>
               </Link>
             </div>
@@ -229,11 +229,11 @@ const NavbarSection = () => {
               <nav className=" dark:bg-neutral-20  text-primary-100 dark:text-primary-100 h-full relative">
                 <div className="flex flex-col space-y-4 ">
                   <Link
-                    to="/"
+                    to="/mapAssetGratis"
                     className={`relative inline-block text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px] 
           w-full text-start rounded-md h-10 p-2
           ${
-            isLinkActive("/t")
+            isLinkActive("/mapAssetGratis")
               ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
               : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
           }
@@ -246,7 +246,7 @@ const NavbarSection = () => {
                       <span
                         className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/")
+              isLinkActive("/mapAssetGratis")
                 ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-7 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
                 : "hidden sm:w-1/2"
             }`}></span>
@@ -254,7 +254,9 @@ const NavbarSection = () => {
                       <span
                         className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/") ? "hidden" : "hidden sm:group-hover:w-1/2"
+              isLinkActive("/mapAssetGratis")
+                ? "hidden"
+                : "hidden sm:group-hover:w-1/2"
             }`}></span>
                     </span>
                   </Link>

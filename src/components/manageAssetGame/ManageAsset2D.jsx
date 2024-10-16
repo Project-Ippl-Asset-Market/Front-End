@@ -14,11 +14,12 @@ import {
   doc,
   query,
   where,
-} from "firebase/firestore"; // Import yang diperlukan //apanya di perlukan ini??
+} from "firebase/firestore"; // Import yang diperlukan /
 import { onAuthStateChanged } from "firebase/auth";
 import { deleteObject, ref, getDownloadURL } from "firebase/storage";
-import rarzip from "../../assets/assetmanage/rarzip.png"; //bisakh gambar nya
-// ndak bisa kalo live share kirim aja di wa
+import PreviewImage from "../../../assets/assetmanage/Iconrarzip.svg";
+
+
 function ManageAsset2D() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
@@ -26,7 +27,7 @@ function ManageAsset2D() {
   const [user, setUser] = useState(null);
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -67,29 +68,25 @@ function ManageAsset2D() {
   useEffect(() => {
     const fetchData = async () => {
       if (!user) {
-        console.log("No user logged in");
+        console.log('No user logged in');
         return; // Jika tidak ada pengguna yang login, tidak perlu mengambil data
       }
-
+      
       try {
-        console.log("Logged in user UID:", user.uid);
-        const q = query(
-          collection(db, "assetImage2D"),
-          where("userId", "==", user.uid)
-        );
+        console.log('Logged in user UID:', user.uid);
+        const q = query(collection(db, 'assetImage2D'), where('userId', '==', user.uid));
         const querySnapshot = await getDocs(q);
         const items = [];
 
         for (const doc of querySnapshot.docs) {
           const data = doc.data();
-          console.log("Data fetched:", data);
+          console.log('Data fetched:', data);
 
-          const createdAt =
-            data.createdAt?.toDate().toLocaleDateString("id-ID", {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            }) || "N/A";
+          const createdAt = data.createdAt?.toDate().toLocaleDateString("id-ID", {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }) || 'N/A';
 
           // Susun data ke dalam format assets
           items.push({
@@ -102,10 +99,10 @@ function ManageAsset2D() {
             createdAt,
           });
         }
-
+       
         setAssets(items);
       } catch (error) {
-        console.error("Error fetching data: ", error);
+        console.error('Error fetching data: ', error);
       }
     };
 
@@ -116,57 +113,54 @@ function ManageAsset2D() {
 
   // CRUD (DELETE)
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this asset 2D?"
-    );
+    const confirmDelete = window.confirm("Are you sure you want to delete this asset 2D?");
     if (confirmDelete) {
-      try {
-        const ImageRef = ref(storage, `images-asset-2d/asset2D-${id}.jpg`);
+        try {
+            const ImageRef = ref(storage, `images-asset-2d/asset2D-${id}.jpg`);
 
-        // Coba dapatkan URL gambar untuk mengecek apakah gambar ada
-        const fileExists = await getDownloadURL(ImageRef)
-          .then(() => true) // Jika URL gambar berhasil diambil, file ada
-          .catch((error) => {
-            if (error.code === "storage/object-not-found") {
-              console.warn(
-                "File tidak ditemukan di Firebase Storage, melewati penghapusan file."
-              );
-              return false; // File tidak ditemukan
+            // Coba dapatkan URL gambar untuk mengecek apakah gambar ada
+            const fileExists = await getDownloadURL(ImageRef)
+                .then(() => true)  // Jika URL gambar berhasil diambil, file ada
+                .catch((error) => {
+                    if (error.code === 'storage/object-not-found') {
+                        console.warn("File tidak ditemukan di Firebase Storage, melewati penghapusan file.");
+                        return false;  // File tidak ditemukan
+                    }
+                    throw error;  // Jika error lain muncul, lempar error kembali
+                });
+
+            // Jika file ada, lakukan penghapusan
+            if (fileExists) {
+                await deleteObject(ImageRef);
+                console.log("File berhasil dihapus dari Firebase Storage.");
             }
-            throw error; // Jika error lain muncul, lempar error kembali
-          });
 
-        // Jika file ada, lakukan penghapusan
-        if (fileExists) {
-          await deleteObject(ImageRef);
-          console.log("File berhasil dihapus dari Firebase Storage.");
+            // Hapus dokumen dari Firestore
+            await deleteDoc(doc(db, 'assetImage2D', id));
+            console.log("Dokumen berhasil dihapus dari Firestore.");
+
+            // Perbarui state untuk menghapus item dari tampilan
+            setAssets(assets.filter(asset => asset.id !== id));
+            setAlertSuccess(true);
+
+            // Reload halaman setelah beberapa waktu (sesuaikan delay jika diperlukan)
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000); // Delay 1 detik sebelum reload
+
+        } catch (error) {
+            console.error('Error deleting Asset 2D: ', error);
+            setAlertError(true);
         }
-
-        // Hapus dokumen dari Firestore
-        await deleteDoc(doc(db, "assetImage2D", id));
-        console.log("Dokumen berhasil dihapus dari Firestore.");
-
-        // Perbarui state untuk menghapus item dari tampilan
-        setAssets(assets.filter((asset) => asset.id !== id));
-        setAlertSuccess(true);
-
-        // Reload halaman setelah beberapa waktu (sesuaikan delay jika diperlukan)
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000); // Delay 1 detik sebelum reload
-      } catch (error) {
-        console.error("Error deleting Asset 2D: ", error);
-        setAlertError(true);
-      }
     } else {
-      // Feedback jika pengguna membatalkan penghapusan
-      alert("Deletion cancelled");
+        // Feedback jika pengguna membatalkan penghapusan
+        alert("Deletion cancelled");
     }
-  };
+};
 
-  const closeAlert = () => {
+const closeAlert = () => {
     setAlertError(false);
-  };
+};
 
   return (
     <>

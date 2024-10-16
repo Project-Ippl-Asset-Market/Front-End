@@ -183,7 +183,7 @@ const Sidebar = () => {
       section: "Log Out",
       items: [
         {
-          href: "/homePage",
+          href: "/",
           label: "Log Out",
           icon: darkMode ? (
             <img src={IconlogoutDarkMode} alt="iconlogoutDarkMode" />

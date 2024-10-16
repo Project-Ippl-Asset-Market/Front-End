@@ -229,14 +229,14 @@ function Login() {
                       type="checkbox"
                       className="checkbox checkbox-md rounded-[2px] bg-primary-100 border-primary-100 "
                     />
-                    <span className="label-text text-[12px] sm:text-[12px] md:text-[14px] lg:text-[16px]  xl:text-[18px] sm:text-base text-primary-100 ml-2">
+                    <span className="label-text text-[10px] sm:text-[12px] md:text-[16px] lg:text-[16px]  xl:text-[16px] sm:text-base text-primary-100 ml-2">
                       Remember me
                     </span>
                   </label>
 
                   <Link
                     to="/lupaPassword"
-                    className="relative inline-block text-[12px] sm:text-[12px] md:text-[14px] lg:text-[16px] xl:text-[18px] text-primary-40 hover:text-error-1 group">
+                    className="relative inline-block  text-[10px] sm:text-[12px] md:text-[16px] lg:text-[16px]  xl:text-[16px] text-primary-40 hover:text-error-1 group">
                     Lupa Password ?
                     <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-primary-40 transition-all duration-1000 transform group-hover:left-0 group-hover:w-1/2"></span>
                     <span className="absolute bottom-0 right-1/2 w-0 h-[2px] bg-primary-40 transition-all duration-1000 transform group-hover:right-0 group-hover:w-1/2"></span>
@@ -282,9 +282,9 @@ function Login() {
           </div>
           {errorModal && (
             <div className="modal modal-open fixed inset-0 flex items-center justify-center z-50 pr-5">
-              <div className="modal-box w-[90%] max-w-[250px] sm:max-w-[350px] md:max-w-[350px] lg:max-w-[400px] xl:max-w-[450px] h-auto sm:h-[280px] md:h-[290px] lg:h-[300px] xl:h-[360px] bg-neutral-90 rounded-lg">
+              <div className="modal-box w-[90%] max-w-[450px] h-auto bg-neutral-90 rounded-lg">
                 <img
-                  className="w-20 sm:w-24 md:w-32 lg:w-32 xl:w-32 2xl:w-32 h-20 sm:h-24 md:h-32 lg:h-32 xl:h-32 2xl:h-32 mx-auto mb-6"
+                  className="w-24 h-24 mx-auto mb-6 object-contain max-h-[200px] sm:max-h-[250px] md:max-h-[300px] lg:max-h-[300px] xl:max-h-[300px]"
                   src={IconModalError}
                   alt="icon pop up error"
                 />
@@ -304,9 +304,9 @@ function Login() {
 
           {modalMessage && (
             <div className="modal modal-open fixed inset-0 flex items-center justify-center z-50 pr-5">
-              <div className="modal-box w-[90%] max-w-[250px] sm:max-w-[350px] md:max-w-[350px] lg:max-w-[400px] xl:max-w-[450px] h-auto sm:h-[280px] md:h-[290px] lg:h-[300px] xl:h-[370px] bg-neutral-90 rounded-lg">
+              <div className="modal-box w-[90%] max-w-[450px] h-auto bg-neutral-90 rounded-lg">
                 <img
-                  className="w-20 sm:w-24 md:w-32 lg:w-32 xl:w-32 2xl:w-32 h-20 sm:h-24 md:h-32 lg:h-32 xl:h-32 2xl:h-32 mx-auto mb-6"
+                  className="w-24 h-24 mx-auto mb-6 object-contain max-h-[200px] sm:max-h-[250px] md:max-h-[300px] lg:max-h-[300px] xl:max-h-[300px]"
                   src={IconModalSuccess}
                   alt="icon pop up success"
                 />

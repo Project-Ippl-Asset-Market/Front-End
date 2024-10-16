@@ -1,13 +1,14 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
 import IconSearch from "../../assets/icon/iconHeader/iconSearch.svg";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconHapus from "../../assets/icon/iconCRUD/iconHapus.png";
 import IconEdit from "../../assets/icon/iconCRUD/iconEdit.png";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
+import { getAuth } from "firebase/auth";
 import { getStorage, ref, deleteObject } from "firebase/storage";
 
 function ManageAdmin() {
@@ -17,8 +18,10 @@ function ManageAdmin() {
   const [admins, setAdmins] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [adminToDelete, setAdminToDelete] = useState(null);
-  const sidebarRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const sidebarRef = useRef(null);
+  const navigate = useNavigate();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -33,11 +36,13 @@ function ManageAdmin() {
   useEffect(() => {
     const fetchAdmins = async () => {
       setIsLoading(true);
+      setError(null);
       try {
         const response = await axios.get("http://localhost:3000/api/admins");
         setAdmins(response.data);
       } catch (error) {
         console.error("Error fetching admin data: ", error);
+        setError("Failed to fetch admins. Please try again later.");
       } finally {
         setIsLoading(false);
       }
@@ -56,49 +61,60 @@ function ManageAdmin() {
     };
   }, [isSidebarOpen]);
 
-  const handleDeleteImage = async (imagePath) => {
-    const storage = getStorage();
-    const imageRef = ref(storage, imagePath);
-    try {
-      await deleteObject(imageRef);
-    } catch (error) {
-      console.error("Error deleting image: ", error);
-    }
-  };
-
   const handleDeleteAdmin = async (id) => {
     setIsLoading(true);
-    const adminToDelete = admins.find((admin) => admin.id === id);
-    if (!adminToDelete) {
-      return;
-    }
-    const imagePath = adminToDelete.profileImageUrl;
-    // Ekstrak path relatif dari URL gambar
-    const relativePath = imagePath.split("?")[0].split("o/")[1];
-    // Dekode path relatif
-    const decodedPath = decodeURIComponent(relativePath);
-    if (!decodedPath || !decodedPath.startsWith("images-admin/")) {
+    setError(null);
+    const admin = admins.find((admin) => admin.id === id);
+    if (!admin) {
+      console.error("Admin not found in local state");
       return;
     }
 
     try {
-      // Menghapus admin dari server
-      await axios.delete(`http://localhost:3000/api/admins/${id}`);
-      // Menghapus gambar dari Storage
-      await handleDeleteImage(decodedPath);
-      // Update state untuk menghapus admin yang sudah dihapus
-      setAdmins((prev) => prev.filter((admin) => admin.id !== id));
+      const auth = getAuth();
+      const token = await auth.currentUser.getIdToken(true);
+
+      // Hapus admin dari database
+      const response = await axios.delete(
+        `http://localhost:3000/api/admins/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 204) {
+        // Hapus gambar dari Firebase Storage
+        const storage = getStorage();
+        const imageRef = ref(storage, admin.profileImageUrl);
+        await deleteObject(imageRef);
+
+        // Perbarui state Admin
+        setAdmins((prev) => prev.filter((admin) => admin.id !== id));
+        navigate("/manageAdmin");
+      } else {
+        setError("Failed to delete admin. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error deleting admin:", error);
+      if (error.response) {
+        console.error("Error response data:", error.response.data);
+      }
+      setError(
+        error.response?.data?.message ||
+          "Failed to delete admin. Please try again."
+      );
     } finally {
       setIsLoading(false);
+      setIsModalOpen(false);
+      setAdminToDelete(null);
     }
   };
 
-  // Update the confirmDeleteAdmin function
   const confirmDeleteAdmin = () => {
     if (adminToDelete) {
       handleDeleteAdmin(adminToDelete.id);
-      setIsModalOpen(false);
-      setAdminToDelete(null);
     }
   };
 
@@ -209,23 +225,23 @@ function ManageAdmin() {
                             month: "long",
                             day: "numeric",
                           })
-                        : "N/A"}
+                        : "Unknown"}
                     </td>
-                    <td className="mx-auto flex gap-4 mt-8 ">
+                    <td className="px-6 py-4 flex gap-4 justify-center">
                       <Link to={`/manageAdmin/edit/${admin.id}`}>
                         <img
                           src={IconEdit}
-                          alt="icon edit"
-                          className="w-5 h-5"
+                          alt="Edit"
+                          className="w-6 h-6 cursor-pointer"
                         />
                       </Link>
                       <img
                         src={IconHapus}
-                        alt="icon hapus"
-                        className="w-5 h-5 cursor-pointer"
+                        alt="Delete"
+                        className="w-6 h-6 cursor-pointer"
                         onClick={() => {
-                          setAdminToDelete(admin);
                           setIsModalOpen(true);
+                          setAdminToDelete(admin);
                         }}
                       />
                     </td>
@@ -233,29 +249,31 @@ function ManageAdmin() {
                 ))}
               </tbody>
             </table>
+            {error && (
+              <div className="text-red-600 mt-4 text-center">{error}</div>
+            )}
           </div>
         )}
-
         {isModalOpen && (
           <div
             className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
-            aria-modal="true"
-            role="dialog">
-            <div className="bg-white rounded-lg p-6 w-96">
-              <h2 className="text-lg font-semibold mb-4">
-                Konfirmasi Penghapusan
-              </h2>
-              <p>
-                Apakah Anda yakin ingin menghapus {adminToDelete?.username}?
+            onClick={() => setIsModalOpen(false)}>
+            <div
+              className="bg-white rounded-lg p-6 shadow-lg"
+              onClick={(e) => e.stopPropagation()}>
+              <h2 className="text-lg font-semibold">Konfirmasi Penghapusan</h2>
+              <p className="mt-2">
+                Apakah Anda yakin ingin menghapus admin
+                <span className="font-bold">{adminToDelete?.username}</span>?
               </p>
               <div className="mt-4 flex justify-end">
                 <button
-                  className="bg-red-600 text-white px-4 py-2 rounded-md mr-2"
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2"
                   onClick={confirmDeleteAdmin}>
                   Hapus
                 </button>
                 <button
-                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md"
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg"
                   onClick={() => setIsModalOpen(false)}>
                   Batal
                 </button>
@@ -263,6 +281,7 @@ function ManageAdmin() {
             </div>
           </div>
         )}
+
         {/* Pagination Section */}
         <div className="flex join pt-72 justify-end">
           <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">

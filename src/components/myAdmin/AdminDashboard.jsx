@@ -3,6 +3,7 @@ import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import Chart from "../chartDashboad/chart";
 import HeaderSideBar from "../headerNavBreadcrumbs/HeaderSidebar";
+import { FaRegHeart, FaBoxOpen } from "react-icons/fa";
 
 function AdminDashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -54,19 +55,50 @@ function AdminDashboard() {
           <div className="breadcrumbs text-sm mt-1 mb-10">
             <Breadcrumb />
           </div>
-
           <div className="grid grid-cols-4 gap-4 mb-4">
             <div className="flex items-center justify-center h-32 rounded bg-primary-100 dark:bg-neutral-25 shadow-md dark:shadow-neutral-10">
-              <p className="text-2xl text-neutral-20 dark:text-neutral-90"></p>
+              <div className="text-center">
+                <FaBoxOpen className="text-4xl text-neutral-20 dark:text-neutral-90 mb-2" />
+                <p className="text-2xl text-neutral-20 dark:text-neutral-90">
+                  
+                </p>
+                <p className="text-lg text-neutral-20 dark:text-neutral-90">
+                  Assets
+                </p>
+              </div>
             </div>
             <div className="flex items-center justify-center h-32 rounded bg-primary-100 dark:bg-neutral-25 shadow-md dark:shadow-neutral-10">
-              <p className="text-2xl text-neutral-20 dark:text-neutral-90"></p>
+              <div className="text-center">
+                <FaRegHeart className="text-4xl text-neutral-20 dark:text-neutral-90 mb-2" />
+                <p className="text-2xl text-neutral-20 dark:text-neutral-90">
+               
+                </p>
+                <p className="text-lg text-neutral-20 dark:text-neutral-90">
+                  Likes
+                </p>
+              </div>
             </div>
             <div className="flex items-center justify-center h-32 rounded bg-primary-100 dark:bg-neutral-25 shadow-md dark:shadow-neutral-10">
-              <p className="text-2xl text-neutral-20 dark:text-neutral-90"></p>
+              <div className="text-center">
+                <FaBoxOpen className="text-4xl text-neutral-20 dark:text-neutral-90 mb-2" />
+                <p className="text-2xl text-neutral-20 dark:text-neutral-90">
+                  Icon 3
+                </p>
+                <p className="text-lg text-neutral-20 dark:text-neutral-90">
+                  Description
+                </p>
+              </div>
             </div>
             <div className="flex items-center justify-center h-32 rounded bg-primary-100 dark:bg-neutral-25 shadow-md dark:shadow-neutral-10">
-              <p className="text-2xl text-neutral-20 dark:text-neutral-90"></p>
+              <div className="text-center">
+                <FaBoxOpen className="text-4xl text-neutral-20 dark:text-neutral-90 mb-2" />
+                <p className="text-2xl text-neutral-20 dark:text-neutral-90">
+                  Icon 4
+                </p>
+                <p className="text-lg text-neutral-20 dark:text-neutral-90">
+                  Description
+                </p>
+              </div>
             </div>
           </div>
 

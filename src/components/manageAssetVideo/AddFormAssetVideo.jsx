@@ -100,6 +100,8 @@ function AddNewVideo() {
       setDescription("");
       setPrice("");
       setVideoFile(null);
+
+      navigate("/manageAssetVideo");
     } catch (error) {
       console.error("Error uploading Video: ", error);
       alert("Failed to upload Video.");
@@ -145,8 +147,7 @@ function AddNewVideo() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
-                    Format foto harus .jpg, jpeg,png dan ukuran minimal 300 x
-                    300 px.
+                    Format foto harus mp4 dan ukuran maxsimal 2Gb.
                   </p>
                 </div>
                 <div className="p-0">
@@ -154,7 +155,7 @@ function AddNewVideo() {
                     <div className="mt-2 md:ml-2 lg:ml-4 xl:ml-6 2xl:ml-4 flex justify-center items-center border border-dashed border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px] xl:h-[150px] 2xl:h-[160px]">
                       <label
                         htmlFor="fileUpload"
-                        className="flex flex-col justify-center items-center cursor-pointer text-center">
+                        className="flex flex-col justify-center items-center cursor-pointer text-center w-full h-full">
                         {videoFile ? (
                           <video
                             src={URL.createObjectURL(videoFile)}
@@ -296,7 +297,7 @@ function AddNewVideo() {
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
                     Silahkan Masukkan Harga Untuk Asset Foto jika asset gratis
-                    silahkan dikosongkan.
+                    silahkan di isi dengan angka 0.
                   </p>
                 </div>
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">

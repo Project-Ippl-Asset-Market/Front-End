@@ -3,6 +3,7 @@ import { ThemeProvider } from "../contexts/ThemeContext";
 import ProtectedRoute from "../private/ProtectedRoute";
 import AutoLogout from "../components/auto/autoLogout";
 import ErrorPage from "../pages/errorPage";
+import SearchResults from "../components/searchResults/SearchResults";
 import Register from "../pages/register";
 import Login from "../pages/login";
 import LupaPassword from "../pages/lupaPassword";
@@ -17,7 +18,7 @@ import EditFormAssetImage from "../components/manageAssetImage/EditAssetImage";
 import ManageAssetDataset from "../components/manageAssetDataset/ManageAssetDataset";
 import AddFormAssetDataset from "../components/manageAssetDataset/AddAssetDataset";
 import EditFormAssetDataset from "../components/manageAssetDataset/EditAssetDataset";
-import ManageAsset2D from "../components/manageAssetGame/ManageAsset2D";
+// import ManageAsset2D from "../components/manageAssetGame/ManageAsset2D";
 import AddNewAsset2D from "../components/manageAssetGame/addAsset2D/AddAsset2D";
 import EditNewAsset2D from "../components/manageAssetGame/addAsset2D/EditAsset2D";
 import ManageAsset3D from "../components/manageAssetGame/ManageAsset3D";
@@ -32,12 +33,15 @@ import EditFormAdmin from "../components/mySuperAdmin/EditAdmin";
 import ManageUsers from "../components/myAdmin/ManageUsers";
 import AddUsers from "../components/myAdmin/AddUser";
 import EditUsers from "../components/myAdmin/EditUser";
+import ManageAsset2D from "../components/daff 2d 3d/ManageAsset2D";
 import SaleAssets from "../components/myUserDashboard/SaleAssets";
 import Revenue from "../components/myUserDashboard/Revenue";
 // Import Halaman Dashboard End
 
 // Import Halaman Website start
+import Cart from "../components/payment/Cart";
 import HomePage from "../components/website/web_User-LandingPage/HomePage";
+import { MapAssetGratis } from "../components/website/Web_User-Gratis/MapAssetGratis";
 import { MapAssetVideo } from "../components/website/web_user-AssetVideo/MapAssetVideo";
 import { MapAssetImage } from "../components/website/web_User-AssetGambar/MapAssetImage";
 import { MapAssetDataset } from "../components/website/web_User-AssetDataset/MapAssetDataset";
@@ -60,6 +64,8 @@ const AppRoutes = ({ handleLogout }) => {
 
           {/* Route halaman web start */}
           <Route path="/" element={<HomePage />} />
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="/mapAssetGratis" element={<MapAssetGratis />} />
           <Route path="/mapAssetVideo" element={<MapAssetVideo />} />
           <Route path="/mapAssetImage" element={<MapAssetImage />} />
           <Route path="/mapAssetDataset" element={<MapAssetDataset />} />
@@ -73,6 +79,15 @@ const AppRoutes = ({ handleLogout }) => {
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <AdminDashboard onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/cart"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <Cart onLogout={handleLogout} />
               </ProtectedRoute>
             }
           />
@@ -96,7 +111,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAssetVideo/edit/:id"
+            path="/manageAssetVideo/edit/:assetId"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <EditFormAssetVideo onLogout={handleLogout} />
@@ -123,7 +138,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAssetImage/edit/:id"
+            path="/manageAssetImage/edit/:assetId"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <EditFormAssetImage onLogout={handleLogout} />

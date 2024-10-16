@@ -9,7 +9,7 @@ import { db, storage, auth, } from "../../../firebase/firebaseConfig";
 import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
-
+import PreviewImage from "../../../assets/assetmanage/Iconrarzip.svg"; 
 
 function AddAsset2D() {
 
@@ -27,12 +27,12 @@ function AddAsset2D() {
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const categories = [
-    { id: 1, name: "Nature" },
-    { id: 2, name: "Architecture" },
-    { id: 3, name: "Animals" },
-    { id: 4, name: "People" },
-    { id: 5, name: "Technology" },
-    { id: 6, name: "Food" },
+    { id: 1, name: "Characters" },
+    { id: 2, name: "Environment" },
+    { id: 3, name: "Fonts" },
+    { id: 4, name: "GUI" },
+    { id: 5, name: "Textures & Material" },
+    
   ];
 
   useEffect(() => {

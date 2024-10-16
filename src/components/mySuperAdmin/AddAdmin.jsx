@@ -1,21 +1,20 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  fetchSignInMethodsForEmail,
+} from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { initializeApp } from "firebase/app";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
-import {
-  db,
-  storage,
-  firebaseConfig,
-  auth,
-} from "../../firebase/firebaseConfig";
+import { db, storage, firebaseConfig } from "../../firebase/firebaseConfig";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconField from "../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../HeaderNav/HeaderNav";
 
-// Inisialisasi aplikasi Firebase terpisah untuk pembuatan pengguna
 const secondaryApp = initializeApp(firebaseConfig, "Secondary");
 const secondaryAuth = getAuth(secondaryApp);
 
@@ -40,37 +39,46 @@ function AddNewAdmin() {
     const { name, value, files } = e.target;
 
     if (name === "profileImage" && files[0]) {
-      setAdmin({
-        ...admin,
-        profileImage: files[0],
-      });
-
-      // Create image preview
+      setAdmin({ ...admin, profileImage: files[0] });
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImage(reader.result);
       };
       reader.readAsDataURL(files[0]);
     } else {
-      setAdmin({
-        ...admin,
-        [name]: value,
-      });
+      setAdmin({ ...admin, [name]: value });
+    }
+  };
+
+  const handleEmailValidation = async (email) => {
+    try {
+      const signInMethods = await fetchSignInMethodsForEmail(
+        secondaryAuth,
+        email
+      );
+      return signInMethods.length > 0; // If greater than 0, the email is already registered
+    } catch (error) {
+      console.error("Error fetching sign-in methods: ", error);
+      return false; // Return false if there's an error
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const emailExists = await handleEmailValidation(admin.email);
+    if (emailExists) {
+      alert("Email sudah terdaftar. Silakan gunakan email lain.");
+      return; // Stop the process if email is already registered
+    }
+
     try {
-      // 1. Buat pengguna baru di Firebase Authentication menggunakan aplikasi sekunder
       const { user: newUser } = await createUserWithEmailAndPassword(
         secondaryAuth,
         admin.email,
         admin.password
       );
 
-      // 2. Upload profile image to Firebase Storage
       let profileImageUrl = "";
       if (admin.profileImage) {
         const imageRef = ref(
@@ -81,7 +89,6 @@ function AddNewAdmin() {
         profileImageUrl = await getDownloadURL(imageRef);
       }
 
-      // 3. Save user details to Firestore
       await addDoc(collection(db, "admins"), {
         uid: newUser.uid,
         email: admin.email,
@@ -93,13 +100,8 @@ function AddNewAdmin() {
         createdAt: Timestamp.now(),
       });
 
-      // 4. Keluarkan pengguna dari aplikasi sekunder (ini tidak memengaruhi status autentikasi aplikasi utama)
       await secondaryAuth.signOut();
 
-      // 5. Display success message
-      // setAlertSuccess(true);
-
-      // 6. Reset the form
       setAdmin({
         email: "",
         password: "",
@@ -110,8 +112,6 @@ function AddNewAdmin() {
         profileImage: null,
       });
       setPreviewImage(null);
-
-      // 7. Navigate back to /manageAdmin
       setAlertSuccess(true);
       setTimeout(() => {
         navigate("/manageAdmin");
@@ -121,6 +121,7 @@ function AddNewAdmin() {
       setAlertError(true);
     }
   };
+
   const handleCancel = () => {
     navigate("/manageAdmin");
   };
@@ -354,6 +355,11 @@ function AddNewAdmin() {
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
                       Last Name
                     </h3>
+                    <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
+                    />
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
                     LastName maximal 100 karakter dan jangan menggunakan simbol
@@ -380,6 +386,11 @@ function AddNewAdmin() {
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
                       Username
                     </h3>
+                    <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
+                    />
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
                     Nama username maximal 100 karakter dan jangan menggunakan
@@ -413,6 +424,7 @@ function AddNewAdmin() {
                       alt=""
                       className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
                     />
+                   
                   </div>
                   <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
                     Pilih role admin yang akan di tambahkan.
@@ -438,7 +450,11 @@ function AddNewAdmin() {
                   <div className="flex items-center gap-1">
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
                       Password
-                    </h3>
+                    </h3> <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
+                    />
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
                     masukan password dengan minimal 1 huruf kapital, wajib

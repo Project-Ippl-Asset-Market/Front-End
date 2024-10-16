@@ -1,246 +1,415 @@
-import { useState } from "react";
-import Image1 from "../web_User-LandingPage/Banner/bg.jpg";
-import Img1 from "../../website/web_User-LandingPage/products/image1.jpg";
-import Img2 from "../../website/web_User-LandingPage/products/image2.jpg";
-import Img3 from "../../website/web_User-LandingPage/products/image3.jpg";
-import Img4 from "../../website/web_User-LandingPage/products/image4.jpg";
-import Img5 from "../../website/web_User-LandingPage/products/image1.jpg";
+import { db } from "../../../firebase/firebaseConfig";
+import { useState, useEffect } from "react";
+import {
+  collection,
+  doc,
+  query,
+  where,
+  runTransaction,
+  getDocs,
+} from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import HeaderNav from "../../headerNavBreadcrumbs/HeaderWebUser";
+import NavbarSection from "../web_User-LandingPage/NavbarSection";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
-import Header from "../../headerNavBreadcrumbs/HeaderWebUser";
-import NavbarSection from "./NavbarSection";
+import CustomImage from "../../../assets/assetmanage/Iconrarzip.svg";
+import IconDollar from "../../../assets/assetWeb/iconDollarLight.svg";
+import IconCart from "../../../assets/assetWeb/iconCart.svg";
+import { useNavigate } from "react-router-dom";
+import { AiOutlineInfoCircle } from "react-icons/ai";
 
-// import PopUp from "./PopUp"; // Import VideoModal
+const HomePage = () => {
+  const navigate = useNavigate();
+  const [AssetsData, setAssetsData] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [likedAssets, setLikedAssets] = useState(new Set());
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [selectedasset, setSelectedasset] = useState(null);
+  const [alertLikes, setAlertLikes] = useState(false);
+  const [isProcessingLike, setIsProcessingLike] = useState(false);
 
-// Banner ImageList
-const ImageList = [
-  {
-    id: 1,
-    img: Image1,
-    description: (
-      <>
-        Butuh Asset berkualitas untuk Tugas dan Proyekmu? Jelajahi <br />
-        ribuan Asset menarik di website kami
-        <div></div>
-        <div></div>
-        <div></div>
-      </>
-    ),
-  },
-];
+  // Mengambil ID pengguna saat ini (jika ada)
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUserId(user.uid);
+      } else {
+        setCurrentUserId(null);
+      }
+    });
 
-// List data product
-const ProductsData = [
-  {
-    id: 1,
-    img: Img1,
-    title: "Gicss Photograph",
-    description: "Video Ombak Laut - Sore tenang dipi..",
-    likes: 12301,
-    price: "Rp. 25.000,00",
-  },
-  {
-    id: 2,
-    img: Img2,
-    title: "Gicss Photograph",
-    description: "Gambar Ombak Laut - Sore tenang dipi..",
-    likes: 12301,
-    price: "Rp. 25.000,00",
-  },
-  {
-    id: 3,
-    img: Img3,
-    title: "Gicss Photograph",
-    description: "Font 3D - Font yang membuat lebih....",
-    likes: 12301,
-    price: "Rp. 25.000,00",
-  },
-  {
-    id: 4,
-    img: Img4,
-    title: "Gicss Photograph",
-    description: "Video Ombak Laut - Sore tenang dipi..",
-    type: "jpeg",
-    likes: 12301,
-    price: "Rp. 25.000,00",
-  },
-  {
-    id: 5,
-    img: Img5,
-    title: "Gicss Photograph",
-    description: "Dataset Visual  - Dataset ini menye...",
-    type: "jpeg",
-    likes: 12301,
-    price: "Rp. 25.000,00",
-  },
-  {
-    id: 6,
-    img: Img3,
-    title: "Gicss Photograph",
-    description: "Font 3D - Font yang membuat lebih....",
-    type: "jpeg",
-    likes: 12301,
-    price: "Rp. 25.000,00",
-  },
-  {
-    id: 7,
-    img: Img1,
-    title: "Gicss Photograph",
-    description: "Video Ombak Laut - Sore tenang dipi..",
-    type: "jpeg",
-    likes: 12301,
-    price: "Rp. 25.000,00",
-  },
-  {
-    id: 8,
-    img: Img2,
-    title: "Gicss Photograph",
-    description: "Gambar Ombak Laut - Sore tenang dipi..",
-    type: "jpeg",
-    likes: 12301,
-    price: "Rp. 25.000,00",
-  },
-];
+    return () => unsubscribe();
+  }, []);
 
-const Navbar = () => {
-  // State untuk menyimpan status like
-  const [likedProducts, setLikedProducts] = useState({});
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUserId(user.uid);
+      } else {
+        setCurrentUserId(null);
+      }
+    });
 
-  const handleLikeClick = (id) => {
-    setLikedProducts((prevState) => ({
-      ...prevState,
-      [id]: !prevState[id],
-    }));
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const fetchAssets = async () => {
+      const collectionsToFetch = [
+        "assetAudios",
+        "assetImages",
+        "assetDatasets",
+        "assetImage2D",
+        "assetImage3D",
+        "assetVideos",
+      ];
+
+      try {
+        const allAssets = await Promise.all(
+          collectionsToFetch.map(async (collectionName) => {
+            const snapshot = await getDocs(collection(db, collectionName));
+            return snapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+          })
+        );
+        const combinedAssets = allAssets.flat();
+
+        // Urutkan aset berdasarkan jumlah likes (descending)
+        const sortedAssets = combinedAssets.sort((a, b) => {
+          return (b.likeAsset || 0) - (a.likeAsset || 0); // Pastikan kita mengatasi kasus saat likeAsset undefined
+        });
+
+        // Simpan aset yang telah diurutkan
+        setAssetsData(sortedAssets);
+      } catch (error) {
+        console.error("Error fetching assets: ", error);
+      }
+    };
+
+    fetchAssets();
+  }, []);
+
+  useEffect(() => {
+    const fetchUserLikes = async () => {
+      if (!currentUserId) return;
+      const likesQuery = query(
+        collection(db, "likes"),
+        where("userId", "==", currentUserId)
+      );
+
+      try {
+        const likesSnapshot = await getDocs(likesQuery);
+        const userLikes = new Set();
+
+        // Menambahkan assetId ke dalam set likedAssets
+        likesSnapshot.forEach((doc) => {
+          userLikes.add(doc.data().assetId);
+        });
+
+        setLikedAssets(userLikes);
+      } catch (error) {
+        console.error("Error fetching likes: ", error);
+      }
+    };
+
+    fetchUserLikes();
+  }, [currentUserId]);
+
+  const handleLikeClick = async (assetId, currentLikes, collectionName) => {
+    if (isProcessingLike) return;
+
+    if (!currentUserId) {
+      setAlertLikes("Anda perlu login untuk menyukai Asset ini");
+      setTimeout(() => {
+        setAlertLikes(false);
+      }, 3000);
+      return;
+    }
+
+    setIsProcessingLike(true);
+
+    const assetRef = doc(db, collectionName, assetId); // Menyesuaikan koleksi berdasarkan parameter
+    const likeRef = doc(db, "likes", `${currentUserId}_${assetId}`);
+
+    try {
+      await runTransaction(db, async (transaction) => {
+        const newLikedAssets = new Set(likedAssets);
+        let newLikesAsset;
+
+        if (newLikedAssets.has(assetId)) {
+          // Hapus like
+          transaction.delete(likeRef); // Menghapus dokumen dari koleksi likes
+          newLikesAsset = Math.max(0, currentLikes - 1);
+          transaction.update(assetRef, { likeAsset: newLikesAsset });
+          newLikedAssets.delete(assetId);
+        } else {
+          // Tambah like
+          transaction.set(likeRef, {
+            userId: currentUserId,
+            assetId: assetId,
+          });
+          newLikesAsset = currentLikes + 1;
+          transaction.update(assetRef, { likeAsset: newLikesAsset });
+          newLikedAssets.add(assetId);
+        }
+
+        // Update state setelah transaksi sukses
+        setLikedAssets(newLikedAssets);
+      });
+    } catch (error) {
+      console.error("Error updating likes: ", error);
+    } finally {
+      setIsProcessingLike(false);
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (!currentUserId) {
+      alert("Anda perlu login untuk menambahkan asset ke keranjang");
+      navigate("/login");
+      return;
+    }
+    navigate("/cart");
+  };
+
+  const handleBuyNow = () => {
+    if (!currentUserId) {
+      alert("Anda perlu login untuk membeli asset");
+      navigate("/login");
+      return;
+    }
+
+    navigate("/payment");
+  };
+
+  // Menampilkan modal
+  const openModal = (asset) => {
+    setSelectedasset(asset);
+    setModalIsOpen(true);
+  };
+
+  // Menutup modal
+  const closeModal = () => {
+    setModalIsOpen(false);
+    setSelectedasset(null);
   };
 
   return (
-    <div className="font-poppins overflow-x-hidden">
-      <div className="w-full shadow-md bg-white dark:text-white relative z-40 ">
-        <div className="pt-[80px]  w-full">
-          <Header />
+    <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
+      <div className="w-full shadow-md bg-primary-100 dark:text-primary-100 relative z-40 ">
+        <div className="pt-[50px] sm:pt-[70px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
+          <HeaderNav />
         </div>
         <NavbarSection />
       </div>
 
-      {/* Banner section */}
-      <div
-        className="relative overflow-hidden h-[140px] md:h-[160px] lg:h-[179px] flex justify-center items-center mt-20"
-        style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${Image1})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }}>
-        <div className="container sm:pb-0 text-white text-center">
-          {ImageList.map((data) => (
-            <div
-              key={data.id}
-              className="flex flex-col justify-center items-center gap-4">
-              <div className="flex flex-col justify-start items-center gap-4">
-                <h1 className="text-[14px] sm:text-[18px] md:text-[23px] lg:text-[30px] xl:text-[36px] 2xl:text-[12px] font-bold">
-                  {data.description}
-                </h1>
-              </div>
-              <div className="flex justify-center items-center w-full max-w-md gap-4">
-                <div className="w-1/12 sm:w-1/7 md:w-1/6 lg:w-1/5 h-1 bg-blue-600"></div>
-                <div className="w-1/12 sm:w-1/7 md:w-1/6 lg:w-1/5 h-1 bg-blue-600"></div>
-                <div className="w-1/12 sm:w-1/7 md:w-1/6 lg:w-1/5 h-1 bg-blue-600"></div>
-                <div className="w-1/12 sm:w-1/7 md:w-1/6 lg:w-1/5 h-1 bg-blue-600"></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Products section */}
-      <div>
-        <div className="container flex flex-col">
-          {/* Header section */}
-          <div className="w-[225px] sm:w-[252px] md:w-[291px] lg:w-[315px] xl:w-0 2xl:w-0 text-left mb-[18px] mt-[16px] pr-4 pt-3 text-[13px] sm:text-[15px] md:text-[18px] lg:text-[20px] font-semibold border-b-[1px] border-black dark:border-white">
-            <ul>
-              <li className="flex w-[386px] justify-start items-center">
-                <a
-                  href="#"
-                  className="pb-2 sm:pb-2 mb:pb-3 lg:pb-4 mr-7 border-b-[3px] border-transparent focus:border-blue-500">
-                  Paling Disukai
-                </a>
-                <a
-                  href="#"
-                  className="pb-2 sm:pb-2 mb:pb-3 lg:pb-4 border-b-[3px] mr-7 border-transparent focus:border-blue-500">
-                  Terlaris
-                </a>
-                <a
-                  href="#"
-                  className="pb-2 sm:pb-2 mb:pb-3 lg:pb-4 border-b-[3px] border-transparent focus:border-blue-500">
-                  Terbaru
-                </a>
-              </li>
-            </ul>
+      <div className="w-full p-12 mx-auto">
+        {alertLikes && (
+          <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
+            <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
+            <span className="block sm:inline">{alertLikes}</span>
+            <button
+              className="absolute top-0 bottom-0 right-0 px-4 py-3"
+              onClick={() => setAlertLikes(false)}>
+              <svg
+                className="fill-current h-6 w-6 text-red-500"
+                role="button"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20">
+                <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
+              </svg>
+            </button>
           </div>
+        )}
+        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
+          All Asset
+        </h1>
+      </div>
+      <div className="pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
+        <div className="mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0 sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]">
+          {/* Check if there is data before rendering */}
+          {AssetsData.length > 0 ? (
+            AssetsData.map((data) => {
+              const likesAsset = data.likeAsset || 0;
+              const likedByCurrentUser = likedAssets.has(data.id);
 
-          {/* Body section */}
-          <div className="container mb-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-5 md:gap-5 place-items-center">
-            {ProductsData.map((data) => (
-              <div
-                key={data.id}
-                className="w-[140px] h-[155px] ssm:w-[165px] ssm:h-[180px] sm:w-[180px] sm:h-[205px] md:w-[180px] md:h-[215px] lg:w-[260px] lg:h-[295px] rounded-[10px] bg-[#D9D9D9] dark:bg-[#171717] group">
-                {/* image section */}
-                <div className="w-[140px] h-[73px] ssm:w-[165px] ssm:h-[98px] sm:w-[180px] sm:h-[113px] md:w-[180px] md:h-[95px] lg:w-[260px] lg:h-[183px]">
-                  <a href="#">
-                    <img
-                      src={data.img}
-                      alt=""
-                      className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto drop-shadow-md max-h-full cursor-pointer"
-                    />
-                  </a>
-                </div>
+              {
+                /* const getDisplayImage = () => {
+                return (
+                  data.datasetImage ||
+                  data.assetAudiosImage ||
+                  data.asset2DImage ||
+                  data.asset3DImage ||
+                  data.uploadUrlImage ||
+                  data.uploadUrlVideo ||
+                  CustomImage
+                );
+              }; */
+              }
 
-                {/* details section */}
-                <div className="flex-col justify-start px-4 py-2 sm:p-4">
-                  <p className="text-[9px] text-[#212121] font-light dark:text-white">
-                    {data.title}
-                  </p>
-                  <h4 className="text-black text-[9px] ssm:text-[11px] sm:text-[10px] md:text-[12px] lg:text-[14px] font-semibold dark:text-white">
-                    {data.description}
-                  </h4>
-                  <div className="flex justify-between items-center ">
-                    <button
-                      onClick={() => handleLikeClick(data.id)}
-                      className="flex justify-start items-center mr-2">
-                      {likedProducts[data.id] ? (
-                        <FaHeart className="text-red-600" />
-                      ) : (
-                        <FaRegHeart className="text-black text-[11px] sm:text-[14px] dark:text-white " />
-                      )}
-                      <p className="ml-2 text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
-                        ({data.likes})
-                      </p>
-                    </button>
-                    <p className="flex justify-end w-full text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
-                      {data.price}
+              const getAssetName = () => {
+                return (
+                  data.assetAudiosName ||
+                  data.datasetName ||
+                  data.asset2DName ||
+                  data.imageName ||
+                  data.videoName ||
+                  "Nama Tidak Tersedia"
+                );
+              };
+
+              return (
+                <div
+                  key={data.id}
+                  className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                  <div className="w-full h-[73px] ssm:h-[98px] sm:h-[113px] md:h-[95px] lg:h-[183px]">
+                    {data.uploadUrlVideo ? (
+                      <video
+                        src={data.uploadUrlVideo}
+                        alt="Video Preview"
+                        className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                        controls
+                        onClick={() => openModal(data)}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = CustomImage;
+                        }}>
+                        Your browser does not support the video tag.
+                      </video>
+                    ) : (
+                      <img
+                        src={data.datasetImage || CustomImage}
+                        alt="Image"
+                        className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                        onClick={() => openModal(data)}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = CustomImage;
+                        }}
+                      />
+                    )}
+                  </div>
+
+                  {/* Details Section */}
+                  <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-10">
+                    <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
+                      {getAssetName()}
                     </p>
+
+                    <h4 className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px] dark:text-primary-100">
+                      {data.description?.length > 24
+                        ? `${data.description.substring(0, 24)}...`
+                        : data.description || "Deskripsi Tidak Tersedia"}
+                    </h4>
+
+                    <div className="flex justify-between items-center mt-auto gap-2">
+                      <button
+                        onClick={() => handleLikeClick(data.id, likesAsset)}
+                        className="flex justify-start items-center mr-2">
+                        {likedByCurrentUser ? (
+                          <FaHeart className="text-red-600" />
+                        ) : (
+                          <FaRegHeart className="text-neutral-10 text-[11px] sm:text-[14px] dark:text-primary-100" />
+                        )}
+                        <p className="ml-2 text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
+                          ({likesAsset})
+                        </p>
+                      </button>
+                      <p className="flex justify-end w-full text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
+                        Rp.{" "}
+                        {data.price?.toLocaleString("id-ID") ||
+                          "Harga Tidak Tersedia"}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              );
+            })
+          ) : (
+            // Display a "No Data" message or a loader
+            <p className="text-center text-gray-500">
+              Belum ada data yang tersedia.
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-[#ECECEC] dark:bg-[#171717] text-black dark:text-white h-[140px] sm:h-[181px] flex flex-col items-center justify-center">
-        <div className="flex justify-center gap-4 text-[8px] sm:text-[12px] lg:text-[16px] font-semibold mb-4 sm:mb-5">
-          <a href="#">Teams And Conditions</a>
-          <a href="#">File Licenses</a>
-          <a href="#">Refund Policy</a>
-          <a href="#">Privacy Policy</a>
-        </div>
+      {/* Modal untuk detail asset */}
+      {modalIsOpen && selectedasset && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] sm:w-[700px] md:w-[700px] lg:w-[700px] xl:w-[700px] 2xl:w-[700px] mx-4 flex relative">
+            <button
+              className="absolute top-1 sm:top-2 md:top-2 lg:top-3 xl:top-2 2xl:top-2 right-3 sm:right-2 md:right-2 lg:right-3 xl:right-2 2xl:right-2 text-gray-600 dark:text-gray-400 text-2xl sm:text-xl md:text-xl lg:text-[35px] xl:text-[40px] 2xl:text-2xl"
+              onClick={closeModal}>
+              &times;
+            </button>
+            {selectedasset.uploadUrlVideo ? (
+              <video
+                src={selectedasset.uploadUrlVideo}
+                alt="Video Preview"
+                className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                controls
+                onClick={() => openModal(selectedasset)}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = CustomImage;
+                }}>
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <img
+                src={selectedasset.selectedassetsetImage || CustomImage}
+                alt="Image"
+                className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                onClick={() => openModal(selectedasset)}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = CustomImage;
+                }}
+              />
+            )}
+            <div className="w-1/2 pl-4 ">
+              <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
+                {selectedasset.datasetName}
+              </h2>
+              <p className="text-sm mb-2 dark:text-primary-100 mt-4">
+                Rp. {selectedasset.price.toLocaleString("id-ID")}
+              </p>
+              <div className="text-sm mb-2 dark:text-primary-100 mt-4">
+                <label className="flex-col mt-2">Deskripsi Video:</label>
+                <div className="mt-2">{selectedasset.description}</div>
+              </div>
 
-        <p className="text-[8px] md:text-[12px]">
-          Copyright © 2024 - All right reserved by ACME Industries Ltd
-        </p>
-      </footer>
+              <p className="text-sm mb-2 dark:text-primary-100 mt-4">
+                Kategori: {selectedasset.category}
+              </p>
+              <button
+                onClick={() => handleAddToCart(selectedasset)}
+                className="flex p-2 text-center items-center justify-center bg-neutral-60 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-10 rounded-md">
+                <img src={IconCart} alt="Cart Icon" className="w-6 h-6 mr-2" />
+                <p>Tambahkan Ke Keranjang</p>
+              </button>
+              <button
+                onClick={() => handleBuyNow(selectedasset)}
+                className="flex p-2 text-center items-center justify-center bg-secondary-40 text-primary-100 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-6 rounded-md">
+                <img
+                  src={IconDollar}
+                  alt="Cart Icon"
+                  className="w-6 h-6 mr-2 -ml-24"
+                />
+                <p>Beli Sekarang</p>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default Navbar;
+export default HomePage;

@@ -1,14 +1,14 @@
 // eslint-disable-next-line no-unused-vars
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
 import IconSearch from "../../assets/icon/iconHeader/iconSearch.svg";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconHapus from "../../assets/icon/iconCRUD/iconHapus.png";
 import IconEdit from "../../assets/icon/iconCRUD/iconEdit.png";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
-import { getStorage, ref, deleteObject } from "firebase/storage";
+import { getAuth } from "firebase/auth";
 
 function ManageUsers() {
   const defaultImageUrl =
@@ -19,20 +19,28 @@ function ManageUsers() {
   const [userToDelete, setUserToDelete] = useState(null);
   const sidebarRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+    setIsSidebarOpen((prev) => !prev);
   };
 
-  const handleClickOutside = (event) => {
-    if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
-      setIsSidebarOpen(false);
-    }
-  };
+  // Define handleClickOutside using useCallback to ensure stability
+  const handleClickOutside = useCallback(
+    (event) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setIsSidebarOpen(false);
+      }
+    },
+    [sidebarRef]
+  );
 
+  // useEffect untuk mengambil data pengguna saat komponen di-mount
   useEffect(() => {
     const fetchUsers = async () => {
       setIsLoading(true);
+      setError(null);
       try {
         const response = await axios.get("http://localhost:3000/api/users");
         setUsers(response.data);
@@ -44,61 +52,68 @@ function ManageUsers() {
     };
 
     fetchUsers();
+  }, []); // Array dependensi kosong memastikan hanya dijalankan sekali saat mount
 
+  useEffect(() => {
     if (isSidebarOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     } else {
       document.removeEventListener("mousedown", handleClickOutside);
     }
 
+    // Cleanup
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isSidebarOpen]);
-
-  const handleDeleteImage = async (imagePath) => {
-    const storage = getStorage();
-    const imageRef = ref(storage, imagePath);
-    try {
-      await deleteObject(imageRef);
-    } catch (error) {
-      console.error("Error deleting image: ", error);
-    }
-  };
+  }, [isSidebarOpen, handleClickOutside]);
 
   const handleDeleteUser = async (id) => {
     setIsLoading(true);
-    const userToDelete = users.find((user) => user.id === id);
-    if (!userToDelete) {
-      return;
-    }
-    const imagePath = userToDelete.profileImageUrl;
-    // Ekstrak path relatif dari URL gambar
-    const relativePath = imagePath.split("?")[0].split("o/")[1];
-    // Dekode path relatif
-    const decodedPath = decodeURIComponent(relativePath);
-    if (!decodedPath || !decodedPath.startsWith("images-users/")) {
+    setError(null);
+    const user = users.find((user) => user.id === id);
+    if (!user) {
+      console.error("User not found in local state");
       return;
     }
 
     try {
-      // Menghapus user dari server
-      await axios.delete(`http://localhost:3000/api/users/${id}`);
-      // Menghapus gambar dari Storage
-      await handleDeleteImage(decodedPath);
-      // Update state untuk menghapus user yang sudah dihapus
-      setUsers((prev) => prev.filter((user) => user.id !== id));
+      const auth = getAuth();
+      const token = await auth.currentUser.getIdToken(true);
+
+      const response = await axios.delete(
+        `http://localhost:3000/api/users/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 204) {
+        setUsers((prev) => prev.filter((user) => user.id !== id));
+        navigate("/manageUsers");
+      } else {
+        setError("Failed to delete user. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      if (error.response) {
+        console.error("Error response data:", error.response.data);
+      }
+      setError(
+        error.response?.data?.message ||
+          "Failed to delete user. Please try again."
+      );
     } finally {
       setIsLoading(false);
+      setIsModalOpen(false);
+      setUserToDelete(null);
     }
   };
 
-  // Update the confirmDeleteUser function
   const confirmDeleteUser = () => {
     if (userToDelete) {
       handleDeleteUser(userToDelete.id);
-      setIsModalOpen(false);
-      setUserToDelete(null);
     }
   };
 
@@ -152,13 +167,16 @@ function ManageUsers() {
             </div>
           </div>
         </div>
+
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
           </div>
+        ) : error ? (
+          <div className="text-red-500 text-center mt-4">{error}</div>
         ) : (
           <div className="relative overflow-x-auto shadow-md sm:rounded-lg p-8 dark:bg-neutral-25 mt-4">
-            <table className="w-full text-sm text-left rtl:text-right text-gray-500 bg-primary-100 dark:text-neutral-90 ">
+            <table className="w-full text-sm text-left rtl:text-right text-gray-500 bg-primary-100 dark:text-neutral-90">
               <thead className="text-xs text-neutral-20 uppercase dark:bg-neutral-25 dark:text-neutral-90 border-b dark:border-neutral-20">
                 <tr>
                   <th scope="col" className="px-6 py-3">
@@ -167,7 +185,6 @@ function ManageUsers() {
                   <th scope="col" className="px-6 py-3">
                     UserName
                   </th>
-
                   <th scope="col" className="px-6 py-3">
                     Email
                   </th>
@@ -180,60 +197,92 @@ function ManageUsers() {
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
-                    <td className="px-6 py-4">
-                      <img
-                        src={user.profileImageUrl || defaultImageUrl}
-                        alt={`${user.username}'s profile`}
-                        className="w-12 h-12 rounded-lg"
-                      />
-                    </td>
-                    <th
-                      scope="row"
-                      className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 space-nowrap">
-                      {user.username}
-                    </th>
-                    <td className="px-6 py-4">{user.email}</td>
-                    <td className="px-6 py-4">
-                      {user.createdAt
-                        ? new Date(
-                            user.createdAt._seconds * 1000
-                          ).toLocaleDateString("id-ID", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })
-                        : "N/A"}
-                    </td>
-                    <td className="mx-auto flex gap-4 mt-8 ">
-                      <Link to={`/manageUsers/edit/${user.id}`}>
+                {users.map((user) => {
+                  // Safely format the createdAt field
+                  let formattedDate = "N/A";
+                  if (user.createdAt) {
+                    // Jika menggunakan Firestore Timestamp
+                    if (user.createdAt._seconds) {
+                      formattedDate = new Date(
+                        user.createdAt._seconds * 1000
+                      ).toLocaleDateString("id-ID", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      });
+                    } else if (user.createdAt.toDate) {
+                      // Jika createdAt adalah Firestore Timestamp
+                      formattedDate = user.createdAt
+                        .toDate()
+                        .toLocaleDateString("id-ID", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        });
+                    } else if (user.createdAt instanceof Date) {
+                      formattedDate = user.createdAt.toLocaleDateString(
+                        "id-ID",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      );
+                    }
+                  }
+
+                  return (
+                    <tr
+                      key={user.id}
+                      className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
+                      <td className="px-6 py-4">
                         <img
-                          src={IconEdit}
-                          alt="icon edit"
-                          className="w-5 h-5"
+                          src={user.profileImageUrl || defaultImageUrl}
+                          alt={`${user.username}'s profile`}
+                          className="w-12 h-12 rounded-lg"
                         />
-                      </Link>
-                      <img
-                        src={IconHapus}
-                        alt="icon hapus"
-                        className="w-5 h-5 cursor-pointer"
-                        onClick={() => {
-                          setUserToDelete(user);
-                          setIsModalOpen(true);
-                        }}
-                      />
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <th
+                        scope="row"
+                        className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 space-nowrap">
+                        {user.username}
+                      </th>
+                      <td className="px-6 py-4">{user.email}</td>
+                      <td className="px-6 py-4">{formattedDate}</td>
+                      <td className="flex justify-center py-4 items-center gap-2">
+                        <Link to={`/manageUsers/edit/${user.id}`}>
+                          <img
+                            className="cursor-pointer"
+                            src={IconEdit}
+                            alt="icon edit"
+                            width={20}
+                            height={20}
+                          />
+                        </Link>
+
+                        <button
+                          onClick={() => {
+                            setUserToDelete(user);
+                            setIsModalOpen(true);
+                          }}>
+                          <img
+                            className="cursor-pointer"
+                            src={IconHapus}
+                            alt="icon hapus"
+                            width={20}
+                            height={20}
+                          />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         )}
 
-        {isModalOpen && (
+        {isModalOpen && userToDelete && (
           <div
             className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
             aria-modal="true"
@@ -242,22 +291,28 @@ function ManageUsers() {
               <h2 className="text-lg font-semibold mb-4">
                 Konfirmasi Penghapusan
               </h2>
-              <p>Apakah Anda yakin ingin menghapus {userToDelete?.username}?</p>
+              <p>
+                Apakah Anda yakin ingin menghapus{" "}
+                <strong>{userToDelete.username}</strong>?
+              </p>
               <div className="mt-4 flex justify-end">
                 <button
                   className="bg-red-600 text-white px-4 py-2 rounded-md mr-2"
-                  onClick={confirmDeleteUser}>
-                  Hapus
+                  onClick={confirmDeleteUser}
+                  disabled={isLoading}>
+                  {isLoading ? "Menghapus..." : "Hapus"}
                 </button>
                 <button
                   className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md"
-                  onClick={() => setIsModalOpen(false)}>
+                  onClick={() => setIsModalOpen(false)}
+                  disabled={isLoading}>
                   Batal
                 </button>
               </div>
             </div>
           </div>
         )}
+
         {/* Pagination Section */}
         <div className="flex join pt-72 justify-end">
           <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">

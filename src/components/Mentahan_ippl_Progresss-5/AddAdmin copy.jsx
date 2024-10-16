@@ -1,16 +1,12 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { initializeApp } from "firebase/app";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
-import {
-  db,
-  storage,
-  firebaseConfig,
-  auth,
-} from "../../firebase/firebaseConfig";
+import { db, storage, firebaseConfig } from "../../firebase/firebaseConfig";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconField from "../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../HeaderNav/HeaderNav";
@@ -90,13 +86,14 @@ function AddNewAdmin() {
         username: admin.username,
         role: admin.role,
         profileImageUrl: profileImageUrl,
+        createdAt: Timestamp.now(),
       });
 
       // 4. Keluarkan pengguna dari aplikasi sekunder (ini tidak memengaruhi status autentikasi aplikasi utama)
       await secondaryAuth.signOut();
 
       // 5. Display success message
-      setAlertSuccess(true);
+      // setAlertSuccess(true);
 
       // 6. Reset the form
       setAdmin({
@@ -111,11 +108,17 @@ function AddNewAdmin() {
       setPreviewImage(null);
 
       // 7. Navigate back to /manageAdmin
-      navigate("/manageAdmin");
+      setAlertSuccess(true);
+      setTimeout(() => {
+        navigate("/manageAdmin");
+      }, 2000);
     } catch (error) {
       console.error("Error menambahkan admin: ", error);
       setAlertError(true);
     }
+  };
+  const handleCancel = () => {
+    navigate("/manageAdmin");
   };
 
   const closeAlert = () => {
@@ -218,30 +221,45 @@ function AddNewAdmin() {
                       <label
                         htmlFor="fileUpload"
                         className="flex flex-col justify-center items-center cursor-pointer text-center">
-                        <img
-                          alt=""
-                          className="w-6 h-6"
-                          src="path_to_your_icon"
-                        />
-                        <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                          Upload Foto
-                        </span>
+                        {!previewImage && (
+                          <>
+                            <img
+                              alt=""
+                              className="w-6 h-6"
+                              src="path_to_your_icon"
+                            />
+                            <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
+                              Upload Foto
+                            </span>
+                          </>
+                        )}
+
                         <input
                           type="file"
                           id="fileUpload"
                           name="profileImage"
                           onChange={handleChange}
                           multiple
-                          accept="Admin/jpeg,Admin/png,Admin/jpg"
+                          accept="image/jpeg,image/png,image/jpg"
                           className="hidden"
                         />
+
                         {previewImage && (
-                          <div className="mt-2">
+                          <div className="mt-2 relative">
                             <img
                               src={previewImage}
                               alt="Preview"
-                              className="w-32 h-32 object-cover rounded"
+                              className="w-40 sm:w-40 md:w-40 lg:w-[150px] xl:w-[150px] 2xl:w-[150px] h-40 sm:h-40 md:h-40 lg:h-[156px] xl:h-[156px] 2xl:h-[157px] -mt-2.5 object-cover rounded"
                             />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPreviewImage(null);
+                                setAdmin({ ...admin, profileImage: null });
+                              }}
+                              className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded">
+                              x
+                            </button>
                           </div>
                         )}
                       </label>
@@ -332,6 +350,11 @@ function AddNewAdmin() {
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
                       Last Name
                     </h3>
+                    <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
+                    />
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
                     LastName maximal 100 karakter dan jangan menggunakan simbol
@@ -358,6 +381,11 @@ function AddNewAdmin() {
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
                       Username
                     </h3>
+                    <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
+                    />
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
                     Nama username maximal 100 karakter dan jangan menggunakan
@@ -386,6 +414,11 @@ function AddNewAdmin() {
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
                       Roles
                     </h3>
+                    <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
+                    />
                     <img
                       src={IconField}
                       alt=""
@@ -451,7 +484,9 @@ function AddNewAdmin() {
               </div>
             </div>
             <div className="w-full inline-flex sm:gap-6 xl:gap-[21px] justify-center sm:justify-center md:justify-end  gap-6 mt-12 sm:mt-12 md:mt-14 lg:mt-14 xl:mt-12  ">
-              <button className="btn bg-neutral-60 border-neutral-60 hover:bg-neutral-60 hover:border-neutral-60 rounded-lg  font-semibold   text-primary-100 text-center text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
+              <button
+                onClick={handleCancel}
+                className="btn bg-neutral-60 border-neutral-60 hover:bg-neutral-60 hover:border-neutral-60 rounded-lg  font-semibold   text-primary-100 text-center text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
                 Cancel
               </button>
               <button

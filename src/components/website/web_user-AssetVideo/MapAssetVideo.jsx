@@ -150,24 +150,42 @@ export function MapAssetVideo() {
       return;
     }
 
+    // Destructure the selected asset object
+    const { id, videoName, description, price, uploadUrlVideo, category } =
+      selectedasset;
+
+    // Check for missing fields
+    const missingFields = [];
+    if (!videoName) missingFields.push("videoName");
+    if (!description) missingFields.push("description");
+    if (price === undefined) missingFields.push("price");
+    if (!uploadUrlVideo) missingFields.push("uploadUrlVideo");
+    if (!category) missingFields.push("category");
+
+    if (missingFields.length > 0) {
+      console.error("Missing fields in selected asset:", missingFields);
+      alert(`Missing fields: ${missingFields.join(", ")}. Please try again.`);
+      return;
+    }
+
     try {
-      const cartRef = doc(
-        db,
-        "cartAssets",
-        `${currentUserId}_${selectedasset.id}`
-      );
+      // Create a document reference in Firestore for the cart item
+      const cartRef = doc(db, "cartAssets", `${currentUserId}_${id}`);
       await setDoc(cartRef, {
         userId: currentUserId,
-        assetId: selectedasset.id,
-        datasetName: selectedasset.datasetName,
-        description: selectedasset.description,
-        price: selectedasset.price,
-        datasetImage: selectedasset.datasetImage,
-        category: selectedasset.category,
+        assetId: id,
+        videoName: videoName,
+        description: description,
+        price: price,
+        uploadUrlVideo: uploadUrlVideo,
+        category: category,
       });
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {
       console.error("Error adding to cart: ", error);
+      alert(
+        "Terjadi kesalahan saat menambahkan asset ke keranjang. Silakan coba lagi."
+      );
     }
   };
 

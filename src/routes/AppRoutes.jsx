@@ -316,15 +316,6 @@ const AppRoutes = ({ handleLogout }) => {
             }
           />
 
-          {/* <Route
-            path="/manageAdmin/edit"
-            element={
-              <ProtectedRoute allowedRoles={["superadmin"]}>
-                <EditFormAdmin onLogout={handleLogout} />
-              </ProtectedRoute>
-            }
-          /> */}
-
           <Route
             path="/manage-admin/edit/:id"
             element={

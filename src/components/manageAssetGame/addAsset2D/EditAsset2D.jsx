@@ -3,7 +3,7 @@ import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { doc, getDoc, updateDoc } from "firebase/firestore"; // Firebase functions
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db, storage } from "../../../firebase/firebaseConfig";
 import {
   deleteObject,
@@ -11,7 +11,6 @@ import {
   uploadBytes,
   getDownloadURL,
 } from "firebase/storage";
-import PreviewImage from "../../../assets/assetmanage/rarzip.png";
 
 function EditNewAsset2D() {
   const { id } = useParams();
@@ -19,6 +18,8 @@ function EditNewAsset2D() {
   const [imagePreview, setImagePreview] = useState("");
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
+  // eslint-disable-next-line no-unused-vars
+  const [isLoading, setIsLoading] = useState(true);
 
   const categories = [
     { id: 1, name: "Characters" },
@@ -56,6 +57,8 @@ function EditNewAsset2D() {
         }
       } catch (error) {
         console.error("Error fetching Asset 2D:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -102,6 +105,7 @@ function EditNewAsset2D() {
         datasetImage = await getDownloadURL(imageRef);
       } else {
         // If no new image is uploaded, keep the old image URL
+        // eslint-disable-next-line no-unused-vars
         datasetImage = imagePreview;
       }
 
@@ -228,7 +232,7 @@ function EditNewAsset2D() {
                       <label
                         htmlFor="fileUpload"
                         className="flex flex-col justify-center items-center cursor-pointer text-center">
-                        {!PreviewImage && (
+                        {!imagePreview && (
                           <>
                             <img
                               alt=""

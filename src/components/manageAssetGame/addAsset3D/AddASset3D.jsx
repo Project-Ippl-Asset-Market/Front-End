@@ -1,5 +1,4 @@
-//
-
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -31,12 +30,13 @@ function AddAsset3D() {
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const categories = [
-    { id: 1, name: "Nature" },
-    { id: 2, name: "Architecture" },
-    { id: 3, name: "Animals" },
-    { id: 4, name: "People" },
-    { id: 5, name: "Technology" },
-    { id: 6, name: "Food" },
+    { id: 1, name: "Animations" },
+    { id: 2, name: "Character" },
+    { id: 3, name: "Environtment" },
+    { id: 4, name: "GUI" },
+    { id: 5, name: "Props" },
+    { id: 6, name: "Vegetation" },
+    { id: 7, name: "Vehicle" },
   ];
 
   useEffect(() => {
@@ -57,18 +57,54 @@ function AddAsset3D() {
     const { name, value, files } = e.target;
 
     if (name === "asset3DImage" && files[0]) {
-      setAsset3D({
-        ...asset3D,
-        asset3DImage: files[0],
-      });
+      const file = files[0];
+      const fileExtension = file.name.split(".").pop().toLowerCase(); // Dapatkan ekstensi file
 
-      // Create image preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result);
-      };
-      reader.readAsDataURL(files[0]);
+      // Cek apakah file tersebut adalah gambar atau zip
+      const isImage = ["png", "jpg", "jpeg"].includes(fileExtension);
+      const isZip = fileExtension === "zip";
+
+      if (isImage) {
+        // Jika file adalah gambar (png, jpg, jpeg)
+        setAsset3D({
+          ...asset3D,
+          asset3DImage: file, // Simpan file gambar
+        });
+
+        // Buat pratinjau gambar
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewImage(reader.result); // Tampilkan preview gambar
+        };
+        reader.readAsDataURL(file);
+
+        // Tampilkan notifikasi jika dibutuhkan
+        alert("Anda telah mengunggah file gambar.");
+      } else if (isZip) {
+        // Jika file adalah ZIP
+        setAsset3D({
+          ...asset3D,
+          asset3DImage: file, // Simpan file zip
+        });
+
+        // Tidak ada pratinjau untuk ZIP, berikan pesan kepada pengguna
+        setPreviewImage(null); // Kosongkan preview gambar karena file ZIP
+        alert(
+          "Anda mengunggah file ZIP, tidak ada pratinjau gambar yang akan ditampilkan."
+        );
+      } else {
+        // Jika file bukan gambar atau ZIP, berikan notifikasi
+        setAsset3D({
+          ...asset3D,
+          asset3DImage: null, // Hapus file yang salah
+        });
+        setPreviewImage(null);
+        alert(
+          "Hanya file gambar (.png, .jpg, .jpeg) atau .zip yang diizinkan."
+        );
+      }
     } else {
+      // Jika tidak berhubungan dengan upload file, hanya update state yang lain
       setAsset3D({
         ...asset3D,
         [name]: value,
@@ -97,7 +133,7 @@ function AddAsset3D() {
       // Upload profile image to Firebase Storage
       let asset3DImageUrl = "";
       if (asset3D.asset3DImage) {
-        const imageRef = ref(storage, `images-asset-3D/asset3D-${docId}.jpg`);
+        const imageRef = ref(storage, `images-asset-3d/asset3D-${docId}.jpg`);
         await uploadBytes(imageRef, asset3D.asset3DImage);
         asset3DImageUrl = await getDownloadURL(imageRef);
       }
@@ -221,8 +257,7 @@ function AddAsset3D() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
-                    Format foto harus .jpg, jpeg,png dan ukuran minimal 300 x
-                    300 px.
+                    Format Asset harus jpg, jpeg, png dan zip.
                   </p>
                 </div>
                 <div className="p-0">
@@ -239,7 +274,7 @@ function AddAsset3D() {
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                              Upload Foto
+                              Upload File
                             </span>
                           </>
                         )}

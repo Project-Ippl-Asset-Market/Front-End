@@ -23,10 +23,10 @@ function ManageAssetImage() {
   const sidebarRef = useRef(null);
   const [assets, setAssets] = useState([]);
   const [user, setUser] = useState(null);
-  const [role, setRole] = useState(""); 
+  const [role, setRole] = useState("");
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -74,7 +74,7 @@ function ManageAssetImage() {
           );
           const userSnapshot = await getDocs(userQuery);
           if (!userSnapshot.empty) {
-            setRole("user"); 
+            setRole("user");
           }
         }
       } else {
@@ -85,10 +85,10 @@ function ManageAssetImage() {
     return () => unsubscribe();
   }, []);
 
-  
   // Fungsi untuk mengambil data sesuai role pengguna
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoading(true);
       if (!user || !role) {
         console.log("No user or role detected");
         return;
@@ -130,7 +130,7 @@ function ManageAssetImage() {
             image: data.uploadUrlImage,
             category: data.category,
             createdAt,
-            userId: data.userId, 
+            userId: data.userId,
           });
         }
 
@@ -143,7 +143,7 @@ function ManageAssetImage() {
           const superadminSnapshot = await getDocs(superadminQuery);
           const superadminIds = superadminSnapshot.docs.map(
             (doc) => doc.data().uid
-          ); 
+          );
 
           // Filter items untuk mengeluarkan yang diupload oleh superadmin
           const filteredItems = items.filter(
@@ -151,11 +151,12 @@ function ManageAssetImage() {
           );
           setAssets(filteredItems);
         } else {
-           
           setAssets(items);
         }
       } catch (error) {
         console.error("Error fetching data: ", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -292,67 +293,75 @@ function ManageAssetImage() {
             </div>
           </div>
 
-          <div className="relative mt-6 overflow-x-auto shadow-md sm:rounded-lg p-8 dark:bg-neutral-25">
-            <table className="w-full text-sm text-left rtl:text-right text-gray-500 bg-primary-100 dark:text-neutral-90">
-              <thead className="text-xs text-neutral-20 uppercase dark:bg-neutral-25 dark:text-neutral-90 border-b dark:border-neutral-20">
-                <tr>
-                  <th scope="col" className="px-6 py-3">
-                    Preview
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Image Name
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Category
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Harga
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Created At
-                  </th>
-                  <th scope="col" className="justify-center mx-auto">
-                    Action
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {assets.map((asset) => (
-                  <tr
-                    key={asset.id}
-                    className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
-                    <td className="px-6 py-4">
-                      <img src={asset.image} className="w-12 h-12 " />
-                    </td>
-                    <th
-                      scope="row"
-                      className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap">
-                      {asset.imageName}
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64 mt-20">
+              <div className="animate-spin rounded-full h-60 w-60 border-b-2 border-gray-900"></div>
+            </div>
+          ) : alertError ? (
+            <div className="text-red-500 text-center mt-4">{alertError}</div>
+          ) : (
+            <div className="relative mt-6 overflow-x-auto shadow-md sm:rounded-lg p-8 dark:bg-neutral-25">
+              <table className="w-full text-sm text-left rtl:text-right text-gray-500 bg-primary-100 dark:text-neutral-90">
+                <thead className="text-xs text-neutral-20 uppercase dark:bg-neutral-25 dark:text-neutral-90 border-b dark:border-neutral-20">
+                  <tr>
+                    <th scope="col" className="px-6 py-3">
+                      Preview
                     </th>
-                    <td className="px-6 py-4">{asset.category}</td>
-                    <td className="px-6 py-4">{asset.price}</td>
-                    <td className="px-6 py-4">{asset.createdAt || "N/A"}</td>
-                    <td className="mx-auto flex gap-4 mt-8">
-                      <Link to={`/manage-asset-image/edit/${asset.id}`}>
-                        <img
-                          src={IconEdit}
-                          alt="icon edit"
-                          className="w-5 h-5"
-                        />
-                      </Link>
-                      <button onClick={() => handleDelete(asset.id)}>
-                        <img
-                          src={IconHapus}
-                          alt="icon hapus"
-                          className="w-5 h-5"
-                        />
-                      </button>
-                    </td>
+                    <th scope="col" className="px-6 py-3">
+                      Image Name
+                    </th>
+                    <th scope="col" className="px-6 py-3">
+                      Category
+                    </th>
+                    <th scope="col" className="px-6 py-3">
+                      Harga
+                    </th>
+                    <th scope="col" className="px-6 py-3">
+                      Created At
+                    </th>
+                    <th scope="col" className="justify-center mx-auto">
+                      Action
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {assets.map((asset) => (
+                    <tr
+                      key={asset.id}
+                      className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
+                      <td className="px-6 py-4">
+                        <img src={asset.image} className="w-12 h-12 " />
+                      </td>
+                      <th
+                        scope="row"
+                        className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap">
+                        {asset.imageName}
+                      </th>
+                      <td className="px-6 py-4">{asset.category}</td>
+                      <td className="px-6 py-4">{asset.price}</td>
+                      <td className="px-6 py-4">{asset.createdAt || "N/A"}</td>
+                      <td className="mx-auto flex gap-4 mt-8">
+                        <Link to={`/manage-asset-image/edit/${asset.id}`}>
+                          <img
+                            src={IconEdit}
+                            alt="icon edit"
+                            className="w-5 h-5"
+                          />
+                        </Link>
+                        <button onClick={() => handleDelete(asset.id)}>
+                          <img
+                            src={IconHapus}
+                            alt="icon hapus"
+                            className="w-5 h-5"
+                          />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
           <div className="flex join pt-72 justify-end ">
             <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
               «

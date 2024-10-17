@@ -111,7 +111,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manage-asset-video/edit/:assetId"
+            path="/manage-asset-video/edit/:id"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <EditFormAssetVideo onLogout={handleLogout} />
@@ -138,7 +138,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manage-asset-image/edit/:assetId"
+            path="/manage-asset-image/edit/:id"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <EditFormAssetImage onLogout={handleLogout} />

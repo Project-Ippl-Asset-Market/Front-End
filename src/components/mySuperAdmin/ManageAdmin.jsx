@@ -169,9 +169,11 @@ function ManageAdmin() {
           </div>
         </div>
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+          <div className="flex justify-center items-center h-64 mt-20">
+            <div className="animate-spin rounded-full h-60 w-60 border-b-2 border-gray-900"></div>
           </div>
+        ) : error ? (
+          <div className="text-red-500 text-center mt-4">{error}</div>
         ) : (
           <div className="relative overflow-x-auto shadow-md sm:rounded-lg p-8 dark:bg-neutral-25 mt-4">
             <table className="w-full text-sm text-left rtl:text-right text-gray-500 bg-primary-100 dark:text-neutral-90 ">

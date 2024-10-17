@@ -169,8 +169,8 @@ function ManageUsers() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+          <div className="flex justify-center items-center h-64 mt-20">
+            <div className="animate-spin rounded-full h-60 w-60 border-b-2 border-gray-900"></div>
           </div>
         ) : error ? (
           <div className="text-red-500 text-center mt-4">{error}</div>

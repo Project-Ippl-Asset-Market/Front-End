@@ -6,7 +6,7 @@ import NavbarSection from "../../web_User-LandingPage/NavbarSection";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import CustomImage from "../../../../assets/assetmanage/Iconrarzip.svg";
 
-export function MapAsset2D() {
+export function Asset2D() {
   const [productsData, setProductsData] = useState([]);
   const [likedProducts, setLikedProducts] = useState({});
   const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -175,6 +175,18 @@ export function MapAsset2D() {
           </div>
         </div>
       )}
+
+      <footer className=" min-h-[181px] flex flex-col items-center justify-center">
+        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
+          <a href="#">Teams And Conditions</a>
+          <a href="#">File Licenses</a>
+          <a href="#">Refund Policy</a>
+          <a href="#">Privacy Policy</a>
+        </div>
+        <p className="text-[10px] md:text-[12px]">
+          Copyright © 2024 - All right reserved by ACME Industries Ltd
+        </p>
+      </footer>
     </div>
   );
 }

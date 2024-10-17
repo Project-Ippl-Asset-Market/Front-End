@@ -83,11 +83,11 @@ const NavbarSection = () => {
             {/* Asset Video */}
             <div className="relative group">
               <Link
-                to="/mapAssetVideo"
+                to="/asset-video"
                 className={`relative inline-block text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px] 
                 w-full text-start rounded-md h-10 p-2
                 ${
-                  isLinkActive("/mapAssetVideo")
+                  isLinkActive("/asset-video")
                     ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
                     : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
                 }
@@ -100,7 +100,7 @@ const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/mapAssetVideo")
+              isLinkActive("/asset-video")
                 ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-8 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
                 : "hidden sm:w-1/2"
             }`}></span>
@@ -108,7 +108,7 @@ const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/mapAssetVideo")
+              isLinkActive("/asset-video")
                 ? "hidden"
                 : "hidden sm:group-hover:w-1/2"
             }`}></span>
@@ -119,11 +119,11 @@ const NavbarSection = () => {
             {/* Asset Gambar */}
             <div className="relative group">
               <Link
-                to="/mapAssetImage"
+                to="/asset-image"
                 className={`relative inline-block text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px]
               w-full text-start rounded-md h-10 p-2
               ${
-                isLinkActive("/mapAssetImage")
+                isLinkActive("/asset-image")
                   ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
                   : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
               }
@@ -136,7 +136,7 @@ const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/mapAssetImage")
+              isLinkActive("/asset-image")
                 ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-8 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
                 : "hidden sm:w-1/2"
             }`}></span>
@@ -144,7 +144,7 @@ const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/mapAssetImage")
+              isLinkActive("/asset-image")
                 ? "hidden"
                 : "hidden sm:group-hover:w-1/2"
             }`}></span>
@@ -155,11 +155,11 @@ const NavbarSection = () => {
             {/* Asset Dataset */}
             <div className="relative group">
               <Link
-                to="/mapAssetDataset"
+                to="/asset-dataset"
                 className={`relative inline-block text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px] 
             w-full text-start rounded-md h-10 p-2
             ${
-              isLinkActive("/mapAssetDataset")
+              isLinkActive("/asset-dataset")
                 ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
                 : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
             }
@@ -172,7 +172,7 @@ const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/mapAssetDataset")
+              isLinkActive("/asset-dataset")
                 ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-8 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
                 : "hidden sm:w-1/2"
             }`}></span>
@@ -180,7 +180,7 @@ const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/mapAssetDataset")
+              isLinkActive("/asset-dataset")
                 ? "hidden"
                 : "hidden sm:group-hover:w-1/2"
             }`}></span>
@@ -191,11 +191,11 @@ const NavbarSection = () => {
             {/* Asset Game */}
             <div className="relative group ">
               <Link
-                to="/mapAssetGame"
+                to="/asset-game"
                 className={`relative inline-block text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px] 
             w-full text-start rounded-md h-10 p-2
             ${
-              isLinkActive("/mapAssetGame")
+              isLinkActive("/asset-game")
                 ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
                 : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
             }
@@ -208,7 +208,7 @@ const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/mapAssetGame")
+              isLinkActive("/asset-game")
                 ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-8 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
                 : "hidden sm:w-1/2"
             }`}></span>
@@ -216,7 +216,7 @@ const NavbarSection = () => {
                   <span
                     className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/mapAssetGame")
+              isLinkActive("/asset-game")
                 ? "hidden"
                 : "hidden sm:group-hover:w-1/2"
             }`}></span>
@@ -229,11 +229,11 @@ const NavbarSection = () => {
               <nav className=" dark:bg-neutral-20  text-primary-100 dark:text-primary-100 h-full relative">
                 <div className="flex flex-col space-y-4 ">
                   <Link
-                    to="/mapAssetGratis"
+                    to="/asset-gratis"
                     className={`relative inline-block text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px] 
           w-full text-start rounded-md h-10 p-2
           ${
-            isLinkActive("/mapAssetGratis")
+            isLinkActive("/asset-gratis")
               ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
               : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
           }
@@ -246,7 +246,7 @@ const NavbarSection = () => {
                       <span
                         className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/mapAssetGratis")
+              isLinkActive("/asset-gratis")
                 ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-7 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
                 : "hidden sm:w-1/2"
             }`}></span>
@@ -254,7 +254,7 @@ const NavbarSection = () => {
                       <span
                         className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
             ${
-              isLinkActive("/mapAssetGratis")
+              isLinkActive("/asset-gratis")
                 ? "hidden"
                 : "hidden sm:group-hover:w-1/2"
             }`}></span>

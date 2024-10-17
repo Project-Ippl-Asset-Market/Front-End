@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from "react";
 import {
   SunIcon,
@@ -132,7 +133,7 @@ function DetailAssetImage() {
                     Sign In
                   </button>
                   <Link
-                    to="/daftar-akun1"
+                    to="/register"
                     className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
                     Sign Up
                   </Link>

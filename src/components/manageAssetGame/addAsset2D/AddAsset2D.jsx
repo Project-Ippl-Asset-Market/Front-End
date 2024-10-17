@@ -2,24 +2,29 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, addDoc, Timestamp, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  Timestamp,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { onAuthStateChanged } from "firebase/auth"; 
-import { db, storage, auth, } from "../../../firebase/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
+import { db, storage, auth } from "../../../firebase/firebaseConfig";
 import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
-import PreviewImage from "../../../assets/assetmanage/Iconrarzip.svg"; 
+import PreviewImage from "../../../assets/assetmanage/Iconrarzip.svg";
 
 function AddAsset2D() {
-
   const [user, setUser] = useState(null);
   const [asset2D, setAsset2D] = useState({
     name: "",
     category: "",
     description: "",
     price: "",
-    file: null,  // State to hold file information
+    file: null, // State to hold file information
   });
 
   const navigate = useNavigate();
@@ -32,7 +37,6 @@ function AddAsset2D() {
     { id: 3, name: "Fonts" },
     { id: 4, name: "GUI" },
     { id: 5, name: "Textures & Material" },
-    
   ];
 
   useEffect(() => {
@@ -76,7 +80,6 @@ function AddAsset2D() {
     e.preventDefault();
 
     try {
-      
       // Save asset 2D details to Firestore
       const docRef = await addDoc(collection(db, "assetImage2D"), {
         category: asset2D.category,
@@ -94,18 +97,14 @@ function AddAsset2D() {
       // Upload profile image to Firebase Storage
       let asset2DImageUrl = "";
       if (asset2D.asset2DImage) {
-        const imageRef = ref(
-          storage,
-          `images-asset-2d/asset2d-${docId}.jpg`
-        );
+        const imageRef = ref(storage, `images-asset-2d/asset2d-${docId}.jpg`);
         await uploadBytes(imageRef, asset2D.asset2DImage);
         asset2DImageUrl = await getDownloadURL(imageRef);
       }
 
-      
       await updateDoc(doc(db, "assetImage2D", docId), {
         asset2DImage: asset2DImageUrl,
-      })
+      });
 
       // Reset the form
       setAsset2D({
@@ -117,19 +116,19 @@ function AddAsset2D() {
       });
       setPreviewImage(null);
 
-      // Navigate back to /manageAsset2D
+      // Navigate back to /manage-asset-2D
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manageAsset2D");
+        navigate("/manage-asset-2D");
       }, 2000);
     } catch (error) {
       console.error("Error menambahkan asset2D: ", error);
       setAlertError(true);
     }
   };
-  
+
   const handleCancel = () => {
-    navigate("/manageAsset2D");
+    navigate("/manage-asset-2D");
   };
 
   const closeAlert = () => {
@@ -302,7 +301,7 @@ function AddAsset2D() {
                     <input
                       type="text"
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px]"
-                      name= "asset2DName"
+                      name="asset2DName"
                       value={asset2D.asset2DName}
                       onChange={handleChange}
                       placeholder="Enter name...."
@@ -356,7 +355,7 @@ function AddAsset2D() {
                   <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
                     +
                   </div>
-                </div>                
+                </div>
               </div>
 
               {/* Description */}

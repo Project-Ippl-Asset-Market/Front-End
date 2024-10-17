@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from "react";
 import { FaTrashAlt } from "react-icons/fa";
 import { getAuth } from "firebase/auth";
@@ -16,6 +17,7 @@ import CustomImage from "../../assets/assetmanage/Iconrarzip.svg";
 
 const Cart = () => {
   const [selectedItems, setSelectedItems] = useState([]);
+  // eslint-disable-next-line no-unused-vars
   const [refreshData, setRefreshData] = useState(false);
   const auth = getAuth();
   const user = auth.currentUser;

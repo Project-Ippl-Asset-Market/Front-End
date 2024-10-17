@@ -5,7 +5,7 @@ import { BiSun } from "react-icons/bi";
 const DarkMode = () => {
   const [theme, setTheme] = React.useState("light");
 
-  const element = document.documentElement; // elemen html
+  const element = document.documentElement;  
 
   React.useEffect(() => {
     if (theme === "dark") {

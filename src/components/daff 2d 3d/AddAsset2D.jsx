@@ -2,24 +2,28 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, addDoc, Timestamp, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  Timestamp,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { onAuthStateChanged } from "firebase/auth"; 
-import { db, storage, auth, } from "../../../firebase/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
+import { db, storage, auth } from "../../../firebase/firebaseConfig";
 import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
 
-
 function AddAsset2D() {
-
   const [user, setUser] = useState(null);
   const [asset2D, setAsset2D] = useState({
     name: "",
     category: "",
     description: "",
     price: "",
-    file: null,  // State to hold file information
+    file: null,
   });
 
   const navigate = useNavigate();
@@ -32,16 +36,15 @@ function AddAsset2D() {
     { id: 3, name: "Fonts" },
     { id: 4, name: "GUI" },
     { id: 5, name: "Textures & Material" },
-    
   ];
 
   useEffect(() => {
     // Listen for authentication state changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        setUser(currentUser); // Set the logged-in user
+        setUser(currentUser);
       } else {
-        setUser(null); // No user is logged in
+        setUser(null);
       }
     });
 
@@ -51,51 +54,53 @@ function AddAsset2D() {
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-  
+
     if (name === "asset2DImage" && files[0]) {
       const file = files[0];
-      const fileExtension = file.name.split('.').pop().toLowerCase(); // Dapatkan ekstensi file
-  
+      const fileExtension = file.name.split(".").pop().toLowerCase();
+
       // Cek apakah file tersebut adalah gambar atau zip
-      const isImage = ['png', 'jpg', 'jpeg'].includes(fileExtension);
-      const isZip = fileExtension === 'zip';
-  
+      const isImage = ["png", "jpg", "jpeg"].includes(fileExtension);
+      const isZip = fileExtension === "zip";
+
       if (isImage) {
         // Jika file adalah gambar (png, jpg, jpeg)
         setAsset2D({
           ...asset2D,
-          asset2DImage: file, // Simpan file gambar
+          asset2DImage: file,
         });
-  
+
         // Buat pratinjau gambar
         const reader = new FileReader();
         reader.onloadend = () => {
-          setPreviewImage(reader.result); // Tampilkan preview gambar
+          setPreviewImage(reader.result);
         };
         reader.readAsDataURL(file);
-  
+
         // Tampilkan notifikasi jika dibutuhkan
         alert("Anda telah mengunggah file gambar.");
-  
       } else if (isZip) {
         // Jika file adalah ZIP
         setAsset2D({
           ...asset2D,
-          asset2DImage: file, // Simpan file zip
+          asset2DImage: file,
         });
-  
+
         // Tidak ada pratinjau untuk ZIP, berikan pesan kepada pengguna
-        setPreviewImage(null); // Kosongkan preview gambar karena file ZIP
-        alert("Anda mengunggah file ZIP, tidak ada pratinjau gambar yang akan ditampilkan.");
-  
+        setPreviewImage(null);
+        alert(
+          "Anda mengunggah file ZIP, tidak ada pratinjau gambar yang akan ditampilkan."
+        );
       } else {
         // Jika file bukan gambar atau ZIP, berikan notifikasi
         setAsset2D({
           ...asset2D,
-          asset2DImage: null, // Hapus file yang salah
+          asset2DImage: null,
         });
         setPreviewImage(null);
-        alert("Hanya file gambar (.png, .jpg, .jpeg) atau .zip yang diizinkan.");
+        alert(
+          "Hanya file gambar (.png, .jpg, .jpeg) atau .zip yang diizinkan."
+        );
       }
     } else {
       // Jika tidak berhubungan dengan upload file, hanya update state yang lain
@@ -105,13 +110,11 @@ function AddAsset2D() {
       });
     }
   };
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      
       // Save asset 2D details to Firestore
       const docRef = await addDoc(collection(db, "assetImage2D"), {
         category: asset2D.category,
@@ -129,18 +132,14 @@ function AddAsset2D() {
       // Upload profile image to Firebase Storage
       let asset2DImageUrl = "";
       if (asset2D.asset2DImage) {
-        const imageRef = ref(
-          storage,
-          `images-asset-2d/asset2d-${docId}.jpg`
-        );
+        const imageRef = ref(storage, `images-asset-2d/asset2d-${docId}.jpg`);
         await uploadBytes(imageRef, asset2D.asset2DImage);
         asset2DImageUrl = await getDownloadURL(imageRef);
       }
 
-      
       await updateDoc(doc(db, "assetImage2D", docId), {
         asset2DImage: asset2DImageUrl,
-      })
+      });
 
       // Reset the form
       setAsset2D({
@@ -155,26 +154,21 @@ function AddAsset2D() {
       // Navigate back to /manageAsset2D
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manageAsset2D");
+        navigate("/manage-asset-2D");
       }, 2000);
     } catch (error) {
       console.error("Error menambahkan asset2D: ", error);
       setAlertError(true);
     }
   };
-  
+
   const handleCancel = () => {
-    navigate("/manageAsset2D");
+    navigate("/manage-asset-2D");
   };
 
   const closeAlert = () => {
     setAlertError(false);
   };
-
-
-
-  
-
 
   return (
     <>
@@ -279,7 +273,7 @@ function AddAsset2D() {
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                              Upload File 
+                              Upload File
                             </span>
                           </>
                         )}
@@ -301,11 +295,11 @@ function AddAsset2D() {
                               alt="Preview"
                               className="w-40 sm:w-40 md:w-40 lg:w-[150px] xl:w-[150px] 2xl:w-[150px] h-40 sm:h-40 md:h-40 lg:h-[156px] xl:h-[156px] 2xl:h-[157px] -mt-2.5 object-cover rounded"
                             />
-                              <button
+                            <button
                               type="button"
                               onClick={() => {
-                              setPreviewImage(null);
-                              setAsset2D({ ...asset2D, asset2DImage: null });
+                                setPreviewImage(null);
+                                setAsset2D({ ...asset2D, asset2DImage: null });
                               }}
                               className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded">
                               x
@@ -341,7 +335,7 @@ function AddAsset2D() {
                     <input
                       type="text"
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px]"
-                      name= "asset2DName"
+                      name="asset2DName"
                       value={asset2D.asset2DName}
                       onChange={handleChange}
                       placeholder="Enter name...."
@@ -377,7 +371,7 @@ function AddAsset2D() {
                       onChange={(e) =>
                         setAsset2D((prevState) => ({
                           ...prevState,
-                          category: e.target.value, // Update category inside dasset 2D state
+                          category: e.target.value,  
                         }))
                       }
                       className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md">
@@ -395,7 +389,7 @@ function AddAsset2D() {
                   <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
                     +
                   </div>
-                </div>                
+                </div>
               </div>
 
               {/* Description */}
@@ -421,7 +415,9 @@ function AddAsset2D() {
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px] h-[48px] sm:h-[60px] md:h-[80px] lg:h-[80px] xl:h-[100px] bg-transparent"
                       name="description"
                       value={asset2D.description}
-                      onChange={(e) => setAsset2D({ ...asset2D, description: e.target.value })}
+                      onChange={(e) =>
+                        setAsset2D({ ...asset2D, description: e.target.value })
+                      }
                       placeholder="Deskripsi"
                       rows="4"
                     />
@@ -449,7 +445,9 @@ function AddAsset2D() {
                       className="input border-0 focus:outline-none focus:ring-0  w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
                       name="price"
                       value={asset2D.price}
-                      onChange={(e) => setAsset2D({ ...asset2D, price: e.target.value })}
+                      onChange={(e) =>
+                        setAsset2D({ ...asset2D, price: e.target.value })
+                      }
                       placeholder="Rp"
                       required
                     />
@@ -479,5 +477,3 @@ function AddAsset2D() {
 }
 
 export default AddAsset2D;
-
-

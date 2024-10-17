@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
 import IconSearch from "../../assets/icon/iconHeader/iconSearch.svg";
@@ -6,10 +6,17 @@ import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconHapus from "../../assets/icon/iconCRUD/iconHapus.png";
 import IconEdit from "../../assets/icon/iconCRUD/iconEdit.png";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
-import { db, auth, storage } from '../../firebase/firebaseConfig'; // Pastikan ini mengarah ke file konfigurasi Firebase Anda
-import { collection, getDocs, deleteDoc, doc, query, where } from "firebase/firestore"; // Impor yang diperlukan
-import { onAuthStateChanged } from 'firebase/auth';
-import { deleteObject, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { db, auth, storage } from "../../firebase/firebaseConfig";
+import {
+  collection,
+  getDocs,
+  deleteDoc,
+  doc,
+  query,
+  where,
+} from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { deleteObject, ref } from "firebase/storage";
 
 function ManageAssetAudio() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -18,7 +25,7 @@ function ManageAssetAudio() {
   const [user, setUser] = useState(null);
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -59,29 +66,33 @@ function ManageAssetAudio() {
   useEffect(() => {
     const fetchData = async () => {
       if (!user) {
-        console.log('No user logged in');
-        return; // Jika tidak ada pengguna yang login, tidak perlu mengambil data
+        console.log("No user logged in");
+        return;
       }
-      
+
       try {
-        console.log('Logged in user UID:', user.uid);
-        const q = query(collection(db, 'assetAudios'), where('userId', '==', user.uid));
+        console.log("Logged in user UID:", user.uid);
+        const q = query(
+          collection(db, "assetAudios"),
+          where("userId", "==", user.uid)
+        );
         const querySnapshot = await getDocs(q);
         const items = [];
 
         for (const doc of querySnapshot.docs) {
           const data = doc.data();
-          console.log('Data fetched:', data);
+          console.log("Data fetched:", data);
 
-          const createdAt = data.createdAt?.toDate().toLocaleDateString("id-ID", {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          }) || 'N/A';
+          const createdAt =
+            data.createdAt?.toDate().toLocaleDateString("id-ID", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            }) || "N/A";
 
           // Susun data ke dalam format assets
           items.push({
-            id: doc.id, // Simpan ID dokumen untuk keperluan penghapusan
+            id: doc.id,
             audioName: data.assetAudiosName,
             description: data.description,
             price: `Rp. ${data.price}`,
@@ -90,10 +101,10 @@ function ManageAssetAudio() {
             createdAt,
           });
         }
-       
+
         setAssets(items);
       } catch (error) {
-        console.error('Error fetching data: ', error);
+        console.error("Error fetching data: ", error);
       }
     };
 
@@ -104,22 +115,26 @@ function ManageAssetAudio() {
 
   // CRUD (DELETE) ---------------------------------------------------------
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this audio?");
-    console.log(id)
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this audio?"
+    );
+    console.log(id);
     if (confirmDelete) {
       try {
-        const audioRef = ref(storage, `images-asset-audio/assetAudiosImage-${id}.jpg`);
+        const audioRef = ref(
+          storage,
+          `images-asset-audio/assetAudiosImage-${id}.jpg`
+        );
         await deleteObject(audioRef);
 
-        await deleteDoc(doc(db, 'assetAudios', id)); // Menghapus dokumen dari Firestore
-        setAssets(assets.filter(asset => asset.id !== id)); // Perbarui state untuk menghapus item dari tampilan
+        await deleteDoc(doc(db, "assetAudios", id));
+        setAssets(assets.filter((asset) => asset.id !== id));
         setAlertSuccess(true);
         setTimeout(() => {
           window.location.reload();
-        }, );
-        
+        });
       } catch (error) {
-        console.error('Error deleting audio: ', error);
+        console.error("Error deleting audio: ", error);
         setAlertError(true);
       }
     } else {
@@ -154,51 +169,51 @@ function ManageAssetAudio() {
 
         {/* Alert Success */}
         {alertSuccess && (
-            <div
-              role="alert"
-              className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[10px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4  bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-              onClick={closeAlert}>
-              <div className="flex items-center justify-center space-x-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 shrink-0 stroke-current"
-                  fill="none"
-                  viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span>audio berhasil dihapus.</span>
-              </div>
+          <div
+            role="alert"
+            className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[10px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4  bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out "
+            onClick={closeAlert}>
+            <div className="flex items-center justify-center space-x-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 shrink-0 stroke-current"
+                fill="none"
+                viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>audio berhasil dihapus.</span>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Alert Error */}
-          {alertError && (
-            <div
-              role="alert"
-              className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[340px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[8px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4  bg-primary-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-              onClick={closeAlert}>
-              <div className="flex items-center justify-center space-x-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 shrink-0 stroke-current"
-                  fill="none"
-                  viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span>Gagal menghapus audio silahkan coba lagi</span>
-              </div>
+        {/* Alert Error */}
+        {alertError && (
+          <div
+            role="alert"
+            className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[340px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[8px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4  bg-primary-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
+            onClick={closeAlert}>
+            <div className="flex items-center justify-center space-x-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 shrink-0 stroke-current"
+                fill="none"
+                viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>Gagal menghapus audio silahkan coba lagi</span>
             </div>
-          )}
+          </div>
+        )}
 
         {/* Isi Konten */}
         <div className="p-8 sm:ml-[280px] h-full bg-primary-100 text-neutral-10 dark:bg-neutral-20 dark:text-neutral-10 min-h-screen pt-24">
@@ -212,7 +227,7 @@ function ManageAssetAudio() {
               <div className="flex items-center justify-center md:justify-start">
                 <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
                   <Link
-                    to="/manageAssetAudio/add"
+                    to="/manage-asset-audio/add"
                     className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
                     + Add Audio
                   </Link>
@@ -222,7 +237,7 @@ function ManageAssetAudio() {
 
             {/* Search Box */}
             <div className="form-control w-full">
-              <div className="relative h-[48px] bg-primary-100 dark:bg-neutral-20 rounded-lg border border-neutral-90 dark:border-neutral-25 dark:border-2">
+              <div className="relative h-[48px] bg-primary-100 dark:bg-neutral-20  border border-neutral-90 dark:border-neutral-25 dark:border-2">
                 <img
                   src={IconSearch}
                   alt="iconSearch"
@@ -262,33 +277,40 @@ function ManageAssetAudio() {
                 </tr>
               </thead>
               <tbody>
-                {assets.map(asset => (
+                {assets.map((asset) => (
                   <tr
-                  key={asset.id}
-                  className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
-                  <td className="px-6 py-4">
-                  <audio src={asset.audio} controls className="w-full mt-4 rounded-md">
-                  </audio>
-                  </td>
-                    <th scope="row" className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap">
+                    key={asset.id}
+                    className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-900">
+                    <td className="h-4">
+                      <audio
+                        src={asset.audio}
+                        controls
+                        className="w-full mt-4 border-0 rounded-none"
+                      />
+                    </td>
+
+                    <th
+                      scope="row"
+                      className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap">
                       {asset.audioName}
                     </th>
                     <td className="px-6 py-4">{asset.category}</td>
                     <td className="px-6 py-4">{asset.price}</td>
-                    <td className="px-6 py-4">{asset.createdAt || 'N/A'}</td>
+                    <td className="px-6 py-4">{asset.createdAt || "N/A"}</td>
                     <td className="mx-auto flex gap-4 mt-8">
-                        <Link to={`/manageAssetAudio/edit/${asset.id}`}>
-
+                      <Link to={`/manage-asset-audio/edit/${asset.id}`}>
                         <img
-                         src={IconEdit}
-                          alt="icon edit" 
-                          className="w-5 h-5" />
+                          src={IconEdit}
+                          alt="Edit Icon"
+                          className="w-5 h-5"
+                        />
                       </Link>
                       <button onClick={() => handleDelete(asset.id)}>
                         <img
-                         src={IconHapus}
-                          alt="icon hapus"
-                          className="w-5 h-5" />
+                          src={IconHapus}
+                          alt="Delete Icon"
+                          className="w-5 h-5"
+                        />
                       </button>
                     </td>
                   </tr>

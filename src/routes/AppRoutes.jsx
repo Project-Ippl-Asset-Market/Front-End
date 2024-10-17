@@ -41,14 +41,14 @@ import Revenue from "../components/myUserDashboard/Revenue";
 // Import Halaman Website start
 import Cart from "../components/payment/Cart";
 import HomePage from "../components/website/web_User-LandingPage/HomePage";
-import { MapAssetGratis } from "../components/website/Web_User-Gratis/MapAssetGratis";
-import { MapAssetVideo } from "../components/website/web_user-AssetVideo/MapAssetVideo";
-import { MapAssetImage } from "../components/website/web_User-AssetGambar/MapAssetImage";
-import { MapAssetDataset } from "../components/website/web_User-AssetDataset/MapAssetDataset";
-import { MapAsset2D } from "../components/website/web_user-AssetGame/asset_2D/MapAsset2D";
-import { MapAsset3D } from "../components/website/web_user-AssetGame/asset_3D/MapAsset3D";
-import { MapAssetAudio } from "../components/website/web_user-AssetGame/asset_audio/MapAssetAudio";
-import { MapAssetGame } from "../components/website/web_user-AssetGame/MapAssetGame";
+import { AssetGratis } from "../components/website/Web_User-Gratis/AssetGratis";
+import { AssetVideo } from "../components/website/web_user-AssetVideo/AssetVideo";
+import { AssetImage } from "../components/website/web_User-AssetGambar/AssetImage";
+import { AssetDataset } from "../components/website/web_User-AssetDataset/AssetDataset";
+import { Asset2D } from "../components/website/web_user-AssetGame/asset_2D/Asset2D";
+import { Asset3D } from "../components/website/web_user-AssetGame/asset_3D/Asset3D";
+import { AssetAudio } from "../components/website/web_user-AssetGame/asset_audio/AssetAudio";
+import { AssetGame } from "../components/website/web_user-AssetGame/AssetGame";
 // Import Halaman Website End
 
 // eslint-disable-next-line react/prop-types
@@ -60,19 +60,19 @@ const AppRoutes = ({ handleLogout }) => {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/lupaPassword" element={<LupaPassword />} />
+          <Route path="/lupa-password" element={<LupaPassword />} />
 
           {/* Route halaman web start */}
           <Route path="/" element={<HomePage />} />
           <Route path="/search" element={<SearchResults />} />
-          <Route path="/mapAssetGratis" element={<MapAssetGratis />} />
-          <Route path="/mapAssetVideo" element={<MapAssetVideo />} />
-          <Route path="/mapAssetImage" element={<MapAssetImage />} />
-          <Route path="/mapAssetDataset" element={<MapAssetDataset />} />
-          <Route path="/mapAssetGame" element={<MapAssetGame />} />
-          <Route path="/AssetGame/mapAsset2D" element={<MapAsset2D />} />
-          <Route path="/AssetGame/mapAsset3D" element={<MapAsset3D />} />
-          <Route path="/AssetGame/mapAssetAudio" element={<MapAssetAudio />} />
+          <Route path="/asset-gratis" element={<AssetGratis />} />
+          <Route path="/asset-video" element={<AssetVideo />} />
+          <Route path="/asset-image" element={<AssetImage />} />
+          <Route path="/asset-dataset" element={<AssetDataset />} />
+          <Route path="/asset-game" element={<AssetGame />} />
+          <Route path="/asset-game/Asset-2D" element={<Asset2D />} />
+          <Route path="/asset-game/Asset-3D" element={<Asset3D />} />
+          <Route path="/asset-game/Asset-audio" element={<AssetAudio />} />
           {/* Route halaman web End */}
           <Route
             path="/dashboard"
@@ -93,7 +93,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAssetVideo"
+            path="/manage-asset-video"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <ManageAssetVideo onLogout={handleLogout} />
@@ -102,7 +102,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAssetVideo/add"
+            path="/manage-asset-video/add"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <AddFormAssetVideo onLogout={handleLogout} />
@@ -111,7 +111,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAssetVideo/edit/:assetId"
+            path="/manage-asset-video/edit/:assetId"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <EditFormAssetVideo onLogout={handleLogout} />
@@ -120,7 +120,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAssetImage"
+            path="/manage-asset-image"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <ManageAssetImage onLogout={handleLogout} />
@@ -129,7 +129,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAssetImage/add"
+            path="/manage-asset-image/add"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <AddFormAssetImage onLogout={handleLogout} />
@@ -138,7 +138,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAssetImage/edit/:assetId"
+            path="/manage-asset-image/edit/:assetId"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <EditFormAssetImage onLogout={handleLogout} />
@@ -147,7 +147,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAssetDataset"
+            path="/manage-asset-dataset"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <ManageAssetDataset onLogout={handleLogout} />
@@ -156,7 +156,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAssetDataset/add"
+            path="/manage-asset-dataset/add"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <AddFormAssetDataset onLogout={handleLogout} />
@@ -165,7 +165,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAssetDataset/edit/:id"
+            path="/manage-asset-dataset/edit/:id"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <EditFormAssetDataset onLogout={handleLogout} />
@@ -174,7 +174,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAsset2D"
+            path="/manage-asset-2D"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <ManageAsset2D onLogout={handleLogout} />
@@ -183,7 +183,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAsset2D/add"
+            path="/manage-asset-2D/add"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <AddNewAsset2D onLogout={handleLogout} />
@@ -192,7 +192,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAsset2D/edit/:id"
+            path="/manage-asset-2D/edit/:id"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <EditNewAsset2D onLogout={handleLogout} />
@@ -201,7 +201,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAsset3D"
+            path="/manage-asset-3D"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <ManageAsset3D onLogout={handleLogout} />
@@ -210,7 +210,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAsset3D/add"
+            path="/manage-asset-3D/add"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <AddNewAsset3D onLogout={handleLogout} />
@@ -219,7 +219,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAsset3D/edit/:id"
+            path="/manage-asset-3D/edit/:id"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <EditNewAsset3D onLogout={handleLogout} />
@@ -228,7 +228,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAssetAudio"
+            path="/manage-asset-audio"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <ManageAssetAudio onLogout={handleLogout} />
@@ -237,7 +237,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAssetAudio/add"
+            path="/manage-asset-audio/add"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <AddAssetAudio onLogout={handleLogout} />
@@ -246,7 +246,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAssetAudio/edit/:id"
+            path="/manage-asset-audio/edit/:id"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <EditAssetAudio onLogout={handleLogout} />
@@ -272,7 +272,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageUsers"
+            path="/manage-users"
             element={
               <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
                 <ManageUsers onLogout={handleLogout} />
@@ -281,7 +281,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageUsers/add"
+            path="/manage-users/add"
             element={
               <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
                 <AddUsers onLogout={handleLogout} />
@@ -290,7 +290,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageUsers/edit/:id"
+            path="/manage-users/edit/:id"
             element={
               <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
                 <EditUsers onLogout={handleLogout} />
@@ -299,7 +299,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAdmin"
+            path="/manage-admin"
             element={
               <ProtectedRoute allowedRoles={["superadmin"]}>
                 <ManageAdmin onLogout={handleLogout} />
@@ -308,7 +308,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manageAdmin/add"
+            path="/manage-admin/add"
             element={
               <ProtectedRoute allowedRoles={["superadmin"]}>
                 <AddFormAdmin onLogout={handleLogout} />
@@ -326,7 +326,7 @@ const AppRoutes = ({ handleLogout }) => {
           /> */}
 
           <Route
-            path="/manageAdmin/edit/:id"
+            path="/manage-admin/edit/:id"
             element={
               <ProtectedRoute allowedRoles={["superadmin"]}>
                 <EditFormAdmin onLogout={handleLogout} />

@@ -20,7 +20,7 @@ import IconCart from "../../../assets/assetWeb/iconCart.svg";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 
-export function MapAssetVideo() {
+export function AssetDataset() {
   const navigate = useNavigate();
   const [AssetsData, setAssetsData] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -48,7 +48,7 @@ export function MapAssetVideo() {
   // Mengambil data asset dari Firestore
   useEffect(() => {
     const unsubscribe = onSnapshot(
-      collection(db, "assetVideos"),
+      collection(db, "assetDatasets"),
       async (snapshot) => {
         const Assets = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -108,7 +108,7 @@ export function MapAssetVideo() {
     // Tandai bahwa kita sedang memproses
     setIsProcessingLike(true);
 
-    const assetRef = doc(db, "assetVideos", assetId);
+    const assetRef = doc(db, "assetDatasets", assetId);
     const likeRef = doc(db, "likes", `${currentUserId}_${assetId}`);
 
     try {
@@ -150,42 +150,24 @@ export function MapAssetVideo() {
       return;
     }
 
-    // Destructure the selected asset object
-    const { id, videoName, description, price, uploadUrlVideo, category } =
-      selectedasset;
-
-    // Check for missing fields
-    const missingFields = [];
-    if (!videoName) missingFields.push("videoName");
-    if (!description) missingFields.push("description");
-    if (price === undefined) missingFields.push("price");
-    if (!uploadUrlVideo) missingFields.push("uploadUrlVideo");
-    if (!category) missingFields.push("category");
-
-    if (missingFields.length > 0) {
-      console.error("Missing fields in selected asset:", missingFields);
-      alert(`Missing fields: ${missingFields.join(", ")}. Please try again.`);
-      return;
-    }
-
     try {
-      // Create a document reference in Firestore for the cart item
-      const cartRef = doc(db, "cartAssets", `${currentUserId}_${id}`);
+      const cartRef = doc(
+        db,
+        "cartAssets",
+        `${currentUserId}_${selectedasset.id}`
+      );
       await setDoc(cartRef, {
         userId: currentUserId,
-        assetId: id,
-        videoName: videoName,
-        description: description,
-        price: price,
-        uploadUrlVideo: uploadUrlVideo,
-        category: category,
+        assetId: selectedasset.id,
+        datasetName: selectedasset.datasetName,
+        description: selectedasset.description,
+        price: selectedasset.price,
+        datasetImage: selectedasset.datasetImage,
+        category: selectedasset.category,
       });
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {
       console.error("Error adding to cart: ", error);
-      alert(
-        "Terjadi kesalahan saat menambahkan asset ke keranjang. Silakan coba lagi."
-      );
     }
   };
 
@@ -254,25 +236,23 @@ export function MapAssetVideo() {
                 key={data.id}
                 className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
                 <div className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px]">
-                  <video
-                    src={data.uploadUrlVideo}
-                    alt="Video Preview"
+                  <img
+                    src={data.datasetImage || CustomImage}
+                    alt="Image"
                     className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
                     onClick={() => openModal(data)}
-                    controls
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = CustomImage;
-                    }}>
-                    Your browser does not support the video tag.
-                  </video>
+                    }}
+                  />
                 </div>
 
                 {/* details section */}
                 <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-10">
                   <div>
                     <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
-                      {data.videoName}
+                      {data.datasetName}
                     </p>
                     <h4 className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100">
                       {data.description.length > 24
@@ -316,8 +296,8 @@ export function MapAssetVideo() {
               onClick={closeModal}>
               &times;
             </button>
-            <video
-              src={selectedasset.uploadUrlVideo || CustomImage}
+            <img
+              src={selectedasset.datasetImage || CustomImage}
               alt="asset Image"
               className="w-1/2 h-[260px] mb-4"
               onError={(e) => {
@@ -327,7 +307,7 @@ export function MapAssetVideo() {
             />
             <div className="w-1/2 pl-4 ">
               <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
-                {selectedasset.videoName}
+                {selectedasset.datasetName}
               </h2>
               <p className="text-sm mb-2 dark:text-primary-100 mt-4">
                 Rp. {selectedasset.price.toLocaleString("id-ID")}
@@ -366,6 +346,18 @@ export function MapAssetVideo() {
           </div>
         </div>
       )}
+
+      <footer className=" min-h-[181px] flex flex-col items-center justify-center">
+        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
+          <a href="#">Teams And Conditions</a>
+          <a href="#">File Licenses</a>
+          <a href="#">Refund Policy</a>
+          <a href="#">Privacy Policy</a>
+        </div>
+        <p className="text-[10px] md:text-[12px]">
+          Copyright © 2024 - All right reserved by ACME Industries Ltd
+        </p>
+      </footer>
     </div>
   );
 }

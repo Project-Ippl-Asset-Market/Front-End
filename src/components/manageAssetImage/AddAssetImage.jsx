@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, addDoc, Timestamp, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  Timestamp,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { onAuthStateChanged } from "firebase/auth"; 
-import { db, storage, auth, } from "../../firebase/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
+import { db, storage, auth } from "../../firebase/firebaseConfig";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconField from "../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../HeaderNav/HeaderNav";
 
-
 function AddNewImage() {
-
   const [user, setUser] = useState(null);
   const [image, setImage] = useState({
     imageName: "",
@@ -73,7 +77,6 @@ function AddNewImage() {
     e.preventDefault();
 
     try {
-      
       // Save image details to Firestore
       const docRef = await addDoc(collection(db, "assetImages"), {
         category: image.category,
@@ -99,10 +102,9 @@ function AddNewImage() {
         uploadUrlImageUrl = await getDownloadURL(imageRef);
       }
 
-      
       await updateDoc(doc(db, "assetImages", docId), {
         uploadUrlImage: uploadUrlImageUrl,
-      })
+      });
 
       // Reset the form
       setImage({
@@ -114,19 +116,19 @@ function AddNewImage() {
       });
       setPreviewImage(null);
 
-      // Navigate back to /manageAssetImage
+      // Navigate back to /manage-asset-image
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manageAssetImage");
+        navigate("/manage-asset-image");
       }, 2000);
     } catch (error) {
       console.error("Error menambahkan image: ", error);
       setAlertError(true);
     }
   };
-  
+
   const handleCancel = () => {
-    navigate("/manageAssetImage");
+    navigate("/manage-asset-image");
   };
 
   const closeAlert = () => {
@@ -299,7 +301,7 @@ function AddNewImage() {
                     <input
                       type="text"
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px]"
-                      name= "imageName"
+                      name="imageName"
                       value={image.imageName}
                       onChange={handleChange}
                       placeholder="Enter name...."
@@ -353,7 +355,7 @@ function AddNewImage() {
                   <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
                     +
                   </div>
-                </div>                
+                </div>
               </div>
 
               {/* Description */}

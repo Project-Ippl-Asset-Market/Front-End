@@ -3,8 +3,8 @@ import IconField from "../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../HeaderNav/HeaderNav";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { doc, getDoc, updateDoc } from "firebase/firestore"; // Firebase functions
-import { db, storage } from "../../firebase/firebaseConfig"; // Pastikan ini mengarah ke file konfigurasi Firebase Anda
+import { doc, getDoc, updateDoc } from "firebase/firestore";  
+import { db, storage } from "../../firebase/firebaseConfig"; 
 import {
   deleteObject,
   ref,
@@ -52,7 +52,7 @@ function EditNewImage() {
           }
         } else {
           console.log("No such document!");
-          navigate("/manageAssetImage");
+          navigate("/manage-asset-image");
         }
       } catch (error) {
         console.error("Error fetching image:", error);
@@ -121,7 +121,7 @@ function EditNewImage() {
 
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manageAssetImage");
+        navigate("/manage-asset-image");
       }, 2000);
     } catch (error) {
       console.error("Error updating image: ", error);

@@ -53,7 +53,7 @@ function EditNewAsset3D() {
           }
         } else {
           console.log("No such document!");
-          navigate("/manageAsset3D")
+          navigate("/manage-asset-3D")
         }
       } catch (error) {
         console.error("Error fetching Asset 3D:", error);
@@ -121,7 +121,7 @@ function EditNewAsset3D() {
 
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manageAsset3D");
+        navigate("/manage-asset-3D");
       }, 2000);
     } catch (error) {
       console.error("Error updating asset 3D: ", error);

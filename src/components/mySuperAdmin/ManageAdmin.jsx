@@ -92,7 +92,7 @@ function ManageAdmin() {
 
         // Perbarui state Admin
         setAdmins((prev) => prev.filter((admin) => admin.id !== id));
-        navigate("/manageAdmin");
+        navigate("/manage-admin");
       } else {
         setError("Failed to delete admin. Please try again.");
       }
@@ -145,7 +145,7 @@ function ManageAdmin() {
             <div className="flex items-center justify-center md:justify-start">
               <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-48">
                 <Link
-                  to="/manageAdmin/add"
+                  to="/manage-admin/add"
                   className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
                   + Add new Admin
                 </Link>
@@ -227,18 +227,18 @@ function ManageAdmin() {
                           })
                         : "Unknown"}
                     </td>
-                    <td className="px-6 py-4 flex gap-4 justify-center">
-                      <Link to={`/manageAdmin/edit/${admin.id}`}>
+                    <td className="mx-auto flex gap-4 mt-8">
+                      <Link to={`/manage-admin/edit/${admin.id}`}>
                         <img
                           src={IconEdit}
                           alt="Edit"
-                          className="w-6 h-6 cursor-pointer"
+                          className="w-5 h-5 cursor-pointer"
                         />
                       </Link>
                       <img
                         src={IconHapus}
                         alt="Delete"
-                        className="w-6 h-6 cursor-pointer"
+                        className="w-5 h-5 cursor-pointer"
                         onClick={() => {
                           setIsModalOpen(true);
                           setAdminToDelete(admin);

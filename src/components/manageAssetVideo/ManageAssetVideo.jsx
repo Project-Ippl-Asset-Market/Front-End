@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
 import IconSearch from "../../assets/icon/iconHeader/iconSearch.svg";
@@ -26,7 +26,6 @@ function ManageAssetVideo() {
   const [role, setRole] = useState(""); // Role user
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
-  const navigate = useNavigate();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -242,7 +241,7 @@ function ManageAssetVideo() {
             <div className="flex items-center justify-center md:justify-start">
               <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
                 <Link
-                  to="/manageAssetVideo/add"
+                  to="/manage-asset-video/add"
                   className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
                   + Add Video
                 </Link>
@@ -270,7 +269,7 @@ function ManageAssetVideo() {
             <table className="w-full text-sm text-left rtl:text-right text-gray-500 bg-primary-100 dark:text-neutral-90">
               <thead className="text-xs text-neutral-20 uppercase dark:bg-neutral-25 dark:text-neutral-90 border-b dark:border-neutral-20">
                 <tr>
-                  <th scope="col" className="px-16 py-3">
+                  <th scope="col" className="px-6 py-3">
                     Preview
                   </th>
                   <th scope="col" className="px-6 py-3">
@@ -296,7 +295,13 @@ function ManageAssetVideo() {
                     key={asset.id}
                     className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
                     <td className="px-6 py-4">
-                      <video src={asset.video} controls className="w-36 h-36" />
+                      <a
+                        href={asset.video}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline hover:underline">
+                        {asset.videoName || "View Video"}
+                      </a>
                     </td>
                     <th
                       scope="row"
@@ -307,7 +312,7 @@ function ManageAssetVideo() {
                     <td className="px-6 py-4">{asset.price}</td>
                     <td className="px-6 py-4">{asset.createdAt || "N/A"}</td>
                     <td className="mx-auto flex gap-4 mt-20">
-                      <Link to={`/manageAssetVideo/edit/${asset.id}`}>
+                      <Link to={`/manage-asset-video/edit/${asset.id}`}>
                         <img
                           src={IconEdit}
                           alt="icon edit"

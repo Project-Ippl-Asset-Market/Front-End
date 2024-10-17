@@ -154,10 +154,10 @@ function AddAsset3D() {
       });
       setPreviewImage(null);
 
-      // Navigate back to /manageAsset3D
+      // Navigate back to /manage-asset-3D
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manageAsset3D");
+        navigate("/manage-asset-3D");
       }, 2000);
     } catch (error) {
       console.error("Error menambahkan asset3D: ", error);
@@ -166,7 +166,7 @@ function AddAsset3D() {
   };
   
   const handleCancel = () => {
-    navigate("/manageAsset3D");
+    navigate("/manage-asset-3D");
   };
 
   const closeAlert = () => {

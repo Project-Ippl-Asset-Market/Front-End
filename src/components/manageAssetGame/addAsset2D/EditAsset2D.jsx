@@ -52,7 +52,7 @@ function EditNewAsset2D() {
           }
         } else {
           console.log("No such document!");
-          navigate("/manageAsset2D");
+          navigate("/manage-asset-2D");
         }
       } catch (error) {
         console.error("Error fetching Asset 2D:", error);
@@ -102,7 +102,7 @@ function EditNewAsset2D() {
         datasetImage = await getDownloadURL(imageRef);
       } else {
         // If no new image is uploaded, keep the old image URL
-        datasetImage = imagePreview; 
+        datasetImage = imagePreview;
       }
 
       const asset2DRef = doc(db, "assetImage2D", id);
@@ -116,7 +116,7 @@ function EditNewAsset2D() {
 
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manageAsset2D");
+        navigate("/manage-asset-2D");
       }, 2000);
     } catch (error) {
       console.error("Error updating asset 2D: ", error);

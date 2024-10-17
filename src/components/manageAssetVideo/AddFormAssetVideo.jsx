@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { storage, db, auth } from "../../firebase/firebaseConfig"; // Import Firebase config including auth
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Firebase Storage functions
-import { addDoc, collection } from "firebase/firestore"; // Firestore functions
-import { onAuthStateChanged } from "firebase/auth"; // Firebase Authentication functions
+import { storage, db, auth } from "../../firebase/firebaseConfig";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { addDoc, collection } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconField from "../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../HeaderNav/HeaderNav";
@@ -13,9 +13,9 @@ function AddNewVideo() {
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [videoFile, setVideoFile] = useState(null); // State for the selected video file
-  const [loading, setLoading] = useState(false); // State for loading indicator
-  const [user, setUser] = useState(null); // State for storing logged-in user information
+  const [videoFile, setVideoFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
 
   const navigate = useNavigate();
 
@@ -23,9 +23,9 @@ function AddNewVideo() {
     // Listen for authentication state changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        setUser(currentUser); // Set the logged-in user
+        setUser(currentUser);
       } else {
-        setUser(null); // No user is logged in
+        setUser(null);
       }
     });
 
@@ -44,7 +44,7 @@ function AddNewVideo() {
   ];
 
   const handleCancel = () => {
-    navigate(-1); // Navigate to the previous page or you can set a specific route like navigate("/asset-list");
+    navigate(-1);
   };
 
   // CRUD (CREATE) -----------------------------------------------------------
@@ -73,12 +73,12 @@ function AddNewVideo() {
       return;
     }
 
-    setLoading(true); // Set loading to true
+    setLoading(true);
     const storageRef = ref(storage, `images-assetvideo/${videoFile.name}`);
 
     try {
-      await uploadBytes(storageRef, videoFile); // Upload the video to Firebase Storage
-      const downloadURL = await getDownloadURL(storageRef); // Get the download URL
+      await uploadBytes(storageRef, videoFile);
+      const downloadURL = await getDownloadURL(storageRef);
 
       // Save data to Firestore, including user info
       await addDoc(collection(db, "assetVideos"), {
@@ -87,9 +87,9 @@ function AddNewVideo() {
         description,
         price,
         uploadUrlVideo: downloadURL,
-        uploadedByEmail: user.email, // Store the user's email
-        userID: user.uid, // You can set the role if you have a role management system
-        uploadedAt: new Date(), // Timestamp of the upload
+        uploadedByEmail: user.email,
+        userID: user.uid,
+        uploadedAt: new Date(),
       });
 
       alert("video uploaded successfully!");
@@ -101,12 +101,12 @@ function AddNewVideo() {
       setPrice("");
       setVideoFile(null);
 
-      navigate("/manageAssetVideo");
+      navigate("/manage-asset-video");
     } catch (error) {
       console.error("Error uploading Video: ", error);
       alert("Failed to upload Video.");
     } finally {
-      setLoading(false); // Set loading to false
+      setLoading(false);  
     }
   };
 

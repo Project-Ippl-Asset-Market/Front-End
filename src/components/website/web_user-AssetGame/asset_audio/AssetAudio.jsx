@@ -8,6 +8,7 @@ import {
   where,
   runTransaction,
   getDocs,
+  setDoc,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import HeaderNav from "../../../headerNavBreadcrumbs/HeaderWebUser";
@@ -19,7 +20,7 @@ import IconCart from "../../../../assets/assetWeb/iconCart.svg";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 
-export function MapAsset3D() {
+export function AssetAudio() {
   const navigate = useNavigate();
   const [AssetsData, setAssetsData] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -47,7 +48,7 @@ export function MapAsset3D() {
   // Mengambil data asset dari Firestore
   useEffect(() => {
     const unsubscribe = onSnapshot(
-      collection(db, "assetImage3D"),
+      collection(db, "assetAudios"),
       async (snapshot) => {
         const Assets = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -56,7 +57,7 @@ export function MapAsset3D() {
 
         // Filter asset dengan harga tidak terdefinisi atau nol
         const filteredAssets = Assets.filter(
-          (asset) => asset.price !== undefined && asset.price !== 0
+          (asset) => asset.price !== undefined && asset.price > 0
         );
         setAssetsData(filteredAssets);
       }
@@ -107,7 +108,7 @@ export function MapAsset3D() {
     // Tandai bahwa kita sedang memproses
     setIsProcessingLike(true);
 
-    const assetRef = doc(db, "assetImage3D", assetId);
+    const assetRef = doc(db, "assetAudios", assetId);
     const likeRef = doc(db, "likes", `${currentUserId}_${assetId}`);
 
     try {
@@ -142,13 +143,30 @@ export function MapAsset3D() {
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async (selectedasset) => {
     if (!currentUserId) {
       alert("Anda perlu login untuk menambahkan asset ke keranjang");
       navigate("/login");
       return;
     }
-    navigate("/cart");
+
+    try {
+      const cartRef = doc(
+        db,
+        "cartAssets",
+        `${currentUserId}_${selectedasset.id}`
+      );
+      await setDoc(cartRef, {
+        userId: currentUserId,
+        assetId: selectedasset.id,
+        datasetName: selectedasset.datasetName,
+        price: selectedasset.price,
+        datasetImage: selectedasset.datasetImage,
+      });
+      alert("Asset berhasil ditambahkan ke keranjang!");
+    } catch (error) {
+      console.error("Error adding to cart: ", error);
+    }
   };
 
   const handleBuyNow = () => {
@@ -175,16 +193,16 @@ export function MapAsset3D() {
 
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
-      <div className="w-full shadow-md bg-primary-100 dark:text-primary-100 relative z-40 ">
+      <div className="w-full shadow-lg bg-primary-100 dark:text-primary-100 relative z-40 ">
         <div className="pt-[50px] sm:pt-[70px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
           <HeaderNav />
         </div>
         <NavbarSection />
       </div>
 
-      <div className="w-full p-12 mx-auto">
+      <div className="w-full p-12 mx-auto mt-32 ">
         {alertLikes && (
-          <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
+          <div className="z-40 alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
             <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
             <span className="block sm:inline">{alertLikes}</span>
             <button
@@ -200,43 +218,48 @@ export function MapAsset3D() {
             </button>
           </div>
         )}
-        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
-          All Category
-        </h1>
       </div>
       <div className=" pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
-        {/* Body section */}
-        <div className="mb-4 mx-14 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px] ">
+        <div className="mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px]">
           {AssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
+
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[155px] ssm:w-[165px] ssm:h-[180px] sm:w-[180px] sm:h-[205px] md:w-[180px] md:h-[215px] lg:w-[260px] lg:h-[295px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group ">
-                {/* image section */}
-                <div className="w-[140px] h-[73px] ssm:w-[165px] ssm:h-[98px] sm:w-[180px] sm:h-[113px] md:w-[180px] md:h-[95px] lg:w-[260px] lg:h-[183px]">
-                  <img
-                    src={data.datasetImage || CustomImage}
-                    alt="Image"
-                    className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
-                    onClick={() => openModal(data)}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = CustomImage;
-                    }}
-                  />
+                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[270px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                <div className="w-full h-[150px]">
+                  <a
+                    href={data.assetAudiosImage}
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    <img
+                      src={data.datasetImage || CustomImage}
+                      alt="Asset Image"
+                      className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                      onClick={() => openModal(data)}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CustomImage;
+                      }}
+                    />
+                  </a>
                 </div>
 
-                {/* details section */}
-                <div className="flex-col justify-start px-4 py-2 sm:p-4">
-                  <p className="text-[9px] text-neutral-20 font-light dark:text-primary-100">
-                    {data.datasetName}
-                  </p>
-                  <h4 className="text-neutral-10 text-[9px] ssm:text-[11px] sm:text-[10px] md:text-[12px] lg:text-[14px] font-semibold dark:text-primary-100">
-                    {data.description}
-                  </h4>
-                  <div className="flex justify-between items-center">
+                {/* Details section */}
+                <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-4">
+                  <div>
+                    <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
+                      {data.assetAudiosName}
+                    </p>
+                    <h4 className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px] dark:text-primary-100">
+                      {data.description.length > 24
+                        ? `${data.description.substring(0, 24)}......`
+                        : data.description}
+                    </h4>
+                  </div>
+                  <div className="flex justify-between items-center mt-auto gap-2">
                     <button
                       onClick={() => handleLikeClick(data.id, likesAsset)}
                       className="flex justify-start items-center mr-2">
@@ -249,8 +272,10 @@ export function MapAsset3D() {
                         ({likesAsset})
                       </p>
                     </button>
-                    <p className="flex justify-end w-full text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
-                      Rp. {data.price.toLocaleString("id-ID")}
+                    <p className="text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
+                      {data.price % 1000 === 0 && data.price >= 1000
+                        ? `Rp. ${(data.price / 1000).toLocaleString("id-ID")}k`
+                        : `Rp. ${data.price.toLocaleString("id-ID")}`}
                     </p>
                   </div>
                 </div>
@@ -273,7 +298,7 @@ export function MapAsset3D() {
             <img
               src={selectedasset.datasetImage || CustomImage}
               alt="asset Image"
-              className="w-1/2 h-auto mb-4"
+              className="w-1/2 h-[260px] mb-4"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = CustomImage;
@@ -281,7 +306,7 @@ export function MapAsset3D() {
             />
             <div className="w-1/2 pl-4 ">
               <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
-                {selectedasset.datasetName}
+                {selectedasset.assetAudiosName}
               </h2>
               <p className="text-sm mb-2 dark:text-primary-100 mt-4">
                 Rp. {selectedasset.price.toLocaleString("id-ID")}
@@ -294,26 +319,44 @@ export function MapAsset3D() {
               <p className="text-sm mb-2 dark:text-primary-100 mt-4">
                 Kategori: {selectedasset.category}
               </p>
-              <button
-                onClick={() => handleAddToCart(selectedasset)}
-                className="flex p-2 text-center items-center justify-center bg-neutral-60 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-10 rounded-md">
-                <img src={IconCart} alt="Cart Icon" className="w-6 h-6 mr-2" />
-                <p>Tambahkan Ke Keranjang</p>
-              </button>
-              <button
-                onClick={() => handleBuyNow(selectedasset)}
-                className="flex p-2 text-center items-center justify-center bg-secondary-40 text-primary-100 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-6 rounded-md">
-                <img
-                  src={IconDollar}
-                  alt="Cart Icon"
-                  className="w-6 h-6 mr-2 -ml-24"
-                />
-                <p>Beli Sekarang</p>
-              </button>
+              <div className="mt-28">
+                <button
+                  onClick={() => handleAddToCart(selectedasset)}
+                  className="flex p-2 text-center items-center justify-center bg-neutral-60 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-10 rounded-md">
+                  <img
+                    src={IconCart}
+                    alt="Cart Icon"
+                    className="w-6 h-6 mr-2"
+                  />
+                  <p>Tambahkan Ke Keranjang</p>
+                </button>
+                <button
+                  onClick={() => handleBuyNow(selectedasset)}
+                  className="flex p-2 text-center items-center justify-center bg-secondary-40 text-primary-100 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-6 rounded-md">
+                  <img
+                    src={IconDollar}
+                    alt="Cart Icon"
+                    className="w-6 h-6 mr-2 -ml-24"
+                  />
+                  <p>Beli Sekarang</p>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
+
+      <footer className=" min-h-[181px] flex flex-col items-center justify-center">
+        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
+          <a href="#">Teams And Conditions</a>
+          <a href="#">File Licenses</a>
+          <a href="#">Refund Policy</a>
+          <a href="#">Privacy Policy</a>
+        </div>
+        <p className="text-[10px] md:text-[12px]">
+          Copyright © 2024 - All right reserved by ACME Industries Ltd
+        </p>
+      </footer>
     </div>
   );
 }

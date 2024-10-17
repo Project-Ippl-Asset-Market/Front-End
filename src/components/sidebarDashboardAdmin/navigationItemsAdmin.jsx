@@ -24,6 +24,7 @@ import IconDollarLight from "../../assets/icon/iconSidebar/iconDollarLight.svg";
 import IconDollarDark from "../../assets/icon/iconSidebar/iconDollarDark.svg";
 import IconRevenueLight from "../../assets/icon/iconSidebar/iconRevenueLight.svg";
 import IconRevenueDark from "../../assets/icon/iconSidebar/iconRevenueDark.svg";
+import Logo from "../../assets/logo/logoWeb.png";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -60,7 +61,7 @@ const Sidebar = () => {
       section: "Manage Assets",
       items: [
         {
-          href: "/manageAssetVideo",
+          href: "/manage-asset-video",
           label: "Manage Asset Video",
           icon: darkMode ? (
             <img src={IconAssetVideoDark} alt="iconAssetVideoDark" />
@@ -69,7 +70,7 @@ const Sidebar = () => {
           ),
         },
         {
-          href: "/manageAssetImage",
+          href: "/manage-asset-image",
           label: "Manage Asset Image",
           icon: darkMode ? (
             <img src={IconAssetGambarDark} alt="iconAssetGambarDark" />
@@ -81,7 +82,7 @@ const Sidebar = () => {
           ),
         },
         {
-          href: "/manageAssetDataset",
+          href: "/manage-asset-dataset",
           label: "Manage Asset Dataset",
           icon: darkMode ? (
             <img src={IconAssetDatasetDark} alt="iconAssetDatasetDark" />
@@ -103,15 +104,15 @@ const Sidebar = () => {
           ),
           children: [
             {
-              href: "/manageAsset2D",
+              href: "/manage-asset-2D",
               label: "Manage Asset 2D",
             },
             {
-              href: "/manageAsset3D",
+              href: "/manage-asset-3D",
               label: "Manage Asset 3D",
             },
             {
-              href: "/manageAssetAudio",
+              href: "/manage-asset-audio",
               label: "Manage Asset Audio",
             },
           ],
@@ -142,7 +143,7 @@ const Sidebar = () => {
       section: "User Management",
       items: [
         {
-          href: "/manageUsers",
+          href: "/manage-users",
           label: "Manage Users",
           icon: darkMode ? (
             <img src={IconManageAdminDark} alt="iconManageAdminDark" />
@@ -151,7 +152,7 @@ const Sidebar = () => {
           ),
           children: [
             {
-              href: "/manageAdmin/add",
+              href: "/manage-admin/add",
               label: "Manage Admin",
             },
           ],
@@ -163,7 +164,7 @@ const Sidebar = () => {
       section: "Admin Management",
       items: [
         {
-          href: "/manageAdmin",
+          href: "/manage-admin",
           label: "Manage Admin",
           icon: darkMode ? (
             <img src={IconManageAdminDark} alt="iconManageAdminDark" />
@@ -172,7 +173,7 @@ const Sidebar = () => {
           ),
           children: [
             {
-              href: "/manageAdmin/add",
+              href: "/manage-admin/add",
               label: "Manage Admin",
             },
           ],
@@ -199,13 +200,9 @@ const Sidebar = () => {
   return (
     <nav className="space-y-4 overflow-y-auto min-h-screen h-[1000vh] p-4 bg-neutral-100 dark:bg-neutral-10 font-poppins  ">
       <div className="h-[80px] flex items-center justify-center gap-4">
-        <img
-          alt="Logo"
-          src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-          className="w-20 h-20 rounded-full"
-        />
+        <img alt="Logo" src={Logo} className="w-32 h-32 rounded-full" />
         <h1 className="text-xl text-center font-bold text-neutral-20 dark:text-primary-100 py-8">
-          LOGO
+          PixelStore
         </h1>
       </div>
       {navigationItems.map((section, sectionIndex) => (

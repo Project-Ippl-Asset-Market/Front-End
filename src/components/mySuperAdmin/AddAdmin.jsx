@@ -114,7 +114,7 @@ function AddNewAdmin() {
       setPreviewImage(null);
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manageAdmin");
+        navigate("/manage-admin");
       }, 2000);
     } catch (error) {
       console.error("Error menambahkan admin: ", error);
@@ -123,7 +123,7 @@ function AddNewAdmin() {
   };
 
   const handleCancel = () => {
-    navigate("/manageAdmin");
+    navigate("/manage-admin");
   };
 
   const closeAlert = () => {
@@ -424,7 +424,6 @@ function AddNewAdmin() {
                       alt=""
                       className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
                     />
-                   
                   </div>
                   <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
                     Pilih role admin yang akan di tambahkan.
@@ -450,7 +449,8 @@ function AddNewAdmin() {
                   <div className="flex items-center gap-1">
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
                       Password
-                    </h3> <img
+                    </h3>{" "}
+                    <img
                       src={IconField}
                       alt=""
                       className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"

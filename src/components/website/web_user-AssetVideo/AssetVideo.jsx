@@ -20,7 +20,7 @@ import IconCart from "../../../assets/assetWeb/iconCart.svg";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 
-export function MapAssetImage() {
+export function AssetVideo() {
   const navigate = useNavigate();
   const [AssetsData, setAssetsData] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -48,17 +48,13 @@ export function MapAssetImage() {
   // Mengambil data asset dari Firestore
   useEffect(() => {
     const unsubscribe = onSnapshot(
-      collection(db, "assetImages"),
+      collection(db, "assetVideos"),
       async (snapshot) => {
         const Assets = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-
-        // Filter asset dengan harga tidak terdefinisi atau nol
-        const filteredAssets = Assets.filter(
-          (asset) => asset.price !== undefined && asset.price !== 0
-        );
+        const filteredAssets = Assets.filter((asset) => asset.price > 0);
         setAssetsData(filteredAssets);
       }
     );
@@ -108,7 +104,7 @@ export function MapAssetImage() {
     // Tandai bahwa kita sedang memproses
     setIsProcessingLike(true);
 
-    const assetRef = doc(db, "assetImages", assetId);
+    const assetRef = doc(db, "assetVideos", assetId);
     const likeRef = doc(db, "likes", `${currentUserId}_${assetId}`);
 
     try {
@@ -150,22 +146,42 @@ export function MapAssetImage() {
       return;
     }
 
+    // Destructure the selected asset object
+    const { id, videoName, description, price, uploadUrlVideo, category } =
+      selectedasset;
+
+    // Check for missing fields
+    const missingFields = [];
+    if (!videoName) missingFields.push("videoName");
+    if (!description) missingFields.push("description");
+    if (price === undefined) missingFields.push("price");
+    if (!uploadUrlVideo) missingFields.push("uploadUrlVideo");
+    if (!category) missingFields.push("category");
+
+    if (missingFields.length > 0) {
+      console.error("Missing fields in selected asset:", missingFields);
+      alert(`Missing fields: ${missingFields.join(", ")}. Please try again.`);
+      return;
+    }
+
     try {
-      const cartRef = doc(
-        db,
-        "cartAssets",
-        `${currentUserId}_${selectedasset.id}`
-      );
+      // Create a document reference in Firestore for the cart item
+      const cartRef = doc(db, "cartAssets", `${currentUserId}_${id}`);
       await setDoc(cartRef, {
         userId: currentUserId,
-        assetId: selectedasset.id,
-        imageName: selectedasset.imageName,
-        price: selectedasset.price,
-        Image: selectedasset.uploadUrlImage,
+        assetId: id,
+        videoName: videoName,
+        description: description,
+        price: price,
+        uploadUrlVideo: uploadUrlVideo,
+        category: category,
       });
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {
       console.error("Error adding to cart: ", error);
+      alert(
+        "Terjadi kesalahan saat menambahkan asset ke keranjang. Silakan coba lagi."
+      );
     }
   };
 
@@ -232,25 +248,27 @@ export function MapAssetImage() {
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[280px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
-                <div className="w-full h-[150px]">
-                  <img
-                    src={data.uploadUrlImage || CustomImage}
-                    alt="Image"
+                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                <div className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px]">
+                  <video
+                    src={data.uploadUrlVideo}
+                    alt="Video Preview"
                     className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
                     onClick={() => openModal(data)}
+                    controls
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = CustomImage;
-                    }}
-                  />
+                    }}>
+                    Your browser does not support the video tag.
+                  </video>
                 </div>
 
                 {/* details section */}
-                <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-4">
+                <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-10">
                   <div>
                     <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
-                      {data.imageName}
+                      {data.videoName}
                     </p>
                     <h4 className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100">
                       {data.description.length > 24
@@ -294,8 +312,8 @@ export function MapAssetImage() {
               onClick={closeModal}>
               &times;
             </button>
-            <img
-              src={selectedasset.uploadUrlImage || CustomImage}
+            <video
+              src={selectedasset.uploadUrlVideo || CustomImage}
               alt="asset Image"
               className="w-1/2 h-[260px] mb-4"
               onError={(e) => {
@@ -305,13 +323,13 @@ export function MapAssetImage() {
             />
             <div className="w-1/2 pl-4 ">
               <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
-                {selectedasset.imageName}
+                {selectedasset.videoName}
               </h2>
               <p className="text-sm mb-2 dark:text-primary-100 mt-4">
                 Rp. {selectedasset.price.toLocaleString("id-ID")}
               </p>
               <div className="text-sm mb-2 dark:text-primary-100 mt-4">
-                <label className="flex-col mt-2">Deskripsi gambar:</label>
+                <label className="flex-col mt-2">Deskripsi Video:</label>
                 <div className="mt-2">{selectedasset.description}</div>
               </div>
 
@@ -344,6 +362,18 @@ export function MapAssetImage() {
           </div>
         </div>
       )}
+
+      <footer className=" min-h-[181px] flex flex-col items-center justify-center">
+        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
+          <a href="#">Teams And Conditions</a>
+          <a href="#">File Licenses</a>
+          <a href="#">Refund Policy</a>
+          <a href="#">Privacy Policy</a>
+        </div>
+        <p className="text-[10px] md:text-[12px]">
+          Copyright © 2024 - All right reserved by ACME Industries Ltd
+        </p>
+      </footer>
     </div>
   );
 }

@@ -43,6 +43,7 @@ function EditUser() {
             oldProfileImageUrl: data.profileImageUrl,
           }));
         }
+        // eslint-disable-next-line no-unused-vars
       } catch (error) {
         setAlertError(true);
       }
@@ -101,7 +102,7 @@ function EditUser() {
 
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manageUsers");
+        navigate("/manage-users");
       }, 2000);
     } catch (error) {
       setAlertError(true);
@@ -110,7 +111,7 @@ function EditUser() {
   };
 
   const handleCancel = () => {
-    navigate("/manageUsers");
+    navigate("/manage-users");
   };
 
   const closeAlert = () => {

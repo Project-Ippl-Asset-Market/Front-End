@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
@@ -103,10 +104,10 @@ function AddNewUser() {
       });
       setPreviewImage(null);
 
-      // 7. Navigate back to /manageUsers
+      // 7. Navigate back to /manage-users
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manageUsers");
+        navigate("/manage-users");
       }, 2000);
     } catch (error) {
       console.error("Error menambahkan user: ", error);
@@ -114,7 +115,7 @@ function AddNewUser() {
     }
   };
   const handleCancel = () => {
-    navigate("/manageUserss");
+    navigate("/manage-users");
   };
 
   const closeAlert = () => {

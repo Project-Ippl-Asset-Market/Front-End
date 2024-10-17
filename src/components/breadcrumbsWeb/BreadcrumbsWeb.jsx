@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Breadcrumb, Dropdown } from "flowbite-react";
 import { Link as RouterLink } from "react-router-dom";
-import { nameMap } from "./PathMapWeb"; // Import nameMap dari file terpisah
+import { nameMap } from "./PathMapWeb";  
 
 export default function BreadcrumbComponent() {
   const location = useLocation();
@@ -81,13 +81,13 @@ export default function BreadcrumbComponent() {
                   </span>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
-                  <Dropdown.Item as={RouterLink} to="/AssetGame/mapAssetAudio">
+                  <Dropdown.Item as={RouterLink} to="/manage-asset-audio">
                     Asset 2D
                   </Dropdown.Item>
-                  <Dropdown.Item as={RouterLink} to="/AssetGame/mapAssetAudio">
+                  <Dropdown.Item as={RouterLink} to="/manage-asset-audio">
                     Asset 3D
                   </Dropdown.Item>
-                  <Dropdown.Item as={RouterLink} to="/AssetGame/mapAssetAudio">
+                  <Dropdown.Item as={RouterLink} to="/manage-asset-audio">
                     Asset Audio
                   </Dropdown.Item>
                   <Dropdown.Item as={RouterLink} to="*">

@@ -119,10 +119,10 @@ function AddAssetAudios() {
       });
       setPreviewImage(null);
 
-      // Navigate back to /manageAssetAudios
+      // Navigate back to /manage-asset-audio
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manageAssetAudios");
+        navigate("/manage-asset-audio");
       }, 2000);
     } catch (error) {
       console.error("Error menambahkan assetAudios: ", error);
@@ -131,7 +131,7 @@ function AddAssetAudios() {
   };
 
   const handleCancel = () => {
-    navigate("/manageAssetAudios");
+    navigate("/manage-asset-audio");
   };
 
   const closeAlert = () => {

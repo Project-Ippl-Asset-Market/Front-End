@@ -6,7 +6,7 @@ import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconHapus from "../../assets/icon/iconCRUD/iconHapus.png";
 import IconEdit from "../../assets/icon/iconCRUD/iconEdit.png";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
-import { db, auth, storage } from "../../firebase/firebaseConfig"; // Pastikan ini mengarah ke file konfigurasi Firebase Anda
+import { db, auth, storage } from "../../firebase/firebaseConfig";  
 import {
   collection,
   getDocs,
@@ -14,10 +14,10 @@ import {
   doc,
   query,
   where,
-} from "firebase/firestore"; // Import yang diperlukan /
+} from "firebase/firestore"; 
 import { onAuthStateChanged } from "firebase/auth";
 import { deleteObject, ref, getDownloadURL } from "firebase/storage";
-import PreviewImage from "../../../assets/assetmanage/Iconrarzip.svg";
+import RarZip from "../../../assets/assetmanage/Iconrarzip.svg";
 
 
 function ManageAsset2D() {
@@ -27,7 +27,7 @@ function ManageAsset2D() {
   const [user, setUser] = useState(null);
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -69,7 +69,7 @@ function ManageAsset2D() {
     const fetchData = async () => {
       if (!user) {
         console.log('No user logged in');
-        return; // Jika tidak ada pengguna yang login, tidak perlu mengambil data
+        return;  
       }
       
       try {
@@ -90,7 +90,7 @@ function ManageAsset2D() {
 
           // Susun data ke dalam format assets
           items.push({
-            id: doc.id, // Simpan ID dokumen untuk keperluan penghapusan
+            id: doc.id, 
             asset2DName: data.asset2DName,
             description: data.description,
             price: `Rp. ${data.price}`,
@@ -120,13 +120,13 @@ function ManageAsset2D() {
 
             // Coba dapatkan URL gambar untuk mengecek apakah gambar ada
             const fileExists = await getDownloadURL(ImageRef)
-                .then(() => true)  // Jika URL gambar berhasil diambil, file ada
+                .then(() => true)  
                 .catch((error) => {
                     if (error.code === 'storage/object-not-found') {
                         console.warn("File tidak ditemukan di Firebase Storage, melewati penghapusan file.");
-                        return false;  // File tidak ditemukan
+                        return false;  
                     }
-                    throw error;  // Jika error lain muncul, lempar error kembali
+                    throw error;   
                 });
 
             // Jika file ada, lakukan penghapusan
@@ -146,14 +146,14 @@ function ManageAsset2D() {
             // Reload halaman setelah beberapa waktu (sesuaikan delay jika diperlukan)
             setTimeout(() => {
                 window.location.reload();
-            }, 1000); // Delay 1 detik sebelum reload
+            }, 1000);  
 
         } catch (error) {
             console.error('Error deleting Asset 2D: ', error);
             setAlertError(true);
         }
     } else {
-        // Feedback jika pengguna membatalkan penghapusan
+       
         alert("Deletion cancelled");
     }
 };
@@ -242,7 +242,7 @@ const closeAlert = () => {
               <div className="flex items-center justify-center md:justify-start">
                 <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
                   <Link
-                    to="/manageAsset2D/add"
+                    to="/manage-asset-3D/add"
                     className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
                     + Add Asset 2D
                   </Link>
@@ -297,7 +297,7 @@ const closeAlert = () => {
                     key={asset.id}
                     className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
                     <th className="px-6 py-4">
-                      <img src={rarzip} className="w-12 h-12 " />
+                      <img src={RarZip} className="w-12 h-12 " />
                     </th>
                     <th
                       scope="row"
@@ -308,7 +308,7 @@ const closeAlert = () => {
                     <td className="px-6 py-4">{asset.price}</td>
                     <td className="px-6 py-4">{asset.createdAt || "N/A"}</td>
                     <td className="mx-auto flex gap-4 mt-8">
-                      <Link to={`/manageAsset2D/edit/${asset.id}`}>
+                      <Link to={`/manage-asset-3D/edit/${asset.id}`}>
                         <img
                           src={IconEdit}
                           alt="icon edit"

@@ -235,7 +235,7 @@ function Login() {
                   </label>
 
                   <Link
-                    to="/lupaPassword"
+                    to="/lupa-password"
                     className="relative inline-block  text-[10px] sm:text-[12px] md:text-[16px] lg:text-[16px]  xl:text-[16px] text-primary-40 hover:text-error-1 group">
                     Lupa Password ?
                     <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-primary-40 transition-all duration-1000 transform group-hover:left-0 group-hover:w-1/2"></span>

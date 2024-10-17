@@ -91,7 +91,7 @@ function ManageUsers() {
 
       if (response.status === 204) {
         setUsers((prev) => prev.filter((user) => user.id !== id));
-        navigate("/manageUsers");
+        navigate("/manage-users");
       } else {
         setError("Failed to delete user. Please try again.");
       }
@@ -144,7 +144,7 @@ function ManageUsers() {
             <div className="flex items-center justify-center md:justify-start">
               <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-48">
                 <Link
-                  to="/manageUsers/add"
+                  to="/manage-users/add"
                   className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
                   + Add new User
                 </Link>
@@ -249,28 +249,23 @@ function ManageUsers() {
                       </th>
                       <td className="px-6 py-4">{user.email}</td>
                       <td className="px-6 py-4">{formattedDate}</td>
-                      <td className="flex justify-center py-4 items-center gap-2">
-                        <Link to={`/manageUsers/edit/${user.id}`}>
+                      <td className="mx-auto flex gap-4 mt-8">
+                        <Link to={`/manage-users/edit/${user.id}`}>
                           <img
-                            className="cursor-pointer"
                             src={IconEdit}
                             alt="icon edit"
-                            width={20}
-                            height={20}
+                            className="w-5 h-5 cursor-pointer"
                           />
                         </Link>
-
                         <button
                           onClick={() => {
                             setUserToDelete(user);
                             setIsModalOpen(true);
                           }}>
                           <img
-                            className="cursor-pointer"
                             src={IconHapus}
                             alt="icon hapus"
-                            width={20}
-                            height={20}
+                            className="w-5 h-5 cursor-pointer"
                           />
                         </button>
                       </td>

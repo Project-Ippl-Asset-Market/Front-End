@@ -8,7 +8,7 @@ import admin from "firebase-admin";
 // Inisialisasi Firebase
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://my-asset-market.firebaseio.com", // Ganti dengan URL Firebase Database Anda
+  databaseURL: "my-asset-market-809ff.firebaseapp.com"", // Ganti dengan URL Firebase Database Anda
 });
 
 // Setup Firestore

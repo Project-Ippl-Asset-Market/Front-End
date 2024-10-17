@@ -2,24 +2,28 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, addDoc, Timestamp, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  Timestamp,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { onAuthStateChanged } from "firebase/auth"; 
-import { db, storage, auth, } from "../../../firebase/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
+import { db, storage, auth } from "../../../firebase/firebaseConfig";
 import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
 
-
 function AddAsset3D() {
-
   const [user, setUser] = useState(null);
   const [asset3D, setAsset3D] = useState({
     name: "",
     category: "",
     description: "",
     price: "",
-    file: null,  // State to hold file information
+    file: null, // State to hold file information
   });
 
   const navigate = useNavigate();
@@ -76,7 +80,6 @@ function AddAsset3D() {
     e.preventDefault();
 
     try {
-      
       // Save asset 3D details to Firestore
       const docRef = await addDoc(collection(db, "assetImage3D"), {
         category: asset3D.category,
@@ -94,18 +97,14 @@ function AddAsset3D() {
       // Upload profile image to Firebase Storage
       let asset3DImageUrl = "";
       if (asset3D.asset3DImage) {
-        const imageRef = ref(
-          storage,
-          `images-asset-3D/asset3D-${docId}.jpg`
-        );
+        const imageRef = ref(storage, `images-asset-3D/asset3D-${docId}.jpg`);
         await uploadBytes(imageRef, asset3D.asset3DImage);
         asset3DImageUrl = await getDownloadURL(imageRef);
       }
 
-      
       await updateDoc(doc(db, "assetImage3D", docId), {
         asset3DImage: asset3DImageUrl,
-      })
+      });
 
       // Reset the form
       setAsset3D({
@@ -117,19 +116,19 @@ function AddAsset3D() {
       });
       setPreviewImage(null);
 
-      // Navigate back to /manageAsset3D
+      // Navigate back to /manage-asset-3D
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manageAsset3D");
+        navigate("/manage-asset-3D");
       }, 2000);
     } catch (error) {
       console.error("Error menambahkan asset3D: ", error);
       setAlertError(true);
     }
   };
-  
+
   const handleCancel = () => {
-    navigate("/manageAsset3D");
+    navigate("/manage-asset-3D");
   };
 
   const closeAlert = () => {
@@ -302,7 +301,7 @@ function AddAsset3D() {
                     <input
                       type="text"
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px]"
-                      name= "asset3DName"
+                      name="asset3DName"
                       value={asset3D.asset3DName}
                       onChange={handleChange}
                       placeholder="Enter name...."
@@ -356,7 +355,7 @@ function AddAsset3D() {
                   <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
                     +
                   </div>
-                </div>                
+                </div>
               </div>
 
               {/* Description */}

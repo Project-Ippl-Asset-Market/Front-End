@@ -4,8 +4,8 @@ import { auth } from "../../firebase/firebaseConfig";
 import { signOut } from "firebase/auth";
 import { useTheme } from "../../contexts/ThemeContext";
 import { onAuthStateChanged } from "firebase/auth";
-import { nameMap } from "../breadcrumbs/PathMap";
-import { useLocation, useNavigate } from "react-router-dom";
+// import { nameMap } from "../breadcrumbs/PathMap";
+import { useNavigate } from "react-router-dom";
 import IconToggelMenu from "../../assets/icon/iconHeader/iconMenu.svg";
 import IconLightMode from "../../assets/icon/iconDarkMode&LigthMode/ligth_mode.svg";
 import IconDarkMode from "../../assets/icon/iconDarkMode&LigthMode/dark_mode.svg";
@@ -19,10 +19,10 @@ import IconStoreDark from "../../assets/icon/iconHeaderDashboard/iconStoreDark.s
 // eslint-disable-next-line react/prop-types
 function HeaderSidebar({ toggleSidebar }) {
   const { darkMode, toggleDarkMode } = useTheme();
-  const location = useLocation();
+  // const location = useLocation();
   const navigate = useNavigate();
-  const currentPath = location.pathname;
-  const pageName = nameMap[currentPath] || "Unknown Page";
+  // const currentPath = location.pathname;
+  // const pageName = nameMap[currentPath] || "Unknown Page";
   const [user, setUser] = useState(null);
   const [username, setUsername] = useState("");
 
@@ -80,13 +80,13 @@ function HeaderSidebar({ toggleSidebar }) {
             className="w-10 h-5 mx-auto"
           />
         </button>
-        <ul className="breadcrumb text-xl">
+        {/* <ul className="breadcrumb text-xl">
           <li
             className="breadcrumb-item active hidden md:block text-xl text-neutral-20 dark:text-primary-100 font-semibold sm:ml-[200px] md:ml-[240px] lg:ml-[240px] xl:ml-[230px]"
             aria-current="page">
             {pageName}
           </li>
-        </ul>
+        </ul> */}
       </div>
 
       <div className="flex-none gap-2">

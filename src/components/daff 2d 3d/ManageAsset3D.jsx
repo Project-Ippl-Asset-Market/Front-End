@@ -8,8 +8,8 @@ import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconHapus from "../../assets/icon/iconCRUD/iconHapus.png";
 import IconEdit from "../../assets/icon/iconCRUD/iconEdit.png";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
-import { db, auth, storage } from '../../firebase/firebaseConfig'; // Pastikan ini mengarah ke file konfigurasi Firebase Anda
-import { collection, getDocs, deleteDoc, doc, query, where } from "firebase/firestore"; // Impor yang diperlukan
+import { db, auth, storage } from '../../firebase/firebaseConfig';  
+import { collection, getDocs, deleteDoc, doc, query, where } from "firebase/firestore"; 
 import { onAuthStateChanged } from 'firebase/auth';
 import { deleteObject, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import defaultZipPreviewImage from "../../assets/assetmanage/rarzip.png";
@@ -64,7 +64,7 @@ function ManageAsset3D() {
     const fetchData = async () => {
       if (!user) {
         console.log('No user logged in');
-        return; // Jika tidak ada pengguna yang login, tidak perlu mengambil data
+        return;  
       }
       
       try {
@@ -85,7 +85,7 @@ function ManageAsset3D() {
 
           // Susun data ke dalam format assets
           items.push({
-            id: doc.id, // Simpan ID dokumen untuk keperluan penghapusan
+            id: doc.id, 
             asset3DName: data.asset3DName,
             description: data.description,
             price: `Rp. ${data.price}`,
@@ -115,13 +115,13 @@ function ManageAsset3D() {
 
             // Coba dapatkan URL gambar untuk mengecek apakah gambar ada
             const fileExists = await getDownloadURL(ImageRef)
-                .then(() => true)  // Jika URL gambar berhasil diambil, file ada
+                .then(() => true)   
                 .catch((error) => {
                     if (error.code === 'storage/object-not-found') {
                         console.warn("File tidak ditemukan di Firebase Storage, melewati penghapusan file.");
-                        return false;  // File tidak ditemukan
+                        return false;   
                     }
-                    throw error;  // Jika error lain muncul, lempar error kembali
+                    throw error;   
                 });
 
             // Jika file ada, lakukan penghapusan
@@ -141,7 +141,7 @@ function ManageAsset3D() {
             // Reload halaman setelah beberapa waktu (sesuaikan delay jika diperlukan)
             setTimeout(() => {
                 window.location.reload();
-            }, 1000); // Delay 1 detik sebelum reload
+            }, 1000); 
 
         } catch (error) {
             console.error('Error deleting Asset 3D: ', error);
@@ -238,7 +238,7 @@ const closeAlert = () => {
               <div className="flex items-center justify-center md:justify-start">
                 <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
                   <Link
-                    to="/manageAsset3D/add"
+                    to="/manage-asset-3D/add"
                     className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
                     + Add Asset 3D
                   </Link>
@@ -304,7 +304,7 @@ const closeAlert = () => {
                     <td className="px-6 py-4">{asset.price}</td>
                     <td className="px-6 py-4">{asset.createdAt || 'N/A'}</td>
                     <td className="mx-auto flex gap-4 mt-8">
-                      <Link to={`/manageAsset3D/edit/${asset.id}`}>
+                      <Link to={`/manage-asset-3D/edit/${asset.id}`}>
                         <img src={IconEdit} alt="icon edit" className="w-5 h-5" />
                       </Link>
                       <button onClick={() => handleDelete(asset.id)}>

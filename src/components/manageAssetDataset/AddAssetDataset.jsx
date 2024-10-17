@@ -2,19 +2,22 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, addDoc, Timestamp, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  Timestamp,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { onAuthStateChanged } from "firebase/auth"; 
-import { db, storage, auth, } from "../../firebase/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
+import { db, storage, auth } from "../../firebase/firebaseConfig";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconField from "../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../HeaderNav/HeaderNav";
-import DefaultPreview from "../../assets/icon/iconSidebar/datasetzip.png"
-
-
+import DefaultPreview from "../../assets/icon/iconSidebar/datasetzip.png";
 
 function AddNewDataset() {
-
   const [user, setUser] = useState(null);
   const [dataset, setDataset] = useState({
     datasetName: "",
@@ -80,16 +83,16 @@ function AddNewDataset() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     try {
       // Konversi dataset.price menjadi number
       const priceAsNumber = parseInt(dataset.price);
-  
+
       if (isNaN(priceAsNumber)) {
         // Validasi jika harga yang diinput tidak valid
         throw new Error("Invalid price: must be a number.");
       }
-  
+
       // Save dataset details to Firestore
       const docRef = await addDoc(collection(db, "assetDatasets"), {
         category: dataset.category,
@@ -101,32 +104,32 @@ function AddNewDataset() {
         uploadedByEmail: user.email,
         userId: user.uid,
       });
-  
+
       const docId = docRef.id;
-  
+
       // Upload dataset image/file to Firebase Storage
       let datasetImageUrl = "";
       if (dataset.datasetImage) {
         // Ambil nama asli file dan ekstrak ekstensi
         const originalFileName = dataset.datasetImage.name;
-        const fileExtension = originalFileName.split('.').pop(); // Mengambil ekstensi file
-        
+        const fileExtension = originalFileName.split(".").pop(); // Mengambil ekstensi file
+
         // Ref untuk upload file ke Storage dengan ekstensi asli
         const imageRef = ref(
           storage,
           `images-dataset/dataset-${docId}.${fileExtension}`
         );
-        
+
         // Upload file ke Storage
         await uploadBytes(imageRef, dataset.datasetImage);
         datasetImageUrl = await getDownloadURL(imageRef);
       }
-  
+
       // Update Firestore dengan URL gambar yang diupload
       await updateDoc(doc(db, "assetDatasets", docId), {
         datasetImage: datasetImageUrl,
       });
-  
+
       // Reset the form
       setDataset({
         datasetName: "",
@@ -136,22 +139,20 @@ function AddNewDataset() {
         datasetImage: null,
       });
       setPreviewImage(null);
-  
-      // Navigate back to /manageAssetDataset
+
+      // Navigate back to /manage-asset-dataset
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manageAssetDataset");
+        navigate("/manage-asset-dataset");
       }, 2000);
     } catch (error) {
       console.error("Error menambahkan dataset: ", error);
       setAlertError(true);
     }
   };
-  
-  
-  
+
   const handleCancel = () => {
-    navigate("/manageAssetDataset");
+    navigate("/manage-asset-dataset");
   };
 
   const closeAlert = () => {
@@ -324,7 +325,7 @@ function AddNewDataset() {
                     <input
                       type="text"
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px]"
-                      name= "datasetName"
+                      name="datasetName"
                       value={dataset.datasetName}
                       onChange={handleChange}
                       placeholder="Enter name...."
@@ -360,7 +361,7 @@ function AddNewDataset() {
                       onChange={(e) =>
                         setDataset((prevState) => ({
                           ...prevState,
-                          category: e.target.value, // Update category inside dataset state
+                          category: e.target.value,
                         }))
                       }
                       className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md">
@@ -378,7 +379,7 @@ function AddNewDataset() {
                   <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
                     +
                   </div>
-                </div>                
+                </div>
               </div>
 
               {/* Description */}

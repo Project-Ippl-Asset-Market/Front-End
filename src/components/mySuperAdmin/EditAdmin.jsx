@@ -98,7 +98,7 @@ function EditAdmin() {
 
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manageAdmin");
+        navigate("/manage-admin");
       }, 2000);
     } catch (error) {
       setAlertError(true);
@@ -106,7 +106,7 @@ function EditAdmin() {
   };
 
   const handleCancel = () => {
-    navigate("/manageAdmin");
+    navigate("/manage-admin");
   };
 
   const closeAlert = () => {

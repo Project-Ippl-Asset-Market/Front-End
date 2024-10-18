@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
@@ -9,36 +9,34 @@ import IconHapus from "../../assets/icon/iconCRUD/iconHapus.png";
 import IconEdit from "../../assets/icon/iconCRUD/iconEdit.png";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
 import { getAuth } from "firebase/auth";
-import { getStorage, ref, deleteObject } from "firebase/storage";
 
 function ManageUsers() {
   const defaultImageUrl =
     "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp";
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [users, setUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
+  const sidebarRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const sidebarRef = useRef(null);
   const navigate = useNavigate();
 
-  // Pagination state untuk tabelnya
-  const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 10;
-
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+    setIsSidebarOpen((prev) => !prev);
   };
 
-  const handleClickOutside = (event) => {
-    if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
-      setIsSidebarOpen(false);
-    }
-  };
+  // Define handleClickOutside using useCallback to ensure stability
+  const handleClickOutside = useCallback(
+    (event) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setIsSidebarOpen(false);
+      }
+    },
+    [sidebarRef]
+  );
 
+  // useEffect untuk mengambil data pengguna saat komponen di-mount
   useEffect(() => {
     const fetchUsers = async () => {
       setIsLoading(true);
@@ -46,50 +44,35 @@ function ManageUsers() {
       try {
         const response = await axios.get("http://localhost:3000/api/users");
         setUsers(response.data);
-        setFilteredUsers(response.data);
       } catch (error) {
-        console.error("Error fetching admin data: ", error);
-        setError("Failed to fetch Users. Please try again later.");
+        console.error("Error fetching user data: ", error);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchUsers();
+  }, []); // Array dependensi kosong memastikan hanya dijalankan sekali saat mount
 
+  useEffect(() => {
     if (isSidebarOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     } else {
       document.removeEventListener("mousedown", handleClickOutside);
     }
 
+    // Cleanup
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isSidebarOpen]);
-
-  useEffect(() => {
-    // Filter Users whenever search term changes
-    if (searchTerm) {
-      setFilteredUsers(
-        users.filter((user) =>
-          user.username.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-    } else {
-      setFilteredUsers(users);
-    }
-
-    // Reset current page to 1 when search term changes
-    setCurrentPage(1);
-  }, [searchTerm, users]);
+  }, [isSidebarOpen, handleClickOutside]);
 
   const handleDeleteUser = async (id) => {
     setIsLoading(true);
     setError(null);
     const user = users.find((user) => user.id === id);
     if (!user) {
-      console.error("user not found in local state");
+      console.error("User not found in local state");
       return;
     }
 
@@ -97,7 +80,6 @@ function ManageUsers() {
       const auth = getAuth();
       const token = await auth.currentUser.getIdToken(true);
 
-      // Hapus user dari database
       const response = await axios.delete(
         `http://localhost:3000/api/users/${id}`,
         {
@@ -108,15 +90,8 @@ function ManageUsers() {
       );
 
       if (response.status === 204) {
-        // Hapus gambar dari Firebase Storage
-        const storage = getStorage();
-        const imageRef = ref(storage, user.profileImageUrl);
-        await deleteObject(imageRef);
-
-        // Perbarui state user
         setUsers((prev) => prev.filter((user) => user.id !== id));
-        setFilteredUsers((prev) => prev.filter((user) => user.id !== id));
-        navigate("/manage-user");
+        navigate("/manage-users");
       } else {
         setError("Failed to delete user. Please try again.");
       }
@@ -141,14 +116,6 @@ function ManageUsers() {
       handleDeleteUser(userToDelete.id);
     }
   };
-
-  // Menghitung jumlah halaman
-  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
-  const startIndex = (currentPage - 1) * usersPerPage;
-  const currentUsers = filteredUsers.slice(
-    startIndex,
-    startIndex + usersPerPage
-  );
 
   return (
     <div className="dark:bg-neutral-90 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
@@ -195,13 +162,12 @@ function ManageUsers() {
               <input
                 type="text"
                 placeholder="Search"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
                 className="input border-none bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10 h-[40px] w-full focus:outline-none"
               />
             </div>
           </div>
         </div>
+
         {isLoading ? (
           <div className="flex justify-center items-center h-64 mt-20">
             <div className="animate-spin rounded-full h-60 w-60 border-b-2 border-gray-900"></div>
@@ -210,17 +176,14 @@ function ManageUsers() {
           <div className="text-red-500 text-center mt-4">{error}</div>
         ) : (
           <div className="relative overflow-x-auto shadow-md sm:rounded-lg p-8 dark:bg-neutral-25 mt-4">
-            <table className="w-full text-sm text-left rtl:text-right text-gray-500 bg-primary-100 dark:text-neutral-90 ">
+            <table className="w-full text-sm text-left rtl:text-right text-gray-500 bg-primary-100 dark:text-neutral-90">
               <thead className="text-xs text-neutral-20 uppercase dark:bg-neutral-25 dark:text-neutral-90 border-b dark:border-neutral-20">
                 <tr>
                   <th scope="col" className="px-6 py-3">
                     Photo
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Username
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Role
+                    UserName
                   </th>
                   <th scope="col" className="px-6 py-3">
                     Email
@@ -234,83 +197,110 @@ function ManageUsers() {
                 </tr>
               </thead>
               <tbody>
-                {currentUsers.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
-                    <td className="px-6 py-4">
-                      <img
-                        src={user.profileImageUrl || defaultImageUrl}
-                        alt={`${user.username}'s profile`}
-                        className="w-12 h-12 rounded-lg"
-                      />
-                    </td>
-                    <th
-                      scope="row"
-                      className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 space-nowrap">
-                      {user.username}
-                    </th>
-                    <td className="px-6 py-4">{user.role}</td>
-                    <td className="px-6 py-4">{user.email}</td>
-                    <td className="px-6 py-4">
-                      {user.createdAt
-                        ? new Date(
-                            user.createdAt._seconds * 1000
-                          ).toLocaleDateString("id-ID", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })
-                        : "Unknown"}
-                    </td>
-                    <td className="mx-auto flex gap-4 mt-8">
-                      <Link to={`/manage-users/edit/${user.id}`}>
+                {users.map((user) => {
+                  // Safely format the createdAt field
+                  let formattedDate = "N/A";
+                  if (user.createdAt) {
+                    // Jika menggunakan Firestore Timestamp
+                    if (user.createdAt._seconds) {
+                      formattedDate = new Date(
+                        user.createdAt._seconds * 1000
+                      ).toLocaleDateString("id-ID", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      });
+                    } else if (user.createdAt.toDate) {
+                      // Jika createdAt adalah Firestore Timestamp
+                      formattedDate = user.createdAt
+                        .toDate()
+                        .toLocaleDateString("id-ID", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        });
+                    } else if (user.createdAt instanceof Date) {
+                      formattedDate = user.createdAt.toLocaleDateString(
+                        "id-ID",
+                        {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        }
+                      );
+                    }
+                  }
+
+                  return (
+                    <tr
+                      key={user.id}
+                      className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
+                      <td className="px-6 py-4">
                         <img
-                          src={IconEdit}
-                          alt="Edit"
-                          className="w-5 h-5 cursor-pointer"
+                          src={user.profileImageUrl || defaultImageUrl}
+                          alt={`${user.username}'s profile`}
+                          className="w-12 h-12 rounded-lg"
                         />
-                      </Link>
-                      <img
-                        src={IconHapus}
-                        alt="Delete"
-                        className="w-5 h-5 cursor-pointer"
-                        onClick={() => {
-                          setIsModalOpen(true);
-                          setUserToDelete(user);
-                        }}
-                      />
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <th
+                        scope="row"
+                        className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 space-nowrap">
+                        {user.username}
+                      </th>
+                      <td className="px-6 py-4">{user.email}</td>
+                      <td className="px-6 py-4">{formattedDate}</td>
+                      <td className="mx-auto flex gap-4 mt-8">
+                        <Link to={`/manage-users/edit/${user.id}`}>
+                          <img
+                            src={IconEdit}
+                            alt="icon edit"
+                            className="w-5 h-5 cursor-pointer"
+                          />
+                        </Link>
+                        <button
+                          onClick={() => {
+                            setUserToDelete(user);
+                            setIsModalOpen(true);
+                          }}>
+                          <img
+                            src={IconHapus}
+                            alt="icon hapus"
+                            className="w-5 h-5 cursor-pointer"
+                          />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
-            {error && (
-              <div className="text-red-600 mt-4 text-center">{error}</div>
-            )}
           </div>
         )}
-        {isModalOpen && (
+
+        {isModalOpen && userToDelete && (
           <div
             className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
-            onClick={() => setIsModalOpen(false)}>
-            <div
-              className="bg-white rounded-lg p-6 shadow-lg"
-              onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-lg font-semibold">Konfirmasi Penghapusan</h2>
-              <p className="mt-2">
-                Apakah Anda yakin ingin menghapus user
-                <span className="font-bold">{userToDelete?.username}</span>?
+            aria-modal="true"
+            role="dialog">
+            <div className="bg-white rounded-lg p-6 w-96">
+              <h2 className="text-lg font-semibold mb-4">
+                Konfirmasi Penghapusan
+              </h2>
+              <p>
+                Apakah Anda yakin ingin menghapus{" "}
+                <strong>{userToDelete.username}</strong>?
               </p>
               <div className="mt-4 flex justify-end">
                 <button
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2"
-                  onClick={confirmDeleteUser}>
-                  Hapus
+                  className="bg-red-600 text-white px-4 py-2 rounded-md mr-2"
+                  onClick={confirmDeleteUser}
+                  disabled={isLoading}>
+                  {isLoading ? "Menghapus..." : "Hapus"}
                 </button>
                 <button
-                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg"
-                  onClick={() => setIsModalOpen(false)}>
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-md"
+                  onClick={() => setIsModalOpen(false)}
+                  disabled={isLoading}>
                   Batal
                 </button>
               </div>
@@ -320,21 +310,13 @@ function ManageUsers() {
 
         {/* Pagination Section */}
         <div className="flex join pt-72 justify-end">
-          <button
-            className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}>
+          <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
             «
           </button>
           <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
-            Page {currentPage} of {totalPages}
+            Page 1
           </button>
-          <button
-            className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            disabled={currentPage === totalPages}>
+          <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
             »
           </button>
         </div>

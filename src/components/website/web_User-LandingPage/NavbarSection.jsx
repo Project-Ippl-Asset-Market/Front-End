@@ -25,7 +25,7 @@ const NavbarSection = () => {
 
   return (
     <>
-      <nav className="dark:bg-neutral-5 dark:text-primary-100 text-neutral-10 w-full fixed font-poppins  bg-neutral-90 bg-opacity-90">
+      <nav className="dark:bg-neutral-5 dark:text-primary-100 text-neutral-10 w-full fixed font-poppins  bg-neutral-90  ">
         <div className="mx-[20px] flex justify-between items-center mt-0 w-full   ">
           <div className="flex-grow " />
           <button
@@ -307,7 +307,7 @@ const NavbarSection = () => {
                       Halaman Bantuan
                     </Link>
                     <Link
-                      to=""
+                      to="/headerCart"
                       className="hover:bg-secondary-40 hover:rounded-md hover:text-primary-100 sm:hover:text-primary-100 dark:hover:bg-secondary-40 dark:text-primary-100 dark:hover:text-primary-100 text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px] xl:text-[14px] 2xl:text-[14px] h-10 p-3 transition-all duration-200 ">
                       Panduan
                     </Link>

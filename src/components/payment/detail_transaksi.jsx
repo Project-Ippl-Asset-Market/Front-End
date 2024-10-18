@@ -1,8 +1,8 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import Header from "../../headerNavBreadcrumbs/HeaderWebUser";
-import { NavbarSection } from "./NavbarSection";
+import Header from "../../components/headerNavBreadcrumbs/HeaderWebUser";
+import { NavbarSection } from "../../components/website/web_User-LandingPage/NavbarSection";
 
 const TransactionDetails = () => {
   const { orderId } = useParams();
@@ -33,7 +33,7 @@ const TransactionDetails = () => {
   }
 
   return (
-    <div className="font-poppins">
+    <div className="bg-primary-100 dark:bg-neutral-20 font-poppins h-full min-h-screen">
       <div className="w-full shadow-md bg-white dark:text-white relative z-40">
         <div className="pt-[80px] w-full">
           <Header />
@@ -70,7 +70,7 @@ const TransactionDetails = () => {
       </div>
 
       <footer className="bg-darknavy text-white min-h-[181px] flex flex-col items-center justify-center">
-        <div className="flex justify-center gap-4 text-[10        px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
+        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
           <a href="#">Teams And Conditions</a>
           <a href="#">File Licenses</a>
           <a href="#">Refund Policy</a>

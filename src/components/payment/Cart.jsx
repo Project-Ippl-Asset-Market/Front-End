@@ -1,56 +1,50 @@
-// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from "react";
 import { FaTrashAlt } from "react-icons/fa";
-import { getAuth } from "firebase/auth";
-import { db } from "../../firebase/firebaseConfig";
-import {
-  collection,
-  query,
-  where,
-  onSnapshot,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
-import Header from "../../components/headerNavBreadcrumbs/HeaderWebUser";
-import NavbarSection from "../../components/website/web_User-LandingPage/NavbarSection";
-import CustomImage from "../../assets/assetmanage/Iconrarzip.svg";
+import Header from "../../headerNavBreadcrumbs/HeaderWebUser";
+import { NavbarSection } from "./NavbarSection";
+
+const cartItems = [
+  {
+    id: 1,
+    img: "/src/assets/icon/iconCart/image.png",
+    title: "Dataset Visual",
+    description: "Tambahan data visual yang mendalam",
+    price: 25000,
+  },
+  {
+    id: 2,
+    img: "/src/assets/icon/iconCart/image.png",
+    title: "Dataset Visual",
+    description: "Tambahan data visual yang mendalam",
+    price: 25000,
+  },
+  {
+    id: 3,
+    img: "/src/assets/icon/iconCart/image.png",
+    title: "Dataset Visual",
+    description: "Tambahan data visual yang mendalam",
+    price: 25000,
+  },
+];
 
 const Cart = () => {
-  const [selectedItems, setSelectedItems] = useState([]);
-  // eslint-disable-next-line no-unused-vars
-  const [refreshData, setRefreshData] = useState(false);
-  const auth = getAuth();
-  const user = auth.currentUser;
-
-  useEffect(() => {
-    if (user) {
-      const userId = user.uid;
-      const cartCollection = collection(db, "cartAssets");
-      const q = query(cartCollection, where("userId", "==", userId));
-
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const items = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        console.log("Fetched items:", items);
-        setSelectedItems(items.map((item) => ({ ...item, selected: false })));
-        setRefreshData((prev) => !prev);
-      });
-
-      return () => unsubscribe();
-    }
-  }, [user]);
+  const [selectedItems, setSelectedItems] = useState(
+    cartItems.map((item) => ({ ...item, selected: false }))
+  );
 
   const selected = selectedItems.filter((item) => item.selected);
   const subtotal = selected.reduce((total, item) => total + item.price, 0);
   const total = subtotal + subtotal * 0.1;
-  const formattedTotal = Math.floor(total);
 
+  // useEffect to load Midtrans Snap script
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
-    script.setAttribute("data-client-key", "SB-Mid-client-QM4rGhnfcyjCT3LL");
+    script.setAttribute(
+      "data-client-key",
+      process.env.VITE_APP_MIDTRANS_CLIENT_KEY
+    ); // Client Key kamu
+
     script.async = true;
     document.body.appendChild(script);
 
@@ -59,44 +53,65 @@ const Cart = () => {
     };
   }, []);
 
+  // handlePayment function
   const handlePayment = async () => {
-    if (selected.length === 0) {
-      console.error("Tidak ada item yang dipilih untuk pembayaran.");
-      return;
-    }
-
     try {
-      const response = await fetch(
-        "http://localhost:3000/api/transactions/create-transaction",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+      const selectedItemsDetails = selected.map((item) => ({
+        id: item.id.toString(),
+        name: item.title,
+        price: item.price,
+        quantity: 1,
+      }));
+
+      const response = await fetch("http://localhost:5000/create-transaction", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          orderId: `order-${Math.random().toString(36).substr(2, 9)}`,
+          grossAmount: total,
+          customerDetails: {
+            first_name: "Dafa",
+            last_name: "gaming",
+            email: "dafagaming.com",
+            phone: "08123456789",
           },
-          body: JSON.stringify({
-            orderId: `order-${Math.random().toString(36).substr(2, 9)}`,
-            grossAmount: formattedTotal,
-            customerDetails: {
-              first_name: "Dafa",
-              last_name: "gaming",
-              email: "dafagaming@gmail.com",
-              phone: "08123456789",
-            },
-          }),
-        }
-      );
+          items: selectedItemsDetails, // Tambahkan detail item di sini
+        }),
+      });
 
       const transactionData = await response.json();
 
+      // Jalankan Snap pembayaran
       if (transactionData.token) {
         window.snap.pay(transactionData.token, {
           onSuccess: async function (result) {
             console.log("Payment success:", result);
-            await updateTransaction(result.order_id, "success");
+            window.location.href = "/";
+            await fetch("http://localhost:5000/update-transaction", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                orderId: result.order_id,
+                status: "success",
+              }),
+            });
           },
           onPending: async function (result) {
             console.log("Payment pending:", result);
-            await updateTransaction(result.order_id, "pending");
+            await fetch("http://localhost:5000/update-transaction", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                orderId: result.order_id,
+                status: "pending",
+              }),
+            });
           },
           onError: function (result) {
             console.log("Payment error:", result);
@@ -113,33 +128,6 @@ const Cart = () => {
     }
   };
 
-  const updateTransaction = async (orderId, status) => {
-    try {
-      await fetch("http://localhost:3000/api/transactions/update-transaction", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          orderId: orderId,
-          status: status,
-        }),
-      });
-    } catch (error) {
-      console.error("Error updating transaction status:", error);
-    }
-  };
-
-  const handleDeleteItem = async (id) => {
-    try {
-      const itemDoc = doc(db, "cartAssets", id);
-      await deleteDoc(itemDoc);
-      console.log("Item deleted successfully");
-    } catch (error) {
-      console.error("Error deleting item:", error);
-    }
-  };
-
   const handleCheckboxChange = (id) => {
     setSelectedItems((prevItems) =>
       prevItems.map((item) =>
@@ -149,7 +137,7 @@ const Cart = () => {
   };
 
   return (
-    <div className="font-poppins dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen bg-primary-100">
+    <div className="font-poppins">
       <div className="w-full shadow-md bg-white dark:text-white relative z-40">
         <div className="pt-[80px] w-full">
           <Header />
@@ -160,15 +148,18 @@ const Cart = () => {
       <div className="container mx-auto py-40">
         <h2 className="text-2xl font-semibold mb-4">Keranjang Belanja</h2>
         <p className="mb-4">
-          Anda mempunyai {selected.length} item dalam keranjang
+          Anda mempunyai {selectedItems.length} item dalam keranjang
         </p>
 
-        <div className="flex flex-col md:flex-row md:justify-center p-4">
-          <div className="col-span-4 space-y-6 md:w-2/3">
+        {/* Daftar produk di keranjang */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Daftar item */}
+          <div className="col-span-2 space-y-4">
             {selectedItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between bg-gray-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-20 p-4 rounded-lg shadow-md mb-4 mx-2">
+                className="flex items-center justify-between bg-gray-100 p-4 rounded-lg shadow-md"
+              >
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -176,40 +167,28 @@ const Cart = () => {
                     checked={item.selected}
                     onChange={() => handleCheckboxChange(item.id)}
                   />
-                  {item.Image ? (
-                    <img
-                      src={item.Image || item.datasetImage}
-                      alt={item.datasetName || "Dataset image"}
-                      className="w-16 h-16 object-cover rounded-md"
-                    />
-                  ) : (
-                    <img
-                      src={CustomImage}
-                      alt="Custom image"
-                      className="w-16 h-16 object-cover rounded-md"
-                    />
-                  )}
+                  <img
+                    src={item.img}
+                    alt={item.title}
+                    className="w-16 h-16 object-cover rounded-md"
+                  />
                   <div className="ml-4">
-                    <h3 className="font-semibold">
-                      {item.imageName || item.datasetName}
-                    </h3>
-                    <p>Category: {item.category}</p>
-                    <p className="text-gray-700 mt-1">
-                      Rp. {(item.price || 0).toLocaleString("id-ID")}
+                    <h3 className="font-semibold">{item.title}</h3>
+                    <p className="text-gray-500">{item.description}</p>
+                    <p className="text-gray-700">
+                      Rp. {item.price.toLocaleString("id-ID")}
                     </p>
                   </div>
                 </div>
-                <button
-                  className="text-red-500"
-                  onClick={() => handleDeleteItem(item.id)}>
+                <button className="text-red-500">
                   <FaTrashAlt />
                 </button>
               </div>
             ))}
           </div>
 
-          {/* Detail Pembayaran Section */}
-          <div className="bg-gray-200 p-8 rounded-lg shadow-md w-full md:w-[320px] mt-4 md:mt-0 mx-auto">
+          {/* Sidebar: Detail Pembayaran */}
+          <div className="bg-gray-200 p-6 rounded-lg shadow-md">
             <h4 className="text-gray-950 font-semibold mb-2">
               Detail Pembayaran
             </h4>
@@ -218,19 +197,19 @@ const Cart = () => {
               {subtotal.toLocaleString("id-ID")}
             </p>
             <p className="text-gray-700">
-              Total (Termasuk PPN 10%): Rp.
-              {formattedTotal.toLocaleString("id-ID")}
+              Total (Termasuk PPN 10%): Rp.{total.toLocaleString("id-ID")}
             </p>
             <button
-              className="mt-6 sm:mt-0 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0 w-full bg-blue-600 text-white py-2 rounded-md"
-              onClick={handlePayment}>
+              className="mt-4 w-full bg-blue-600 text-white py-2 rounded-md"
+              onClick={handlePayment}
+            >
               Proses Ke Pembayaran
             </button>
           </div>
         </div>
       </div>
 
-      <footer className="bg-darknavy dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90  min-h-[181px] flex flex-col items-center justify-center">
+      <footer className="bg-darknavy text-white min-h-[181px] flex flex-col items-center justify-center">
         <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
           <a href="#">Teams And Conditions</a>
           <a href="#">File Licenses</a>

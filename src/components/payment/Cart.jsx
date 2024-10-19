@@ -36,14 +36,14 @@ const Cart = () => {
   const subtotal = selected.reduce((total, item) => total + item.price, 0);
   const total = subtotal + subtotal * 0.1;
 
-  // useEffect to load Midtrans Snap script
+  // untuk load snap midtrns
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
     script.setAttribute(
       "data-client-key",
       process.env.VITE_APP_MIDTRANS_CLIENT_KEY
-    ); // Client Key kamu
+    ); //
 
     script.async = true;
     document.body.appendChild(script);
@@ -77,13 +77,13 @@ const Cart = () => {
             email: "dafagaming.com",
             phone: "08123456789",
           },
-          items: selectedItemsDetails, // Tambahkan detail item di sini
+          items: selectedItemsDetails,
         }),
       });
 
       const transactionData = await response.json();
 
-      // Jalankan Snap pembayaran
+      // Snap pembayaran
       if (transactionData.token) {
         window.snap.pay(transactionData.token, {
           onSuccess: async function (result) {

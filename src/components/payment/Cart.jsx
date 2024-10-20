@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaTrashAlt } from "react-icons/fa";
-import Header from "../../headerNavBreadcrumbs/HeaderWebUser";
-import { NavbarSection } from "./NavbarSection";
+import Header from "/src/components/headerNavBreadcrumbs/HeaderWebUser";
+import NavbarSection from "/src/components/website/web_User-LandingPage/NavbarSection";
 
 const cartItems = [
   {
@@ -40,10 +40,7 @@ const Cart = () => {
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
-    script.setAttribute(
-      "data-client-key",
-      process.env.VITE_APP_MIDTRANS_CLIENT_KEY
-    ); //
+    script.setAttribute("data-client-key", "  isi pake appi clien"); //
 
     script.async = true;
     document.body.appendChild(script);
@@ -74,7 +71,7 @@ const Cart = () => {
           customerDetails: {
             first_name: "Dafa",
             last_name: "gaming",
-            email: "dafagaming.com",
+            email: "dafagaming@gmail.com",
             phone: "08123456789",
           },
           items: selectedItemsDetails,

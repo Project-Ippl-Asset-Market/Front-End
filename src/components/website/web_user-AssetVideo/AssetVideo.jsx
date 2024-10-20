@@ -1,5 +1,5 @@
 import { db } from "../../../firebase/firebaseConfig";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   collection,
   onSnapshot,
@@ -19,6 +19,8 @@ import IconDollar from "../../../assets/assetWeb/iconDollarLight.svg";
 import IconCart from "../../../assets/assetWeb/iconCart.svg";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineInfoCircle } from "react-icons/ai";
+
+
 
 export function AssetVideo() {
   const navigate = useNavigate();
@@ -255,7 +257,13 @@ export function AssetVideo() {
                     alt="Video Preview"
                     className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
                     onClick={() => openModal(data)}
-                    controls
+                    onTimeUpdate={(e) => {
+                      if (e.target.currentTime >= 3 ) {
+                        e.target.pause();
+                        e.currentTime = 0;
+                        e.target.play();
+                      }
+                    }}
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = CustomImage;

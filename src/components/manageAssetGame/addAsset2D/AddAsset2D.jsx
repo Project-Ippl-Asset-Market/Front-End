@@ -1,5 +1,4 @@
-//
-
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -15,7 +14,6 @@ import { db, storage, auth } from "../../../firebase/firebaseConfig";
 import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
-import PreviewImage from "../../../assets/assetmanage/Iconrarzip.svg";
 
 function AddAsset2D() {
   const [user, setUser] = useState(null);
@@ -24,7 +22,7 @@ function AddAsset2D() {
     category: "",
     description: "",
     price: "",
-    file: null, // State to hold file information
+    file: null,
   });
 
   const navigate = useNavigate();
@@ -43,9 +41,9 @@ function AddAsset2D() {
     // Listen for authentication state changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        setUser(currentUser); // Set the logged-in user
+        setUser(currentUser);
       } else {
-        setUser(null); // No user is logged in
+        setUser(null);
       }
     });
 
@@ -57,18 +55,54 @@ function AddAsset2D() {
     const { name, value, files } = e.target;
 
     if (name === "asset2DImage" && files[0]) {
-      setAsset2D({
-        ...asset2D,
-        asset2DImage: files[0],
-      });
+      const file = files[0];
+      const fileExtension = file.name.split(".").pop().toLowerCase();
 
-      // Create image preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result);
-      };
-      reader.readAsDataURL(files[0]);
+      // Cek apakah file tersebut adalah gambar atau zip
+      const isImage = ["png", "jpg", "jpeg"].includes(fileExtension);
+      const isZip = fileExtension === "zip";
+
+      if (isImage) {
+        // Jika file adalah gambar (png, jpg, jpeg)
+        setAsset2D({
+          ...asset2D,
+          asset2DImage: file,
+        });
+
+        // Buat pratinjau gambar
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewImage(reader.result);
+        };
+        reader.readAsDataURL(file);
+
+        // Tampilkan notifikasi jika dibutuhkan
+        alert("Anda telah mengunggah file gambar.");
+      } else if (isZip) {
+        // Jika file adalah ZIP
+        setAsset2D({
+          ...asset2D,
+          asset2DImage: file,
+        });
+
+        // Tidak ada pratinjau untuk ZIP, berikan pesan kepada pengguna
+        setPreviewImage(null);
+        alert(
+          "Anda mengunggah file ZIP, tidak ada pratinjau gambar yang akan ditampilkan."
+        );
+      } else {
+        // Jika file bukan gambar atau ZIP, berikan notifikasi
+        setAsset2D({
+          ...asset2D,
+          asset2DImage: null,
+        });
+        setPreviewImage(null);
+        alert(
+          "Hanya file gambar (.png, .jpg, .jpeg) atau .zip yang diizinkan."
+        );
+      }
     } else {
+      // Jika tidak berhubungan dengan upload file, hanya update state yang lain
       setAsset2D({
         ...asset2D,
         [name]: value,
@@ -116,7 +150,7 @@ function AddAsset2D() {
       });
       setPreviewImage(null);
 
-      // Navigate back to /manage-asset-2D
+      // Navigate back to /manageAsset2D
       setAlertSuccess(true);
       setTimeout(() => {
         navigate("/manage-asset-2D");
@@ -221,8 +255,7 @@ function AddAsset2D() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
-                    Format foto harus .jpg, jpeg,png dan ukuran minimal 300 x
-                    300 px.
+                    Format Asset harus jpg, jpeg, png dan zip.
                   </p>
                 </div>
                 <div className="p-0">
@@ -239,7 +272,7 @@ function AddAsset2D() {
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                              Upload Foto
+                              Upload File
                             </span>
                           </>
                         )}
@@ -250,7 +283,7 @@ function AddAsset2D() {
                           name="asset2DImage"
                           onChange={handleChange}
                           multiple
-                          accept="image/jpeg,image/png,image/jpg, application/zip"
+                          accept=".zip,.jpg,.png,.jpeg,.gif,"
                           className="hidden"
                         />
 
@@ -337,7 +370,7 @@ function AddAsset2D() {
                       onChange={(e) =>
                         setAsset2D((prevState) => ({
                           ...prevState,
-                          category: e.target.value, // Update category inside dasset 2D state
+                          category: e.target.value,
                         }))
                       }
                       className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md">
@@ -381,7 +414,9 @@ function AddAsset2D() {
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px] h-[48px] sm:h-[60px] md:h-[80px] lg:h-[80px] xl:h-[100px] bg-transparent"
                       name="description"
                       value={asset2D.description}
-                      onChange={handleChange}
+                      onChange={(e) =>
+                        setAsset2D({ ...asset2D, description: e.target.value })
+                      }
                       placeholder="Deskripsi"
                       rows="4"
                     />
@@ -409,7 +444,9 @@ function AddAsset2D() {
                       className="input border-0 focus:outline-none focus:ring-0  w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
                       name="price"
                       value={asset2D.price}
-                      onChange={handleChange}
+                      onChange={(e) =>
+                        setAsset2D({ ...asset2D, price: e.target.value })
+                      }
                       placeholder="Rp"
                       required
                     />

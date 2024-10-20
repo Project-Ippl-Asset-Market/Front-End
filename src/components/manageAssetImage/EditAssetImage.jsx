@@ -2,9 +2,10 @@ import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconField from "../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../HeaderNav/HeaderNav";
 import { useParams, useNavigate } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
-import { doc, getDoc, updateDoc } from "firebase/firestore";  
-import { db, storage } from "../../firebase/firebaseConfig"; 
+import { doc, getDoc, updateDoc, query, where, collection, getDocs, addDoc, Timestamp } from "firebase/firestore"; // Firebase functions
+import { db, storage, auth } from "../../firebase/firebaseConfig"; // Pastikan ini mengarah ke file konfigurasi Firebase Anda
 import {
   deleteObject,
   ref,
@@ -13,20 +14,16 @@ import {
 } from "firebase/storage";
 
 function EditNewImage() {
-  const { assetId } = useParams();
+  const { id } = useParams();
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const [role, setRole] = useState(null);
   const [imagePreview, setImagePreview] = useState("");
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
-
-  const categories = [
-    { id: 1, name: "Nature" },
-    { id: 2, name: "Architecture" },
-    { id: 3, name: "Animals" },
-    { id: 4, name: "People" },
-    { id: 5, name: "Technology" },
-    { id: 6, name: "Food" },
-  ];
+  const [categories, setCategories] = useState([]);
+  const [showPopup, setShowPopup] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
 
   const [image, setImage] = useState({
     imageName: "",
@@ -36,11 +33,94 @@ function EditNewImage() {
     uploadUrlImage: null,
   });
 
-  // Fetch existing data based on assetId
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (user) {
+        try {
+          // Cek di collection 'admins' untuk admin dan superadmin
+          const adminQuery = query(
+            collection(db, "admins"),
+            where("email", "==", user.email)
+          );
+          const adminSnapshot = await getDocs(adminQuery);
+          
+          if (!adminSnapshot.empty) {
+            const adminData = adminSnapshot.docs[0].data();
+            setRole(adminData.role); // Ambil role dari dokumen 'admins'
+            return;
+          }
+  
+          // Jika tidak ditemukan di 'admins', cek di 'users'
+          const userQuery = query(
+            collection(db, "users"),
+            where("email", "==", user.email)
+          );
+          const userSnapshot = await getDocs(userQuery);
+          
+          if (!userSnapshot.empty) {
+            const userData = userSnapshot.docs[0].data();
+            setRole(userData.role); // Ambil role dari dokumen 'users'
+          }
+        } catch (error) {
+          console.error("Error fetching user role: ", error);
+        }
+      }
+    };
+  
+    fetchUserRole();
+  }, [user]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      if (user && role) {
+        let q;
+  
+        if (role === "superadmin") {
+          // Superadmin bisa melihat semua kategori
+          q = query(collection(db, "categoryVideos"));
+        } else {
+          // Admin dan user hanya melihat kategori berdasarkan userId mereka
+          q = query(collection(db, "categoryVideos"), where("userId", "==", user.uid));
+        }
+  
+        try {
+          const querySnapshot = await getDocs(q);
+          const categoriesData = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name,
+          }));
+          setCategories(categoriesData);
+          console.log("Fetched categories:", categoriesData);
+        } catch (error) {
+          console.error("Error fetching categories: ", error);
+        }
+      }
+    };
+  
+    fetchCategories();
+  }, [user, role]);
+
+  useEffect(() => {
+    if (showPopup) {
+      document.body.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
+    }
+  }, [showPopup]);
+
+  // Fetch existing data based on id
   useEffect(() => {
     const fetchImage = async () => {
       try {
-        const docRef = doc(db, "assetImages", assetId);
+        const docRef = doc(db, "assetImages", id);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -60,7 +140,7 @@ function EditNewImage() {
     };
 
     fetchImage();
-  }, [assetId, navigate]);
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -94,15 +174,12 @@ function EditNewImage() {
         // Delete the old image if a new image is being uploaded
         const oldImageRef = ref(
           storage,
-          `image-asset/uploadUrlImage-${assetId}.jpg`
+          `image-asset/uploadUrlImage-${id}.jpg`
         );
         await deleteObject(oldImageRef); // Delete the old image
 
         // Upload the new image
-        const imageRef = ref(
-          storage,
-          `image-asset/uploadUrlImage-${assetId}.jpg`
-        );
+        const imageRef = ref(storage, `image-asset/uploadUrlImage-${id}.jpg`);
         await uploadBytes(imageRef, image.uploadUrlImage);
         uploadUrlImage = await getDownloadURL(imageRef);
       } else {
@@ -110,7 +187,7 @@ function EditNewImage() {
         uploadUrlImage = imagePreview;
       }
 
-      const imageRef = doc(db, "assetImages", assetId);
+      const imageRef = doc(db, "assetImages", id);
       await updateDoc(imageRef, {
         imageName: image.imageName,
         category: image.category,
@@ -135,6 +212,27 @@ function EditNewImage() {
 
   const closeAlert = () => {
     setAlertError(false);
+  };
+
+  const handleAddCategory = async (e) => {
+    e.preventDefault();
+    if (newCategory.trim() !== "" && user) {
+      try {
+        const categoryDocRef = await addDoc(collection(db, "categoryImages"), {
+          name: newCategory,
+          createdAt: Timestamp.now(),
+          userId: user.uid, // Simpan userId yang menambah kategori
+        });
+
+        // Update state lokal dengan kategori yang baru ditambahkan
+        setCategories([...categories, { id: categoryDocRef.id, name: newCategory }]);
+        setNewCategory(""); // Reset input field
+        setShowPopup(false); // Close the popup
+      } catch (error) {
+        console.error("Error menambahkan kategori: ", error);
+        setAlertError(true);
+      }
+    }
   };
 
   return (
@@ -198,6 +296,30 @@ function EditNewImage() {
               </div>
             </div>
           )}
+
+              {showPopup && (
+                <div className="fixed inset-0 flex items-center justify-center  bg-gray-800 bg-opacity-50">
+                  <div className="bg-white dark:bg-neutral-20 p-6 rounded-2xl w-[510px] h-[250px] font-poppins text-black dark:text-white">
+                    <h1 className="h-7 font-semibold">Category</h1>
+                    <h2 className="h-14 flex items-center ">Add Category</h2>
+                          <input
+                            type="text"
+                            value={newCategory}
+                            onChange={(e) => setNewCategory(e.target.value)}
+                            placeholder="type here"
+                            className="border border-[#ECECEC] w-full h-12 mb-1 rounded-lg text-sm text-black placeholder:font-semibold placeholder:opacity-40"
+                          />
+                          <div className="mt-4 flex justify-end">
+                            <button onClick={() => setShowPopup(false)} className="bg-[#9B9B9B] text-white h-12 px-4 py-2  rounded-lg">
+                              Cancel
+                            </button>
+                            <button onClick={handleAddCategory} className="ml-2 bg-[#2563EB] text-white h-12 px-4 py-2 rounded-lg">
+                              Upload
+                            </button>
+                          </div>
+                   </div>
+                </div>
+              )}
 
           <form
             onSubmit={handleSubmit}

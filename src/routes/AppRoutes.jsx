@@ -18,7 +18,7 @@ import EditFormAssetImage from "../components/manageAssetImage/EditAssetImage";
 import ManageAssetDataset from "../components/manageAssetDataset/ManageAssetDataset";
 import AddFormAssetDataset from "../components/manageAssetDataset/AddAssetDataset";
 import EditFormAssetDataset from "../components/manageAssetDataset/EditAssetDataset";
-// import ManageAsset2D from "../components/manageAssetGame/ManageAsset2D";
+import ManageAsset2D from "../components/manageAssetGame/ManageAsset2D";
 import AddNewAsset2D from "../components/manageAssetGame/addAsset2D/AddAsset2D";
 import EditNewAsset2D from "../components/manageAssetGame/addAsset2D/EditAsset2D";
 import ManageAsset3D from "../components/manageAssetGame/ManageAsset3D";
@@ -33,7 +33,6 @@ import EditFormAdmin from "../components/mySuperAdmin/EditAdmin";
 import ManageUsers from "../components/myAdmin/ManageUsers";
 import AddUsers from "../components/myAdmin/AddUser";
 import EditUsers from "../components/myAdmin/EditUser";
-import ManageAsset2D from "../components/daff 2d 3d/ManageAsset2D";
 import SaleAssets from "../components/myUserDashboard/SaleAssets";
 import Revenue from "../components/myUserDashboard/Revenue";
 // Import Halaman Dashboard End
@@ -111,7 +110,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manage-asset-video/edit/:assetId"
+            path="/manage-asset-video/edit/:id"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <EditFormAssetVideo onLogout={handleLogout} />
@@ -138,7 +137,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manage-asset-image/edit/:assetId"
+            path="/manage-asset-image/edit/:id"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <EditFormAssetImage onLogout={handleLogout} />

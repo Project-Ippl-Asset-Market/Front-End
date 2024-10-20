@@ -247,7 +247,7 @@ function ManageAsset2D() {
               <div className="flex items-center justify-center md:justify-start">
                 <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
                   <Link
-                    to="/manage-asset-3D/add"
+                    to="/manage-asset-2D/add"
                     className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
                     + Add Asset 2D
                   </Link>

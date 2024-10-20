@@ -39,6 +39,7 @@ import Revenue from "../components/myUserDashboard/Revenue";
 
 // Import Halaman Website start
 import Cart from "../components/payment/Cart";
+import Payment from "../components/payment/Cart";
 import HomePage from "../components/website/web_User-LandingPage/HomePage";
 import { AssetGratis } from "../components/website/Web_User-Gratis/AssetGratis";
 import { AssetVideo } from "../components/website/web_user-AssetVideo/AssetVideo";
@@ -87,6 +88,15 @@ const AppRoutes = ({ handleLogout }) => {
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <Cart onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/payment"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <Payment onLogout={handleLogout} />
               </ProtectedRoute>
             }
           />

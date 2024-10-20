@@ -29,6 +29,8 @@ export function AssetVideo() {
   const [selectedasset, setSelectedasset] = useState(null);
   const [alertLikes, setAlertLikes] = useState(false);
   const [isProcessingLike, setIsProcessingLike] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
 
   // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
@@ -89,6 +91,20 @@ export function AssetVideo() {
 
     fetchUserLikes();
   }, [currentUserId]);
+
+  // Filter pencarian
+  useEffect(() => {
+    if (searchTerm) {
+      const results = AssetsData.filter(
+        (asset) =>
+          asset.videoName &&
+          asset.videoName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setSearchResults(results);
+    } else {
+      setSearchResults(AssetsData);
+    }
+  }, [searchTerm, AssetsData]);
 
   const handleLikeClick = async (assetId, currentLikes) => {
     if (isProcessingLike) return;
@@ -207,13 +223,68 @@ export function AssetVideo() {
     setSelectedasset(null);
   };
 
+  // Filter berdasarkan pencarian
+  const filteredAssetsData = AssetsData.filter((asset) =>
+    asset.videoName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
       <div className="w-full shadow-lg bg-primary-100 dark:text-primary-100 relative z-40 ">
-        <div className="pt-[50px] sm:pt-[70px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
+        <div className="-mt-10 pt-[2px] sm:pt-[60px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
           <HeaderNav />
         </div>
-        <NavbarSection />
+        <div className="mt-0 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+          <NavbarSection />
+        </div>
+      </div>
+
+      <div className="absolute ">
+        <div className="bg-primary-100 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[40%] xl:left-[40%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[146px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-[550px] sm:w-[300px] md:w-[300px] lg:w-[600px] xl:w-[800px] 2xl:w-[1200px]">
+          <div className="justify-center">
+            <form
+              className=" mx-auto px-20  w-[470px] sm:w-[400px] md:w-[400px] lg:w-[600px] xl:w-[800px] 2xl:w-[1200px]"
+              onSubmit={(e) => e.preventDefault()}>
+              <div className="relative">
+                <div className="relative">
+                  <input
+                    type="search"
+                    id="location-search"
+                    className="block w-full p-4 pl-24 placeholder:pr-10 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                    placeholder="Search assets..."
+                    required
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <span className="absolute inset-y-0 left-8 flex items-center text-gray-500 dark:text-gray-400">
+                    <svg
+                      className="w-6 h-6 mx-auto"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 18 18">
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+                      />
+                    </svg>
+                  </span>
+                  <span className="absolute inset-y-0 left-20 flex items-center text-neutral-20 dark:text-neutral-20 text-[20px]">
+                    |
+                  </span>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+          {searchResults.length === 0 && searchTerm && (
+            <p className="text-black text-[20px]">No assets found</p>
+          )}
+        </div>
       </div>
 
       <div className="w-full p-12 mx-auto">
@@ -238,10 +309,10 @@ export function AssetVideo() {
           All Category
         </h1>
       </div>
-      <div className=" pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
+      <div className=" pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[50px] xl:p-[50px] 2xl:p-[60px] ">
         {/* Body section */}
         <div className=" mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]  ">
-          {AssetsData.map((data) => {
+          {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
 
@@ -249,11 +320,11 @@ export function AssetVideo() {
               <div
                 key={data.id}
                 className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
-                <div className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px]">
+                <div className="w-full h-[350px] relative">
                   <video
                     src={data.uploadUrlVideo}
                     alt="Video Preview"
-                    className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                    className="absolute inset-0 w-full h-full object-cover rounded-t-[10px] mx-auto border-none cursor-pointer"
                     onClick={() => openModal(data)}
                     controls
                     onError={(e) => {

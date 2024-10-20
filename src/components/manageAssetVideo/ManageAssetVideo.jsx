@@ -105,7 +105,7 @@ function ManageAssetVideo() {
         for (const doc of querySnapshot.docs) {
           const data = doc.data();
           const createdAt =
-            data.uploadedAt?.toDate().toLocaleDateString("id-ID", {
+            data.createdAt?.toDate().toLocaleDateString("id-ID", {
               year: "numeric",
               month: "long",
               day: "numeric",
@@ -322,7 +322,7 @@ function ManageAssetVideo() {
                       <td className="px-6 py-4">{asset.category}</td>
                       <td className="px-6 py-4">{asset.price}</td>
                       <td className="px-6 py-4">{asset.createdAt || "N/A"}</td>
-                      <td className="mx-auto flex gap-4 mt-20">
+                      <td className="mx-auto flex gap-4 mt-6">
                         <Link to={`/manage-asset-video/edit/${asset.id}`}>
                           <img
                             src={IconEdit}

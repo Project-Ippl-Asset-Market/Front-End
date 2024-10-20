@@ -210,7 +210,7 @@ export function AssetDataset() {
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
       <div className="w-full shadow-lg bg-primary-100 dark:text-primary-100 relative z-40 ">
-        <div className="-mt-10 pt-[2px] sm:pt-[70px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
+        <div className="-mt-10 pt-[2px] sm:pt-[60px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
           <HeaderNav />
         </div>
         <div className="mt-0 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
@@ -219,10 +219,10 @@ export function AssetDataset() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[45%] md:left-[45%] lg:left-[45%] xl:left-[45%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[146px] sm:top-0 md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-[550px] sm:w-[500px] md:w-[300px] lg:w-[600px] xl:w-[800px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[40%] xl:left-[40%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[146px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-[550px] sm:w-[300px] md:w-[300px] lg:w-[600px] xl:w-[800px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[470px] sm:w-[490px] md:w-[400px] lg:w-[600px] xl:w-[800px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[470px] sm:w-[400px] md:w-[400px] lg:w-[600px] xl:w-[800px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}>
               <div className="relative">
                 <div className="relative">
@@ -259,11 +259,11 @@ export function AssetDataset() {
             </form>
           </div>
         </div>
-      </div>
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-        {searchResults.length === 0 && searchTerm && (
-          <p className="text-black text-[20px]">No assets found</p>
-        )}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+          {searchResults.length === 0 && searchTerm && (
+            <p className="text-black text-[20px]">No assets found</p>
+          )}
+        </div>
       </div>
 
       <div className="w-full p-12 mx-auto">

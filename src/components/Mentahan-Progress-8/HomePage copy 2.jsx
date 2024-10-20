@@ -1,27 +1,22 @@
-import { db } from "../../../firebase/firebaseConfig";
+import { db } from "../../firebase/firebaseConfig";
 import { useState, useEffect } from "react";
 import {
   collection,
-  onSnapshot,
   doc,
   query,
   where,
   runTransaction,
   getDocs,
-  setDoc,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import HeaderNav from "../../headerNavBreadcrumbs/HeaderWebUser";
-import NavbarSection from "../web_User-LandingPage/NavbarSection";
+import HeaderNav from "../headerNavBreadcrumbs/HeaderWebUser";
+import NavbarSection from "../website/web_User-LandingPage/NavbarSection";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import CustomImage from "../../../assets/assetmanage/Iconrarzip.svg";
-import IconDollar from "../../../assets/assetWeb/iconDollarLight.svg";
-import IconCart from "../../../assets/assetWeb/iconCart.svg";
-import { useNavigate } from "react-router-dom";
+import IconDownload from "../../../assets/icon/iconDownload/iconDownload.svg";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 
-export function MapAssetVideo() {
-  const navigate = useNavigate();
+const HomePage = () => {
   const [AssetsData, setAssetsData] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [likedAssets, setLikedAssets] = useState(new Set());
@@ -29,7 +24,6 @@ export function MapAssetVideo() {
   const [selectedasset, setSelectedasset] = useState(null);
   const [alertLikes, setAlertLikes] = useState(false);
   const [isProcessingLike, setIsProcessingLike] = useState(false);
-  const [purchasedAssets, setPurchasedAssets] = useState(new Set());
 
   // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
@@ -42,61 +36,44 @@ export function MapAssetVideo() {
       }
     });
 
-    // Bersihkan listener saat komponen di-unmount
     return () => unsubscribe();
   }, []);
 
-  // Mengambil data asset dari Firestore
-  useEffect(() => {
-    const unsubscribe = onSnapshot(
-      collection(db, "assetVideos"),
-      async (snapshot) => {
-        const Assets = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+  const fetchAssets = async () => {
+    const collectionsFetch = [
+      "assetAudios",
+      "assetImages",
+      "assetDatasets",
+      "assetImage2D",
+      "assetImage3D",
+      "assetVideos",
+    ];
 
-        const filteredAssets = Assets.filter(
-          (asset) => asset.price !== undefined && asset.price > 0
-        );
-        setAssetsData(filteredAssets);
-      }
-    );
-
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const fetchUserPurchases = async () => {
-      if (!currentUserId) return;
-
-      const purchasesQuery = query(
-        collection(db, "purchasedAssets"),
-        where("userId", "==", currentUserId)
+    try {
+      const allAssets = await Promise.all(
+        collectionsFetch.map(async (collectionName) => {
+          const snapshot = await getDocs(collection(db, collectionName));
+          return snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+        })
       );
 
-      try {
-        const purchasesSnapshot = await getDocs(purchasesQuery);
-        const userPurchases = new Set();
+      const filteredAssets = allAssets.flat();
+      setAssetsData(filteredAssets);
+    } catch (error) {
+      console.error("Error fetching assets: ", error);
+    }
+  };
 
-        purchasesSnapshot.forEach((doc) => {
-          userPurchases.add(doc.data().assetId);
-        });
-
-        setPurchasedAssets(userPurchases);
-      } catch (error) {
-        console.error("Error fetching purchases: ", error);
-      }
-    };
-
-    fetchUserPurchases();
-  }, [currentUserId]);
+  useEffect(() => {
+    fetchAssets();
+  }, []);
 
   useEffect(() => {
     const fetchUserLikes = async () => {
       if (!currentUserId) return;
-
-      // Membuat query untuk mendapatkan dokumen berdasarkan userId
       const likesQuery = query(
         collection(db, "likes"),
         where("userId", "==", currentUserId)
@@ -106,9 +83,8 @@ export function MapAssetVideo() {
         const likesSnapshot = await getDocs(likesQuery);
         const userLikes = new Set();
 
-        // Menambahkan assetId ke dalam set likedAssets
         likesSnapshot.forEach((doc) => {
-          userLikes.add(doc.data().assetId);
+          userLikes.add(doc.data().id);
         });
 
         setLikedAssets(userLikes);
@@ -120,7 +96,7 @@ export function MapAssetVideo() {
     fetchUserLikes();
   }, [currentUserId]);
 
-  const handleLikeClick = async (assetId, currentLikes) => {
+  const handleLikeClick = async (id, currentLikes, collectionsFetch) => {
     if (isProcessingLike) return;
 
     if (!currentUserId) {
@@ -134,75 +110,48 @@ export function MapAssetVideo() {
     // Tandai bahwa kita sedang memproses
     setIsProcessingLike(true);
 
-    const assetRef = doc(db, "assetVideos", assetId);
-    const likeRef = doc(db, "likes", `${currentUserId}_${assetId}`);
+    // Cek apakah collectionsFetch tidak kosong
+    if (!collectionsFetch) {
+      console.error("collectionsFetch is empty. Cannot proceed with liking.");
+      setIsProcessingLike(false);
+      return; // Hentikan eksekusi jika collectionsFetch kosong
+    }
+
+    const assetRef = doc(db, collectionsFetch, id);
+    const likeRef = doc(db, "likes", `${currentUserId}_${id}`);
 
     try {
       await runTransaction(db, async (transaction) => {
         const newLikedAssets = new Set(likedAssets);
         let newLikesAsset;
-        if (newLikedAssets.has(assetId)) {
+
+        if (newLikedAssets.has(id)) {
           // Untuk Hapus like
           transaction.delete(likeRef);
           newLikesAsset = Math.max(0, currentLikes - 1);
           transaction.update(assetRef, { likeAsset: newLikesAsset });
-          newLikedAssets.delete(assetId);
+          newLikedAssets.delete(id);
         } else {
           // Untuk Tambah like
           transaction.set(likeRef, {
             userId: currentUserId,
-            assetId: assetId,
+            id: id,
+            collectionsFetch: collectionsFetch,
           });
           newLikesAsset = currentLikes + 1;
           transaction.update(assetRef, { likeAsset: newLikesAsset });
-          newLikedAssets.add(assetId);
+          newLikedAssets.add(id);
         }
 
         // Update state setelah transaksi sukses
         setLikedAssets(newLikedAssets);
       });
+      await fetchAssets();
     } catch (error) {
       console.error("Error updating likes: ", error);
     } finally {
-      // Selesaikan proses
       setIsProcessingLike(false);
     }
-  };
-
-  const handleAddToCart = async (selectedasset) => {
-    if (!currentUserId) {
-      alert("Anda perlu login untuk menambahkan asset ke keranjang");
-      navigate("/login");
-      return;
-    }
-
-    try {
-      const cartRef = doc(
-        db,
-        "cartAssets",
-        `${currentUserId}_${selectedasset.id}`
-      );
-      await setDoc(cartRef, {
-        userId: currentUserId,
-        assetId: selectedasset.id,
-        videoName: selectedasset.videoName,
-        price: selectedasset.price,
-        video: selectedasset.uploadUrlVideo,
-      });
-      alert("Asset berhasil ditambahkan ke keranjang!");
-    } catch (error) {
-      console.error("Error adding to cart: ", error);
-    }
-  };
-
-  const handleBuyNow = () => {
-    if (!currentUserId) {
-      alert("Anda perlu login untuk membeli asset");
-      navigate("/login");
-      return;
-    }
-
-    navigate("/payment");
   };
 
   // Menampilkan modal
@@ -219,7 +168,7 @@ export function MapAssetVideo() {
 
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
-      <div className="w-full shadow-lg bg-primary-100 dark:text-primary-100 relative z-40 ">
+      <div className="w-full shadow-md bg-primary-100 dark:text-primary-100 relative z-40 ">
         <div className="pt-[50px] sm:pt-[70px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
           <HeaderNav />
         </div>
@@ -245,72 +194,76 @@ export function MapAssetVideo() {
           </div>
         )}
         <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
-          All Category
+          All Asset
         </h1>
       </div>
-      <div className=" pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
-        {/* Body section */}
+      <div className="pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
         <div className=" mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]  ">
           {AssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
-            const isPurchased = purchasedAssets.has(data.id);
+            let collectionsFetch = "";
+            if (data.assetAudiosName) {
+              collectionsFetch = "assetAudios";
+            } else if (data.imageName) {
+              collectionsFetch = "assetImages";
+            } else if (data.datasetName) {
+              collectionsFetch = "assetDatasets";
+            } else if (data.asset2DName) {
+              collectionsFetch = "assetImage2D";
+            } else if (data.asset3DName) {
+              collectionsFetch = "assetImage3D";
+            } else if (data.videoName) {
+              collectionsFetch = "assetVideos";
+            }
 
             return (
               <div
                 key={data.id}
                 className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
-                <div className="w-full h-[150px]">
-                  {isPurchased ? (
-                    <video
-                      src={data.uploadUrlVideo || CustomImage}
-                      alt="video"
-                      className="h-full w-full object-cover rounded-t-[10px] mx-auto border-none cursor-pointer"
-                      controls
-                      onClick={() => openModal(data)}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = CustomImage;
-                      }}
+                <div
+                  onClick={() => openModal(data)}
+                  className="h-[140px] ssm:h-[165px] sm:h-[145px] xl:h-[250px] cursor-pointer">
+                  {data.thumbnailAsset ? (
+                    <img
+                      src={data.thumbnailAsset}
+                      alt={data.assetImagesName || data.assetAudiosName}
+                      className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
                     />
                   ) : (
-                    <div
-                      className="h-full w-full relative rounded-t-[10px] mx-auto border-none cursor-pointer"
-                      onClick={() =>
-                        alert("Anda perlu membeli aset ini untuk memutar video")
-                      }>
-                      <img
-                        src={data.thumbnail || CustomImage}
-                        alt="thumbnail"
-                        className="h-full w-full object-cover rounded-t-[10px]"
-                      />
-                      <p className="absolute inset-0 flex items-center justify-center text-white bg-black bg-opacity-50 rounded-t-[10px]">
-                        Video Terkunci
-                      </p>
-                    </div>
+                    <img
+                      src={CustomImage}
+                      alt="Default Thumbnail"
+                      className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                    />
                   )}
                 </div>
-
-                {/* Detail section */}
-                <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-4">
-                  <div>
-                    <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
-                      {data.videoName}
+                <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-10">
+                  <div className="px-2 py-2">
+                    <p className="text-neutral-10 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100 font-semibold">
+                      {data.assetAudiosName ||
+                        data.datasetName ||
+                        data.asset2DName ||
+                        data.imageName ||
+                        data.videoName ||
+                        "Nama Tidak Tersedia"}
                     </p>
-                    <h4 className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px] dark:text-primary-100">
+                    <p className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100">
                       {data.description.length > 24
                         ? `${data.description.substring(0, 24)}......`
                         : data.description}
-                    </h4>
+                    </p>
                   </div>
-                  <div className="flex justify-between items-center mt-auto gap-2">
+                  <div className="flex items-center justify-between px-2 py-2   dark:bg-neutral-80">
                     <button
-                      onClick={() => handleLikeClick(data.id, likesAsset)}
+                      onClick={() =>
+                        handleLikeClick(data.id, likesAsset, collectionsFetch)
+                      }
                       className="flex justify-start items-center mr-2">
                       {likedByCurrentUser ? (
                         <FaHeart className="text-red-600" />
                       ) : (
-                        <FaRegHeart className="text-neutral-10 text-[11px] sm:text-[14px] dark:text-primary-100" />
+                        <FaRegHeart className="text-neutral-10 text-[11px] sm:text-[14px] dark:text-primary-100 " />
                       )}
                       <p className="ml-2 text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
                         ({likesAsset})
@@ -339,58 +292,56 @@ export function MapAssetVideo() {
               onClick={closeModal}>
               &times;
             </button>
-            <div className="w-full h-[280px]">
-              <video
-                src={selectedasset.uploadUrlVideo || CustomImage}
-                alt="asset video"
-                className="h-full w-full object-cover rounded-[10px] mx-auto border-none cursor-pointer"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = CustomImage;
-                }}
-              />
-            </div>
+            <img
+              src={selectedasset.datasetImage || CustomImage}
+              alt="asset Image"
+              className="w-1/2 h-auto mb-4"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = CustomImage;
+              }}
+            />
             <div className="w-1/2 pl-4 ">
               <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
-                {selectedasset.videoName}
+                {selectedasset.datasetName}
               </h2>
               <p className="text-sm mb-2 dark:text-primary-100 mt-4">
                 Rp. {selectedasset.price.toLocaleString("id-ID")}
               </p>
               <div className="text-sm mb-2 dark:text-primary-100 mt-4">
-                <label className="flex-col mt-2">Deskripsi gambar:</label>
+                <label className="flex-col mt-2">Deskripsi Video:</label>
                 <div className="mt-2">{selectedasset.description}</div>
               </div>
 
               <p className="text-sm mb-2 dark:text-primary-100 mt-4">
                 Kategori: {selectedasset.category}
               </p>
-              <div className="mt-28">
-                <button
-                  onClick={() => handleAddToCart(selectedasset)}
-                  className="flex p-2 text-center items-center justify-center bg-neutral-60 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-10 rounded-md">
-                  <img
-                    src={IconCart}
-                    alt="Cart Icon"
-                    className="w-6 h-6 mr-2"
-                  />
-                  <p>Tambahkan Ke Keranjang</p>
-                </button>
-                <button
-                  onClick={() => handleBuyNow(selectedasset)}
-                  className="flex p-2 text-center items-center justify-center bg-secondary-40 text-primary-100 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-6 rounded-md">
-                  <img
-                    src={IconDollar}
-                    alt="Cart Icon"
-                    className="w-6 h-6 mr-2 -ml-24"
-                  />
-                  <p>Beli Sekarang</p>
-                </button>
-              </div>
+              <button className="flex p-2 text-center items-center justify-center bg-neutral-60 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-10 rounded-md">
+                <img
+                  src={IconDownload}
+                  alt="Cart Icon"
+                  className="w-6 h-6 mr-2"
+                />
+                <p>Unduh</p>
+              </button>
             </div>
           </div>
         </div>
       )}
+
+      <footer className=" min-h-[181px] flex flex-col items-center justify-center">
+        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
+          <a href="#">Teams And Conditions</a>
+          <a href="#">File Licenses</a>
+          <a href="#">Refund Policy</a>
+          <a href="#">Privacy Policy</a>
+        </div>
+        <p className="text-[10px] md:text-[12px]">
+          Copyright © 2024 - All right reserved by ACME Industries Ltd
+        </p>
+      </footer>
     </div>
   );
-}
+};
+
+export default HomePage;

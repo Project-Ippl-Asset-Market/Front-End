@@ -53,8 +53,6 @@ const Cart = () => {
           boughtAssetsSnapshot.docs.map((doc) => doc.id)
         );
 
-        // Textt
-
         // Filter out items that have already been bought
         const filteredItems = items.filter(
           (item) => !boughtAssetIds.has(item.assetId)

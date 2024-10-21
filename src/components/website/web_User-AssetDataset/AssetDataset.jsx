@@ -173,6 +173,9 @@ export function AssetDataset() {
         price: selectedasset.price,
         datasetImage: selectedasset.datasetImage,
         category: selectedasset.category,
+        createdAt: selectedasset.createdAt,
+        likeAsset: selectedasset.likeAsset,
+        uploadedByEmail: selectedasset.uploadedByEmail,
       });
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {

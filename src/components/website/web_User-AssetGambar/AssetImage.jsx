@@ -168,9 +168,11 @@ export function AssetImage() {
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
-        imageName: selectedasset.imageName,
-        price: selectedasset.price,
         Image: selectedasset.uploadUrlImage,
+        imageName: selectedasset.imageName,
+        description: selectedasset.description,
+        price: selectedasset.price,
+        category: selectedasset.category,
       });
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {

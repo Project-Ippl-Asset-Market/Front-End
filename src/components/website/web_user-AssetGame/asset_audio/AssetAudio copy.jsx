@@ -1,22 +1,27 @@
-import { db } from "../../firebase/firebaseConfig";
+import { db } from "../../../../firebase/firebaseConfig";
 import { useState, useEffect } from "react";
 import {
   collection,
+  onSnapshot,
   doc,
   query,
   where,
   runTransaction,
   getDocs,
+  setDoc,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import HeaderNav from "../headerNavBreadcrumbs/HeaderWebUser";
-import NavbarSection from "../website/web_User-LandingPage/NavbarSection";
+import HeaderNav from "../../../headerNavBreadcrumbs/HeaderWebUser";
+import NavbarSection from "../../web_User-LandingPage/NavbarSection";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
-import CustomImage from "../../../assets/assetmanage/Iconrarzip.svg";
-import IconDownload from "../../../assets/icon/iconDownload/iconDownload.svg";
+import CustomImage from "../../../../assets/assetmanage/Iconrarzip.svg";
+import IconDollar from "../../../../assets/assetWeb/iconDollarLight.svg";
+import IconCart from "../../../../assets/assetWeb/iconCart.svg";
+import { useNavigate } from "react-router-dom";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 
-const HomePage = () => {
+export function AssetAudio() {
+  const navigate = useNavigate();
   const [AssetsData, setAssetsData] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [likedAssets, setLikedAssets] = useState(new Set());
@@ -36,44 +41,36 @@ const HomePage = () => {
       }
     });
 
+    // Bersihkan listener saat komponen di-unmount
     return () => unsubscribe();
   }, []);
 
-  const fetchAssets = async () => {
-    const collectionsFetch = [
-      "assetAudios",
-      "assetImages",
-      "assetDatasets",
-      "assetImage2D",
-      "assetImage3D",
-      "assetVideos",
-    ];
-
-    try {
-      const allAssets = await Promise.all(
-        collectionsFetch.map(async (collectionName) => {
-          const snapshot = await getDocs(collection(db, collectionName));
-          return snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-        })
-      );
-
-      const filteredAssets = allAssets.flat();
-      setAssetsData(filteredAssets);
-    } catch (error) {
-      console.error("Error fetching assets: ", error);
-    }
-  };
-
+  // Mengambil data asset dari Firestore
   useEffect(() => {
-    fetchAssets();
+    const unsubscribe = onSnapshot(
+      collection(db, "assetAudios"),
+      async (snapshot) => {
+        const Assets = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // Filter asset dengan harga tidak terdefinisi atau nol
+        const filteredAssets = Assets.filter(
+          (asset) => asset.price !== undefined && asset.price > 0
+        );
+        setAssetsData(filteredAssets);
+      }
+    );
+
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
     const fetchUserLikes = async () => {
       if (!currentUserId) return;
+
+      // Membuat query untuk mendapatkan dokumen berdasarkan userId
       const likesQuery = query(
         collection(db, "likes"),
         where("userId", "==", currentUserId)
@@ -83,8 +80,9 @@ const HomePage = () => {
         const likesSnapshot = await getDocs(likesQuery);
         const userLikes = new Set();
 
+        // Menambahkan assetId ke dalam set likedAssets
         likesSnapshot.forEach((doc) => {
-          userLikes.add(doc.data().id);
+          userLikes.add(doc.data().assetId);
         });
 
         setLikedAssets(userLikes);
@@ -96,7 +94,7 @@ const HomePage = () => {
     fetchUserLikes();
   }, [currentUserId]);
 
-  const handleLikeClick = async (id, currentLikes, collectionsFetch) => {
+  const handleLikeClick = async (assetId, currentLikes) => {
     if (isProcessingLike) return;
 
     if (!currentUserId) {
@@ -110,52 +108,85 @@ const HomePage = () => {
     // Tandai bahwa kita sedang memproses
     setIsProcessingLike(true);
 
-    // Cek apakah collectionsFetch tidak kosong
-    if (!collectionsFetch) {
-      console.error("collectionsFetch is empty. Cannot proceed with liking.");
-      setIsProcessingLike(false);
-      return; // Hentikan eksekusi jika collectionsFetch kosong
-    }
-
-    const assetRef = doc(db, collectionsFetch, id);
-    const likeRef = doc(db, "likes", `${currentUserId}_${id}`);
+    const assetRef = doc(db, "assetAudios", assetId);
+    const likeRef = doc(db, "likes", `${currentUserId}_${assetId}`);
 
     try {
       await runTransaction(db, async (transaction) => {
         const newLikedAssets = new Set(likedAssets);
         let newLikesAsset;
-
-        if (newLikedAssets.has(id)) {
+        if (newLikedAssets.has(assetId)) {
           // Untuk Hapus like
           transaction.delete(likeRef);
           newLikesAsset = Math.max(0, currentLikes - 1);
           transaction.update(assetRef, { likeAsset: newLikesAsset });
-          newLikedAssets.delete(id);
+          newLikedAssets.delete(assetId);
         } else {
           // Untuk Tambah like
           transaction.set(likeRef, {
             userId: currentUserId,
-            id: id,
-            collectionsFetch: collectionsFetch,
+            assetId: assetId,
           });
           newLikesAsset = currentLikes + 1;
           transaction.update(assetRef, { likeAsset: newLikesAsset });
-          newLikedAssets.add(id);
+          newLikedAssets.add(assetId);
         }
 
         // Update state setelah transaksi sukses
         setLikedAssets(newLikedAssets);
       });
-      await fetchAssets();
     } catch (error) {
       console.error("Error updating likes: ", error);
     } finally {
+      // Selesaikan proses
       setIsProcessingLike(false);
     }
   };
 
+  const handleAddToCart = async (selectedasset) => {
+    if (!currentUserId) {
+      alert("Anda perlu login untuk menambahkan asset ke keranjang");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const cartRef = doc(
+        db,
+        "cartAssets",
+        `${currentUserId}_${selectedasset.id}`
+      );
+      await setDoc(cartRef, {
+        userId: currentUserId,
+        assetId: selectedasset.id,
+        datasetName: selectedasset.assetAudiosName,
+        description: selectedasset.description,
+        price: selectedasset.price,
+        datasetImage: selectedasset.uploadUrlAudio,
+        category: selectedasset.category,
+        createdAt: selectedasset.createdAt,
+        uploadedByEmail: selectedasset.uploadedByEmail,
+        likeAsset: selectedasset.likeAsset,
+      });
+      alert("Asset berhasil ditambahkan ke keranjang!");
+    } catch (error) {
+      console.error("Error adding to cart: ", error);
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (!currentUserId) {
+      alert("Anda perlu login untuk membeli asset");
+      navigate("/login");
+      return;
+    }
+
+    navigate("/payment");
+  };
+
   // Menampilkan modal
   const openModal = (asset) => {
+    console.log("Opening modal for asset:", asset); // Add this line
     setSelectedasset(asset);
     setModalIsOpen(true);
   };
@@ -168,16 +199,16 @@ const HomePage = () => {
 
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
-      <div className="w-full shadow-md bg-primary-100 dark:text-primary-100 relative z-40 ">
+      <div className="w-full shadow-lg bg-primary-100 dark:text-primary-100 relative z-40 ">
         <div className="pt-[50px] sm:pt-[70px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
           <HeaderNav />
         </div>
         <NavbarSection />
       </div>
 
-      <div className="w-full p-12 mx-auto">
+      <div className="w-full p-12 mx-auto mt-32 ">
         {alertLikes && (
-          <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
+          <div className="z-40 alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
             <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
             <span className="block sm:inline">{alertLikes}</span>
             <button
@@ -193,72 +224,50 @@ const HomePage = () => {
             </button>
           </div>
         )}
-        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
-          All Asset
-        </h1>
       </div>
-      <div className="pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
-        <div className=" mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]  ">
+      <div className=" pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
+        <div className="mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px]">
           {AssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
-            let collectionsFetch = "";
-            if (data.assetAudiosName) {
-              collectionsFetch = "assetAudios";
-            } else if (data.imageName) {
-              collectionsFetch = "assetImages";
-            } else if (data.datasetName) {
-              collectionsFetch = "assetDatasets";
-            } else if (data.asset2DName) {
-              collectionsFetch = "assetImage2D";
-            } else if (data.asset3DName) {
-              collectionsFetch = "assetImage3D";
-            } else if (data.videoName) {
-              collectionsFetch = "assetVideos";
-            }
 
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
-                <div
-                  onClick={() => openModal(data)}
-                  className="h-[140px] ssm:h-[165px] sm:h-[145px] xl:h-[250px] cursor-pointer">
-                  {data.thumbnailAsset ? (
+                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[270px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                <div className="w-full h-[150px]">
+                  <a
+                    href={data.assetAudiosImage}
+                    target="_blank"
+                    rel="noopener noreferrer">
                     <img
-                      src={data.thumbnailAsset}
-                      alt={data.assetImagesName || data.assetAudiosName}
+                      src={data.assetAudiosImage || CustomImage}
+                      alt="Asset Image"
                       className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                      onClick={() => openModal(data)}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CustomImage;
+                      }}
                     />
-                  ) : (
-                    <img
-                      src={CustomImage}
-                      alt="Default Thumbnail"
-                      className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
-                    />
-                  )}
+                  </a>
                 </div>
-                <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-10">
-                  <div className="px-2 py-2">
-                    <p className="text-neutral-10 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100 font-semibold">
-                      {data.assetAudiosName ||
-                        data.datasetName ||
-                        data.asset2DName ||
-                        data.imageName ||
-                        data.videoName ||
-                        "Nama Tidak Tersedia"}
+
+                {/* Details section */}
+                <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-4">
+                  <div>
+                    <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
+                      {data.assetAudiosName}
                     </p>
-                    <p className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100">
+                    <h4 className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px] dark:text-primary-100">
                       {data.description.length > 24
                         ? `${data.description.substring(0, 24)}......`
                         : data.description}
-                    </p>
+                    </h4>
                   </div>
-                  <div className="flex items-center justify-between px-2 py-2   dark:bg-neutral-80">
+                  <div className="flex justify-between items-center mt-auto gap-2">
                     <button
-                      onClick={() =>
-                        handleLikeClick(data.id, likesAsset, collectionsFetch)
-                      }
+                      onClick={() => handleLikeClick(data.id, likesAsset)}
                       className="flex justify-start items-center mr-2">
                       {likedByCurrentUser ? (
                         <FaHeart className="text-red-600" />
@@ -293,9 +302,9 @@ const HomePage = () => {
               &times;
             </button>
             <img
-              src={selectedasset.datasetImage || CustomImage}
+              src={selectedasset.assetAudiosImage || CustomImage}
               alt="asset Image"
-              className="w-1/2 h-auto mb-4"
+              className="w-1/2 h-[260px] mb-4"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = CustomImage;
@@ -303,7 +312,7 @@ const HomePage = () => {
             />
             <div className="w-1/2 pl-4 ">
               <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
-                {selectedasset.datasetName}
+                {selectedasset.assetAudiosName}
               </h2>
               <p className="text-sm mb-2 dark:text-primary-100 mt-4">
                 Rp. {selectedasset.price.toLocaleString("id-ID")}
@@ -316,14 +325,28 @@ const HomePage = () => {
               <p className="text-sm mb-2 dark:text-primary-100 mt-4">
                 Kategori: {selectedasset.category}
               </p>
-              <button className="flex p-2 text-center items-center justify-center bg-neutral-60 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-10 rounded-md">
-                <img
-                  src={IconDownload}
-                  alt="Cart Icon"
-                  className="w-6 h-6 mr-2"
-                />
-                <p>Unduh</p>
-              </button>
+              <div className="mt-28">
+                <button
+                  onClick={() => handleAddToCart(selectedasset)}
+                  className="flex p-2 text-center items-center justify-center bg-neutral-60 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-10 rounded-md">
+                  <img
+                    src={IconCart}
+                    alt="Cart Icon"
+                    className="w-6 h-6 mr-2"
+                  />
+                  <p>Tambahkan Ke Keranjang</p>
+                </button>
+                <button
+                  onClick={() => handleBuyNow(selectedasset)}
+                  className="flex p-2 text-center items-center justify-center bg-secondary-40 text-primary-100 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-6 rounded-md">
+                  <img
+                    src={IconDollar}
+                    alt="Cart Icon"
+                    className="w-6 h-6 mr-2 -ml-24"
+                  />
+                  <p>Beli Sekarang</p>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -342,6 +365,4 @@ const HomePage = () => {
       </footer>
     </div>
   );
-};
-
-export default HomePage;
+}

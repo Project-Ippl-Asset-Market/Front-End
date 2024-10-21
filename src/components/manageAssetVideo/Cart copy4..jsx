@@ -11,8 +11,8 @@ import {
   doc,
   getDocs,
 } from "firebase/firestore";
-import Header from "../../components/headerNavBreadcrumbs/HeaderWebUser";
-import NavbarSection from "../../components/website/web_User-LandingPage/NavbarSection";
+import Header from "../headerNavBreadcrumbs/HeaderWebUser";
+import NavbarSection from "../website/web_User-LandingPage/NavbarSection";
 import CustomImage from "../../assets/assetmanage/Iconrarzip.svg";
 
 const Cart = () => {
@@ -108,6 +108,7 @@ const Cart = () => {
 
     try {
       const orderId = `order_${Date.now()}`;
+
       const assetId = selectedItems.map((item) => ({
         assetId: item.assetId,
         price: item.price,
@@ -125,7 +126,9 @@ const Cart = () => {
         "http://localhost:3000/api/transactions/create-transaction",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify({
             orderId,
             grossAmount: subtotal,
@@ -147,24 +150,27 @@ const Cart = () => {
 
       const transactionData = await response.json();
 
-      // Memanggil Midtrans Snap Payment
+      // Call Midtrans snap payment here
       window.snap.pay(transactionData.token, {
-        onSuccess: async (result) => {
-          console.log(result); // Log hasil sukses pembayaran
+        onSuccess: async function (result) {
+          console.log(result); // Log the payment success result
           setSuccessMessage("Pembayaran berhasil!");
 
+          // Setelah pembayaran berhasil, pindahkan aset ke buyAssets dan hapus dari cartAssets
           try {
             const moveResponse = await fetch(
               "http://localhost:3000/api/assets/move-assets",
               {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                  "Content-Type": "application/json",
+                },
                 body: JSON.stringify({
                   uid: user.uid,
                   assets: assetId.map((asset) => ({
                     assetId: asset.assetId,
-                    price: 0,
-                    name: asset.name,
+                    price: 0, // Set price to 0 while moving
+                    name: asset.name, // Include the name of the asset
                   })),
                 }),
               }
@@ -177,11 +183,13 @@ const Cart = () => {
               );
             }
 
-            // Hapus dari cartAssets
-            const deletePromises = selectedItems.map((item) =>
-              deleteDoc(doc(db, "cartAssets", item.id))
-            );
-            await Promise.all(deletePromises);
+            // Setelah aset berhasil dipindahkan, hapus dari cartAssets
+            const deletePromises = selectedItems.map((item) => {
+              const itemDoc = doc(db, "cartAssets", item.id);
+              return deleteDoc(itemDoc); // Hapus item berdasarkan ID
+            });
+
+            await Promise.all(deletePromises); // Tunggu semua penghapusan selesai
 
             // Clear selected items from cart only after deletion
             setCartItems((prevItems) =>
@@ -193,13 +201,14 @@ const Cart = () => {
           }
         },
         onPending: function (result) {
+          // Handle pending payment
           console.log(result);
           setSuccessMessage(
             "Pembayaran tertunda, cek status di dashboard transaksi."
           );
         },
         onError: function (result) {
-          console.error(result);
+          console.error(result); // Handle error
           setErrorMessage("Pembayaran gagal, silakan coba lagi.");
         },
         onClose: function () {

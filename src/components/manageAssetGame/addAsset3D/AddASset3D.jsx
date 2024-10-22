@@ -1,4 +1,5 @@
 // eslint-disable-next-line no-unused-vars
+//10/18/24
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -15,27 +16,26 @@ import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
 
-function AddAsset3D() {
+function AddNewAsset3D() {
   const [user, setUser] = useState(null);
   const [asset3D, setAsset3D] = useState({
-    name: "",
+    asset3DName: "",
     category: "",
     description: "",
     price: "",
-    file: null, // State to hold file information
+    asset3DImage: null,
   });
-
   const navigate = useNavigate();
   const [previewImage, setPreviewImage] = useState(null);
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const categories = [
     { id: 1, name: "Animations" },
-    { id: 2, name: "Character" },
+    { id: 2, name: "Characters" },
     { id: 3, name: "Environtment" },
     { id: 4, name: "GUI" },
     { id: 5, name: "Props" },
-    { id: 6, name: "Vegetation" },
+    { id: 6, name: "Vegetation"},
     { id: 7, name: "Vehicle" },
   ];
 
@@ -57,54 +57,23 @@ function AddAsset3D() {
     const { name, value, files } = e.target;
 
     if (name === "asset3DImage" && files[0]) {
-      const file = files[0];
-      const fileExtension = file.name.split(".").pop().toLowerCase(); // Dapatkan ekstensi file
+      setAsset3D({
+        ...asset3D,
+        asset3DImage: files[0],
+      });
 
-      // Cek apakah file tersebut adalah gambar atau zip
-      const isImage = ["png", "jpg", "jpeg"].includes(fileExtension);
-      const isZip = fileExtension === "zip";
-
-      if (isImage) {
-        // Jika file adalah gambar (png, jpg, jpeg)
-        setAsset3D({
-          ...asset3D,
-          asset3DImage: file, // Simpan file gambar
-        });
-
-        // Buat pratinjau gambar
+      // Create image preview
+      if (files[0].type.includes("image")) {
         const reader = new FileReader();
         reader.onloadend = () => {
-          setPreviewImage(reader.result); // Tampilkan preview gambar
+          setPreviewImage(reader.result);
         };
-        reader.readAsDataURL(file);
-
-        // Tampilkan notifikasi jika dibutuhkan
-        alert("Anda telah mengunggah file gambar.");
-      } else if (isZip) {
-        // Jika file adalah ZIP
-        setAsset3D({
-          ...asset3D,
-          asset3DImage: file, // Simpan file zip
-        });
-
-        // Tidak ada pratinjau untuk ZIP, berikan pesan kepada pengguna
-        setPreviewImage(null); // Kosongkan preview gambar karena file ZIP
-        alert(
-          "Anda mengunggah file ZIP, tidak ada pratinjau gambar yang akan ditampilkan."
-        );
+        reader.readAsDataURL(files[0]);
       } else {
-        // Jika file bukan gambar atau ZIP, berikan notifikasi
-        setAsset3D({
-          ...asset3D,
-          asset3DImage: null, // Hapus file yang salah
-        });
-        setPreviewImage(null);
-        alert(
-          "Hanya file gambar (.png, .jpg, .jpeg) atau .zip yang diizinkan."
-        );
+        // Reset preview jika file bukan gambar
+        setPreviewImage(DefaultPreview);
       }
     } else {
-      // Jika tidak berhubungan dengan upload file, hanya update state yang lain
       setAsset3D({
         ...asset3D,
         [name]: value,
@@ -116,28 +85,47 @@ function AddAsset3D() {
     e.preventDefault();
 
     try {
-      // Save asset 3D details to Firestore
+      // Konversi asset3D.price menjadi number
+      const priceAsNumber = parseInt(asset3D.price);
+
+      if (isNaN(priceAsNumber)) {
+        // Validasi jika harga yang diinput tidak valid
+        throw new Error("Invalid price: must be a number.");
+      }
+
+      // Save asset3D details to Firestore
       const docRef = await addDoc(collection(db, "assetImage3D"), {
         category: asset3D.category,
         createdAt: Timestamp.now(),
         asset3DImage: "",
         asset3DName: asset3D.asset3DName,
         description: asset3D.description,
-        price: asset3D.price,
+        price: priceAsNumber, // Simpan sebagai number
         uploadedByEmail: user.email,
         userId: user.uid,
       });
 
       const docId = docRef.id;
 
-      // Upload profile image to Firebase Storage
+      // Upload asset3D image/file to Firebase Storage
       let asset3DImageUrl = "";
       if (asset3D.asset3DImage) {
-        const imageRef = ref(storage, `images-asset-3d/asset3D-${docId}.jpg`);
+        // Ambil nama asli file dan ekstrak ekstensi
+        const originalFileName = asset3D.asset3DImage.name;
+        const fileExtension = originalFileName.split(".").pop(); // Mengambil ekstensi file
+
+        // Ref untuk upload file ke Storage dengan ekstensi asli
+        const imageRef = ref(
+          storage,
+          `images-asset-3d/asset3D-${docId}.${fileExtension}`
+        );
+
+        // Upload file ke Storage
         await uploadBytes(imageRef, asset3D.asset3DImage);
         asset3DImageUrl = await getDownloadURL(imageRef);
       }
 
+      // Update Firestore dengan URL gambar yang diupload
       await updateDoc(doc(db, "assetImage3D", docId), {
         asset3DImage: asset3DImageUrl,
       });
@@ -152,10 +140,10 @@ function AddAsset3D() {
       });
       setPreviewImage(null);
 
-      // Navigate back to /manage-asset-3D
+      // Navigate back to /manage-asset-asset3D
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manage-asset-3D");
+        navigate("/manage-asset-asset3D");
       }, 2000);
     } catch (error) {
       console.error("Error menambahkan asset3D: ", error);
@@ -204,7 +192,7 @@ function AddAsset3D() {
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>Asset 3D baru berhasil ditambahkan dan tersimpan.</span>
+                <span>asset3D baru berhasil ditambahkan dan tersimpan.</span>
               </div>
             </div>
           )}
@@ -257,7 +245,7 @@ function AddAsset3D() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
-                    Format Asset harus jpg, jpeg, png dan zip.
+                    Format File harus jpg, jpeg, png dan zip 
                   </p>
                 </div>
                 <div className="p-0">
@@ -285,7 +273,7 @@ function AddAsset3D() {
                           name="asset3DImage"
                           onChange={handleChange}
                           multiple
-                          accept="image/jpeg,image/png,image/jpg, application/zip"
+                          accept=".jpg,.jpeg,.png,.zip,.rar,"
                           className="hidden"
                         />
 
@@ -313,7 +301,7 @@ function AddAsset3D() {
                 </div>
               </div>
 
-              {/* asset 3D Name */}
+              {/* asset3D Name */}
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-1">
@@ -372,7 +360,7 @@ function AddAsset3D() {
                       onChange={(e) =>
                         setAsset3D((prevState) => ({
                           ...prevState,
-                          category: e.target.value, // Update category inside dasset 3D state
+                          category: e.target.value,
                         }))
                       }
                       className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md">
@@ -387,9 +375,9 @@ function AddAsset3D() {
                     </select>
                   </label>
 
-                  <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
+                  {/* <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
                     +
-                  </div>
+                  </div> */}
                 </div>
               </div>
 
@@ -440,7 +428,7 @@ function AddAsset3D() {
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <input
-                      type="Rp"
+                      type="number"
                       className="input border-0 focus:outline-none focus:ring-0  w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
                       name="price"
                       value={asset3D.price}
@@ -473,4 +461,4 @@ function AddAsset3D() {
   );
 }
 
-export default AddAsset3D;
+export default AddNewAsset3D;

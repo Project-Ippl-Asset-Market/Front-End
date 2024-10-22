@@ -82,8 +82,8 @@ const AssetGame = () => {
     if (searchTerm) {
       const results = AssetsData.filter(
         (asset) =>
-          asset.datasetName &&
-          asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase())
+          asset.audioName &&
+          asset.audioName.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setSearchResults(results);
     } else {
@@ -182,7 +182,7 @@ const AssetGame = () => {
 
     // Determine the appropriate collection name based on the asset data
     let collectionName = "";
-    if (selectedasset.assetAudiosName) {
+    if (selectedasset.audioName) {
       collectionName = "assetAudios";
     } else if (selectedasset.asset2DName) {
       collectionName = "assetImage2D";
@@ -202,14 +202,14 @@ const AssetGame = () => {
         userId: currentUserId,
         assetId: selectedasset.id,
         datasetName:
-          selectedasset.assetAudiosName ||
+          selectedasset.audioName ||
           selectedasset.asset2DName ||
           selectedasset.asset3DName ||
           "",
         description: selectedasset.description,
         price: selectedasset.price,
         datasetImage:
-          selectedasset.assetAudiosImage ||
+          selectedasset.uploadUrlAudio ||
           selectedasset.asset2DImage ||
           selectedasset.asset3DImage ||
           "",
@@ -240,7 +240,7 @@ const AssetGame = () => {
   // Filter berdasarkan pencarian
   const filteredAssetsData = AssetsData.filter((asset) => {
     const datasetName =
-      asset.assetAudiosName || asset.asset2DName || asset.asset3DName || "";
+      asset.audioName || asset.asset2DName || asset.asset3DName || "";
     return (
       datasetName &&
       datasetName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -262,7 +262,7 @@ const AssetGame = () => {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[40%] xl:left-[40%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[146px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-[550px] sm:w-[300px] md:w-[300px] lg:w-[600px] xl:w-[800px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[40%] xl:left-[40%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[146px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px]">
           <div className="justify-center">
             <form
               className=" mx-auto px-20  w-[470px] sm:w-[490px] md:w-[400px] lg:w-[600px] xl:w-[800px] 2xl:w-[1200px]"
@@ -342,7 +342,7 @@ const AssetGame = () => {
             const likedByCurrentUser = likedAssets.has(data.id);
             let collectionsFetch = "";
 
-            if (data.assetAudiosName) {
+            if (data.audioName) {
               collectionsFetch = "assetAudios";
             } else if (data.asset2DName) {
               collectionsFetch = "assetImage2D";
@@ -360,21 +360,15 @@ const AssetGame = () => {
                   className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px]"
                 >
                   <div className="w-full h-[150px] relative">
-                    {data.uploadUrlVideo ? (
-                      <video
-                        src={data.uploadUrlVideo}
-                        alt="Asset Video"
-                        className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
-                        controls
-                      />
+                    {data.uploadUrlAudio ? (
+                      <audio controls className="w-full">
+                        <source src={data.uploadUrlAudio} type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                      </audio>
                     ) : (
                       <img
                         src={
-                          data.assetAudiosImage ||
-                          data.asset2DImage ||
-                          data.asset3DImage ||
-                          (data.videoName ? CustomImage : null) ||
-                          CustomImage
+                          data.asset2DImage || data.asset3DImage || CustomImage
                         }
                         alt="Asset Image"
                         onError={(e) => {
@@ -390,7 +384,7 @@ const AssetGame = () => {
                 <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-10">
                   <div className="px-2 py-2">
                     <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
-                      {data.assetAudiosName ||
+                      {data.audioName ||
                         data.asset2DName ||
                         data.asset3DName ||
                         "Nama Tidak Tersedia"}
@@ -446,21 +440,18 @@ const AssetGame = () => {
               className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px]"
             >
               <div className="w-full h-[265px] relative">
-                {selectedAsset.uploadUrlVideo ? (
-                  <video
-                    src={selectedAsset.uploadUrlVideo}
-                    alt="Asset Video"
-                    className="h-full w-full overflow-hidden relative   mx-auto border-none max-h-full cursor-pointer"
-                    controls
-                  />
+                {selectedAsset.uploadUrlAudio ? (
+                  <audio controls className="w-full">
+                    <source
+                      src={selectedAsset.uploadUrlAudio}
+                      type="audio/mpeg"
+                    />
+                    Your browser does not support the audio element.
+                  </audio>
                 ) : (
                   <img
                     src={
-                      selectedAsset.assetAudiosImage ||
-                      selectedAsset.asset2DImage ||
-                      selectedAsset.asset3DImage ||
-                      (selectedAsset.videoName ? CustomImage : null) ||
-                      CustomImage
+                      selectedAsset.asset2DImage || selectedAsset.asset3DImage
                     }
                     alt="Asset Image"
                     onError={(e) => {
@@ -474,7 +465,7 @@ const AssetGame = () => {
             </div>
             <div className="w-1/2 pl-4">
               <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
-                {selectedAsset.datasetName}
+                {selectedAsset.audioName}
               </h2>
               <p className="text-sm mb-2 dark:text-primary-100 mt-4">
                 Rp. {selectedAsset.price.toLocaleString("id-ID")}

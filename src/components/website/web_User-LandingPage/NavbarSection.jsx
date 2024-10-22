@@ -44,7 +44,7 @@ const NavbarSection = () => {
           className={`${
             isOpen ? "block" : "hidden sm:flex navbar-hidden "
           } absolute top-full left-0 w-full sm:relative sm:w-auto bg-neutral-90 dark:bg-neutral-5 dark:text-primary-100 text-neutral-10 shadow-lg  `}>
-          <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 text-right mx-2 mt-0 sm:mt-4 md:mt-4 lg:mt-10 xl:mt-8 2xl:mt-10">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 text-right mx-2 mt-0 sm:mt-4 md:mt-4 lg:mt-6 xl:mt-8 2xl:mt-10">
             {/* Telusuri Semua */}
             <div className="relative group mt-4 flex">
               <Link

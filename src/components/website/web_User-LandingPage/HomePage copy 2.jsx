@@ -15,19 +15,24 @@ import NavbarSection from "../web_User-LandingPage/NavbarSection";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import CustomImage from "../../../assets/assetmanage/Iconrarzip.svg";
 import IconDownload from "../../../assets/icon/iconDownload/iconDownload.svg";
-import { AiOutlineInfoCircle } from "react-icons/ai";
 
-export function AssetGratis() {
+import IconDollar from "../../../assets/assetWeb/iconDollarLight.svg";
+import IconCart from "../../../assets/assetWeb/iconCart.svg";
+import { AiOutlineInfoCircle } from "react-icons/ai";
+import { useNavigate } from "react-router-dom";
+
+export function HomePage() {
   const [AssetsData, setAssetsData] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [likedAssets, setLikedAssets] = useState(new Set());
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [selectedasset, setSelectedasset] = useState(null);
+  const [selectedasset, setselectedasset] = useState(null);
   const [alertLikes, setAlertLikes] = useState(false);
   const [isProcessingLike, setIsProcessingLike] = useState(false);
   const myAssetsCollectionRef = collection(db, "myAssets");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const navigate = useNavigate();
 
   // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
@@ -77,10 +82,10 @@ export function AssetGratis() {
           }));
         })
       );
-      const combinedAssets = allAssets.flat();
-      const filteredAssets = combinedAssets.filter(
-        (asset) => parseFloat(asset.price) === 0
-      );
+
+      const filteredAssets = allAssets.flat();
+      filteredAssets.sort((a, b) => (b.likeAsset || 0) - (a.likeAsset || 0));
+
       setAssetsData(filteredAssets);
     } catch (error) {
       console.error("Error fetching assets: ", error);
@@ -204,16 +209,90 @@ export function AssetGratis() {
     }
   };
 
+  const handleAddToCart = async (selectedasset) => {
+    if (!currentUserId) {
+      alert("Anda perlu login untuk menambahkan asset ke keranjang");
+      navigate("/login");
+      return;
+    }
+
+    // Determine the appropriate collection name based on the asset data
+    let collectionName = "";
+    if (selectedasset.assetAudiosName) {
+      collectionName = "assetAudios";
+    } else if (selectedasset.asset2DName) {
+      collectionName = "assetImage2D";
+    } else if (selectedasset.asset3DName) {
+      collectionName = "assetImage3D";
+    } else if (selectedasset.videoName) {
+      collectionName = "assetVideos";
+    } else if (selectedasset.imageName) {
+      collectionName = "assetImages";
+    } else if (selectedasset.datasetName) {
+      collectionName = "assetDatasets";
+    }
+
+    try {
+      const cartRef = doc(
+        db,
+        "cartAssets",
+        `${currentUserId}_${selectedasset.id}`
+      );
+
+      // Prepare data for the cart
+      const cartData = {
+        userId: currentUserId,
+        assetId: selectedasset.id,
+        datasetName:
+          selectedasset.assetAudiosName ||
+          selectedasset.imageName ||
+          selectedasset.asset2DName ||
+          selectedasset.asset3DName ||
+          selectedasset.videoName ||
+          "",
+        description: selectedasset.description,
+        price: selectedasset.price,
+        datasetImage:
+          selectedasset.datasetImage ||
+          selectedasset.assetAudiosImage ||
+          selectedasset.asset2DImage ||
+          selectedasset.asset3DImage ||
+          selectedasset.uploadUrlImage ||
+          "",
+        category: selectedasset.category,
+        createdAt: selectedasset.createdAt || new Date(),
+        uploadedByEmail: selectedasset.uploadedByEmail || "",
+        likeAsset: selectedasset.likeAsset || 0,
+        collectionName: collectionName,
+      };
+
+      await setDoc(cartRef, cartData);
+      alert("Asset berhasil ditambahkan ke keranjang!");
+    } catch (error) {
+      console.error("Error adding to cart: ", error);
+    }
+  };
+
+  const handleBuyNow = () => {
+    if (!currentUserId) {
+      alert("Anda perlu login untuk membeli asset");
+      navigate("/login");
+      return;
+    }
+
+    navigate("/payment");
+  };
+
   // Menampilkan modal
   const openModal = (asset) => {
-    setSelectedasset(asset);
+    setselectedasset(asset);
     setModalIsOpen(true);
   };
 
   // Menutup modal
   const closeModal = () => {
     setModalIsOpen(false);
-    setSelectedasset(null);
+    setselectedasset(null);
   };
 
   // Filter berdasarkan pencarian
@@ -312,8 +391,8 @@ export function AssetGratis() {
           All Category
         </h1>
       </div>
-      <div className="pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
-        <div className=" mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]  ">
+      <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14">
+        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
@@ -335,16 +414,16 @@ export function AssetGratis() {
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[190px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
                 <div
                   onClick={() => openModal(data)}
-                  className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px]">
+                  className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[120px] lg:w-full lg:h-[183px]    xl:h-full 2xl:h-full ">
                   <div className="w-full h-[150px] relative">
                     {data.uploadUrlVideo ? (
                       <video
                         src={data.uploadUrlVideo}
                         alt="Asset Video"
-                        className="h-full w-full rounded-t-[10px] mx-auto border-none"
+                        className="h-28 sm:h-28 md:h-36 lg:h-40 xl:h-full 2xl:h-full w-full rounded-t-[10px] mx-auto border-none"
                         controls
                       />
                     ) : (
@@ -363,14 +442,14 @@ export function AssetGratis() {
                           e.target.onerror = null;
                           e.target.src = CustomImage;
                         }}
-                        className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                        className="h-28 sm:h-28 md:h-36 lg:h-40 xl:h-full 2xl:h-full w-full rounded-t-[10px] mx-auto border-none"
                       />
                     )}
                   </div>
                 </div>
-                <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-10">
+                <div className="flex flex-col justify-between h-full p-2 sm:p-4">
                   <div className="px-2 py-2">
-                    <p className="text-neutral-10 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100 font-semibold">
+                    <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
                       {data.assetAudiosName ||
                         data.datasetName ||
                         data.asset2DName ||
@@ -379,16 +458,18 @@ export function AssetGratis() {
                         data.videoName ||
                         "Nama Tidak Tersedia"}
                     </p>
-                    <p className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100">
-                      {data.description || "Deskripsi Tidak Tersedia"}
-                    </p>
+                    <h4 className="text-neutral-20 text-xs sm:text-sm lg:text-base dark:text-primary-100">
+                      {data.description.length > 24
+                        ? `${data.description.substring(0, 24)}......`
+                        : data.description}
+                    </h4>
                   </div>
-                  <div className="flex items-center justify-between px-2 py-2   dark:bg-neutral-80">
+                  <div className="flex justify-between items-center mt-2 sm:mt-4">
                     <button
                       onClick={() =>
                         handleLikeClick(data.id, likesAsset, collectionsToFetch)
                       }
-                      className="flex justify-start items-center mr-2">
+                      className="flex items-center">
                       {likedByCurrentUser ? (
                         <FaHeart className="text-red-600" />
                       ) : (
@@ -411,68 +492,110 @@ export function AssetGratis() {
         </div>
       </div>
 
-      {/* Modal untuk detail asset */}
       {modalIsOpen && selectedasset && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] mx-4 flex relative">
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] mx-4 flex relative ">
             <button
-              className="absolute right-3 text-gray-600 dark:text-gray-400 text-2xl"
+              className="absolute top-1 right-3 text-gray-600 dark:text-gray-400 text-2xl"
               onClick={closeModal}>
               &times;
             </button>
-            <div className="w-full h-[250px] relative">
-              {selectedasset.uploadUrlVideo ? (
-                <video
-                  src={selectedasset.uploadUrlVideo}
-                  alt="Asset Video"
-                  className="h-full w-full rounded-t-[10px]"
-                  controls
-                />
-              ) : (
-                <img
-                  src={selectedasset.uploadUrlImage || CustomImage}
-                  alt="Asset Image"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = CustomImage;
-                  }}
-                  className="h-full w-full mx-auto border-none"
-                />
-              )}
+            <div
+              onClick={() => openModal(selectedasset)}
+              className="flex-1 flex   items-center justify-center mb-4">
+              <div className="w-full h-[290px] relative">
+                {selectedasset.uploadUrlVideo ? (
+                  <video
+                    src={selectedasset.uploadUrlVideo}
+                    alt="Asset Video"
+                    className="w-full h-[300px] object-cover"
+                    controls
+                  />
+                ) : (
+                  <img
+                    src={
+                      selectedasset.uploadUrlImage ||
+                      selectedasset.datasetImage ||
+                      selectedasset.assetAudiosImage ||
+                      selectedasset.asset2DImage ||
+                      selectedasset.asset3DImage ||
+                      (selectedasset.videoName ? CustomImage : null) ||
+                      CustomImage
+                    }
+                    alt="Asset Image"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = CustomImage;
+                    }}
+                    className="w-full h-[300px] object-cover"
+                  />
+                )}
+              </div>
             </div>
-            <div className="w-1/2 pl-4 ">
-              <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
-                <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
-                  {selectedasset.assetAudiosName ||
-                    selectedasset.datasetName ||
-                    selectedasset.asset2DName ||
-                    selectedasset.asset3DName ||
-                    selectedasset.imageName ||
-                    selectedasset.videoName ||
-                    "Nama Tidak Tersedia"}
-                </p>
-              </h2>
-              <p className="text-sm mb-2 dark:text-primary-100">
-                Rp. {selectedasset.price.toLocaleString("id-ID")}
+            <div className="w-1/2 pl-4 mt-10">
+              <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
+                {selectedasset.assetAudiosName ||
+                  selectedasset.datasetName ||
+                  selectedasset.asset2DName ||
+                  selectedasset.asset3DName ||
+                  selectedasset.imageName ||
+                  selectedasset.videoName ||
+                  "Nama Tidak Tersedia"}
               </p>
-              <div className="text-sm mb-2 dark:text-primary-100">
-                <label className="flex-col mt-2">Deskripsi Video:</label>
+              <p className="text-sm mb-2 dark:text-primary-100 mt-4">
+                {/* {selectedasset.price === 0
+                  ? "Free"
+                  : `Rp. ${selectedasset.price.toLocaleString("id-ID")}`} */}
+
+                {selectedasset.price > 0
+                  ? `Rp ${selectedasset.price.toLocaleString("id-ID")}`
+                  : "Free"}
+              </p>
+              <div className="text-sm mb-2 dark:text-primary-100 mt-4">
+                <label className="flex-col mt-2">Deskripsi:</label>
                 <div className="mt-2">{selectedasset.description}</div>
               </div>
-              <p className="text-sm mb-2 dark:text-primary-100">
+              <p className="text-sm mb-2 dark:text-primary-100 mt-4">
                 Kategori: {selectedasset.category}
               </p>
-              <button
-                className="text-primary-100 flex p-2 text-center items-center justify-center bg-neutral-60 w-48 h-10 mt-36 rounded-md"
-                onClick={handleSaveToMyAssets}>
-                <img
-                  src={IconDownload}
-                  alt="Cart Icon"
-                  className="w-6 h-6 mr-2"
-                />
-                <p>Simpan ke My Asset</p>
-              </button>
+              <div className="mt-4">
+                {selectedasset.price > 0 ? (
+                  <>
+                    <button
+                      onClick={() => handleAddToCart(selectedasset)}
+                      className="flex p-2 text-center items-center justify-center bg-neutral-60 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-24 rounded-md">
+                      <img
+                        src={IconCart}
+                        alt="Cart Icon"
+                        className="w-6 h-6 mr-2"
+                      />
+                      <p>Tambahkan Ke Keranjang</p>
+                    </button>
+                    <button
+                      onClick={() => handleBuyNow(selectedasset)}
+                      className="flex p-2 text-center items-center justify-center bg-secondary-40 text-primary-100 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-6 rounded-md">
+                      <img
+                        src={IconDollar}
+                        alt="Buy Now Icon"
+                        className="w-6 h-6 mr-2"
+                      />
+                      <p>Beli Sekarang</p>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => handleDownload(selectedasset)}
+                    className="flex p-2 text-center items-center justify-center bg-neutral-60 text-primary-100 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-32 rounded-md">
+                    <img
+                      src={IconDownload}
+                      alt="Download Icon"
+                      className="w-6 h-6 mr-2"
+                    />
+                    <p>Download</p>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -493,4 +616,4 @@ export function AssetGratis() {
   );
 }
 
-export default AssetGratis;
+export default HomePage;

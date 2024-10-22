@@ -8,6 +8,7 @@ import {
   where,
   runTransaction,
   getDocs,
+  getDoc,
   setDoc,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -31,19 +32,21 @@ export function AssetVideo() {
   const [isProcessingLike, setIsProcessingLike] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [purchasedAssets, setPurchasedAssets] = useState(new Set());
+  const [validationMessage, setValidationMessage] = useState("");
 
   // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
+        // Menyimpan ID pengguna saat ini
         setCurrentUserId(user.uid);
       } else {
         setCurrentUserId(null);
       }
     });
 
-    // Bersihkan listener saat komponen di-unmount
     return () => unsubscribe();
   }, []);
 
@@ -51,7 +54,7 @@ export function AssetVideo() {
   useEffect(() => {
     const unsubscribe = onSnapshot(
       collection(db, "assetVideos"),
-      async (snapshot) => {
+      (snapshot) => {
         const Assets = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
@@ -64,11 +67,38 @@ export function AssetVideo() {
     return () => unsubscribe();
   }, []);
 
+  // Mengambil aset yang telah dibeli oleh pengguna
+  useEffect(() => {
+    const fetchUserPurchasedAssets = async () => {
+      if (!currentUserId) return;
+
+      const purchasedQuery = query(
+        collection(db, "buyAssets"),
+        where("boughtBy", "==", currentUserId)
+      );
+
+      try {
+        const purchasedSnapshot = await getDocs(purchasedQuery);
+        const purchasedIds = new Set();
+
+        purchasedSnapshot.forEach((doc) => {
+          purchasedIds.add(doc.data().assetId);
+        });
+
+        setPurchasedAssets(purchasedIds);
+      } catch (error) {
+        console.error("Error fetching purchased assets: ", error);
+      }
+    };
+
+    fetchUserPurchasedAssets();
+  }, [currentUserId]);
+
+  // Mengambil data likes
   useEffect(() => {
     const fetchUserLikes = async () => {
       if (!currentUserId) return;
 
-      // Membuat query untuk mendapatkan dokumen berdasarkan userId
       const likesQuery = query(
         collection(db, "likes"),
         where("userId", "==", currentUserId)
@@ -78,7 +108,6 @@ export function AssetVideo() {
         const likesSnapshot = await getDocs(likesQuery);
         const userLikes = new Set();
 
-        // Menambahkan assetId ke dalam set likedAssets
         likesSnapshot.forEach((doc) => {
           userLikes.add(doc.data().assetId);
         });
@@ -92,13 +121,11 @@ export function AssetVideo() {
     fetchUserLikes();
   }, [currentUserId]);
 
-  // Filter pencarian
+  // Mengfilter hasil pencarian
   useEffect(() => {
     if (searchTerm) {
-      const results = AssetsData.filter(
-        (asset) =>
-          asset.videoName &&
-          asset.videoName.toLowerCase().includes(searchTerm.toLowerCase())
+      const results = AssetsData.filter((asset) =>
+        asset.videoName.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setSearchResults(results);
     } else {
@@ -111,13 +138,10 @@ export function AssetVideo() {
 
     if (!currentUserId) {
       setAlertLikes("Anda perlu login untuk menyukai Asset ini");
-      setTimeout(() => {
-        setAlertLikes(false);
-      }, 3000);
+      setTimeout(() => setAlertLikes(false), 3000);
       return;
     }
 
-    // Tandai bahwa kita sedang memproses
     setIsProcessingLike(true);
 
     const assetRef = doc(db, "assetVideos", assetId);
@@ -128,13 +152,11 @@ export function AssetVideo() {
         const newLikedAssets = new Set(likedAssets);
         let newLikesAsset;
         if (newLikedAssets.has(assetId)) {
-          // Untuk Hapus like
           transaction.delete(likeRef);
           newLikesAsset = Math.max(0, currentLikes - 1);
           transaction.update(assetRef, { likeAsset: newLikesAsset });
           newLikedAssets.delete(assetId);
         } else {
-          // Untuk Tambah like
           transaction.set(likeRef, {
             userId: currentUserId,
             assetId: assetId,
@@ -143,17 +165,30 @@ export function AssetVideo() {
           transaction.update(assetRef, { likeAsset: newLikesAsset });
           newLikedAssets.add(assetId);
         }
-
-        // Update state setelah transaksi sukses
         setLikedAssets(newLikedAssets);
       });
     } catch (error) {
       console.error("Error updating likes: ", error);
     } finally {
-      // Selesaikan proses
       setIsProcessingLike(false);
     }
   };
+
+  // const validateAddToCart = (assetId) => {
+  //   if (!currentUserId) {
+  //     setValidationMessage(
+  //       "Anda perlu login untuk menambahkan asset ke keranjang."
+  //     );
+  //     return false;
+  //   }
+  //   if (purchasedAssets.has(assetId)) {
+  //     setValidationMessage(
+  //       "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
+  //     );
+  //     return false;
+  //   }
+  //   return true; // Validasi berhasil
+  // };
 
   const handleAddToCart = async (selectedasset) => {
     if (!currentUserId) {
@@ -162,11 +197,27 @@ export function AssetVideo() {
       return;
     }
 
-    // Destructure the selected asset object
+    if (purchasedAssets.has(selectedasset.id)) {
+      alert(
+        "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
+      );
+      return;
+    }
+
+    const cartRef = doc(
+      db,
+      "cartAssets",
+      `${currentUserId}_${selectedasset.id}`
+    );
+    const cartSnapshot = await getDoc(cartRef);
+    if (cartSnapshot.exists()) {
+      alert("Anda sudah menambahkan asset ini ke keranjang.");
+      return;
+    }
+
     const { id, videoName, description, price, uploadUrlVideo, category } =
       selectedasset;
 
-    // Check for missing fields
     const missingFields = [];
     if (!videoName) missingFields.push("videoName");
     if (!description) missingFields.push("description");
@@ -181,8 +232,6 @@ export function AssetVideo() {
     }
 
     try {
-      // Create a document reference in Firestore for the cart item
-      const cartRef = doc(db, "cartAssets", `${currentUserId}_${id}`);
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: id,
@@ -201,32 +250,32 @@ export function AssetVideo() {
     }
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!currentUserId) {
       alert("Anda perlu login untuk membeli asset");
       navigate("/login");
       return;
     }
 
+    if (purchasedAssets.has(selectedasset.id)) {
+      alert(
+        "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
+      );
+      return;
+    }
+
     navigate("/payment");
   };
 
-  // Menampilkan modal
   const openModal = (asset) => {
     setSelectedasset(asset);
     setModalIsOpen(true);
   };
 
-  // Menutup modal
   const closeModal = () => {
     setModalIsOpen(false);
     setSelectedasset(null);
   };
-
-  // Filter berdasarkan pencarian
-  const filteredAssetsData = AssetsData.filter((asset) =>
-    asset.videoName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
@@ -240,10 +289,10 @@ export function AssetVideo() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[40%] xl:left-[40%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[146px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-[550px] sm:w-[300px] md:w-[300px] lg:w-[600px] xl:w-[800px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[47%] xl:left-[50%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[146px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-[500px] sm:w-[300px] md:w-[300px] lg:w-[500px] xl:w-[600px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[470px] sm:w-[400px] md:w-[400px] lg:w-[600px] xl:w-[800px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[470px] sm:w-[400px] md:w-[450px] lg:w-[700px] xl:w-[800px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}>
               <div className="relative">
                 <div className="relative">
@@ -287,11 +336,30 @@ export function AssetVideo() {
         </div>
       </div>
 
+      {/* Menampilkan pesan validasi */}
+      {validationMessage && (
+        <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
+          <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
+          <span>{validationMessage}</span>
+          <button
+            className="absolute top-0 bottom-0 right-0 px-4 py-3"
+            onClick={() => setValidationMessage("")}>
+            <svg
+              className="fill-current h-6 w-6 text-red-500"
+              role="button"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20">
+              <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       <div className="w-full p-12 mx-auto">
         {alertLikes && (
           <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
             <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
-            <span className="block sm:inline">{alertLikes}</span>
+            <span>{alertLikes}</span>
             <button
               className="absolute top-0 bottom-0 right-0 px-4 py-3"
               onClick={() => setAlertLikes(false)}>
@@ -305,26 +373,25 @@ export function AssetVideo() {
             </button>
           </div>
         )}
-        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
+        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100 pt-[100px]">
           All Category
         </h1>
       </div>
-      <div className=" pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[50px] xl:p-[50px] 2xl:p-[60px] ">
-        {/* Body section */}
-        <div className=" mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]  ">
-          {filteredAssetsData.map((data) => {
+      <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14">
+        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
+          {searchResults.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
-
+            const isPurchased = purchasedAssets.has(data.id);
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
-                <div className="w-full h-[350px] relative">
+                className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                <div className="w-full h-[300px] relative overflow-hidden aspect-video">
                   <video
                     src={data.uploadUrlVideo}
                     alt="Video Preview"
-                    className="absolute inset-0 w-full h-full object-cover rounded-t-[10px] mx-auto border-none cursor-pointer"
+                    className="h-full w-full object-cover rounded-t-[10px] border-none cursor-pointer"
                     onClick={() => openModal(data)}
                     controls
                     onError={(e) => {
@@ -335,32 +402,35 @@ export function AssetVideo() {
                   </video>
                 </div>
 
-                {/* details section */}
-                <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-10">
+                {isPurchased && (
+                  <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                    Sudah Dibeli
+                  </div>
+                )}
+
+                <div className="flex flex-col justify-between h-full p-2 sm:p-4">
                   <div>
-                    <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
+                    <p className="text-xs text-neutral-10 font-semibold dark:text-primary-100">
                       {data.videoName}
                     </p>
-                    <h4 className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100">
+                    <h4 className="text-neutral-20 text-xs sm:text-sm lg:text-base dark:text-primary-100">
                       {data.description.length > 24
                         ? `${data.description.substring(0, 24)}......`
                         : data.description}
                     </h4>
                   </div>
-                  <div className="flex justify-between items-center mt-auto gap-2">
+                  <div className="flex justify-between items-center mt-2 sm:mt-4">
                     <button
                       onClick={() => handleLikeClick(data.id, likesAsset)}
-                      className="flex justify-start items-center mr-2">
+                      className="flex items-center">
                       {likedByCurrentUser ? (
                         <FaHeart className="text-red-600" />
                       ) : (
-                        <FaRegHeart className="text-neutral-10 text-[11px] sm:text-[14px] dark:text-primary-100 " />
+                        <FaRegHeart className="text-neutral-10 text-xs sm:text-sm" />
                       )}
-                      <p className="ml-2 text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
-                        ({likesAsset})
-                      </p>
+                      <p className="ml-1 text-xs sm:text-sm">({likesAsset})</p>
                     </button>
-                    <p className="text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
+                    <p className="text-xs sm:text-sm lg:text-base">
                       {data.price % 1000 === 0 && data.price >= 1000
                         ? `Rp. ${(data.price / 1000).toLocaleString("id-ID")}k`
                         : `Rp. ${data.price.toLocaleString("id-ID")}`}
@@ -377,34 +447,36 @@ export function AssetVideo() {
       {modalIsOpen && selectedasset && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] sm:w-[700px] md:w-[700px] lg:w-[700px] xl:w-[700px] 2xl:w-[700px] mx-4 flex relative">
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] mx-4 flex relative">
             <button
-              className="absolute top-1 sm:top-2 md:top-2 lg:top-3 xl:top-2 2xl:top-2 right-3 sm:right-2 md:right-2 lg:right-3 xl:right-2 2xl:right-2 text-gray-600 dark:text-gray-400 text-2xl sm:text-xl md:text-xl lg:text-[35px] xl:text-[40px] 2xl:text-2xl"
+              className="absolute top-1 right-3 text-gray-600 dark:text-gray-400 text-2xl"
               onClick={closeModal}>
+              {/* Menutup modal tanpa refresh */}
               &times;
             </button>
-            <video
-              src={selectedasset.uploadUrlVideo || CustomImage}
-              alt="asset Image"
-              className="w-1/2 h-[260px] mb-4"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = CustomImage;
-              }}
-            />
-            <div className="w-1/2 pl-4 ">
+            <div className="flex-1 flex items-center justify-center mb-4">
+              <video
+                src={selectedasset.uploadUrlVideo || CustomImage}
+                alt="Asset Image"
+                className="w-full h-[300px] object-cover"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = CustomImage;
+                }}
+              />
+            </div>
+            <div className="flex-1 pl-4">
               <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
                 {selectedasset.videoName}
               </h2>
-              <p className="text-sm mb-2 dark:text-primary-100 mt-4">
+              <p className="text-sm mb-2 dark:text-primary-100">
                 Rp. {selectedasset.price.toLocaleString("id-ID")}
               </p>
-              <div className="text-sm mb-2 dark:text-primary-100 mt-4">
-                <label className="flex-col mt-2">Deskripsi Video:</label>
-                <div className="mt-2">{selectedasset.description}</div>
+              <label className="flex-col mt-2">Deskripsi Video:</label>
+              <div className="mt-2 text-sm mb-2 dark:text-primary-100">
+                {selectedasset.description}
               </div>
-
-              <p className="text-sm mb-2 dark:text-primary-100 mt-4">
+              <p className="text-sm mb-2 dark:text-primary-100">
                 Kategori: {selectedasset.category}
               </p>
               <div className="mt-28">
@@ -434,7 +506,7 @@ export function AssetVideo() {
         </div>
       )}
 
-      <footer className=" min-h-[181px] flex flex-col items-center justify-center">
+      <footer className="min-h-[181px] flex flex-col items-center justify-center">
         <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
           <a href="#">Teams And Conditions</a>
           <a href="#">File Licenses</a>
@@ -442,7 +514,7 @@ export function AssetVideo() {
           <a href="#">Privacy Policy</a>
         </div>
         <p className="text-[10px] md:text-[12px]">
-          Copyright © 2024 - All right reserved by ACME Industries Ltd
+          Copyright © 2024 - All rights reserved by ACME Industries Ltd
         </p>
       </footer>
     </div>

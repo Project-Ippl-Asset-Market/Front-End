@@ -1,4 +1,4 @@
-// eslint-disable-next-line no-unused-vars
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { FaTrashAlt } from "react-icons/fa";
 import { getAuth } from "firebase/auth";
@@ -89,6 +89,7 @@ const Cart = () => {
   const totalWithTax = subtotal + subtotal * taxRate;
 
   const handlePayment = async () => {
+    // Validate selected items and customer details
     if (selectedItems.length === 0) {
       setErrorMessage("Tidak ada item dalam keranjang untuk pembayaran.");
       return;
@@ -109,20 +110,14 @@ const Cart = () => {
 
     try {
       const orderId = `order_${Date.now()}`;
-
-      const assetId = selectedItems.map((item) => ({
+      const assetDetails = selectedItems.map((item) => ({
         assetId: item.assetId,
         price: item.price,
-        name:
-          item.imageName ||
-          item.datasetName ||
-          item.audioName ||
-          item.asset2DName ||
-          item.asset3DName ||
-          item.videoName ||
-          "Unknown Asset",
+        name: item.datasetName || "Unknown Asset",
+        docId: item.id, // Save document ID
       }));
 
+      // Send request to create a transaction
       const response = await fetch(
         "http://localhost:3000/api/transactions/create-transaction",
         {
@@ -134,7 +129,7 @@ const Cart = () => {
             orderId,
             grossAmount: subtotal,
             uid: user.uid,
-            assets: assetId,
+            assets: assetDetails,
             customerDetails: {
               fullName: customerInfo.fullName,
               email: customerInfo.email,
@@ -151,59 +146,13 @@ const Cart = () => {
 
       const transactionData = await response.json();
 
-      // Call Midtrans snap payment here
+      // Call Midtrans to process payment
       window.snap.pay(transactionData.token, {
-        onSuccess: async function (result) {
-          console.log(result);
-          setSuccessMessage("Pembayaran berhasil!");
-
-          // Setelah pembayaran berhasil, pindahkan aset ke buyAssets dan hapus dari cartAssets
-          try {
-            const moveResponse = await fetch(
-              "http://localhost:3000/api/assets/move-assets",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  uid: user.uid,
-                  assets: assetId.map((asset) => ({
-                    assetId: asset.assetId,
-                    price: 0,
-                    name: asset.name,
-                  })),
-                }),
-              }
-            );
-
-            if (!moveResponse.ok) {
-              const errorResponse = await moveResponse.json();
-              throw new Error(
-                errorResponse.message || "Gagal untuk memindahkan aset"
-              );
-            }
-
-            // Setelah aset berhasil dipindahkan, hapus dari cartAssets
-            const deletePromises = selectedItems.map((item) => {
-              const itemDoc = doc(db, "cartAssets", item.id);
-              return deleteDoc(itemDoc);
-            });
-
-            await Promise.all(deletePromises);
-
-            // Clear selected items from cart only after deletion
-            setCartItems((prevItems) =>
-              prevItems.filter((item) => !item.selected)
-            );
-          } catch (moveError) {
-            console.error("Error moving assets:", moveError);
-            setErrorMessage("Gagal memindahkan assets.");
-          }
+        onSuccess: async (result) => {
+          console.log(result); // Log successful result
+          await handleMoveAssets(assetDetails); // Move assets and delete from cart
         },
         onPending: function (result) {
-          // Handle pending payment
-          console.log(result);
           setSuccessMessage(
             "Pembayaran tertunda, cek status di dashboard transaksi."
           );
@@ -223,11 +172,59 @@ const Cart = () => {
     }
   };
 
+  // Handle moving assets after payment
+  const handleMoveAssets = async (assetDetails) => {
+    try {
+      // Call the API to move assets from cart to buy assets
+      const moveResponse = await fetch(
+        "http://localhost:3000/api/assets/move-assets",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            uid: user.uid,
+            assets: assetDetails.map(({ assetId }) => ({ assetId })),
+          }),
+        }
+      );
+
+      if (!moveResponse.ok) {
+        const errorResponse = await moveResponse.json();
+        throw new Error(
+          errorResponse.message || "Gagal untuk memindahkan aset"
+        );
+      }
+
+      // If successful, delete assets from cart and update local state
+      await Promise.all(
+        assetDetails.map(async (asset) => {
+          // Delete asset from Firestore
+          const itemDoc = doc(db, "cartAssets", asset.docId);
+          await deleteDoc(itemDoc); // Remove the item from Firestore
+        })
+      );
+
+      // Update local state to remove items from the cart
+      setCartItems((prevItems) =>
+        prevItems.filter(
+          (item) => !assetDetails.some((asset) => asset.docId === item.id)
+        )
+      );
+
+      setSuccessMessage("Pembayaran berhasil dan aset sudah dipindahkan.");
+    } catch (moveError) {
+      console.error("Error moving assets:", moveError);
+      setErrorMessage("Gagal memindahkan aset.");
+    }
+  };
+
   const handleDeleteItem = async (id) => {
     try {
+      // Delete from Firestore first
       const itemDoc = doc(db, "cartAssets", id);
       await deleteDoc(itemDoc);
-      console.log("Item deleted successfully");
+      // Update state to remove the item from the cart
+      setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
     } catch (error) {
       console.error("Error deleting item:", error);
     }

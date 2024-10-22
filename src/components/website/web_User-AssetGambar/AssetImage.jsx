@@ -22,17 +22,19 @@ import { AiOutlineInfoCircle } from "react-icons/ai";
 
 export function AssetImage() {
   const navigate = useNavigate();
-  const [AssetsData, setAssetsData] = useState([]);
-  const [currentUserId, setCurrentUserId] = useState(null);
-  const [likedAssets, setLikedAssets] = useState(new Set());
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [selectedasset, setSelectedasset] = useState(null);
-  const [alertLikes, setAlertLikes] = useState(false);
-  const [isProcessingLike, setIsProcessingLike] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
+  const [AssetsData, setAssetsData] = useState([]); // Data aset
+  const [currentUserId, setCurrentUserId] = useState(null); // ID pengguna saat ini
+  const [likedAssets, setLikedAssets] = useState(new Set()); // Aset yang disukai
+  const [modalIsOpen, setModalIsOpen] = useState(false); // Status modal
+  const [selectedasset, setSelectedasset] = useState(null); // Aset yang dipilih
+  const [alertLikes, setAlertLikes] = useState(false); // Pesan alert untuk like
+  const [isProcessingLike, setIsProcessingLike] = useState(false); // Status proses like
+  const [searchTerm, setSearchTerm] = useState(""); // Term pencarian
+  const [searchResults, setSearchResults] = useState([]); // Hasil pencarian
+  const [purchasedAssets, setPurchasedAssets] = useState(new Set()); // Aset yang dibeli
+  const [validationMessage, setValidationMessage] = useState(""); // Pesan validasi
 
-  // Mengambil ID pengguna saat ini (jika ada)
+  // Mengambil ID pengguna saat ini
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -47,7 +49,7 @@ export function AssetImage() {
     return () => unsubscribe();
   }, []);
 
-  // Mengambil data asset dari Firestore
+  // Mengambil data aset dari Firestore
   useEffect(() => {
     const unsubscribe = onSnapshot(
       collection(db, "assetImages"),
@@ -57,9 +59,9 @@ export function AssetImage() {
           ...doc.data(),
         }));
 
-        // Filter asset dengan harga tidak terdefinisi atau nol
+        // Filter aset dengan harga tidak terdefinisi atau nol
         const filteredAssets = Assets.filter(
-          (asset) => asset.price !== undefined && asset.price !== 0
+          (asset) => asset.price !== undefined && asset.price > 0
         );
         setAssetsData(filteredAssets);
       }
@@ -68,11 +70,38 @@ export function AssetImage() {
     return () => unsubscribe();
   }, []);
 
+  // Menangani pengambilan aset yang telah dibeli
+  useEffect(() => {
+    const fetchUserPurchasedAssets = async () => {
+      if (!currentUserId) return;
+
+      const purchasedQuery = query(
+        collection(db, "buyAssets"),
+        where("boughtBy", "==", currentUserId)
+      );
+
+      try {
+        const purchasedSnapshot = await getDocs(purchasedQuery);
+        const purchasedIds = new Set();
+
+        purchasedSnapshot.forEach((doc) => {
+          purchasedIds.add(doc.data().assetId);
+        });
+
+        setPurchasedAssets(purchasedIds); // Set aset yang dibeli untuk validasi
+      } catch (error) {
+        console.error("Error fetching purchased assets: ", error);
+      }
+    };
+
+    fetchUserPurchasedAssets();
+  }, [currentUserId]);
+
+  // Mengambil data aset yang disukai pengguna
   useEffect(() => {
     const fetchUserLikes = async () => {
       if (!currentUserId) return;
 
-      // Membuat query untuk mendapatkan dokumen berdasarkan userId
       const likesQuery = query(
         collection(db, "likes"),
         where("userId", "==", currentUserId)
@@ -82,7 +111,6 @@ export function AssetImage() {
         const likesSnapshot = await getDocs(likesQuery);
         const userLikes = new Set();
 
-        // Menambahkan assetId ke dalam set likedAssets
         likesSnapshot.forEach((doc) => {
           userLikes.add(doc.data().assetId);
         });
@@ -96,6 +124,7 @@ export function AssetImage() {
     fetchUserLikes();
   }, [currentUserId]);
 
+  // Menyaring hasil pencarian berdasarkan input pengguna
   useEffect(() => {
     const results = AssetsData.filter((asset) =>
       asset.imageName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -103,6 +132,7 @@ export function AssetImage() {
     setSearchResults(results);
   }, [searchTerm, AssetsData]);
 
+  // Fungsi untuk menangani klik tombol like pada aset
   const handleLikeClick = async (assetId, currentLikes) => {
     if (isProcessingLike) return;
 
@@ -114,7 +144,6 @@ export function AssetImage() {
       return;
     }
 
-    // Tandai bahwa kita sedang memproses
     setIsProcessingLike(true);
 
     const assetRef = doc(db, "assetImages", assetId);
@@ -124,14 +153,15 @@ export function AssetImage() {
       await runTransaction(db, async (transaction) => {
         const newLikedAssets = new Set(likedAssets);
         let newLikesAsset;
+
         if (newLikedAssets.has(assetId)) {
-          // Untuk Hapus like
+          // Menghapus like
           transaction.delete(likeRef);
           newLikesAsset = Math.max(0, currentLikes - 1);
           transaction.update(assetRef, { likeAsset: newLikesAsset });
           newLikedAssets.delete(assetId);
         } else {
-          // Untuk Tambah like
+          // Menambah like
           transaction.set(likeRef, {
             userId: currentUserId,
             assetId: assetId,
@@ -147,24 +177,45 @@ export function AssetImage() {
     } catch (error) {
       console.error("Error updating likes: ", error);
     } finally {
-      // Selesaikan proses
       setIsProcessingLike(false);
     }
   };
 
-  const handleAddToCart = async (selectedasset) => {
+  // Fungsi untuk memvalidasi apakah pengguna dapat menambahkan aset ke keranjang
+  const validateAddToCart = (assetId) => {
     if (!currentUserId) {
-      alert("Anda perlu login untuk menambahkan asset ke keranjang");
-      navigate("/login");
-      return;
+      setValidationMessage(
+        "Anda perlu login untuk menambahkan asset ke keranjang."
+      );
+      return false;
     }
+    if (purchasedAssets.has(assetId)) {
+      setValidationMessage(
+        "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
+      );
+      return false;
+    }
+    return true; // Validasi berhasil
+  };
+
+  // Fungsi untuk menambahkan aset ke keranjang
+  const handleAddToCart = async (selectedasset) => {
+    if (!validateAddToCart(selectedasset.id)) return; // Validasi
+
+    // Cek apakah aset sudah ada di keranjang
+    const cartRef = doc(
+      db,
+      "cartAssets",
+      `${currentUserId}_${selectedasset.id}`
+    );
 
     try {
-      const cartRef = doc(
-        db,
-        "cartAssets",
-        `${currentUserId}_${selectedasset.id}`
-      );
+      const cartSnapshot = await getDocs(cartRef);
+      if (cartSnapshot.exists()) {
+        setValidationMessage("Anda sudah menambahkan asset ini ke keranjang.");
+        return;
+      }
+
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
@@ -180,11 +231,19 @@ export function AssetImage() {
     }
   };
 
-  const handleBuyNow = () => {
+  // Fungsi untuk menangani pembelian aset
+  const handleBuyNow = async () => {
     if (!currentUserId) {
       alert("Anda perlu login untuk membeli asset");
       navigate("/login");
       return;
+    }
+    // Cek apakah aset sudah dibeli sebelumnya
+    if (purchasedAssets.has(selectedasset.id)) {
+      alert(
+        "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
+      );
+      return; // Jika sudah dibeli, tidak bisa ditambahkan ke keranjang
     }
 
     navigate("/payment");
@@ -219,10 +278,10 @@ export function AssetImage() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[40%] xl:left-[40%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[146px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-[550px] sm:w-[300px] md:w-[300px] lg:w-[600px] xl:w-[800px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[47%] xl:left-[50%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[146px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-[500px] sm:w-[300px] md:w-[300px] lg:w-[500px] xl:w-[600px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[470px] sm:w-[400px] md:w-[400px] lg:w-[600px] xl:w-[800px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[470px] sm:w-[400px] md:w-[450px] lg:w-[700px] xl:w-[800px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}>
               <div className="relative">
                 <div className="relative">
@@ -266,6 +325,25 @@ export function AssetImage() {
         </div>
       </div>
 
+      {/* Menampilkan pesan validasi jika ada */}
+      {validationMessage && (
+        <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
+          <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
+          <span className="block sm:inline">{validationMessage}</span>
+          <button
+            className="absolute top-0 bottom-0 right-0 px-4 py-3"
+            onClick={() => setValidationMessage("")}>
+            <svg
+              className="fill-current h-6 w-6 text-red-500"
+              role="button"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20">
+              <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       <div className="w-full p-12 mx-auto">
         {alertLikes && (
           <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
@@ -288,18 +366,20 @@ export function AssetImage() {
           All Category
         </h1>
       </div>
-      <div className=" pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
-        {/* Body section */}
-        <div className=" mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]  ">
+
+      {/* Bagian untuk menampilkan aset */}
+      <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14">
+        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
+            const isPurchased = purchasedAssets.has(data.id);
 
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[280px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
-                <div className="w-full h-[150px]">
+                className="w-full max-w-[280px] h-[220px] sm:w-[150px] sm:h-[215px] md:w-[180px] md:h-[230px] lg:h-[280px] xl:w-[240px] xl:h-[320px] 2xl:w-[280px] 2xl:h-[400px]  bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between relative rounded-lg shadow-lg">
+                <div className="w-full flex-shrink-0 h-[100px] sm:h-[100px] md:h-[110px] lg:h-[150px] xl:h-[200px] relative ">
                   <img
                     src={data.uploadUrlImage || CustomImage}
                     alt="Image"
@@ -312,13 +392,19 @@ export function AssetImage() {
                   />
                 </div>
 
-                {/* details section */}
+                {isPurchased && (
+                  <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                    Sudah Dibeli
+                  </div>
+                )}
+
+                {/* Bagian detail aset */}
                 <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-4">
                   <div>
                     <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
                       {data.imageName}
                     </p>
-                    <h4 className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100">
+                    <h4 className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px] dark:text-primary-100">
                       {data.description.length > 24
                         ? `${data.description.substring(0, 24)}......`
                         : data.description}
@@ -350,7 +436,7 @@ export function AssetImage() {
         </div>
       </div>
 
-      {/* Modal untuk detail asset */}
+      {/* Modal untuk detail aset */}
       {modalIsOpen && selectedasset && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
@@ -387,7 +473,12 @@ export function AssetImage() {
               <div className="mt-28">
                 <button
                   onClick={() => handleAddToCart(selectedasset)}
-                  className="flex p-2 text-center items-center justify-center bg-neutral-60 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-10 rounded-md">
+                  className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${
+                    purchasedAssets.has(selectedasset.id)
+                      ? "bg-gray-400 pointer-events-none"
+                      : "bg-neutral-60"
+                  }`}
+                  disabled={purchasedAssets.has(selectedasset.id)}>
                   <img
                     src={IconCart}
                     alt="Cart Icon"
@@ -397,7 +488,12 @@ export function AssetImage() {
                 </button>
                 <button
                   onClick={() => handleBuyNow(selectedasset)}
-                  className="flex p-2 text-center items-center justify-center bg-secondary-40 text-primary-100 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-6 rounded-md">
+                  className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 mt-2 rounded-md ${
+                    purchasedAssets.has(selectedasset.id)
+                      ? "bg-gray-400 pointer-events-none"
+                      : "bg-secondary-40"
+                  }`}
+                  disabled={purchasedAssets.has(selectedasset.id)}>
                   <img
                     src={IconDollar}
                     alt="Cart Icon"
@@ -413,13 +509,13 @@ export function AssetImage() {
 
       <footer className=" min-h-[181px] flex flex-col items-center justify-center">
         <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
-          <a href="#">Teams And Conditions</a>
+          <a href="#">Terms And Conditions</a>
           <a href="#">File Licenses</a>
           <a href="#">Refund Policy</a>
           <a href="#">Privacy Policy</a>
         </div>
         <p className="text-[10px] md:text-[12px]">
-          Copyright © 2024 - All right reserved by ACME Industries Ltd
+          Copyright © 2024 - All rights reserved by ACME Industries Ltd
         </p>
       </footer>
     </div>

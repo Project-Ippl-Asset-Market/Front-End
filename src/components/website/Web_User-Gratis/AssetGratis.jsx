@@ -290,7 +290,7 @@ export function AssetGratis() {
         </div>
       </div>
 
-      <div className="w-full p-12 mx-auto">
+      <div className="w-full p-12 mx-auto ">
         {alertLikes && (
           <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
             <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
@@ -312,7 +312,7 @@ export function AssetGratis() {
           All Category
         </h1>
       </div>
-      <div className="pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
+      <div className="pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] min-h-screen">
         <div className=" mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]  ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;

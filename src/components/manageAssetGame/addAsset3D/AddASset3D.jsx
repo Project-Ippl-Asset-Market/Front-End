@@ -143,7 +143,7 @@ function AddNewAsset3D() {
       // Navigate back to /manage-asset-asset3D
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manage-asset-asset3D");
+        navigate("/manage-asset-3D");
       }, 2000);
     } catch (error) {
       console.error("Error menambahkan asset3D: ", error);

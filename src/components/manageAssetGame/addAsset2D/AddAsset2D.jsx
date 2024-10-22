@@ -142,7 +142,7 @@ function AddNewAsset2D() {
       // Navigate back to /manage-asset-asset2D
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manage-asset-asset2D");
+        navigate("/manage-asset-2D");
       }, 2000);
     } catch (error) {
       console.error("Error menambahkan asset2D: ", error);

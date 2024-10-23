@@ -110,7 +110,8 @@ function HeaderSidebar() {
           <div className="hidden md:flex justify-center w-full  ml-10">
             <form
               className="w-full  mx-auto px-20 "
-              onSubmit={handleSearchSubmit}>
+              onSubmit={handleSearchSubmit}
+            >
               <div className="relative">
                 <div className="relative">
                   <input
@@ -132,13 +133,15 @@ function HeaderSidebar() {
 
                 <button
                   type="submit"
-                  className="absolute w-20 top-0 right-0 h-full p-4 mx-auto text-sm font-medium text-white bg-blue-700 rounded-r-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                  className="absolute w-20 top-0 right-0 h-full p-4 mx-auto text-sm font-medium text-white bg-blue-700 rounded-r-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                >
                   <svg
                     className="w-5 h-5 mx-auto"
                     aria-hidden="true"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
-                    viewBox="0 0 20 20">
+                    viewBox="0 0 20 20"
+                  >
                     <path
                       stroke="currentColor"
                       strokeLinecap="round"
@@ -158,8 +161,9 @@ function HeaderSidebar() {
         {/* cart an my asset */}
         <div className="gap-14 sm:gap-1 md:gap-8 lg:gap-8 xl:gap-2 2xl:gap-10 flex justify-center items-center ">
           <Link
-            to=""
-            className="w-[45px] sm:w-[45px] md:w-[44px] lg:w-[44px] xl:w-[60px] 2xl:w-[34px] h-[20px]  sm:h-[28px] md:h-[28px] lg:h-[28px] xl:h-[28px] 2xl:h[28px] -ml-[30px]  sm:ml-1 md:ml-1 lg:ml-0 xl:ml-0 2xl:ml-2 gap-2  text-[8px] sm:text-[10px] md:text-[10px] lg:text-[10px] xl:text-[10px 2xl:text-[10px]">
+            to="/my-asset"
+            className="w-[45px] sm:w-[45px] md:w-[44px] lg:w-[44px] xl:w-[60px] 2xl:w-[34px] h-[20px]  sm:h-[28px] md:h-[28px] lg:h-[28px] xl:h-[28px] 2xl:h[28px] -ml-[30px]  sm:ml-1 md:ml-1 lg:ml-0 xl:ml-0 2xl:ml-2 gap-2  text-[8px] sm:text-[10px] md:text-[10px] lg:text-[10px] xl:text-[10px 2xl:text-[10px]"
+          >
             <img
               src={IconMyAsset}
               alt="icon my asset"
@@ -170,7 +174,8 @@ function HeaderSidebar() {
 
           <Link
             to="/cart"
-            className="relative w-[20px] sm:w-[45px] md:w-[28px] lg:w-[28px] xl:w-[28px] 2xl:w-[28px] h-[20px] sm:h-[28px] md:h-[28px] lg:h-[28px] xl:h-[28px] 2xl:h[28px] -ml-[30px] sm:ml-1 md:ml-1 lg:ml-0 xl:ml-0 2xl:ml-2 gap-2 text-[8px] sm:text-[10px] md:text-[10px] lg:text-[10px] xl:text-[10px] 2xl:text-[10px]">
+            className="relative w-[20px] sm:w-[45px] md:w-[28px] lg:w-[28px] xl:w-[28px] 2xl:w-[28px] h-[20px] sm:h-[28px] md:h-[28px] lg:h-[28px] xl:h-[28px] 2xl:h[28px] -ml-[30px] sm:ml-1 md:ml-1 lg:ml-0 xl:ml-0 2xl:ml-2 gap-2 text-[8px] sm:text-[10px] md:text-[10px] lg:text-[10px] xl:text-[10px] 2xl:text-[10px]"
+          >
             <img src={IconCart} alt="icon cart" className="w-[24px] h-[24px]" />
             {cartCount > 0 && (
               <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
@@ -185,7 +190,8 @@ function HeaderSidebar() {
         <div className="md:hidden fixed top-16 w-full bg-primary-100 dark:bg-neutral-20 p-4 mt-12 -ml-2">
           <form
             className="flex items-center w-full"
-            onSubmit={handleSearchSubmit}>
+            onSubmit={handleSearchSubmit}
+          >
             <input
               type="search"
               id="mobile-search"
@@ -197,7 +203,8 @@ function HeaderSidebar() {
             />
             <button
               type="submit"
-              className="p-3 h-12 text-white bg-blue-700 rounded-r-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+              className="p-3 h-12 text-white bg-blue-700 rounded-r-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            >
               Search
             </button>
           </form>
@@ -229,7 +236,8 @@ function HeaderSidebar() {
                             <div className="flex items-center justify-center p-2 bg-neutral-90 hover:rounded-lg dark:bg-neutral-20 transition-all duration-300 rounded-lg ">
                               <div
                                 onClick={toggleDarkMode}
-                                className="flex w-full h-8 transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none gap-4 p-1 ">
+                                className="flex w-full h-8 transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none gap-4 p-1 "
+                              >
                                 {darkMode ? (
                                   <img
                                     src={IconDarkMode}
@@ -248,7 +256,8 @@ function HeaderSidebar() {
                                     darkMode
                                       ? "text-neutral-100"
                                       : "text-neutral-800"
-                                  }`}>
+                                  }`}
+                                >
                                   {darkMode ? "Light Mode" : "Dark Mode"}
                                 </span>
                               </div>
@@ -257,7 +266,8 @@ function HeaderSidebar() {
                           <li className="flex mb-1 w-full h-8 transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none">
                             <div
                               className="flex items-center"
-                              onClick={handleLogout}>
+                              onClick={handleLogout}
+                            >
                               <img
                                 src={
                                   darkMode ? IconLogoutDark : IconLogoutLight
@@ -276,7 +286,8 @@ function HeaderSidebar() {
                 <div
                   tabIndex={0}
                   role="button"
-                  className="btn btn-ghost btn-circle avatar mx-2 w-14 h-14 rounded-full -ml-3">
+                  className="btn btn-ghost btn-circle avatar mx-2 w-14 h-14 rounded-full -ml-3"
+                >
                   <div className="w-14 h-14 p-3 rounded-full overflow-hidden bg-neutral-80 flex items-center justify-center text-secondary-40 font-bold text-2xl mx-auto">
                     {user ? (
                       user.photoURL ? (

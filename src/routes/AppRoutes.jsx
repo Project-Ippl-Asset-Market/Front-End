@@ -39,6 +39,7 @@ import Revenue from "../components/myUserDashboard/Revenue";
 
 // Import Halaman Website start
 import Cart from "../components/payment/Cart";
+import Payment from "../components/payment/Cart";
 import HomePage from "../components/website/web_User-LandingPage/HomePage";
 import { AssetGratis } from "../components/website/Web_User-Gratis/AssetGratis";
 import { AssetVideo } from "../components/website/web_user-AssetVideo/AssetVideo";
@@ -48,6 +49,8 @@ import { Asset2D } from "../components/website/web_user-AssetGame/asset_2D/Asset
 import { Asset3D } from "../components/website/web_user-AssetGame/asset_3D/Asset3D";
 import { AssetAudio } from "../components/website/web_user-AssetGame/asset_audio/AssetAudio";
 import { AssetGame } from "../components/website/web_user-AssetGame/AssetGame";
+import MyAsset from "../components/website/web_User-MyAsset/MyAsset";
+
 // Import Halaman Website End
 
 // eslint-disable-next-line react/prop-types
@@ -72,6 +75,8 @@ const AppRoutes = ({ handleLogout }) => {
           <Route path="/asset-game/Asset-2D" element={<Asset2D />} />
           <Route path="/asset-game/Asset-3D" element={<Asset3D />} />
           <Route path="/asset-game/Asset-audio" element={<AssetAudio />} />
+          <Route path="/my-asset" element={<MyAsset />} />
+
           {/* Route halaman web End */}
           <Route
             path="/dashboard"
@@ -87,6 +92,15 @@ const AppRoutes = ({ handleLogout }) => {
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <Cart onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/payment"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <Payment onLogout={handleLogout} />
               </ProtectedRoute>
             }
           />

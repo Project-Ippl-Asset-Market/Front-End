@@ -47,7 +47,8 @@ import { AssetDataset } from "../components/website/web_User-AssetDataset/AssetD
 import { Asset2D } from "../components/website/web_user-AssetGame/asset_2D/Asset2D";
 import { Asset3D } from "../components/website/web_user-AssetGame/asset_3D/Asset3D";
 import { AssetAudio } from "../components/website/web_user-AssetGame/asset_audio/AssetAudio";
-import { AssetGame } from "../components/website/web_user-AssetGame/AssetGame";
+import AssetGame from "../components/website/web_user-AssetGame/AssetGame";
+
 // Import Halaman Website End
 
 // eslint-disable-next-line react/prop-types

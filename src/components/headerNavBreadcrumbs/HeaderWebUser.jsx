@@ -339,7 +339,7 @@ function HeaderSidebar() {
                                 alt="User Icon"
                                 className="w-5 h-5 me-2"
                               />
-                              <button type="button">Profile</button>
+                              <Link to="/Profil" className="btn-class">Profile</Link>
                             </div>
                           </li>
                           <li>

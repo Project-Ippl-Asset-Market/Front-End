@@ -7,6 +7,9 @@ import SearchResults from "../components/searchResults/SearchResults";
 import Register from "../pages/register";
 import Login from "../pages/login";
 import LupaPassword from "../pages/lupaPassword";
+import Profil from "../components/editProfil/Profil"
+import EditProfil1 from "../components/editProfil/EditProfil1"
+import EditProfil2 from "../components/editProfil/EditProfil2"
 // Import Halaman Dashboard start
 import AdminDashboard from "../components/myAdmin/AdminDashboard";
 import ManageAssetVideo from "../components/manageAssetVideo/ManageAssetVideo";
@@ -320,6 +323,31 @@ const AppRoutes = ({ handleLogout }) => {
             element={
               <ProtectedRoute allowedRoles={["superadmin"]}>
                 <EditFormAdmin onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/Profil"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <Profil onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/editProfil1"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <EditProfil1 onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/editProfil2"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <EditProfil2 onLogout={handleLogout} />
               </ProtectedRoute>
             }
           />

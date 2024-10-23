@@ -1,30 +1,43 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "/src/components/headerNavBreadcrumbs/HeaderWebUser";
-//import { NavbarSection } from "./NavbarSection";
 import Iconcheck from "/src/assets/icon/iconPayment/check.png";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const PaymentSuccess = () => {
-  // useEffect to load Midtrans Snap script
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
-    script.setAttribute("data-client-key", "SB-Mid-client-QM4rGhnfcyjCT3LL"); // Client Key kamu
-    script.async = true;
-    document.body.appendChild(script);
+  const [transaction, setTransaction] = useState(null); // Untuk menyimpan data transaksi
+  const location = useLocation();
+  const navigate = useNavigate();
 
-    return () => {
-      document.body.removeChild(script);
+  // Ambil order_id dari query params di URL (bukan orderId)
+  const queryParams = new URLSearchParams(location.search);
+  const orderId = queryParams.get("order_id"); // Ubah dari "orderId" menjadi "order_id"
+
+  // Fetch data transaksi dari backend
+  useEffect(() => {
+    const fetchTransaction = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/after-pay?orderId=${orderId}`
+        );
+        const data = await response.json();
+        setTransaction(data.transaction);
+      } catch (error) {
+        console.error("Error fetching transaction details:", error);
+      }
     };
-  }, []);
+
+    if (orderId) {
+      fetchTransaction();
+    }
+  }, [orderId]);
 
   // Handle button click to navigate
   const handleGoToHome = () => {
-    window.location.href = "/cart"; // Ganti dengan URL halaman utama
+    navigate("/cart"); // Ganti dengan URL halaman utama
   };
 
   const handleViewTransactionDetails = () => {
-    window.location.href = "/transaction-details"; // Ganti dengan URL halaman detail transaksi
+    navigate(`/transaction-detail/${orderId}`); // Ganti dengan URL halaman detail transaksi
   };
 
   return (
@@ -33,7 +46,6 @@ const PaymentSuccess = () => {
         <div className="pt-[80px] w-full">
           <Header />
         </div>
-        /
       </div>
 
       <div className="container mx-auto py-40 flex justify-center">
@@ -42,7 +54,15 @@ const PaymentSuccess = () => {
             <img src={Iconcheck} alt="icon-check" className="w-16 h-16" />
           </div>
           <h2 className="text-3xl font-semibold mb-4">Pembayaran Berhasil!</h2>
-          <p className="mb-8">Terima kasih telah melakukan pembayaran.</p>
+
+          {transaction ? (
+            <div>
+              <p className="mb-8">Order ID: {transaction.orderId}</p>
+              <p>Total Amount: {transaction.grossAmount}</p>
+            </div>
+          ) : (
+            <p>Memuat detail transaksi...</p>
+          )}
 
           <div className="flex justify-center space-x-5">
             <button

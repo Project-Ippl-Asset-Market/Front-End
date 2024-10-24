@@ -9,6 +9,7 @@ import {
   runTransaction,
   getDocs,
   setDoc,
+  getDoc,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import HeaderNav from "../../headerNavBreadcrumbs/HeaderWebUser";
@@ -29,6 +30,10 @@ export function AssetDataset() {
   const [selectedasset, setSelectedasset] = useState(null);
   const [alertLikes, setAlertLikes] = useState(false);
   const [isProcessingLike, setIsProcessingLike] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [purchasedAssets, setPurchasedAssets] = useState(new Set());
+  const [validationMessage, setValidationMessage] = useState("");
 
   // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
@@ -65,6 +70,13 @@ export function AssetDataset() {
 
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    const results = AssetsData.filter((asset) =>
+      asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setSearchResults(results);
+  }, [searchTerm, AssetsData]);
 
   useEffect(() => {
     const fetchUserLikes = async () => {
@@ -143,42 +155,70 @@ export function AssetDataset() {
     }
   };
 
-  const handleAddToCart = async (selectedasset) => {
+  // Fungsi untuk memvalidasi apakah pengguna dapat menambahkan aset ke keranjang
+  const validateAddToCart = (assetId) => {
     if (!currentUserId) {
-      alert("Anda perlu login untuk menambahkan asset ke keranjang");
-      navigate("/login");
-      return;
+      setValidationMessage(
+        "Anda perlu login untuk menambahkan asset ke keranjang."
+      );
+      return false;
     }
+    if (purchasedAssets.has(assetId)) {
+      setValidationMessage(
+        "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
+      );
+      return false;
+    }
+    return true; // Validasi berhasil
+  };
+
+  // Fungsi untuk menambahkan aset ke keranjang
+  const handleAddToCart = async (selectedasset) => {
+    if (!validateAddToCart(selectedasset.id)) return; // Validasi
+
+    // Membuat referensi dokumen untuk keranjang menggunakan ID aset
+    const cartRef = doc(
+      db,
+      "cartAssets",
+      `${currentUserId}_${selectedasset.id}` // ID dokumen mengikuti ID asset
+    );
 
     try {
-      const cartRef = doc(
-        db,
-        "cartAssets",
-        `${currentUserId}_${selectedasset.id}`
-      );
+      // Menggunakan getDoc untuk mendapatkan snapshot dokumen
+      const cartSnapshot = await getDoc(cartRef);
+
+      // Memeriksa keberadaan dokumen keranjang
+      if (cartSnapshot.exists()) {
+        setValidationMessage("Anda sudah menambahkan asset ini ke keranjang.");
+        return;
+      }
+
+      // Menambahkan aset ke keranjang
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
+        datasetImage: selectedasset.datasetImage,
         datasetName: selectedasset.datasetName,
         description: selectedasset.description,
         price: selectedasset.price,
-        datasetImage: selectedasset.datasetImage,
         category: selectedasset.category,
       });
-      alert("Asset berhasil ditambahkan ke keranjang!");
+      // alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {
       console.error("Error adding to cart: ", error);
     }
   };
 
-  const handleBuyNow = () => {
+  const handleBuyNow = async () => {
     if (!currentUserId) {
       alert("Anda perlu login untuk membeli asset");
       navigate("/login");
       return;
     }
+    await handleAddToCart(selectedasset);
 
-    navigate("/payment");
+    // Navigasi ke halaman keranjang
+    navigate("/cart");
   };
 
   // Menampilkan modal
@@ -193,13 +233,70 @@ export function AssetDataset() {
     setSelectedasset(null);
   };
 
+  // Filter berdasarkan pencarian
+  const filteredAssetsData = AssetsData.filter((asset) =>
+    asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
       <div className="w-full shadow-lg bg-primary-100 dark:text-primary-100 relative z-40 ">
-        <div className="pt-[50px] sm:pt-[70px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
+        <div className="-mt-10 pt-[2px] sm:pt-[60px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
           <HeaderNav />
         </div>
-        <NavbarSection />
+        <div className="mt-0 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+          <NavbarSection />
+        </div>
+      </div>
+
+      <div className="absolute ">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[47%] xl:left-[50%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[146px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-[500px] sm:w-[300px] md:w-[300px] lg:w-[500px] xl:w-[600px] 2xl:w-[1200px]">
+          <div className="justify-center">
+            <form
+              className=" mx-auto px-20  w-[470px] sm:w-[400px] md:w-[450px] lg:w-[700px] xl:w-[800px] 2xl:w-[1200px]"
+              onSubmit={(e) => e.preventDefault()}
+            >
+              <div className="relative">
+                <div className="relative">
+                  <input
+                    type="search"
+                    id="location-search"
+                    className="block w-full p-4 pl-24 placeholder:pr-10 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                    placeholder="Search assets..."
+                    required
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <span className="absolute inset-y-0 left-8 flex items-center text-gray-500 dark:text-gray-400">
+                    <svg
+                      className="w-6 h-6 mx-auto"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 18 18"
+                    >
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+                      />
+                    </svg>
+                  </span>
+                  <span className="absolute inset-y-0 left-20 flex items-center text-neutral-20 dark:text-neutral-20 text-[20px]">
+                    |
+                  </span>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+          {searchResults.length === 0 && searchTerm && (
+            <p className="text-black text-[20px]">No assets found</p>
+          )}
+        </div>
       </div>
 
       <div className="w-full p-12 mx-auto">
@@ -209,12 +306,14 @@ export function AssetDataset() {
             <span className="block sm:inline">{alertLikes}</span>
             <button
               className="absolute top-0 bottom-0 right-0 px-4 py-3"
-              onClick={() => setAlertLikes(false)}>
+              onClick={() => setAlertLikes(false)}
+            >
               <svg
                 className="fill-current h-6 w-6 text-red-500"
                 role="button"
                 xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20">
+                viewBox="0 0 20 20"
+              >
                 <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
               </svg>
             </button>
@@ -225,16 +324,17 @@ export function AssetDataset() {
         </h1>
       </div>
       <div className=" pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
-        {/* Body section */}
         <div className=" mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]  ">
-          {AssetsData.map((data) => {
+          {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
+            const isPurchased = purchasedAssets.has(data.id);
 
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between"
+              >
                 <div className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px]">
                   <img
                     src={data.datasetImage || CustomImage}
@@ -247,6 +347,12 @@ export function AssetDataset() {
                     }}
                   />
                 </div>
+
+                {isPurchased && (
+                  <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                    Sudah Dibeli
+                  </div>
+                )}
 
                 {/* details section */}
                 <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-10">
@@ -263,7 +369,8 @@ export function AssetDataset() {
                   <div className="flex justify-between items-center mt-auto gap-2">
                     <button
                       onClick={() => handleLikeClick(data.id, likesAsset)}
-                      className="flex justify-start items-center mr-2">
+                      className="flex justify-start items-center mr-2"
+                    >
                       {likedByCurrentUser ? (
                         <FaHeart className="text-red-600" />
                       ) : (
@@ -293,7 +400,8 @@ export function AssetDataset() {
           <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] sm:w-[700px] md:w-[700px] lg:w-[700px] xl:w-[700px] 2xl:w-[700px] mx-4 flex relative">
             <button
               className="absolute top-1 sm:top-2 md:top-2 lg:top-3 xl:top-2 2xl:top-2 right-3 sm:right-2 md:right-2 lg:right-3 xl:right-2 2xl:right-2 text-gray-600 dark:text-gray-400 text-2xl sm:text-xl md:text-xl lg:text-[35px] xl:text-[40px] 2xl:text-2xl"
-              onClick={closeModal}>
+              onClick={closeModal}
+            >
               &times;
             </button>
             <img
@@ -323,7 +431,8 @@ export function AssetDataset() {
               <div className="mt-28">
                 <button
                   onClick={() => handleAddToCart(selectedasset)}
-                  className="flex p-2 text-center items-center justify-center bg-neutral-60 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-10 rounded-md">
+                  className="flex p-2 text-center items-center justify-center bg-neutral-60 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-10 rounded-md"
+                >
                   <img
                     src={IconCart}
                     alt="Cart Icon"
@@ -333,7 +442,8 @@ export function AssetDataset() {
                 </button>
                 <button
                   onClick={() => handleBuyNow(selectedasset)}
-                  className="flex p-2 text-center items-center justify-center bg-secondary-40 text-primary-100 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-6 rounded-md">
+                  className="flex p-2 text-center items-center justify-center bg-secondary-40 text-primary-100 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-6 rounded-md"
+                >
                   <img
                     src={IconDollar}
                     alt="Cart Icon"
@@ -347,7 +457,7 @@ export function AssetDataset() {
         </div>
       )}
 
-      <footer className=" min-h-[181px] flex flex-col items-center justify-center">
+      <footer className="min-h-screen flex flex-col items-center justify-center">
         <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
           <a href="#">Teams And Conditions</a>
           <a href="#">File Licenses</a>

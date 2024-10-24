@@ -25,7 +25,7 @@ const NavbarSection = () => {
 
   return (
     <>
-      <nav className="dark:bg-neutral-5 dark:text-primary-100 text-neutral-10 w-full fixed font-poppins  bg-neutral-90 bg-opacity-90">
+      <nav className="dark:bg-neutral-5 dark:text-primary-100 text-neutral-10 w-full fixed font-poppins  bg-neutral-90  ">
         <div className="mx-[20px] flex justify-between items-center mt-0 w-full   ">
           <div className="flex-grow " />
           <button
@@ -44,7 +44,7 @@ const NavbarSection = () => {
           className={`${
             isOpen ? "block" : "hidden sm:flex navbar-hidden "
           } absolute top-full left-0 w-full sm:relative sm:w-auto bg-neutral-90 dark:bg-neutral-5 dark:text-primary-100 text-neutral-10 shadow-lg  `}>
-          <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 text-right mx-2 mt-0 sm:mt-4 md:mt-4 lg:mt-6 xl:mt- 2xl:mt-10">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 text-right mx-2 mt-0 sm:mt-4 md:mt-4 lg:mt-6 xl:mt-8 2xl:mt-10">
             {/* Telusuri Semua */}
             <div className="relative group mt-4 flex">
               <Link
@@ -60,7 +60,9 @@ const NavbarSection = () => {
                 hover:bg-secondary-40 sm:hover:bg-secondary-40 md:hover:bg-secondary-40 lg:hover:bg-transparent xl:hover:bg-transparent 2xl:hover:bg-transparent 
                 dark:hover:bg-secondary-40 sm:dark:hover:bg-secondary-40 md:dark:hover:bg-secondary-40 lg:dark:hover:bg-transparent xl:dark:hover:bg-transparent 2xl:dark:hover:bg-transparent 
                 text-neutral-10 group-hover:no-underline`}>
-                Telusuri Semua
+                <div>
+                  <p>Telusuri Semua</p>
+                </div>
                 <span className="hidden sm:flex items-center text-[24px] ml-4 mt-0 sm:-mt-2 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
                   |
                 </span>
@@ -307,7 +309,7 @@ const NavbarSection = () => {
                       Halaman Bantuan
                     </Link>
                     <Link
-                      to=""
+                      to="/panduan"
                       className="hover:bg-secondary-40 hover:rounded-md hover:text-primary-100 sm:hover:text-primary-100 dark:hover:bg-secondary-40 dark:text-primary-100 dark:hover:text-primary-100 text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px] xl:text-[14px] 2xl:text-[14px] h-10 p-3 transition-all duration-200 ">
                       Panduan
                     </Link>

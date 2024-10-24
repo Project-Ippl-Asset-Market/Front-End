@@ -8,7 +8,7 @@ const DropdownMenu = () => {
   // Item untuk dropdown
   const dropdownItems = {
     "3D": [
-      { name: "Animations", path: "/3d/animations" },
+      { name: "Animations", path: "/asset-game/Asset-2D" },
       { name: "Characters", path: "/3d/characters" },
       { name: "Environments", path: "/3d/environments" },
       { name: "GUI", path: "/3d/gui" },

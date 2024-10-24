@@ -1,4 +1,4 @@
-import { db } from "../../../firebase/firebaseConfig";
+import { db } from "../../../../firebase/firebaseConfig";
 import { useState, useEffect } from "react";
 import {
   collection,
@@ -11,16 +11,16 @@ import {
   setDoc,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import HeaderNav from "../../headerNavBreadcrumbs/HeaderWebUser";
-import NavbarSection from "../web_User-LandingPage/NavbarSection";
+import HeaderNav from "../../../headerNavBreadcrumbs/HeaderWebUser";
+import NavbarSection from "../../web_User-LandingPage/NavbarSection";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
-import CustomImage from "../../../assets/assetmanage/Iconrarzip.svg";
-import IconDollar from "../../../assets/assetWeb/iconDollarLight.svg";
-import IconCart from "../../../assets/assetWeb/iconCart.svg";
+import CustomImage from "../../../../assets/assetmanage/Iconrarzip.svg";
+import IconDollar from "../../../../assets/assetWeb/iconDollarLight.svg";
+import IconCart from "../../../../assets/assetWeb/iconCart.svg";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 
-export function MapAssetVideo() {
+export function AssetAudio() {
   const navigate = useNavigate();
   const [AssetsData, setAssetsData] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -29,7 +29,6 @@ export function MapAssetVideo() {
   const [selectedasset, setSelectedasset] = useState(null);
   const [alertLikes, setAlertLikes] = useState(false);
   const [isProcessingLike, setIsProcessingLike] = useState(false);
-  const [purchasedAssets, setPurchasedAssets] = useState(new Set());
 
   // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
@@ -49,13 +48,14 @@ export function MapAssetVideo() {
   // Mengambil data asset dari Firestore
   useEffect(() => {
     const unsubscribe = onSnapshot(
-      collection(db, "assetVideos"),
+      collection(db, "assetAudios"),
       async (snapshot) => {
         const Assets = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
 
+        // Filter asset dengan harga tidak terdefinisi atau nol
         const filteredAssets = Assets.filter(
           (asset) => asset.price !== undefined && asset.price > 0
         );
@@ -65,32 +65,6 @@ export function MapAssetVideo() {
 
     return () => unsubscribe();
   }, []);
-
-  useEffect(() => {
-    const fetchUserPurchases = async () => {
-      if (!currentUserId) return;
-
-      const purchasesQuery = query(
-        collection(db, "purchasedAssets"),
-        where("userId", "==", currentUserId)
-      );
-
-      try {
-        const purchasesSnapshot = await getDocs(purchasesQuery);
-        const userPurchases = new Set();
-
-        purchasesSnapshot.forEach((doc) => {
-          userPurchases.add(doc.data().assetId);
-        });
-
-        setPurchasedAssets(userPurchases);
-      } catch (error) {
-        console.error("Error fetching purchases: ", error);
-      }
-    };
-
-    fetchUserPurchases();
-  }, [currentUserId]);
 
   useEffect(() => {
     const fetchUserLikes = async () => {
@@ -134,7 +108,7 @@ export function MapAssetVideo() {
     // Tandai bahwa kita sedang memproses
     setIsProcessingLike(true);
 
-    const assetRef = doc(db, "assetVideos", assetId);
+    const assetRef = doc(db, "assetAudios", assetId);
     const likeRef = doc(db, "likes", `${currentUserId}_${assetId}`);
 
     try {
@@ -185,9 +159,14 @@ export function MapAssetVideo() {
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
-        videoName: selectedasset.videoName,
+        datasetName: selectedasset.assetAudiosName,
+        description: selectedasset.description,
         price: selectedasset.price,
-        video: selectedasset.uploadUrlVideo,
+        datasetImage: selectedasset.uploadUrlAudio,
+        category: selectedasset.category,
+        createdAt: selectedasset.createdAt,
+        uploadedByEmail: selectedasset.uploadedByEmail,
+        likeAsset: selectedasset.likeAsset,
       });
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {
@@ -207,6 +186,7 @@ export function MapAssetVideo() {
 
   // Menampilkan modal
   const openModal = (asset) => {
+    console.log("Opening modal for asset:", asset); // Add this line
     setSelectedasset(asset);
     setModalIsOpen(true);
   };
@@ -226,9 +206,9 @@ export function MapAssetVideo() {
         <NavbarSection />
       </div>
 
-      <div className="w-full p-12 mx-auto">
+      <div className="w-full p-12 mx-auto mt-32 ">
         {alertLikes && (
-          <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
+          <div className="z-40 alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
             <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
             <span className="block sm:inline">{alertLikes}</span>
             <button
@@ -244,58 +224,40 @@ export function MapAssetVideo() {
             </button>
           </div>
         )}
-        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
-          All Category
-        </h1>
       </div>
       <div className=" pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
-        {/* Body section */}
-        <div className=" mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]  ">
+        <div className="mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px]">
           {AssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
-            const isPurchased = purchasedAssets.has(data.id);
 
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[270px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
                 <div className="w-full h-[150px]">
-                  {isPurchased ? (
-                    <video
-                      src={data.uploadUrlVideo || CustomImage}
-                      alt="video"
-                      className="h-full w-full object-cover rounded-t-[10px] mx-auto border-none cursor-pointer"
-                      controls
+                  <a
+                    href={data.assetAudiosImage}
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    <img
+                      src={data.assetAudiosImage || CustomImage}
+                      alt="Asset Image"
+                      className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
                       onClick={() => openModal(data)}
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = CustomImage;
                       }}
                     />
-                  ) : (
-                    <div
-                      className="h-full w-full relative rounded-t-[10px] mx-auto border-none cursor-pointer"
-                      onClick={() =>
-                        alert("Anda perlu membeli aset ini untuk memutar video")
-                      }>
-                      <img
-                        src={data.thumbnail || CustomImage}
-                        alt="thumbnail"
-                        className="h-full w-full object-cover rounded-t-[10px]"
-                      />
-                      <p className="absolute inset-0 flex items-center justify-center text-white bg-black bg-opacity-50 rounded-t-[10px]">
-                        Video Terkunci
-                      </p>
-                    </div>
-                  )}
+                  </a>
                 </div>
 
-                {/* Detail section */}
+                {/* Details section */}
                 <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-4">
                   <div>
                     <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
-                      {data.videoName}
+                      {data.assetAudiosName}
                     </p>
                     <h4 className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px] dark:text-primary-100">
                       {data.description.length > 24
@@ -310,7 +272,7 @@ export function MapAssetVideo() {
                       {likedByCurrentUser ? (
                         <FaHeart className="text-red-600" />
                       ) : (
-                        <FaRegHeart className="text-neutral-10 text-[11px] sm:text-[14px] dark:text-primary-100" />
+                        <FaRegHeart className="text-neutral-10 text-[11px] sm:text-[14px] dark:text-primary-100 " />
                       )}
                       <p className="ml-2 text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
                         ({likesAsset})
@@ -339,26 +301,24 @@ export function MapAssetVideo() {
               onClick={closeModal}>
               &times;
             </button>
-            <div className="w-full h-[280px]">
-              <video
-                src={selectedasset.uploadUrlVideo || CustomImage}
-                alt="asset video"
-                className="h-full w-full object-cover rounded-[10px] mx-auto border-none cursor-pointer"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = CustomImage;
-                }}
-              />
-            </div>
+            <img
+              src={selectedasset.assetAudiosImage || CustomImage}
+              alt="asset Image"
+              className="w-1/2 h-[260px] mb-4"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = CustomImage;
+              }}
+            />
             <div className="w-1/2 pl-4 ">
               <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
-                {selectedasset.videoName}
+                {selectedasset.assetAudiosName}
               </h2>
               <p className="text-sm mb-2 dark:text-primary-100 mt-4">
                 Rp. {selectedasset.price.toLocaleString("id-ID")}
               </p>
               <div className="text-sm mb-2 dark:text-primary-100 mt-4">
-                <label className="flex-col mt-2">Deskripsi gambar:</label>
+                <label className="flex-col mt-2">Deskripsi Video:</label>
                 <div className="mt-2">{selectedasset.description}</div>
               </div>
 
@@ -391,6 +351,18 @@ export function MapAssetVideo() {
           </div>
         </div>
       )}
+
+      <footer className=" min-h-[181px] flex flex-col items-center justify-center">
+        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
+          <a href="#">Teams And Conditions</a>
+          <a href="#">File Licenses</a>
+          <a href="#">Refund Policy</a>
+          <a href="#">Privacy Policy</a>
+        </div>
+        <p className="text-[10px] md:text-[12px]">
+          Copyright © 2024 - All right reserved by ACME Industries Ltd
+        </p>
+      </footer>
     </div>
   );
 }

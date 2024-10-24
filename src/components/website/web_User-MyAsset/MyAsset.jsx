@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import {
   collection,
   doc,
+  setDoc,
   query,
   where,
   runTransaction,
-  addDoc,
   getDocs,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -17,7 +17,7 @@ import CustomImage from "../../../assets/assetmanage/Iconrarzip.svg";
 import IconDownload from "../../../assets/icon/iconDownload/iconDownload.svg";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 
-export function AssetGratis() {
+export function MyAsset() {
   const [AssetsData, setAssetsData] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [likedAssets, setLikedAssets] = useState(new Set());
@@ -25,7 +25,6 @@ export function AssetGratis() {
   const [selectedasset, setSelectedasset] = useState(null);
   const [alertLikes, setAlertLikes] = useState(false);
   const [isProcessingLike, setIsProcessingLike] = useState(false);
-  const myAssetsCollectionRef = collection(db, "myAssets");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
 
@@ -35,27 +34,40 @@ export function AssetGratis() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setCurrentUserId(user.uid);
-        console.log("Current User ID:", user.uid); // Tambahkan log di sini
       } else {
         setCurrentUserId(null);
-        console.log("Current User ID is null"); // Tambahkan log saat tidak ada user
       }
     });
 
     return () => unsubscribe();
-  }, []); // Tidak ada dependensi karena ini hanya perlu dijalankan sekali
+  }, []);
 
   const fetchAssets = async () => {
     const collectionsToFetch = [
-      "assetAudios",
       "assetImages",
-      "assetDatasets",
-      "assetImage2D",
-      "assetImage3D",
       "assetVideos",
+      "assetAudios",
+      "assetImage3D",
+      "assetImage2D",
+      "assetDatasets",
     ];
+    const buyAssetsCollection = "buyAssets"; // Koleksi untuk buyAssets
+    const myAssetsCollection = "myAssets"; // Koleksi untuk myAssets
 
     try {
+      // Step 1: Ambil semua data dari koleksi buyAssets
+      const buyAssetsSnapshot = await getDocs(
+        collection(db, buyAssetsCollection)
+      );
+      const buyAssetsData = buyAssetsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        assetId: doc.data().assetId, // Ambil assetId dari buyAssets
+        userId: doc.data().boughtBy, // Ambil userId dari buyAssets
+        price: doc.data().price, // Ambil price dari buyAssets (asumsi ada field price)
+      }));
+
+      // Step 2: Ambil semua dokumen dari collectionsToFetch
       const allAssets = await Promise.all(
         collectionsToFetch.map(async (collectionName) => {
           const snapshot = await getDocs(collection(db, collectionName));
@@ -65,11 +77,46 @@ export function AssetGratis() {
           }));
         })
       );
+
+      // Gabungkan semua dokumen dari koleksi yang berbeda
       const combinedAssets = allAssets.flat();
-      const filteredAssets = combinedAssets.filter(
-        (asset) => parseFloat(asset.price) === 0
+
+      // Step 3: Ambil data dari myAssets dan filter berdasarkan currentUserId
+      const myAssetsSnapshot = await getDocs(
+        collection(db, myAssetsCollection)
       );
-      setAssetsData(filteredAssets);
+      const myAssetsData = myAssetsSnapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        .filter((asset) => asset.userId === currentUserId); // Filter berdasarkan currentUserId
+
+      // Step 4: Gabungkan matchedAssets dari buyAssets dan myAssets
+      const matchedAssets = combinedAssets.filter((asset) =>
+        buyAssetsData.some(
+          (buyAsset) =>
+            buyAsset.assetId === asset.id && buyAsset.userId === currentUserId
+        )
+      );
+
+      // Step 5: Gabungkan matchedAssets dengan myAssets
+      const allFilteredAssets = [...matchedAssets, ...myAssetsData];
+
+      // Step 6: Set data yang sudah difilter berdasarkan assetId, userId, dan price
+      const finalAssetsData = allFilteredAssets.map((asset) => {
+        const buyAsset = buyAssetsData.find(
+          (buyAsset) => buyAsset.assetId === asset.id
+        );
+
+        // Jika asset ditemukan di buyAssets, tambahkan data userId dan price dari buyAssets
+        return buyAsset
+          ? { ...asset, userId: buyAsset.userId, price: buyAsset.price }
+          : asset;
+      });
+
+      // Set AssetsData dengan hasil akhir
+      setAssetsData(finalAssetsData);
     } catch (error) {
       console.error("Error fetching assets: ", error);
     }
@@ -77,7 +124,7 @@ export function AssetGratis() {
 
   useEffect(() => {
     fetchAssets();
-  }, []);
+  }, [currentUserId]);
 
   // Filter pencarian
   useEffect(() => {
@@ -168,55 +215,6 @@ export function AssetGratis() {
     }
   };
 
-  const handleSaveToMyAssets = async () => {
-    // Periksa apakah currentUserId dan selectedasset ada
-    if (!currentUserId || !selectedasset) {
-      alert("Anda perlu login untuk menyimpan Asset ini.");
-      return;
-    }
-
-    // Log untuk memverifikasi currentUserId
-    console.log("Current User ID:", currentUserId);
-    console.log("Selected Asset:", selectedasset);
-
-    // Buat data asset baru dengan userId yang sesuai
-    const newAssetData = {
-      ...selectedasset,
-      userId: currentUserId, // Tetapkan userId ke currentUserId
-      savedAt: new Date(),
-    };
-
-    // Log untuk memverifikasi data yang akan disimpan
-    console.log("Asset Data to Save:", newAssetData);
-
-    try {
-      // Cek apakah asset sudah ada di myAssets
-      const querySnapshot = await getDocs(
-        query(
-          myAssetsCollectionRef,
-          where("userId", "==", currentUserId),
-          where("id", "==", selectedasset.id) // Sesuaikan dengan field asset yang kamu gunakan
-        )
-      );
-
-      if (!querySnapshot.empty) {
-        // Asset sudah ada, tampilkan peringatan
-        alert("Asset ini sudah disimpan ke My Asset!");
-        return;
-      }
-
-      // Menambahkan dokumen baru dengan addDoc
-      const docRef = await addDoc(myAssetsCollectionRef, newAssetData);
-
-      console.log("Document written with ID: ", docRef.id); // Log ID dokumen yang baru dibuat
-      alert("Asset telah disimpan ke My Asset!");
-      closeModal();
-    } catch (error) {
-      console.error("Error saving asset to My Assets: ", error);
-      alert("Terjadi kesalahan saat menyimpan asset.");
-    }
-  };
-
   // Menampilkan modal
   const openModal = (asset) => {
     setSelectedasset(asset);
@@ -256,10 +254,10 @@ export function AssetGratis() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[47%] xl:left-[50%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[145px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[300px] lg:w-[500px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[47%] xl:left-[50%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[146px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-[500px] sm:w-[300px] md:w-[300px] lg:w-[500px] xl:w-[600px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[570px] sm:w-[400px] md:w-[450px] lg:w-[700px] xl:w-[800px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[470px] sm:w-[400px] md:w-[450px] lg:w-[700px] xl:w-[800px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}>
               <div className="relative">
                 <div className="relative">
@@ -296,6 +294,11 @@ export function AssetGratis() {
             </form>
           </div>
         </div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+          {searchResults.length === 0 && searchTerm && (
+            <p className="text-black text-[20px]">No assets found</p>
+          )}
+        </div>
       </div>
 
       <div className="w-full p-12 mx-auto">
@@ -317,27 +320,27 @@ export function AssetGratis() {
           </div>
         )}
         <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
-          All Category
+          My Asset
         </h1>
       </div>
-      <div className="pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
+      <div className="pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] min-h-screen">
         <div className=" mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]  ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
             let collectionsToFetch = "";
             if (data.assetAudiosName) {
-              collectionsToFetch = "assetAudios";
+              collectionsToFetch = "myAssets";
             } else if (data.imageName) {
-              collectionsToFetch = "assetImages";
+              collectionsToFetch = "myAssets";
             } else if (data.datasetName) {
-              collectionsToFetch = "assetDatasets";
+              collectionsToFetch = "myAssets";
             } else if (data.asset2DName) {
-              collectionsToFetch = "assetImage2D";
+              collectionsToFetch = "myAssets";
             } else if (data.asset3DName) {
-              collectionsToFetch = "assetImage3D";
+              collectionsToFetch = "myAssets";
             } else if (data.videoName) {
-              collectionsToFetch = "assetVideos";
+              collectionsToFetch = "myAssets";
             }
 
             return (
@@ -353,9 +356,7 @@ export function AssetGratis() {
                         src={data.uploadUrlVideo}
                         alt="Asset Video"
                         className="h-full w-full rounded-t-[10px] mx-auto border-none"
-                        onContextMenu={(e) => e.preventDefault()}
                         controls
-                        controlsList="nodownload"
                       />
                     ) : (
                       <img
@@ -438,7 +439,6 @@ export function AssetGratis() {
                   src={selectedasset.uploadUrlVideo}
                   alt="Asset Video"
                   className="h-full w-full rounded-t-[10px]"
-                  onContextMenu={(e) => e.preventDefault()}
                   controls
                   controlsList="nodownload"
                 />
@@ -468,16 +468,17 @@ export function AssetGratis() {
               <p className="text-sm mb-2 dark:text-primary-100">
                 Kategori: {selectedasset.category}
               </p>
-              <button
+              {/* <button
                 className="text-primary-100 flex p-2 text-center items-center justify-center bg-neutral-60 w-48 h-10 mt-36 rounded-md"
-                onClick={handleSaveToMyAssets}>
+                onClick={handleSaveToMyAssets}
+              >
                 <img
                   src={IconDownload}
                   alt="Cart Icon"
                   className="w-6 h-6 mr-2"
                 />
                 <p>Simpan ke My Asset</p>
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
@@ -498,4 +499,4 @@ export function AssetGratis() {
   );
 }
 
-export default AssetGratis;
+export default MyAsset;

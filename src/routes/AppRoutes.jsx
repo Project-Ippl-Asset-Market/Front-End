@@ -37,14 +37,6 @@ import SaleAssets from "../components/myUserDashboard/SaleAssets";
 import Revenue from "../components/myUserDashboard/Revenue";
 // Import Halaman Dashboard End
 
-// Import Halaman Panduan
-import SidebarPanduan from "../components/panduan/components/SidebarPanduan";
-import PanduanRegistrasi from "../components/Panduan/components/PanduanRegistrasi";
-import PanduanLogin from "../components/Panduan/components/PanduanLogin";
-import EditAsset from "../components/Panduan/components/PanduanEditAsset";
-import JualAsset from "../components/Panduan/components/PanduanJualAsset";
-import PanduanLupaPassword from "../components/Panduan/components/PanduanLupaPassword";
-
 // Import Halaman Website start
 import Cart from "../components/payment/Cart";
 import Payment from "../components/payment/Cart";
@@ -58,6 +50,11 @@ import { Asset3D } from "../components/website/web_user-AssetGame/asset_3D/Asset
 import { AssetAudio } from "../components/website/web_user-AssetGame/asset_audio/AssetAudio";
 import { AssetGame } from "../components/website/web_user-AssetGame/AssetGame";
 // Import Halaman Website End
+
+//Import Halaman Panduan Start
+import Panduan from "../components/Panduan/Panduan";
+import PanduanRegistrasi from "../components/Panduan/PanduanRegistrasi";
+//import Halaman Panduan End
 
 // eslint-disable-next-line react/prop-types
 const AppRoutes = ({ handleLogout }) => {
@@ -341,14 +338,9 @@ const AppRoutes = ({ handleLogout }) => {
               </ProtectedRoute>
             }
           />
-
-          <Route path="/panduan" element={<SidebarPanduan/>}/> 
+          <Route path="/panduan" element={<Panduan/>} />
           <Route path="/panduanregistrasi" element={<PanduanRegistrasi/>} />
-          <Route path="/panduanlupapassword" element={<PanduanLupaPassword/>} />  
-          <Route path="/panduanlogin" element={<PanduanLogin />} />
-          <Route path="/panduaneditaset" element={<EditAsset />}/>
-          <Route path="/panduanjualaset"element={<JualAsset/>}/>
-
+          
           <Route path="/" element={<HomePage />} />
           <Route path="*" element={<ErrorPage />} />
         </Routes>

@@ -19,15 +19,48 @@ import { onAuthStateChanged } from "firebase/auth";
 import { deleteObject, ref } from "firebase/storage";
 import CustomImage from "../../assets/assetmanage/Iconrarzip.svg";
 
-function ManageAsset2D() {
+function ManageAsset2D() { // Ubah nama fungsinya untuk segmen 2D
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
-  const [assets, setAssets] = useState([]);
+  const [assets, setAssets] = useState([]); // Mengelola data asset 2D
+
   const [user, setUser] = useState(null);
   const [role, setRole] = useState("");
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredAssets, setFilteredAssets] = useState([]);
+
+  // Pagination state untuk tabelnya
+  const [currentPage, setCurrentPage] = useState(1);
+  const asset2DPerPage = 5; // Ganti datasetPerPage menjadi asset2DPerPage
+
+  useEffect(() => {
+    // Filter admins whenever search term changes
+    if (searchTerm) {
+      setFilteredAssets(
+        assets.filter((asset) =>
+          asset.asset2DName &&
+          asset.asset2DName.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setAssets(assets);
+    }
+  
+    // Reset current page to 1 when search term changes
+    setCurrentPage(1);
+  }, [searchTerm, assets]);
+  
+  // Menghitung jumlah halaman
+  const totalPages = Math.ceil(filteredAssets.length / asset2DPerPage);
+  const startIndex = (currentPage - 1) * asset2DPerPage;
+  const currentDatasets = filteredAssets.slice(
+    startIndex,
+    startIndex + asset2DPerPage
+  );
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -99,15 +132,15 @@ function ManageAsset2D() {
       try {
         let q;
         if (role === "superadmin") {
-          // Superadmin dapat melihat semua aset
-          q = query(collection(db, "assetImage2D"));
+          // Superadmin dapat melihat semua aset 2D
+          q = query(collection(db, "assetImage2D")); // Ubah ke "assetImage2D"
         } else if (role === "admin") {
           // Ambil semua aset yang diupload oleh user dan admin
-          q = query(collection(db, "assetImage2D"));
+          q = query(collection(db, "assetImage2D")); // Ubah ke "assetImage2D"
         } else if (role === "user") {
-          // User hanya bisa melihat aset yang dia unggah sendiri
+          // User hanya bisa melihat aset 2D yang dia unggah sendiri
           q = query(
-            collection(db, "assetImage2D"),
+            collection(db, "assetImage2D"), // Ubah ke "assetImage2D"
             where("userId", "==", user.uid)
           );
         }
@@ -127,10 +160,10 @@ function ManageAsset2D() {
 
           items.push({
             id: docSnap.id,
-            asset2DName: data.asset2DName,
+            asset2DName: data.asset2DName, // Ubah datasetName menjadi asset2DName
             description: data.description,
             price: `Rp. ${data.price}`,
-            asset2DImage: data.asset2DImage,
+            asset2DImage: data.asset2DImage, // Ubah datasetImage menjadi asset2DImage
             category: data.category,
             createdAt,
             userId: data.userId,
@@ -157,6 +190,7 @@ function ManageAsset2D() {
         } else {
           // Jika bukan admin, set assets langsung
           setAssets(items);
+          setFilteredAssets(items);
         }
       } catch (error) {
         console.error("Error fetching data: ", error);
@@ -174,11 +208,11 @@ function ManageAsset2D() {
   // Fungsi hapus gambar
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this dataset?"
+      "Are you sure you want to delete this asset 2D?"
     );
     if (confirmDelete) {
       try {
-        // Update the storage path based on assetDatasets structure
+        // Update the storage path based on asset 2D structure
         const ImageRef = ref(storage, `images-asset-2d/asset2D-${id}.zip`);
         await deleteObject(ImageRef);
         await deleteDoc(doc(db, "assetImage2D", id));
@@ -293,10 +327,11 @@ function ManageAsset2D() {
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 w-6 h-6"
                 />
                 <input
-                  type="text"
-                  placeholder="Search"
-                  className="input border-none bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10 h-[40px] w-full focus:outline-none"
-                  required
+                type="text"
+                placeholder="Search"
+                value={searchTerm} // Menghubungkan searchTerm
+                onChange={(e) => setSearchTerm(e.target.value)} // Memperbarui searchTerm
+                className="input border-none bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10 h-[40px] w-full focus:outline-none"
                 />
               </div>
             </div>
@@ -334,7 +369,7 @@ function ManageAsset2D() {
                   </tr>
                 </thead>
                 <tbody>
-                  {assets.map((asset) => (
+                  {currentDatasets.map((asset) => (
                     <tr
                       key={asset.id}
                       className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
@@ -393,13 +428,21 @@ function ManageAsset2D() {
           )}
 
           <div className="flex join pt-72 justify-end ">
-            <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
+          <button
+              className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}>
               «
             </button>
-            <button className="join-item btn dark:bg-neutral-25 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-25 border-neutral-60 dark:border-neutral-25">
-              Page 1
+            <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
+              Page {currentPage} of {totalPages}
             </button>
-            <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
+            <button
+              className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}>
               »
             </button>
           </div>

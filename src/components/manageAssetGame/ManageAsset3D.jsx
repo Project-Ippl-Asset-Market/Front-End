@@ -23,12 +23,45 @@ import CustomImage from "../../assets/assetmanage/Iconrarzip.svg";
 function ManageAsset3D() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
-  const [assets, setAssets] = useState([]);
+  const [assets, setAssets] = useState([]); // Mengelola data asset 2D
+
   const [user, setUser] = useState(null);
   const [role, setRole] = useState("");
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredAssets, setFilteredAssets] = useState([]);
+
+  // Pagination state untuk tabelnya
+  const [currentPage, setCurrentPage] = useState(1);
+  const asset3DPerPage = 5; // Ganti datasetPerPage menjadi asset2DPerPage
+
+  useEffect(() => {
+    // Filter admins whenever search term changes
+    if (searchTerm) {
+      setFilteredAssets(
+        assets.filter((asset) =>
+          asset.asset3DName &&
+          asset.asset3DName.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setAssets(assets);
+    }
+  
+    // Reset current page to 1 when search term changes
+    setCurrentPage(1);
+  }, [searchTerm, assets]);
+  
+  // Menghitung jumlah halaman
+  const totalPages = Math.ceil(filteredAssets.length / asset3DPerPage);
+  const startIndex = (currentPage - 1) * asset3DPerPage;
+  const currentDatasets = filteredAssets.slice(
+    startIndex,
+    startIndex + asset3DPerPage
+  );
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -158,6 +191,7 @@ function ManageAsset3D() {
         } else {
           // Jika bukan admin, set assets langsung
           setAssets(items);
+          setFilteredAssets(items);
         }
       } catch (error) {
         console.error("Error fetching data: ", error);
@@ -294,10 +328,11 @@ function ManageAsset3D() {
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 w-6 h-6"
                 />
                 <input
-                  type="text"
-                  placeholder="Search"
-                  className="input border-none bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10 h-[40px] w-full focus:outline-none"
-                  required
+                type="text"
+                placeholder="Search"
+                value={searchTerm} // Menghubungkan searchTerm
+                onChange={(e) => setSearchTerm(e.target.value)} // Memperbarui searchTerm
+                className="input border-none bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10 h-[40px] w-full focus:outline-none"
                 />
               </div>
             </div>
@@ -335,7 +370,7 @@ function ManageAsset3D() {
                   </tr>
                 </thead>
                 <tbody>
-                  {assets.map((asset) => (
+                  {currentDatasets.map((asset) => (
                     <tr
                       key={asset.id}
                       className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
@@ -394,13 +429,21 @@ function ManageAsset3D() {
           )}
 
           <div className="flex join pt-72 justify-end ">
-            <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
+          <button
+              className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}>
               «
             </button>
-            <button className="join-item btn dark:bg-neutral-25 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-25 border-neutral-60 dark:border-neutral-25">
-              Page 1
+            <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
+              Page {currentPage} of {totalPages}
             </button>
-            <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
+            <button
+              className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}>
               »
             </button>
           </div>

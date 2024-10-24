@@ -23,11 +23,27 @@ function ManageAssetImage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
   const [assets, setAssets] = useState([]);
+
   const [user, setUser] = useState(null);
   const [role, setRole] = useState("");
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredAssets, setFilteredAssets] = useState([]);
+
+  // Pagination state untuk tabelnya
+  const [currentPage, setCurrentPage] = useState(1);
+  const datasetPerPage = 5;
+
+  // Menghitung jumlah halaman
+  const totalPages = Math.ceil(filteredAssets.length / datasetPerPage);
+  const startIndex = (currentPage - 1) * datasetPerPage;
+  const currentDatasets = filteredAssets.slice(
+    startIndex,
+    startIndex + datasetPerPage
+  );
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -157,6 +173,7 @@ function ManageAssetImage() {
         } else {
           // Jika bukan admin, set assets langsung
           setAssets(items);
+          setFilteredAssets(items);
         }
       } catch (error) {
         console.error("Error fetching data: ", error);
@@ -171,6 +188,23 @@ function ManageAssetImage() {
     }
   }, [user, role]);
 
+  useEffect(() => {
+    if (searchTerm) {
+      setFilteredAssets(
+        assets.filter(
+          (asset) =>
+            asset.datasetName &&
+            asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredAssets(assets);
+    }
+
+    // Reset current page to 1 when search term changes
+    setCurrentPage(1);
+  }, [searchTerm, assets]);
+
   // Fungsi hapus gambar
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
@@ -182,7 +216,7 @@ function ManageAssetImage() {
         const ImageRef = ref(storage, `images-dataset/dataset-${id}.zip`);
         await deleteObject(ImageRef);
         await deleteDoc(doc(db, "assetDatasets", id));
-        setAssets(assets.filter((asset) => asset.id !== id));
+        setAssets(assets.filter((assets) => assets.id !== id));
         setAlertSuccess(true);
       } catch (error) {
         console.error("Error deleting dataset: ", error);
@@ -212,7 +246,8 @@ function ManageAssetImage() {
           className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           } sm:translate-x-0`}
-          aria-label="Sidebar">
+          aria-label="Sidebar"
+        >
           <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
             <NavigationItem />
           </div>
@@ -223,13 +258,15 @@ function ManageAssetImage() {
           <div
             role="alert"
             className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] text-[10px] sm:text-[10px] p-4 bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-            onClick={closeAlert}>
+            onClick={closeAlert}
+          >
             <div className="flex items-center justify-center space-x-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 shrink-0 stroke-current"
                 fill="none"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -247,13 +284,15 @@ function ManageAssetImage() {
           <div
             role="alert"
             className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[340px] text-[10px] sm:text-[10px] p-4 bg-primary-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-            onClick={closeAlert}>
+            onClick={closeAlert}
+          >
             <div className="flex items-center justify-center space-x-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 shrink-0 stroke-current"
                 fill="none"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -278,7 +317,8 @@ function ManageAssetImage() {
               <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
                 <Link
                   to="/manage-asset-dataset/add"
-                  className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
+                  className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]"
+                >
                   + Add Dataset
                 </Link>
               </div>
@@ -295,8 +335,9 @@ function ManageAssetImage() {
                 <input
                   type="text"
                   placeholder="Search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="input border-none bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10 h-[40px] w-full focus:outline-none"
-                  required
                 />
               </div>
             </div>
@@ -334,14 +375,15 @@ function ManageAssetImage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {assets.map((asset) => (
+                  {currentDatasets.map((assets) => (
                     <tr
-                      key={asset.id}
-                      className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
+                      key={assets.id}
+                      className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9"
+                    >
                       <td className="px-6 py-4">
-                        {asset.datasetImage ? (
+                        {assets.datasetImage ? (
                           <img
-                            src={asset.datasetImage || CustomImage}
+                            src={assets.datasetImage || CustomImage}
                             alt="Image"
                             className="h-14 w-14 overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
                             onError={(e) => {
@@ -363,21 +405,22 @@ function ManageAssetImage() {
 
                       <th
                         scope="row"
-                        className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap">
-                        {asset.datasetName}
+                        className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap"
+                      >
+                        {assets.datasetName}
                       </th>
-                      <td className="px-6 py-4">{asset.category}</td>
-                      <td className="px-6 py-4">{asset.price}</td>
-                      <td className="px-6 py-4">{asset.createdAt || "N/A"}</td>
+                      <td className="px-6 py-4">{assets.category}</td>
+                      <td className="px-6 py-4">{assets.price}</td>
+                      <td className="px-6 py-4">{assets.createdAt || "N/A"}</td>
                       <td className="mx-auto flex gap-4 mt-8">
-                        <Link to={`/manage-asset-dataset/edit/${asset.id}`}>
+                        <Link to={`/manage-asset-dataset/edit/${assets.id}`}>
                           <img
                             src={IconEdit}
                             alt="icon edit"
                             className="w-5 h-5 cursor-pointer"
                           />
                         </Link>
-                        <button onClick={() => handleDelete(asset.id)}>
+                        <button onClick={() => handleDelete(assets.id)}>
                           <img
                             src={IconHapus}
                             alt="icon hapus"
@@ -393,13 +436,23 @@ function ManageAssetImage() {
           )}
 
           <div className="flex join pt-72 justify-end ">
-            <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
+            <button
+              className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
               «
             </button>
-            <button className="join-item btn dark:bg-neutral-25 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-25 border-neutral-60 dark:border-neutral-25">
-              Page 1
+            <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
+              Page {currentPage} of {totalPages}
             </button>
-            <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
+            <button
+              className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+            >
               »
             </button>
           </div>

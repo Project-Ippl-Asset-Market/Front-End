@@ -22,6 +22,13 @@ function ManageUsers() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+    // Pagination state untuk tabelnya
+    const [currentPage, setCurrentPage] = useState(1);
+    const usersPerPage = 5;
+
+
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
   };
@@ -44,8 +51,10 @@ function ManageUsers() {
       try {
         const response = await axios.get("http://localhost:3000/api/users");
         setUsers(response.data);
+        setFilteredUsers(response.data)
       } catch (error) {
         console.error("Error fetching user data: ", error);
+        setError("Failed to fetch admins. Please try again later.");
       } finally {
         setIsLoading(false);
       }
@@ -66,6 +75,22 @@ function ManageUsers() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isSidebarOpen, handleClickOutside]);
+
+  useEffect(() => {
+    // Filter admins whenever search term changes
+    if (searchTerm) {
+      setFilteredUsers(
+        users.filter((user) =>
+          user.username.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredUsers(users);
+    }
+
+    // Reset current page to 1 when search term changes
+    setCurrentPage(1);
+  }, [searchTerm, users]);
 
   const handleDeleteUser = async (id) => {
     setIsLoading(true);
@@ -91,6 +116,7 @@ function ManageUsers() {
 
       if (response.status === 204) {
         setUsers((prev) => prev.filter((user) => user.id !== id));
+        setFilteredUsers((prev) => prev.filter((user) => user.id !== id));
         navigate("/manage-users");
       } else {
         setError("Failed to delete user. Please try again.");
@@ -116,6 +142,14 @@ function ManageUsers() {
       handleDeleteUser(userToDelete.id);
     }
   };
+  
+  // Menghitung jumlah halaman
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+  const startIndex = (currentPage - 1) * usersPerPage;
+  const currentUsers = filteredUsers.slice(
+    startIndex,
+    startIndex + usersPerPage
+  );
 
   return (
     <div className="dark:bg-neutral-90 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
@@ -162,6 +196,8 @@ function ManageUsers() {
               <input
                 type="text"
                 placeholder="Search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="input border-none bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10 h-[40px] w-full focus:outline-none"
               />
             </div>
@@ -310,15 +346,25 @@ function ManageUsers() {
 
         {/* Pagination Section */}
         <div className="flex join pt-72 justify-end">
-          <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
-            «
-          </button>
-          <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
-            Page 1
-          </button>
-          <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
-            »
-          </button>
+          <button
+              className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              «
+            </button>
+            <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
+              Page {currentPage} of {totalPages}
+            </button>
+            <button
+              className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}
+            >
+              »
+            </button>
         </div>
       </div>
     </div>

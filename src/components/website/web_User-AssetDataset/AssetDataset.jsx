@@ -9,6 +9,7 @@ import {
   runTransaction,
   getDocs,
   setDoc,
+  getDoc,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import HeaderNav from "../../headerNavBreadcrumbs/HeaderWebUser";
@@ -31,6 +32,8 @@ export function AssetDataset() {
   const [isProcessingLike, setIsProcessingLike] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [purchasedAssets, setPurchasedAssets] = useState(new Set());
+  const [validationMessage, setValidationMessage] = useState("");
 
   // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
@@ -67,6 +70,33 @@ export function AssetDataset() {
 
     return () => unsubscribe();
   }, []);
+
+  // Menangani pengambilan aset yang telah dibeli
+  useEffect(() => {
+    const fetchUserPurchasedAssets = async () => {
+      if (!currentUserId) return;
+
+      const purchasedQuery = query(
+        collection(db, "buyAssets"),
+        where("boughtBy", "==", currentUserId)
+      );
+
+      try {
+        const purchasedSnapshot = await getDocs(purchasedQuery);
+        const purchasedIds = new Set();
+
+        purchasedSnapshot.forEach((doc) => {
+          purchasedIds.add(doc.data().assetId);
+        });
+
+        setPurchasedAssets(purchasedIds);
+      } catch (error) {
+        console.error("Error fetching purchased assets: ", error);
+      }
+    };
+
+    fetchUserPurchasedAssets();
+  }, [currentUserId]);
 
   useEffect(() => {
     const results = AssetsData.filter((asset) =>
@@ -152,30 +182,53 @@ export function AssetDataset() {
     }
   };
 
-  const handleAddToCart = async (selectedasset) => {
+  // Fungsi untuk memvalidasi apakah pengguna dapat menambahkan aset ke keranjang
+  const validateAddToCart = (assetId) => {
     if (!currentUserId) {
-      alert("Anda perlu login untuk menambahkan asset ke keranjang");
-      navigate("/login");
-      return;
+      setValidationMessage(
+        "Anda perlu login untuk menambahkan asset ke keranjang."
+      );
+      return false;
     }
+    if (purchasedAssets.has(assetId)) {
+      setValidationMessage(
+        "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
+      );
+      return false;
+    }
+    return true; // Validasi berhasil
+  };
+
+  // Fungsi untuk menambahkan aset ke keranjang
+  const handleAddToCart = async (selectedasset) => {
+    if (!validateAddToCart(selectedasset.id)) return; // Validasi
+
+    // Membuat referensi dokumen untuk keranjang menggunakan ID aset
+    const cartRef = doc(
+      db,
+      "cartAssets",
+      `${currentUserId}_${selectedasset.id}` // ID dokumen mengikuti ID asset
+    );
 
     try {
-      const cartRef = doc(
-        db,
-        "cartAssets",
-        `${currentUserId}_${selectedasset.id}`
-      );
+      // Menggunakan getDoc untuk mendapatkan snapshot dokumen
+      const cartSnapshot = await getDoc(cartRef);
+
+      // Memeriksa keberadaan dokumen keranjang
+      if (cartSnapshot.exists()) {
+        setValidationMessage("Anda sudah menambahkan asset ini ke keranjang.");
+        return;
+      }
+
+      // Menambahkan aset ke keranjang
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
+        datasetImage: selectedasset.datasetImage,
         datasetName: selectedasset.datasetName,
         description: selectedasset.description,
         price: selectedasset.price,
-        datasetImage: selectedasset.datasetImage,
         category: selectedasset.category,
-        createdAt: selectedasset.createdAt,
-        likeAsset: selectedasset.likeAsset,
-        uploadedByEmail: selectedasset.uploadedByEmail,
       });
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {
@@ -183,11 +236,19 @@ export function AssetDataset() {
     }
   };
 
-  const handleBuyNow = () => {
+  // Fungsi untuk menangani pembelian aset
+  const handleBuyNow = async () => {
     if (!currentUserId) {
       alert("Anda perlu login untuk membeli asset");
       navigate("/login");
       return;
+    }
+    // Cek apakah aset sudah dibeli sebelumnya
+    if (purchasedAssets.has(selectedasset.id)) {
+      alert(
+        "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
+      );
+      return; // Jika sudah dibeli, tidak bisa ditambahkan ke keranjang
     }
 
     navigate("/payment");
@@ -222,10 +283,10 @@ export function AssetDataset() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[47%] xl:left-[50%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[146px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-[500px] sm:w-[300px] md:w-[300px] lg:w-[500px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[47%] xl:left-[45%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[145px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[300px] lg:w-[500px] xl:w-[600px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[470px] sm:w-[400px] md:w-[450px] lg:w-[700px] xl:w-[800px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[570px] sm:w-[400px] md:w-[450px] lg:w-[700px] xl:w-[800px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}>
               <div className="relative">
                 <div className="relative">
@@ -262,12 +323,26 @@ export function AssetDataset() {
             </form>
           </div>
         </div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-          {searchResults.length === 0 && searchTerm && (
-            <p className="text-black text-[20px]">No assets found</p>
-          )}
-        </div>
       </div>
+
+      {/* Menampilkan pesan validasi jika ada */}
+      {validationMessage && (
+        <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
+          <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
+          <span className="block sm:inline">{validationMessage}</span>
+          <button
+            className="absolute top-0 bottom-0 right-0 px-4 py-3"
+            onClick={() => setValidationMessage("")}>
+            <svg
+              className="fill-current h-6 w-6 text-red-500"
+              role="button"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20">
+              <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       <div className="w-full p-12 mx-auto">
         {alertLikes && (
@@ -296,11 +371,13 @@ export function AssetDataset() {
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
+            const isPurchased = purchasedAssets.has(data.id);
+
             return (
               <div
                 key={data.id}
                 className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
-                <div className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px]">
+                <div className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px] relative">
                   <img
                     src={data.datasetImage || CustomImage}
                     alt="Image"
@@ -311,6 +388,11 @@ export function AssetDataset() {
                       e.target.src = CustomImage;
                     }}
                   />
+                  {isPurchased && (
+                    <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded z-10">
+                      Sudah Dibeli
+                    </div>
+                  )}
                 </div>
 
                 {/* details section */}
@@ -325,6 +407,7 @@ export function AssetDataset() {
                         : data.description}
                     </h4>
                   </div>
+
                   <div className="flex justify-between items-center mt-auto gap-2">
                     <button
                       onClick={() => handleLikeClick(data.id, likesAsset)}
@@ -388,7 +471,12 @@ export function AssetDataset() {
               <div className="mt-28">
                 <button
                   onClick={() => handleAddToCart(selectedasset)}
-                  className="flex p-2 text-center items-center justify-center bg-neutral-60 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-10 rounded-md">
+                  className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${
+                    purchasedAssets.has(selectedasset.id)
+                      ? "bg-gray-400 pointer-events-none"
+                      : "bg-neutral-60"
+                  }`}
+                  disabled={purchasedAssets.has(selectedasset.id)}>
                   <img
                     src={IconCart}
                     alt="Cart Icon"
@@ -398,7 +486,12 @@ export function AssetDataset() {
                 </button>
                 <button
                   onClick={() => handleBuyNow(selectedasset)}
-                  className="flex p-2 text-center items-center justify-center bg-secondary-40 text-primary-100 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-6 rounded-md">
+                  className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 mt-2 rounded-md ${
+                    purchasedAssets.has(selectedasset.id)
+                      ? "bg-gray-400 pointer-events-none"
+                      : "bg-secondary-40"
+                  }`}
+                  disabled={purchasedAssets.has(selectedasset.id)}>
                   <img
                     src={IconDollar}
                     alt="Cart Icon"
@@ -411,6 +504,14 @@ export function AssetDataset() {
           </div>
         </div>
       )}
+
+      <div className="relative mt-10 flex items-center justify-center">
+        <div className="text-center">
+          {searchResults.length === 0 && searchTerm && (
+            <p className="text-black text-[20px]">No assets found</p>
+          )}
+        </div>
+      </div>
 
       <footer className="min-h-screen flex flex-col items-center justify-center">
         <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">

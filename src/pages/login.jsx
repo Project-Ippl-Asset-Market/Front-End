@@ -5,6 +5,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db } from "../firebase/firebaseConfig";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
+import { useUserContext } from "../contexts/UserContext";
 import BgLogin from "../assets/Background/bgLogin3.png";
 import Logo from "../assets/icon/logo.jpg";
 import IconModalError from "../assets/icon/iconModal/iconModalError.png";
@@ -18,6 +19,8 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [modalMessage, setModalMessage] = useState(null);
   const [errorModal, setErrorModal] = useState("");
+
+  const { saveUserRole } = useUserContext();
 
   const handleChange = (e) => {
     if (e.target.name === "email") {
@@ -51,33 +54,29 @@ function Login() {
         loginPassword
       );
       const user = userCredential.user;
-
-      // Get token
       const token = await user.getIdToken();
       localStorage.setItem("authToken", token);
-
       const adminRole = await checkAdminRole(user.email);
-      console.log("Admin Role:", adminRole);
 
       if (adminRole === "superadmin") {
         setModalMessage("Login sebagai Superadmin berhasil!");
+        saveUserRole("superadmin");
         setTimeout(() => {
           setModalMessage(null);
-          localStorage.setItem("userRole", "superadmin");
           navigate("/dashboard");
         }, 2000);
       } else if (adminRole === "admin") {
         setModalMessage("Login sebagai Admin berhasil!");
+        saveUserRole("admin");
         setTimeout(() => {
           setModalMessage(null);
-          localStorage.setItem("userRole", "admin");
           navigate("/dashboard");
         }, 2000);
       } else {
         setModalMessage("Login sebagai pengguna biasa berhasil!");
+        saveUserRole("user");
         setTimeout(() => {
           setModalMessage(null);
-          localStorage.setItem("userRole", "user");
           navigate("/");
         }, 2000);
       }

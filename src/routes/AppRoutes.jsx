@@ -7,6 +7,9 @@ import SearchResults from "../components/searchResults/SearchResults";
 import Register from "../pages/register";
 import Login from "../pages/login";
 import LupaPassword from "../pages/lupaPassword";
+import Profil from "../components/editProfil/Profil";
+import EditProfil1 from "../components/editProfil/EditProfil1";
+import EditProfil2 from "../components/editProfil/EditProfil2";
 // Import Halaman Dashboard start
 import AdminDashboard from "../components/myAdmin/AdminDashboard";
 import ManageAssetVideo from "../components/manageAssetVideo/ManageAssetVideo";
@@ -37,6 +40,8 @@ import SaleAssets from "../components/myUserDashboard/SaleAssets";
 import Revenue from "../components/myUserDashboard/Revenue";
 // Import Halaman Dashboard End
 
+//import Halaman Panduan
+
 // Import Halaman Website start
 import Cart from "../components/payment/Cart";
 import Payment from "../components/payment/Cart";
@@ -49,6 +54,16 @@ import { Asset2D } from "../components/website/web_user-AssetGame/asset_2D/Asset
 import { Asset3D } from "../components/website/web_user-AssetGame/asset_3D/Asset3D";
 import { AssetAudio } from "../components/website/web_user-AssetGame/asset_audio/AssetAudio";
 import { AssetGame } from "../components/website/web_user-AssetGame/AssetGame";
+import { MyAsset } from "../components/website/web_User-MyAsset/MyAsset";
+import EditProfil from "../components/editProfil/Profil";
+
+import SidebarPanduan from "../components/panduan/SidebarPanduan";
+import PanduanRegistrasi from "../components/panduan/PanduanRegistrasi";
+import PanduanLogin from "../components/panduan/PanduanLogin";
+import PanduanLupaPassword from "../components/panduan/PanduanLupaPassword";
+import PanduanJualAsset from "../components/panduan/PanduanJualAsset";
+import PanduanEditAsset from "../components/panduan/PanduanEditAsset";
+
 // Import Halaman Website End
 
 // eslint-disable-next-line react/prop-types
@@ -73,7 +88,27 @@ const AppRoutes = ({ handleLogout }) => {
           <Route path="/asset-game/Asset-2D" element={<Asset2D />} />
           <Route path="/asset-game/Asset-3D" element={<Asset3D />} />
           <Route path="/asset-game/Asset-audio" element={<AssetAudio />} />
+          <Route path="/my-asset" element={<MyAsset />} />
+          <Route path="/sidebarPanduan" element={<SidebarPanduan />} />
+          <Route path="/panduan-registrasi" element={<PanduanRegistrasi />} />
+          <Route path="/panduan-login" element={<PanduanLogin />} />
+          <Route
+            path="/panduan-lupa-password"
+            element={<PanduanLupaPassword />}
+          />
+          <Route path="/panduan-jual-asset" element={<PanduanJualAsset />} />
+          <Route path="/panduan-edit-asset" element={<PanduanEditAsset />} />
           {/* Route halaman web End */}
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <EditProfil onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/dashboard"
             element={
@@ -330,6 +365,33 @@ const AppRoutes = ({ handleLogout }) => {
             element={
               <ProtectedRoute allowedRoles={["superadmin"]}>
                 <EditFormAdmin onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/Profil"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <Profil onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/editProfil1"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <EditProfil1 onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/editProfil2"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <EditProfil2 onLogout={handleLogout} />
               </ProtectedRoute>
             }
           />

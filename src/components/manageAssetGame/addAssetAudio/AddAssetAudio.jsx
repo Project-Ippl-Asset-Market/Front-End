@@ -32,7 +32,6 @@ function AddNewAudio() {
     { id: 2, name: "Background Music" },
     { id: 3, name: "Voice Overs" },
     { id: 4, name: "Sound Design" },
-
   ];
 
   useEffect(() => {
@@ -254,7 +253,8 @@ function AddNewAudio() {
 
                         {previewAudio && (
                           <div className="mt-2 relative">
-                            <audio controls
+                            <audio
+                              controls
                               src={previewAudio}
                               alt="Preview"
                               className="w-40 sm:w-40 md:w-40 lg:w-[150px] xl:w-[150px] 2xl:w-[150px] h-40 sm:h-40 md:h-40 lg:h-[156px] xl:h-[156px] 2xl:h-[157px] -mt-2.5 object-cover rounded"
@@ -349,7 +349,6 @@ function AddNewAudio() {
                       ))}
                     </select>
                   </label>
-
                 </div>
               </div>
 

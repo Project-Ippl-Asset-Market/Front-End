@@ -27,6 +27,11 @@ function ManageAssetAudio() {
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState(""); // State untuk menyimpan istilah pencarian
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const assetsPerPage = 5; // Set jumlah aset per halaman
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -165,15 +170,15 @@ function ManageAssetAudio() {
     }
   }, [user, role]);
 
-  // Fungsi hapus gambar
+  // Fungsi hapus audio
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this audio?"
     );
     if (confirmDelete) {
       try {
-        const AudioRef = ref(storage, `images-asset-audio/uploadUrlAudio-${id}.mp3`);
-        await deleteObject(AudioRef);
+        const audioRef = ref(storage, `images-asset-audio/uploadUrlAudio-${id}.mp3`);
+        await deleteObject(audioRef);
         await deleteDoc(doc(db, "assetAudios", id));
         setAssets(assets.filter((asset) => asset.id !== id));
         setAlertSuccess(true);
@@ -190,6 +195,18 @@ function ManageAssetAudio() {
     setAlertError(false);
   };
 
+  // Filter aset berdasarkan istilah pencarian
+  const filteredAssets = assets.filter(asset =>
+    asset.audioName && asset.audioName.toLowerCase().startsWith(searchTerm.toLowerCase())
+  );
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredAssets.length / assetsPerPage);
+  const startIndex = (currentPage - 1) * assetsPerPage;
+  const currentAssets = filteredAssets.slice(startIndex, startIndex + assetsPerPage);
+
+  // Fungsi untuk berpindah halaman
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
   return (
     <>
       <div className="dark:bg-neutral-90 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
@@ -287,6 +304,8 @@ function ManageAssetAudio() {
                 <input
                   type="text"
                   placeholder="Search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="input border-none bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10 h-[40px] w-full focus:outline-none"
                 />
               </div>
@@ -325,7 +344,7 @@ function ManageAssetAudio() {
                   </tr>
                 </thead>
                 <tbody>
-                  {assets.map((asset) => (
+                  {currentAssets.map((asset) => (
                     <tr
                       key={asset.id}
                       className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
@@ -363,15 +382,23 @@ function ManageAssetAudio() {
             </div>
           )}
           <div className="flex join pt-72 justify-end ">
-            <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
-              «
-            </button>
-            <button className="join-item btn dark:bg-neutral-25 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-25 border-neutral-60 dark:border-neutral-25">
-              Page 1
-            </button>
-            <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
-              »
-            </button>
+          <button
+            className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}>
+            «
+          </button>
+          <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
+            Page {currentPage} of {totalPages}
+          </button>
+            <button
+            className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}>
+            »
+          </button>
           </div>
         </div>
       </div>

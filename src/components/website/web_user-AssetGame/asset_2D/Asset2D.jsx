@@ -145,7 +145,7 @@ export function Asset2D() {
           <div className="fixed inset-0 bg-black bg-opacity-50"></div>
           <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 max-w-2xl w-full mx-4 flex relative">
             <button
-              className="absolute top-1 sm:top-2 right-3 text-gray-600 dark:text-gray-400 text-2xl"
+              className=" absolute top-1 right-4 text-gray-600 dark:text-gray-400 text-4xl"
               onClick={closeModal}>
               &times;
             </button>

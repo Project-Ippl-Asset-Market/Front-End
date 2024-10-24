@@ -97,7 +97,10 @@ function EditNewAudio() {
         await deleteObject(oldAudioRef); // Delete the old image
 
         // Upload the new image
-        const audioRef = ref(storage, `image-asset-audio/uploadUrlAudio-${id}.mp3`);
+        const audioRef = ref(
+          storage,
+          `image-asset-audio/uploadUrlAudio-${id}.mp3`
+        );
         await uploadBytes(audioRef, audio.uploadUrlaudio);
         uploadUrlAudio = await getDownloadURL(audioRefRef);
       } else {
@@ -229,7 +232,7 @@ function EditNewAudio() {
                         className="flex flex-col justify-center items-center cursor-pointer text-center">
                         {!audioPreview && (
                           <>
-                            <img 
+                            <img
                               alt=""
                               className="w-6 h-6"
                               src="path_to_your_icon"
@@ -253,7 +256,7 @@ function EditNewAudio() {
                         {audioPreview && (
                           <div className="mt-2 relative w-40 h-40 sm:w-40 sm:h-40 md:w-40 md:h-40 lg:w-[150px] lg:h-[156px] xl:w-[150px] xl:h-[156px] 2xl:w-[150px] 2xl:h-[157px] flex justify-center items-center bg-gray-200 rounded">
                             <audio
-                              controls 
+                              controls
                               src={audioPreview}
                               alt="Preview"
                               className="object-cover rounded"

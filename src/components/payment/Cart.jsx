@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { FaTrashAlt } from "react-icons/fa";
 import { getAuth } from "firebase/auth";
 import { db } from "../../firebase/firebaseConfig";
+import axios from "axios";
 import {
   collection,
   query,
@@ -42,7 +43,6 @@ const Cart = () => {
           ...doc.data(),
         }));
 
-        // Fetch the IDs of purchased assets from the buyAssets collection
         const boughtAssetsQuery = query(
           collection(db, "buyAssets"),
           where("boughtBy", "==", userId)
@@ -53,7 +53,6 @@ const Cart = () => {
           boughtAssetsSnapshot.docs.map((doc) => doc.id)
         );
 
-        // Filter out items that have already been bought
         const filteredItems = items.filter(
           (item) => !boughtAssetIds.has(item.assetId)
         );
@@ -89,7 +88,6 @@ const Cart = () => {
   const totalWithTax = subtotal + subtotal * taxRate;
 
   const handlePayment = async () => {
-    // Validate selected items and customer details
     if (selectedItems.length === 0) {
       setErrorMessage("Tidak ada item dalam keranjang untuk pembayaran.");
       return;
@@ -114,43 +112,49 @@ const Cart = () => {
         assetId: item.assetId,
         price: item.price,
         name: item.datasetName || "Unknown Asset",
-        docId: item.id, // Save document ID
+        docId: item.id,
       }));
 
       // Send request to create a transaction
-      const response = await fetch(
+      const response = await axios.post(
         "http://localhost:3000/api/transactions/create-transaction",
         {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+          orderId,
+          grossAmount: subtotal,
+          uid: user.uid,
+          assets: assetDetails,
+          customerDetails: {
+            fullName: customerInfo.fullName,
+            email: customerInfo.email,
+            phoneNumber: customerInfo.phoneNumber,
           },
-          body: JSON.stringify({
-            orderId,
-            grossAmount: subtotal,
-            uid: user.uid,
-            assets: assetDetails,
-            customerDetails: {
-              fullName: customerInfo.fullName,
-              email: customerInfo.email,
-              phoneNumber: customerInfo.phoneNumber,
-            },
-          }),
         }
       );
 
-      if (!response.ok) {
-        const errorResponse = await response.json();
-        throw new Error(errorResponse.message || "Response tidak baik");
-      }
+      const transactionData = response.data;
 
-      const transactionData = await response.json();
-
-      // Call Midtrans to process payment
       window.snap.pay(transactionData.token, {
         onSuccess: async (result) => {
-          console.log(result); // Log successful result
-          await handleMoveAssets(assetDetails); // Move assets and delete from cart
+          console.log(result);
+          await handleMoveAssets(assetDetails); // Panggil fungsi untuk memindahkan aset di sini
+
+          // Hapus item dari keranjang setelah pembayaran berhasil
+          await Promise.all(
+            selectedItems.map(async (item) => {
+              await handleDeleteItem(item.id); // Memanggil fungsi untuk menghapus item dari keranjang
+            })
+          );
+
+          // Tampilkan pesan sukses
+          setSuccessMessage(
+            "Pembayaran berhasil. Aset telah dipindahkan dan item dihapus dari keranjang."
+          );
+
+          // Clear the customer info and selected items if necessary
+          setCustomerInfo({ fullName: "", email: "", phoneNumber: "" });
+          setCartItems((prevItems) =>
+            prevItems.filter((item) => !item.selected)
+          );
         },
         onPending: function (result) {
           setSuccessMessage(
@@ -166,64 +170,59 @@ const Cart = () => {
         },
       });
     } catch (error) {
-      setErrorMessage(`Error: ${error.message}`);
+      setErrorMessage(
+        `Error: ${error.response?.data?.message || error.message}`
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle moving assets after payment
   const handleMoveAssets = async (assetDetails) => {
     try {
-      // Call the API to move assets from cart to buy assets
-      const moveResponse = await fetch(
-        "http://localhost:3000/api/assets/move-assets",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            uid: user.uid,
-            assets: assetDetails.map(({ assetId }) => ({ assetId })),
-          }),
-        }
-      );
-
-      if (!moveResponse.ok) {
-        const errorResponse = await moveResponse.json();
-        throw new Error(
-          errorResponse.message || "Gagal untuk memindahkan aset"
-        );
-      }
-
-      // If successful, delete assets from cart and update local state
-      await Promise.all(
-        assetDetails.map(async (asset) => {
-          // Delete asset from Firestore
-          const itemDoc = doc(db, "cartAssets", asset.docId);
-          await deleteDoc(itemDoc); // Remove the item from Firestore
-        })
-      );
-
-      // Update local state to remove items from the cart
-      setCartItems((prevItems) =>
-        prevItems.filter(
-          (item) => !assetDetails.some((asset) => asset.docId === item.id)
-        )
-      );
-
-      setSuccessMessage("Pembayaran berhasil dan aset sudah dipindahkan.");
+      // Pindahkan aset dari cartAssets ke buyAssets
+      await moveAssets(assetDetails);
+      setSuccessMessage("Aset sudah dipindahkan.");
     } catch (moveError) {
-      console.error("Error moving assets:", moveError);
+      console.error("Kesalahan saat memindahkan aset:", moveError);
       setErrorMessage("Gagal memindahkan aset.");
+    }
+
+    // Memproses penghapusan aset untuk setiap detail aset
+    await Promise.all(assetDetails.map(deleteAsset));
+  };
+
+  const moveAssets = async (assetDetails) => {
+    await axios.post("http://localhost:3000/api/assets/move-assets", {
+      uid: user.uid,
+      assets: assetDetails.map(({ assetId }) => ({ assetId })),
+    });
+  };
+
+  const deleteAsset = async (asset) => {
+    const docId = `${user.uid}_${asset.assetId}`;
+    const url = `http://localhost:3000/api/assets/delete/${docId}`;
+
+    // Hapus item dari API
+    await axios.delete(url);
+
+    try {
+      // Mencoba menghapus dokumen dari Firestore
+      const assetDoc = doc(db, "cartAssets", asset.id);
+      await deleteDoc(assetDoc);
+      console.log(`Aset dengan ID ${asset.id} telah dihapus.`);
+    } catch (error) {
+      console.error(
+        `Kesalahan saat menghapus aset dengan assetId ${asset.id}:`,
+        error
+      );
     }
   };
 
   const handleDeleteItem = async (id) => {
     try {
-      // Delete from Firestore first
       const itemDoc = doc(db, "cartAssets", id);
       await deleteDoc(itemDoc);
-      // Update state to remove the item from the cart
       setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
     } catch (error) {
       console.error("Error deleting item:", error);
@@ -301,7 +300,10 @@ const Cart = () => {
                     <h3 className="font-semibold text-sm md:text-base">
                       {item.datasetName ||
                         item.videoName ||
+                        item.assetNameGame ||
                         item.imageName ||
+                        item.asset2DName ||
+                        item.asset3DName ||
                         "Item Name Not Available"}
                     </h3>
                     <p className="text-sm md:text-base">

@@ -9,6 +9,7 @@ import {
   runTransaction,
   getDocs,
   setDoc,
+  getDoc,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import HeaderNav from "../../headerNavBreadcrumbs/HeaderWebUser";
@@ -22,17 +23,17 @@ import { AiOutlineInfoCircle } from "react-icons/ai";
 
 export function AssetImage() {
   const navigate = useNavigate();
-  const [AssetsData, setAssetsData] = useState([]); // Data aset
-  const [currentUserId, setCurrentUserId] = useState(null); // ID pengguna saat ini
-  const [likedAssets, setLikedAssets] = useState(new Set()); // Aset yang disukai
-  const [modalIsOpen, setModalIsOpen] = useState(false); // Status modal
-  const [selectedasset, setSelectedasset] = useState(null); // Aset yang dipilih
-  const [alertLikes, setAlertLikes] = useState(false); // Pesan alert untuk like
-  const [isProcessingLike, setIsProcessingLike] = useState(false); // Status proses like
-  const [searchTerm, setSearchTerm] = useState(""); // Term pencarian
-  const [searchResults, setSearchResults] = useState([]); // Hasil pencarian
-  const [purchasedAssets, setPurchasedAssets] = useState(new Set()); // Aset yang dibeli
-  const [validationMessage, setValidationMessage] = useState(""); // Pesan validasi
+  const [AssetsData, setAssetsData] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [likedAssets, setLikedAssets] = useState(new Set());
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [selectedasset, setSelectedasset] = useState(null);
+  const [alertLikes, setAlertLikes] = useState(false);
+  const [isProcessingLike, setIsProcessingLike] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [purchasedAssets, setPurchasedAssets] = useState(new Set());
+  const [validationMessage, setValidationMessage] = useState("");
 
   // Mengambil ID pengguna saat ini
   useEffect(() => {
@@ -88,7 +89,7 @@ export function AssetImage() {
           purchasedIds.add(doc.data().assetId);
         });
 
-        setPurchasedAssets(purchasedIds); // Set aset yang dibeli untuk validasi
+        setPurchasedAssets(purchasedIds);
       } catch (error) {
         console.error("Error fetching purchased assets: ", error);
       }
@@ -202,20 +203,24 @@ export function AssetImage() {
   const handleAddToCart = async (selectedasset) => {
     if (!validateAddToCart(selectedasset.id)) return; // Validasi
 
-    // Cek apakah aset sudah ada di keranjang
+    // Membuat referensi dokumen untuk keranjang menggunakan ID aset
     const cartRef = doc(
       db,
       "cartAssets",
-      `${currentUserId}_${selectedasset.id}`
+      `${currentUserId}_${selectedasset.id}` // ID dokumen mengikuti ID asset
     );
 
     try {
-      const cartSnapshot = await getDocs(cartRef);
+      // Menggunakan getDoc untuk mendapatkan snapshot dokumen
+      const cartSnapshot = await getDoc(cartRef);
+
+      // Memeriksa keberadaan dokumen keranjang
       if (cartSnapshot.exists()) {
         setValidationMessage("Anda sudah menambahkan asset ini ke keranjang.");
         return;
       }
 
+      // Menambahkan aset ke keranjang
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
@@ -278,10 +283,10 @@ export function AssetImage() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[47%] xl:left-[50%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[146px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-[500px] sm:w-[300px] md:w-[300px] lg:w-[500px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[47%] xl:left-[45%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[145px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[300px] lg:w-[500px] xl:w-[600px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[470px] sm:w-[400px] md:w-[450px] lg:w-[700px] xl:w-[800px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[570px] sm:w-[400px] md:w-[450px] lg:w-[700px] xl:w-[800px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}>
               <div className="relative">
                 <div className="relative">
@@ -317,11 +322,6 @@ export function AssetImage() {
               </div>
             </form>
           </div>
-        </div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-          {searchResults.length === 0 && searchTerm && (
-            <p className="text-black text-[20px]">No assets found</p>
-          )}
         </div>
       </div>
 
@@ -367,8 +367,16 @@ export function AssetImage() {
         </h1>
       </div>
 
+      <div className="relative mt-40 flex items-center justify-center">
+        <div className="text-center">
+          {searchResults.length === 0 && searchTerm && (
+            <p className="text-black text-[20px]">No assets found</p>
+          )}
+        </div>
+      </div>
+
       {/* Bagian untuk menampilkan aset */}
-      <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen">
+      <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen -mt-40">
         <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
@@ -507,7 +515,7 @@ export function AssetImage() {
         </div>
       )}
 
-      <footer className=" min-h-[181px] flex flex-col items-center justify-center">
+      <footer className=" min-h-screen flex flex-col items-center justify-center">
         <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
           <a href="#">Terms And Conditions</a>
           <a href="#">File Licenses</a>

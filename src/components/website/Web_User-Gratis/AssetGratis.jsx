@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import {
   collection,
   doc,
-  setDoc,
   query,
   where,
   runTransaction,
+  addDoc,
   getDocs,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -35,27 +35,15 @@ export function AssetGratis() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setCurrentUserId(user.uid);
+        console.log("Current User ID:", user.uid); // Tambahkan log di sini
       } else {
         setCurrentUserId(null);
+        console.log("Current User ID is null"); // Tambahkan log saat tidak ada user
       }
     });
 
     return () => unsubscribe();
-  }, []);
-
-  // Mengambil ID pengguna saat ini (jika ada)
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setCurrentUserId(user.uid);
-      } else {
-        setCurrentUserId(null);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
+  }, []); // Tidak ada dependensi karena ini hanya perlu dijalankan sekali
 
   const fetchAssets = async () => {
     const collectionsToFetch = [
@@ -181,21 +169,46 @@ export function AssetGratis() {
   };
 
   const handleSaveToMyAssets = async () => {
+    // Periksa apakah currentUserId dan selectedasset ada
     if (!currentUserId || !selectedasset) {
       alert("Anda perlu login untuk menyimpan Asset ini.");
       return;
     }
 
+    // Log untuk memverifikasi currentUserId
+    console.log("Current User ID:", currentUserId);
+    console.log("Selected Asset:", selectedasset);
+
+    // Buat data asset baru dengan userId yang sesuai
+    const newAssetData = {
+      ...selectedasset,
+      userId: currentUserId, // Tetapkan userId ke currentUserId
+      savedAt: new Date(),
+    };
+
+    // Log untuk memverifikasi data yang akan disimpan
+    console.log("Asset Data to Save:", newAssetData);
+
     try {
-      const assetDocRef = doc(
-        myAssetsCollectionRef,
-        `${currentUserId}_${selectedasset.id}`
+      // Cek apakah asset sudah ada di myAssets
+      const querySnapshot = await getDocs(
+        query(
+          myAssetsCollectionRef,
+          where("userId", "==", currentUserId),
+          where("id", "==", selectedasset.id) // Sesuaikan dengan field asset yang kamu gunakan
+        )
       );
-      await setDoc(assetDocRef, {
-        userId: currentUserId,
-        ...selectedasset,
-        savedAt: new Date(),
-      });
+
+      if (!querySnapshot.empty) {
+        // Asset sudah ada, tampilkan peringatan
+        alert("Asset ini sudah disimpan ke My Asset!");
+        return;
+      }
+
+      // Menambahkan dokumen baru dengan addDoc
+      const docRef = await addDoc(myAssetsCollectionRef, newAssetData);
+
+      console.log("Document written with ID: ", docRef.id); // Log ID dokumen yang baru dibuat
       alert("Asset telah disimpan ke My Asset!");
       closeModal();
     } catch (error) {
@@ -243,10 +256,10 @@ export function AssetGratis() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[47%] xl:left-[50%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[146px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-[500px] sm:w-[300px] md:w-[300px] lg:w-[500px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[47%] xl:left-[45%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[145px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[300px] lg:w-[500px] xl:w-[600px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[470px] sm:w-[400px] md:w-[450px] lg:w-[700px] xl:w-[800px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[570px] sm:w-[400px] md:w-[450px] lg:w-[700px] xl:w-[800px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}>
               <div className="relative">
                 <div className="relative">
@@ -283,14 +296,9 @@ export function AssetGratis() {
             </form>
           </div>
         </div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-          {searchResults.length === 0 && searchTerm && (
-            <p className="text-black text-[20px]">No assets found</p>
-          )}
-        </div>
       </div>
 
-      <div className="w-full p-12 mx-auto ">
+      <div className="w-full p-12 mx-auto">
         {alertLikes && (
           <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
             <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
@@ -308,11 +316,12 @@ export function AssetGratis() {
             </button>
           </div>
         )}
-        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
+
+        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[90px] -mb-20">
           All Category
         </h1>
       </div>
-      <div className="pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] min-h-screen">
+      <div className="pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
         <div className=" mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]  ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
@@ -345,7 +354,9 @@ export function AssetGratis() {
                         src={data.uploadUrlVideo}
                         alt="Asset Video"
                         className="h-full w-full rounded-t-[10px] mx-auto border-none"
+                        onContextMenu={(e) => e.preventDefault()}
                         controls
+                        controlsList="nodownload"
                       />
                     ) : (
                       <img
@@ -374,13 +385,14 @@ export function AssetGratis() {
                       {data.assetAudiosName ||
                         data.datasetName ||
                         data.asset2DName ||
-                        data.asset3DName ||
                         data.imageName ||
                         data.videoName ||
                         "Nama Tidak Tersedia"}
                     </p>
                     <p className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100">
-                      {data.description || "Deskripsi Tidak Tersedia"}
+                      {data.description.length > 24
+                        ? `${data.description.substring(0, 24)}......`
+                        : data.description || "Deskripsi Tidak Tersedia"}
                     </p>
                   </div>
                   <div className="flex items-center justify-between px-2 py-2   dark:bg-neutral-80">
@@ -398,9 +410,14 @@ export function AssetGratis() {
                         ({likesAsset})
                       </p>
                     </button>
+                    {/* <p className="text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
+                      {data.price % 1000 === 0 && data.price >= 1000
+                        ? `Rp. ${(data.price / 1000).toLocaleString("id-ID")}k`
+                        : `Rp. ${data.price.toLocaleString("id-ID")}`}
+                    </p> */}
                     <p className="text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
-                      {data.price > 0
-                        ? `Rp ${data.price.toLocaleString("id-ID")}`
+                      {data.price % 1000 === 0 && data.price >= 1000
+                        ? `Rp. ${(data.price / 1000).toLocaleString("id-ID")}k`
                         : "Free"}
                     </p>
                   </div>
@@ -427,7 +444,9 @@ export function AssetGratis() {
                   src={selectedasset.uploadUrlVideo}
                   alt="Asset Video"
                   className="h-full w-full rounded-t-[10px]"
+                  onContextMenu={(e) => e.preventDefault()}
                   controls
+                  controlsList="nodownload"
                 />
               ) : (
                 <img
@@ -443,18 +462,12 @@ export function AssetGratis() {
             </div>
             <div className="w-1/2 pl-4 ">
               <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
-                <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
-                  {selectedasset.assetAudiosName ||
-                    selectedasset.datasetName ||
-                    selectedasset.asset2DName ||
-                    selectedasset.asset3DName ||
-                    selectedasset.imageName ||
-                    selectedasset.videoName ||
-                    "Nama Tidak Tersedia"}
-                </p>
+                {selectedasset.datasetName}
               </h2>
               <p className="text-sm mb-2 dark:text-primary-100">
-                Rp. {selectedasset.price.toLocaleString("id-ID")}
+                {selectedasset.price > 0
+                  ? `Rp ${selectedasset.price.toLocaleString("id-ID")}`
+                  : "Free"}
               </p>
               <div className="text-sm mb-2 dark:text-primary-100">
                 <label className="flex-col mt-2">Deskripsi Video:</label>
@@ -477,9 +490,16 @@ export function AssetGratis() {
           </div>
         </div>
       )}
+      <div className="relative -mt-60 flex items-center justify-center">
+        <div className="text-center">
+          {searchResults.length === 0 && searchTerm && (
+            <p className="text-black text-[20px]">No assets found</p>
+          )}
+        </div>
+      </div>
 
-      <footer className=" min-h-[181px] flex flex-col items-center justify-center">
-        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
+      <footer className="mt-60 min-h-screen   flex flex-col items-center justify-center">
+        <div className=" flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
           <a href="#">Teams And Conditions</a>
           <a href="#">File Licenses</a>
           <a href="#">Refund Policy</a>

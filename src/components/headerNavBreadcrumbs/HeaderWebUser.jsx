@@ -97,7 +97,7 @@ function HeaderSidebar() {
           {/* cart an my asset */}
           <div className="gap-14 sm:gap-1 md:gap-8 lg:gap-8 xl:gap-2 2xl:gap-10 flex justify-center items-center">
             <Link
-              to=""
+              to="/my-asset"
               className="w-[45px] sm:w-[45px] md:w-[44px] lg:w-[44px] xl:w-[60px] 2xl:w-[34px] h-[20px] sm:h-[28px] md:h-[28px] lg:h-[28px] xl:h-[28px] 2xl:h[28px] -ml-[30px] sm:ml-1 md:ml-1 lg:ml-0 xl:ml-0 2xl:ml-2 gap-2 text-[8px] sm:text-[10px] md:text-[10px] lg:text-[10px] xl:text-[10px] 2xl:text-[10px]">
               <img
                 src={IconMyAsset}
@@ -143,7 +143,9 @@ function HeaderSidebar() {
                                   alt="User Icon"
                                   className="w-5 h-5 me-2"
                                 />
-                                <button type="button">Profile</button>
+                                <Link to="/profile" type="button">
+                                  Profile
+                                </Link>
                               </div>
                             </li>
                             <li>

@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection,getDocs, addDoc, Timestamp, doc, updateDoc, query, where } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  Timestamp,
+  doc,
+  updateDoc,
+  query,
+  where,
+} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { onAuthStateChanged } from "firebase/auth"; 
+import { onAuthStateChanged } from "firebase/auth";
 import { db, storage, auth } from "../../firebase/firebaseConfig";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconField from "../../assets/icon/iconField/icon.svg";
@@ -35,10 +44,13 @@ function AddNewVideo() {
   useEffect(() => {
     const fetchCategories = async () => {
       if (user) {
-        const q = query(collection(db, "categoryVideos"), where("userId", "==", user.uid));
+        const q = query(
+          collection(db, "categoryVideos"),
+          where("userId", "==", user.uid)
+        );
         try {
           const querySnapshot = await getDocs(q);
-          const categoriesData = querySnapshot.docs.map(doc => ({
+          const categoriesData = querySnapshot.docs.map((doc) => ({
             id: doc.id,
             name: doc.data().name,
           }));
@@ -56,9 +68,9 @@ function AddNewVideo() {
   // Menambahkan dan menghapus kelas overflow-hidden pada body
   useEffect(() => {
     if (showPopup) {
-      document.body.classList.add('overflow-hidden');
+      document.body.classList.add("overflow-hidden");
     } else {
-      document.body.classList.remove('overflow-hidden');
+      document.body.classList.remove("overflow-hidden");
     }
   }, [showPopup]);
 
@@ -148,7 +160,10 @@ function AddNewVideo() {
         });
 
         // Update state lokal dengan kategori yang baru ditambahkan
-        setCategories([...categories, { id: categoryDocRef.id, name: newCategory }]);
+        setCategories([
+          ...categories,
+          { id: categoryDocRef.id, name: newCategory },
+        ]);
         setNewCategory(""); // Reset input field
         setShowPopup(false); // Close the popup
       } catch (error) {
@@ -324,7 +339,7 @@ function AddNewVideo() {
                     <input
                       type="text"
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px]"
-                      name= "videoName"
+                      name="videoName"
                       value={video.videoName}
                       onChange={handleChange}
                       placeholder="Enter name...."
@@ -375,10 +390,12 @@ function AddNewVideo() {
                     </select>
                   </label>
 
-                  <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl" onClick={() => setShowPopup(true)}>
+                  <div
+                    className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl"
+                    onClick={() => setShowPopup(true)}>
                     +
                   </div>
-                </div>                
+                </div>
               </div>
 
               {/* Description */}
@@ -456,28 +473,32 @@ function AddNewVideo() {
             </div>
           </form>
           {showPopup && (
-                <div className="fixed inset-0 flex items-center justify-center  bg-gray-800 bg-opacity-50">
-                  <div className="bg-white dark:bg-neutral-20 p-6 rounded-2xl w-[510px] h-[250px] font-poppins text-black dark:text-white">
-                    <h1 className="h-7 font-semibold">Category</h1>
-                    <h2 className="h-14 flex items-center ">Add Category</h2>
-                          <input
-                            type="text"
-                            value={newCategory}
-                            onChange={(e) => setNewCategory(e.target.value)}
-                            placeholder="type here"
-                            className="border border-[#ECECEC] w-full h-12 mb-1 rounded-lg text-sm text-black placeholder:font-semibold placeholder:opacity-40"
-                          />
-                          <div className="mt-4 flex justify-end">
-                            <button onClick={() => setShowPopup(false)} className="bg-[#9B9B9B] text-white h-12 px-4 py-2  rounded-lg">
-                              Cancel
-                            </button>
-                            <button onClick={handleAddCategory} className="ml-2 bg-[#2563EB] text-white h-12 px-4 py-2 rounded-lg">
-                              Upload
-                            </button>
-                          </div>
-                   </div>
+            <div className="fixed inset-0 flex items-center justify-center  bg-gray-800 bg-opacity-50">
+              <div className="bg-white dark:bg-neutral-20 p-6 rounded-2xl w-[510px] h-[250px] font-poppins text-black dark:text-white">
+                <h1 className="h-7 font-semibold">Category</h1>
+                <h2 className="h-14 flex items-center ">Add Category</h2>
+                <input
+                  type="text"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  placeholder="type here"
+                  className="border border-[#ECECEC] w-full h-12 mb-1 rounded-lg text-sm text-black placeholder:font-semibold placeholder:opacity-40"
+                />
+                <div className="mt-4 flex justify-end">
+                  <button
+                    onClick={() => setShowPopup(false)}
+                    className="bg-[#9B9B9B] text-white h-12 px-4 py-2  rounded-lg">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddCategory}
+                    className="ml-2 bg-[#2563EB] text-white h-12 px-4 py-2 rounded-lg">
+                    Upload
+                  </button>
                 </div>
-              )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>

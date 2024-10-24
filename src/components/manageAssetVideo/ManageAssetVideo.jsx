@@ -21,6 +21,11 @@ function ManageAssetVideo() {
   const [alertError, setAlertError] = useState(false);
   const [isLoading, setIsLoading] = useState(true)
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const assetsPerPage = 5; // Set jumlah aset per halaman
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -44,26 +49,23 @@ function ManageAssetVideo() {
     };
   }, [isSidebarOpen]);
 
-  // Mengamati status autentikasi pengguna
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setIsLoading(true);
       if (currentUser) {
         setUser(currentUser);
 
-        // Periksa apakah pengguna adalah admin atau superadmin
         const adminQuery = query(collection(db, 'admins'), where('uid', '==', currentUser.uid));
         const adminSnapshot = await getDocs(adminQuery);
 
         if (!adminSnapshot.empty) {
           const adminData = adminSnapshot.docs[0].data();
-          setRole(adminData.role); // Role bisa 'admin' atau 'superadmin'
+          setRole(adminData.role);
         } else {
-          // Jika bukan admin atau superadmin, cek apakah pengguna adalah user biasa
           const userQuery = query(collection(db, 'users'), where('uid', '==', currentUser.uid));
           const userSnapshot = await getDocs(userQuery);
           if (!userSnapshot.empty) {
-            setRole('user'); // Set role sebagai user
+            setRole('user');
           }
         }
       } else {
@@ -75,76 +77,76 @@ function ManageAssetVideo() {
     return () => unsubscribe();
   }, []);
 
-  // Fungsi untuk mengambil data sesuai role pengguna
-// Fungsi untuk mengambil data sesuai role pengguna
-useEffect(() => {
-  const fetchData = async () => {
-    if (!user || !role) {
-      console.log('No user or role detected');
-      return;
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user || !role) {
+        return;
+      }
+
+      try {
+        let q;
+        if (role === 'superadmin') {
+          q = query(collection(db, 'assetVideos'));
+        } else if (role === 'admin') {
+          q = query(collection(db, 'assetVideos'));
+        } else if (role === 'user') {
+          q = query(collection(db, 'assetVideos'), where('userId', '==', user.uid));
+        }
+
+        const querySnapshot = await getDocs(q);
+        const items = [];
+
+        for (const doc of querySnapshot.docs) {
+          const data = doc.data();
+          const createdAt = data.createdAt?.toDate().toLocaleDateString("id-ID", {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }) || 'N/A';
+
+          items.push({
+            id: doc.id,
+            videoName: data.videoName,
+            description: data.description,
+            price: `Rp. ${data.price}`,
+            video: data.uploadUrlVideo,
+            category: data.category,
+            createdAt,
+            userId: data.userId 
+          });
+        }
+
+        if (role === 'admin') {
+          const superadminQuery = query(collection(db, 'admins'), where('role', '==', 'superadmin'));
+          const superadminSnapshot = await getDocs(superadminQuery);
+          const superadminIds = superadminSnapshot.docs.map(doc => doc.data().uid);
+          const filteredItems = items.filter(item => !superadminIds.includes(item.userId));
+          setAssets(filteredItems);
+        } else {
+          setAssets(items);
+        }
+      } catch (error) {
+        console.error('Error fetching data: ', error);
+      }
+    };
+
+    if (user && role) {
+      fetchData();
     }
+  }, [user, role]);
 
-    try {
-      let q;
-      if (role === 'superadmin') {
-        // Superadmin dapat melihat semua aset
-        q = query(collection(db, 'assetVideos'));
-      } else if (role === 'admin') {
-        // Ambil semua aset yang diupload oleh user dan admin
-        q = query(collection(db, 'assetVideos'));
-      } else if (role === 'user') {
-        // User hanya bisa melihat aset yang dia unggah sendiri
-        q = query(collection(db, 'assetVideos'), where('userId', '==', user.uid));
-      }
+  const filteredAssets = assets.filter(asset =>
+    asset.videoName && asset.videoName.toLowerCase().startsWith(searchTerm.toLowerCase())
+  );
 
-      const querySnapshot = await getDocs(q);
-      const items = [];
+  // Pagination logic
+  const totalPages = Math.ceil(filteredAssets.length / assetsPerPage);
+  const startIndex = (currentPage - 1) * assetsPerPage;
+  const currentAssets = filteredAssets.slice(startIndex, startIndex + assetsPerPage);
 
-      for (const doc of querySnapshot.docs) {
-        const data = doc.data();
-        const createdAt = data.createdAt?.toDate().toLocaleDateString("id-ID", {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        }) || 'N/A';
+  // Fungsi untuk berpindah halaman
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-        items.push({
-          id: doc.id,
-          videoName: data.videoName,
-          description: data.description,
-          price: `Rp. ${data.price}`,
-          video: data.uploadUrlVideo,
-          category: data.category,
-          createdAt,
-          userId: data.userId // Menyimpan userId untuk filtering selanjutnya
-        });
-      }
-
-      // Jika role admin, filter hasil untuk menghapus yang diupload oleh superadmin
-      if (role === 'admin') {
-        const superadminQuery = query(collection(db, 'admins'), where('role', '==', 'superadmin'));
-        const superadminSnapshot = await getDocs(superadminQuery);
-        const superadminIds = superadminSnapshot.docs.map(doc => doc.data().uid); // Dapatkan ID superadmin
-        
-        // Filter items untuk mengeluarkan yang diupload oleh superadmin
-        const filteredItems = items.filter(item => !superadminIds.includes(item.userId));
-        setAssets(filteredItems);
-      } else {
-        // Jika bukan admin, set assets langsung
-        setAssets(items);
-      }
-    } catch (error) {
-      console.error('Error fetching data: ', error);
-    }
-  };
-
-  if (user && role) {
-    fetchData();
-  }
-}, [user, role]);
-
-
-  // Fungsi hapus gambar
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this video?");
     if (confirmDelete) {
@@ -161,10 +163,6 @@ useEffect(() => {
     } else {
       alert("Deletion cancelled");
     }
-  };
-
-  const closeAlert = () => {
-    setAlertError(false);
   };
 
   return (
@@ -251,6 +249,8 @@ useEffect(() => {
                 <input
                   type="text"
                   placeholder="Search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="input border-none bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10 h-[40px] w-full focus:outline-none"
                 />
               </div>
@@ -290,7 +290,7 @@ useEffect(() => {
                 </tr>
               </thead>
               <tbody>
-                {assets.map(asset => (
+                {currentAssets.map(asset => (
                   <tr key={asset.id} className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
                     <td className="px-4 py-4">
                       <a
@@ -328,15 +328,23 @@ useEffect(() => {
           </div>
           )}
           <div className="flex join pt-72 justify-end ">
-            <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
-              «
-            </button>
-            <button className="join-item btn dark:bg-neutral-25 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-25 border-neutral-60 dark:border-neutral-25">
-              Page 1
-            </button>
-            <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
-              »
-            </button>
+          <button
+            className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}>
+            «
+          </button>
+          <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
+            Page {currentPage} of {totalPages}
+          </button>
+            <button
+            className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}>
+            »
+          </button>
           </div>
         </div>
       </div>

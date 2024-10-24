@@ -11,6 +11,13 @@ export default {
         poppins: ["Poppins", "sans-serif"],
         roboto: ["Roboto", "sans-serif"],
       },
+      theme: {
+        extend: {
+          boxShadow: {
+            'custom-lg': '0 10px 15px -3px rgb(255, 101, 0), 0 4px 6px -2px rgb(255, 101, 0)', // Contoh bayangan merah
+          },
+        },
+      },
 
       width: {
         xs: "340px",
@@ -105,4 +112,6 @@ export default {
     },
   },
   plugins: [require("daisyui"), require("flowbite/plugin")],
+
+
 };

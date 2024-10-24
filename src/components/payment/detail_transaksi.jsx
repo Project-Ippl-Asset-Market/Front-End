@@ -42,10 +42,14 @@ const PaymentSuccess = () => {
 
   return (
     <div className="font-poppins bg-gray-100 min-h-screen flex items-center justify-center">
-      <div className="bg-white rounded-md shadow-lg p-6 w-full max-w-md">
+      <div className="bg-white mt-28 rounded-md shadow-lg p-6 w-full max-w-lg">
         <Header />
 
         <div className="text-center">
+          <div className="text-center font-bold text-4xl leading-loose ">
+            <p className="text-success-30">Terima Kasih</p>
+          </div>
+
           <img
             src={Iconcheck}
             alt="icon-check"
@@ -64,7 +68,7 @@ const PaymentSuccess = () => {
           <div className="text-left text-gray-700">
             <div className="mb-4">
               {/* <p>Pembayaran Ke: Pulsa MyXL</p> */}
-              <p>Nama Pengakuisisi: AsetMarket</p>
+              <p>Nama Pengakuisisi: AsetMarket {transaction.assets?.name}</p>
               <p>
                 <strong>Metode Pembayaran:</strong>{" "}
                 {transaction.paymentMethod || "VirtualAccount"}
@@ -74,18 +78,26 @@ const PaymentSuccess = () => {
                 {transaction.grossAmount.toLocaleString("id-ID")}
               </p>
               <p className="text-gray-700">
-                <strong>Status: </strong> {""} {"Paid"}
+                <strong>Status: </strong> {""} {transaction.status}
               </p>
               <p>
                 <strong>No. Transaksi:</strong> {transaction.orderId}
               </p>
               <p>
-                <strong>No. Referensi:</strong> XXXXXXXX
+                <strong>Waktu Pembayaran: </strong>
+                {transaction.paymentDetails?.paymentTime || "DD/MM/YYYY 00:00"}
               </p>
-              <p>
-                Waktu Selesai:{" "}
-                {transaction.transaction_time || "DD/MM/YYYY 00:00"}
-              </p>
+              {/* Tampilkan Nama Aset dari Array Assets */}
+              {transaction.assets && transaction.assets.length > 0 && (
+                <div className="mt-4">
+                  <strong>Daftar Aset:</strong>
+                  <ul>
+                    {transaction.assets.map((asset, index) => (
+                      <li key={index}>{asset.name}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
         ) : (

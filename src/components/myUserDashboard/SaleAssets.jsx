@@ -63,70 +63,50 @@ function SaleAssets() {
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-lg font-semibold">Total Pendapatan</h3>
               <p className="text-2xl font-bold">Rp. 45.600.000</p>
-              <span className="text-green-500">
-                +21.6% dari 7 Hari yang lalu
-              </span>
+              <span className="text-green-500">+21.6% dari 7 Hari yang lalu</span>
             </div>
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-lg font-semibold">Asset Terjual</h3>
               <p className="text-2xl font-bold">67</p>
-              <span className="text-green-500">
-                +21.6% dari 7 Hari yang lalu
-              </span>
+              <span className="text-green-500">+21.6% dari 7 Hari yang lalu</span>
             </div>
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-lg font-semibold">Jumlah Disukai</h3>
               <p className="text-2xl font-bold">+1240</p>
-              <span className="text-green-500">
-                +21.6% dari 7 Hari yang lalu
-              </span>
+              <span className="text-green-500">+21.6% dari 7 Hari yang lalu</span>
             </div>
           </div>
 
           {/* Section: Table */}
           <div className="relative mt-6 overflow-x-auto shadow-md sm:rounded-lg p-8 dark:bg-neutral-25">
-            <table className="w-full text-sm text-left rtl:text-right text-gray-500 bg-primary-100 dark:text-neutral-90 ">
-              <thead className="text-xs text-neutral-20 uppercase dark:bg-neutral-25 dark:text-neutral-90 border-b dark:border-neutral-20">
+            {/* Search bar dan tombol Columns */}
+            <div className="flex justify-between items-center pb-4">
+              <input
+                type="text"
+                placeholder="Search packages"
+                className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300"
+              />
+              <button className="text-blue-600 hover:underline">Columns</button>
+            </div>
+
+            <table className="w-full text-sm text-left text-gray-500 bg-white dark:bg-neutral-25 dark:text-neutral-90">
+              <thead className="text-xs text-neutral-500 uppercase bg-gray-100 dark:bg-neutral-800 dark:text-neutral-300 border-b dark:border-neutral-20">
                 <tr>
-                  <th scope="col" className="px-6 py-3">
-                    Gambar
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Kategori
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Status
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Tanggal
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Action
-                  </th>
+                  <th scope="col" className="px-6 py-3">Package name</th>
+                  <th scope="col" className="px-6 py-3">Price</th>
+                  <th scope="col" className="px-6 py-3">Qty</th>
+                  <th scope="col" className="px-6 py-3">Refunds</th>
+                  <th scope="col" className="px-6 py-3">Chargebacks</th>
+                  <th scope="col" className="px-6 py-3">Gross</th>
+                  <th scope="col" className="px-6 py-3">First</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="bg-white dark:bg-neutral-25 dark:text-neutral-9">
-                  <td className="px-6 py-4">
-                    <img
-                      src="https://via.placeholder.com/40"
-                      alt="Gambar"
-                      className="w-10 h-10 rounded-full"
-                    />
-                  </td>
-                  <td className="px-6 py-4">Text</td>
-                  <td className="px-6 py-4">Berbayar</td>
-                  <td className="px-6 py-4">20-12-2024</td>
-                  <td className="px-6 py-4">
-                    <button className="text-blue-600 hover:underline">
-                      Edit
-                    </button>
-                    <button className="text-red-600 hover:underline ml-4">
-                      Hapus
-                    </button>
+                <tr className="bg-white dark:bg-neutral-25 dark:text-neutral-90">
+                  <td colSpan="7" className="px-6 py-4 text-center">
+                    No sales yet
                   </td>
                 </tr>
-                {/* Tambahkan lebih banyak baris di sini sesuai dengan data */}
               </tbody>
             </table>
           </div>

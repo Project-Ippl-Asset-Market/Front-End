@@ -410,11 +410,7 @@ export function AssetGratis() {
                         ({likesAsset})
                       </p>
                     </button>
-                    {/* <p className="text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
-                      {data.price % 1000 === 0 && data.price >= 1000
-                        ? `Rp. ${(data.price / 1000).toLocaleString("id-ID")}k`
-                        : `Rp. ${data.price.toLocaleString("id-ID")}`}
-                    </p> */}
+
                     <p className="text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
                       {data.price % 1000 === 0 && data.price >= 1000
                         ? `Rp. ${(data.price / 1000).toLocaleString("id-ID")}k`

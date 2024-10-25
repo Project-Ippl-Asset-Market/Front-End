@@ -9,17 +9,20 @@ import {
   runTransaction,
   getDocs,
   getDoc,
+  addDoc,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import HeaderNav from "../../headerNavBreadcrumbs/HeaderWebUser";
 import NavbarSection from "../web_User-LandingPage/NavbarSection";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import CustomImage from "../../../assets/assetmanage/Iconrarzip.svg";
-import IconDownload from "../../../assets/icon/iconDownload/iconDownload.svg";
 import BannerBG from "../../../assets/assetWeb/BannerBG.png";
+import IconDownload from "../../../assets/icon/iconHeader/iconMyasset.svg";
+import IconDollar from "../../../assets/assetWeb/iconDollarLight.svg";
 import IconCart from "../../../assets/assetWeb/iconCart.svg";
 import { AiOutlineInfoCircle } from "react-icons/ai";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+const myAssetsCollectionRef = collection(db, "myAssets");
 
 export function HomePage() {
   const [AssetsData, setAssetsData] = useState([]);
@@ -29,12 +32,11 @@ export function HomePage() {
   const [selectedasset, setselectedasset] = useState(null);
   const [alertLikes, setAlertLikes] = useState(false);
   const [isProcessingLike, setIsProcessingLike] = useState(false);
-  const myAssetsCollectionRef = collection(db, "myAssets");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  // const navigate = useNavigate();
   const [purchasedAssets, setPurchasedAssets] = useState(new Set());
   const [validationMessage, setValidationMessage] = useState("");
+  const navigate = useNavigate();
 
   // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
@@ -63,14 +65,41 @@ export function HomePage() {
 
     return () => unsubscribe();
   }, []);
+
+  // Menangani pengambilan aset yang telah dibeli
+  useEffect(() => {
+    const fetchUserPurchasedAssets = async () => {
+      if (!currentUserId) return;
+
+      const purchasedQuery = query(
+        collection(db, "buyAssets"),
+        where("boughtBy", "==", currentUserId)
+      );
+
+      try {
+        const purchasedSnapshot = await getDocs(purchasedQuery);
+        const purchasedIds = new Set();
+
+        purchasedSnapshot.forEach((doc) => {
+          purchasedIds.add(doc.data().assetId);
+        });
+
+        setPurchasedAssets(purchasedIds);
+      } catch (error) {
+        console.error("Error fetching purchased assets: ", error);
+      }
+    };
+
+    fetchUserPurchasedAssets();
+  }, [currentUserId]);
 
   const fetchAssets = async () => {
     const collectionsToFetch = [
       "assetAudios",
-      "assetImages",
-      "assetDatasets",
       "assetImage2D",
       "assetImage3D",
+      "assetDatasets",
+      "assetImages",
       "assetVideos",
     ];
 
@@ -97,33 +126,6 @@ export function HomePage() {
   useEffect(() => {
     fetchAssets();
   }, []);
-
-  // Mengambil aset yang telah dibeli oleh pengguna
-  useEffect(() => {
-    const fetchUserPurchasedAssets = async () => {
-      if (!currentUserId) return;
-
-      const purchasedQuery = query(
-        collection(db, "buyAssets"),
-        where("boughtBy", "==", currentUserId)
-      );
-
-      try {
-        const purchasedSnapshot = await getDocs(purchasedQuery);
-        const purchasedIds = new Set();
-
-        purchasedSnapshot.forEach((doc) => {
-          purchasedIds.add(doc.data().assetId);
-        });
-
-        setPurchasedAssets(purchasedIds);
-      } catch (error) {
-        console.error("Error fetching purchased assets: ", error);
-      }
-    };
-
-    fetchUserPurchasedAssets();
-  }, [currentUserId]);
 
   // Filter pencarian
   useEffect(() => {
@@ -214,30 +216,6 @@ export function HomePage() {
     }
   };
 
-  const handleSaveToMyAssets = async () => {
-    if (!currentUserId || !selectedasset) {
-      alert("Anda perlu login untuk menyimpan Asset ini.");
-      return;
-    }
-
-    try {
-      const assetDocRef = doc(
-        myAssetsCollectionRef,
-        `${currentUserId}_${selectedasset.id}`
-      );
-      await setDoc(assetDocRef, {
-        userId: currentUserId,
-        ...selectedasset,
-        savedAt: new Date(),
-      });
-      alert("Asset telah disimpan ke My Asset!");
-      closeModal();
-    } catch (error) {
-      console.error("Error saving asset to My Assets: ", error);
-      alert("Terjadi kesalahan saat menyimpan asset.");
-    }
-  };
-
   // Fungsi untuk memvalidasi apakah pengguna dapat menambahkan aset ke keranjang
   const validateAddToCart = (assetId) => {
     if (!currentUserId) {
@@ -280,8 +258,22 @@ export function HomePage() {
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
-        Image: selectedasset.uploadUrlImage,
-        imageName: selectedasset.imageName,
+        assetImageAll:
+          selectedasset.asset2DImage ||
+          selectedasset.asset3DImage ||
+          selectedasset.uploadUrlAudio ||
+          selectedasset.datasetImage ||
+          selectedasset.uploadUrlImage ||
+          selectedasset.uploadUrlVideo ||
+          "No Image Asset",
+        assetNameAll:
+          selectedasset.audioName ||
+          selectedasset.asset2DName ||
+          selectedasset.asset3DName ||
+          selectedasset.datasetName ||
+          selectedasset.imageName ||
+          selectedasset.videoName ||
+          "No NameAsset",
         description: selectedasset.description,
         price: selectedasset.price,
         category: selectedasset.category,
@@ -289,6 +281,162 @@ export function HomePage() {
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {
       console.error("Error adding to cart: ", error);
+    }
+  };
+
+  const handleBuyNow = async (selectedasset) => {
+    if (!currentUserId) {
+      alert("Anda perlu login untuk menambahkan asset ke keranjang");
+      navigate("/login");
+      return;
+    }
+
+    if (purchasedAssets.has(selectedasset.id)) {
+      alert(
+        "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
+      );
+      return;
+    }
+
+    const cartRef = doc(
+      db,
+      "cartBuyNow",
+      `${currentUserId}_${selectedasset.id}`
+    );
+    const cartSnapshot = await getDoc(cartRef);
+
+    if (cartSnapshot.exists()) {
+      alert("Anda sudah Membeli Asset ini.");
+      return;
+    }
+
+    const {
+      uploadUrlVideo,
+      uploadUrlImage,
+      datasetImage,
+      asset2DImage,
+      asset3DImage,
+      uploadUrlAudio,
+      imageName,
+      videoName,
+      atasetName,
+      asset2DName,
+      asset3DName,
+      audioName,
+      description,
+      price,
+      category,
+    } = selectedasset;
+
+    const missingFields = [];
+    if (
+      !uploadUrlImage &&
+      !uploadUrlVideo &&
+      !datasetImage &&
+      !asset2DImage &&
+      !asset3DImage &&
+      !uploadUrlAudio
+    )
+      missingFields.push("asset images");
+    if (
+      !videoName &&
+      !imageName &&
+      !atasetName &&
+      !asset2DName &&
+      !asset3DName &&
+      !audioName
+    )
+      missingFields.push("asset name");
+    if (!description) missingFields.push("description");
+    if (price === undefined) missingFields.push("price");
+    if (!category) missingFields.push("category");
+
+    if (missingFields.length > 0) {
+      console.error("Missing fields in selected asset:", missingFields);
+      alert(`Missing fields: ${missingFields.join(", ")}. Please try again.`);
+      return;
+    }
+
+    try {
+      await setDoc(cartRef, {
+        userId: currentUserId,
+        assetId: selectedasset.id,
+        assetImageGame:
+          asset2DImage ||
+          asset3DImage ||
+          uploadUrlAudio ||
+          uploadUrlVideo ||
+          uploadUrlImage ||
+          datasetImage ||
+          "No Image Asset",
+        assetNameGame:
+          videoName ||
+          imageName ||
+          atasetName ||
+          audioName ||
+          asset2DName ||
+          asset3DName ||
+          "No Name Asset",
+        description,
+        price,
+        category,
+      });
+
+      navigate("/buy-now-asset");
+    } catch (error) {
+      console.error("Error adding to cart: ", error);
+      alert(
+        "Terjadi kesalahan saat menambahkan asset ke keranjang. Silakan coba lagi."
+      );
+    }
+  };
+
+  const handleSaveToMyAssets = async () => {
+    // Periksa apakah currentUserId dan selectedasset ada
+    if (!currentUserId || !selectedasset) {
+      alert("Anda perlu login untuk menyimpan Asset ini.");
+      return;
+    }
+
+    // Log untuk memverifikasi currentUserId
+    console.log("Current User ID:", currentUserId);
+    console.log("Selected Asset:", selectedasset);
+
+    // Buat data asset baru dengan userId yang sesuai
+    const newAssetData = {
+      ...selectedasset,
+      userId: currentUserId, // Tetapkan userId ke currentUserId
+      savedAt: new Date(),
+    };
+
+    // Log untuk memverifikasi data yang akan disimpan
+    console.log("Asset Data to Save:", newAssetData);
+
+    try {
+      // Cek apakah asset sudah ada di myAssets
+      const querySnapshot = await getDocs(
+        query(
+          myAssetsCollectionRef,
+          where("userId", "==", currentUserId),
+          where("id", "==", selectedasset.id) // Sesuaikan dengan field asset yang kamu gunakan
+        )
+      );
+
+      if (!querySnapshot.empty) {
+        // Asset sudah ada, tampilkan peringatan
+        alert("Asset ini sudah disimpan ke My Asset!");
+        return;
+      }
+
+      // Menambahkan dokumen baru dengan addDoc
+      const docRef = await addDoc(myAssetsCollectionRef, newAssetData);
+
+      console.log("Document written with ID: ", docRef.id); // Log ID dokumen yang baru dibuat
+      alert("Asset telah disimpan ke My Asset!");
+      closeModal();
+    } catch (error) {
+      console.error("Error saving asset to My Assets: ", error);
+      alert("Terjadi kesalahan saat menyimpan asset.");
     }
   };
 
@@ -307,11 +455,11 @@ export function HomePage() {
   // Filter berdasarkan pencarian
   const filteredAssetsData = AssetsData.filter((asset) => {
     const datasetName =
-      asset.assetAudiosName ||
       asset.audioName ||
-      asset.imageName ||
       asset.asset2DName ||
       asset.asset3DName ||
+      asset.datasetName ||
+      asset.imageName ||
       asset.videoName ||
       "";
     return (
@@ -463,6 +611,8 @@ export function HomePage() {
                         alt="Asset Video"
                         className="h-28 sm:h-28 md:h-36 lg:h-40 xl:h-full 2xl:h-full w-full rounded-t-[10px] mx-auto border-none"
                         controls
+                        controlsList="nodownload"
+                        onContextMenu={(e) => e.preventDefault()}
                       />
                     ) : (
                       <img
@@ -556,6 +706,8 @@ export function HomePage() {
                     alt="Asset Video"
                     className="w-full h-[300px] object-cover"
                     controls
+                    controlsList="nodownload"
+                    onContextMenu={(e) => e.preventDefault()}
                   />
                 ) : (
                   <img
@@ -590,10 +742,6 @@ export function HomePage() {
                   "Nama Tidak Tersedia"}
               </p>
               <p className="text-sm mb-2 dark:text-primary-100 mt-4">
-                {/* {selectedasset.price === 0
-                  ? "Free"
-                  : `Rp. ${selectedasset.price.toLocaleString("id-ID")}`} */}
-
                 {selectedasset.price > 0
                   ? `Rp ${selectedasset.price.toLocaleString("id-ID")}`
                   : "Free"}
@@ -623,6 +771,21 @@ export function HomePage() {
                       />
                       <p>Tambahkan Ke Keranjang</p>
                     </button>
+                    <button
+                      onClick={() => handleBuyNow(selectedasset)}
+                      className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 mt-2 rounded-md ${
+                        purchasedAssets.has(selectedasset.id)
+                          ? "bg-gray-400 pointer-events-none"
+                          : "bg-secondary-40"
+                      }`}
+                      disabled={purchasedAssets.has(selectedasset.id)}>
+                      <img
+                        src={IconDollar}
+                        alt="Cart Icon"
+                        className="w-6 h-6 mr-2 -ml-24"
+                      />
+                      <p>Beli Sekarang</p>
+                    </button>
                   </>
                 ) : (
                   <button
@@ -633,7 +796,7 @@ export function HomePage() {
                       alt="Download Icon"
                       className="w-6 h-6 mr-2"
                     />
-                    <p>Download</p>
+                    <p>Save Asset</p>
                   </button>
                 )}
               </div>

@@ -123,9 +123,9 @@ function HeaderWebUser() {
                           <summary className="cursor-pointer">
                             {displayUsername}
                           </summary>
-                          <ul className="bg-neutral-90 dark:bg-neutral-20 rounded-lg w-48 shadow-lg ">
-                            <li className="flex mb-1 w-full h-8 transition-colors duration-300 focus:outline-none">
-                              <div className="flex items-center hover:text-primary-100 hover:bg-secondary-40 dark:hover:bg-secondary-40  ">
+                          <ul className="bg-neutral-90 dark:bg-neutral-20 rounded-lg w-48 shadow-lg">
+                            <li className="flex mb-1 w-full h-8 transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none">
+                              <div className="flex items-center">
                                 <img
                                   src={darkMode ? IconUserDark : IconUserLight}
                                   alt="User Icon"
@@ -137,25 +137,25 @@ function HeaderWebUser() {
                               </div>
                             </li>
                             <li>
-                              <div className="flex items-center justify-center p-2 bg-neutral-90 hover:border-none dark:bg-neutral-20   rounded-lg hover:text-primary-100 hover:bg-secondary-40 dark:hover:bg-secondary-40 ">
+                              <div className="flex items-center justify-center p-2 bg-neutral-90 hover:rounded-lg dark:bg-neutral-20 transition-all duration-300 rounded-lg ">
                                 <div
                                   onClick={toggleDarkMode}
-                                  className="flex w-full h-8 transition-colors duration-100 focus:outline-none gap-4 p-1  ">
+                                  className="flex w-full h-8 transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none gap-4 p-1 ">
                                   {darkMode ? (
                                     <img
                                       src={IconDarkMode}
                                       alt="icon dark mode"
-                                      className="w-5 h-5 transition-transform duration-100"
+                                      className="w-5 h-5 transition-transform duration-300"
                                     />
                                   ) : (
                                     <img
                                       src={IconLightMode}
                                       alt="icon light mode"
-                                      className="w-6 h-6 transition-transform duration-100"
+                                      className="w-6 h-6 transition-transform duration-300"
                                     />
                                   )}
                                   <span
-                                    className={`text-[13px] font-semibold transition-colors duration-100${
+                                    className={`text-[13px] font-semibold transition-colors duration-300 hover:text-primary-100 ${
                                       darkMode
                                         ? "text-neutral-100"
                                         : "text-neutral-800"
@@ -165,9 +165,9 @@ function HeaderWebUser() {
                                 </div>
                               </div>
                             </li>
-                            <li className="flex mb-1 w-full h-8 transition-colors duration-300 focus:outline-none">
+                            <li className="flex mb-1 w-full h-8 transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none">
                               <div
-                                className="flex items-center hover:text-primary-100 hover:bg-secondary-40 dark:hover:bg-secondary-40"
+                                className="flex items-center"
                                 onClick={handleLogout}>
                                 <img
                                   src={
@@ -187,10 +187,8 @@ function HeaderWebUser() {
                   <div
                     tabIndex={0}
                     role="button"
-                    id="dropdownDefaultButton"
-                    data-dropdown-toggle="dropdown"
                     className="btn btn-ghost btn-circle avatar mx-2 w-14 h-14 rounded-full -ml-3">
-                    <div className="w-14 h-14 p-3 rounded-full overflow-hidden bg-neutral-80 flex items-center justify-center text-secondary-40 font-bold text-2xl mx-auto ">
+                    <div className="w-14 h-14 p-3 rounded-full overflow-hidden bg-neutral-80 flex items-center justify-center text-secondary-40 font-bold text-2xl mx-auto">
                       {user ? (
                         user.photoURL ? (
                           <img
@@ -215,21 +213,14 @@ function HeaderWebUser() {
                 </div>
               </div>
             ) : (
-              <div className="flex-none text-neutral-20 dark:text-primary-100 bg-primary-100">
-                <ul className="menu-horizontal px-1 bg-primary-100">
+              <div className="flex-none text-neutral-20 dark:text-primary-100">
+                <ul className="menu menu-horizontal px-1">
                   <li>
-                    <div className="dropdown dropdown-hover bg-primary-100">
-                      <div
-                        tabIndex={0}
-                        role="button"
-                        className="btn m-1 bg-primary-100 hover:bg-primary-100 ">
-                        <p className="text-center mx-auto mt-1 text-neutral-10">
-                          Hello, Sign in
-                        </p>
-                      </div>
-                      <ul
-                        tabIndex={0}
-                        className="dropdown-content menu bg-primary-100 rounded-box z-[1] w-52 p-2 shadow ">
+                    <details>
+                      <summary className="cursor-pointer">
+                        Hello, Sign in
+                      </summary>
+                      <ul className="bg-neutral-90 dark:bg-neutral-20 rounded-t-none p-2">
                         <li>
                           <Link to="/login">Login</Link>
                         </li>
@@ -237,7 +228,7 @@ function HeaderWebUser() {
                           <Link to="/register">Register</Link>
                         </li>
                       </ul>
-                    </div>
+                    </details>
                   </li>
                 </ul>
               </div>

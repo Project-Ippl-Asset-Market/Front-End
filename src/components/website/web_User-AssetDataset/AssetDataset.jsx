@@ -237,21 +237,66 @@ export function AssetDataset() {
   };
 
   // Fungsi untuk menangani pembelian aset
-  const handleBuyNow = async () => {
+  const handleBuyNow = async (selectedasset) => {
     if (!currentUserId) {
-      alert("Anda perlu login untuk membeli asset");
+      alert("Anda perlu login untuk menambahkan asset ke keranjang");
       navigate("/login");
       return;
     }
-    // Cek apakah aset sudah dibeli sebelumnya
+
     if (purchasedAssets.has(selectedasset.id)) {
       alert(
         "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
       );
-      return; // Jika sudah dibeli, tidak bisa ditambahkan ke keranjang
+      return;
     }
 
-    navigate("/payment");
+    // Document ID sekarang mengikuti asset ID
+    const cartRef = doc(
+      db,
+      "cartBuyNow", // Ubah ke koleksi 'cartBuyNow'
+      `${currentUserId}_${selectedasset.id}`
+    );
+    const cartSnapshot = await getDoc(cartRef);
+    if (cartSnapshot.exists()) {
+      // alert("Anda sudah Membeli Asset ini.");
+      return;
+    }
+
+    const { id, datasetName, description, price, datasetImage, category } =
+      selectedasset;
+
+    const missingFields = [];
+    if (!datasetName) missingFields.push("datasetName");
+    if (!description) missingFields.push("description");
+    if (price === undefined) missingFields.push("price");
+    if (!datasetImage) missingFields.push("datasetImage");
+    if (!category) missingFields.push("category");
+
+    if (missingFields.length > 0) {
+      console.error("Missing fields in selected asset:", missingFields);
+      alert(`Missing fields: ${missingFields.join(", ")}. Please try again.`);
+      return;
+    }
+
+    try {
+      await setDoc(cartRef, {
+        userId: currentUserId,
+        assetId: id,
+        datasetName: datasetName,
+        description: description,
+        price: price,
+        datasetImage: datasetImage,
+        category: category,
+      });
+
+      navigate("/buy-now-asset");
+    } catch (error) {
+      console.error("Error adding to cart: ", error);
+      alert(
+        "Terjadi kesalahan saat menambahkan asset ke keranjang. Silakan coba lagi."
+      );
+    }
   };
 
   // Menampilkan modal

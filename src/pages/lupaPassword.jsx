@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import { auth } from "../firebase/firebaseConfig";
 import { sendPasswordResetEmail } from "firebase/auth";
@@ -47,7 +48,7 @@ function LupaPassword() {
         setErrorModal(data.message);
       }
     } catch (error) {
-      console.error("Kesalahan saat memproses permintaan:", error);
+      // console.error("Kesalahan saat memproses permintaan:", error);
       setErrorModal(
         "Terjadi kesalahan saat memproses permintaan. Silakan coba lagi."
       );

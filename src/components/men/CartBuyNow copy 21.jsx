@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from "react";
 import { getAuth } from "firebase/auth";
 import { db } from "../../firebase/firebaseConfig";
@@ -14,7 +12,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { useUserContext } from "../../contexts/UserContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const CartBuyNow = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +20,7 @@ const CartBuyNow = () => {
   const auth = getAuth();
   const user = auth.currentUser;
   const { userRole } = useUserContext();
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Initialize useNavigate
 
   // Fetch cart items
   useEffect(() => {
@@ -108,11 +106,6 @@ const CartBuyNow = () => {
             email: user.email,
             phoneNumber: user.phoneNumber || "0000000000",
           },
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
         }
       );
 
@@ -131,11 +124,11 @@ const CartBuyNow = () => {
         },
         onClose: function () {
           setIsPaymentOpen(false);
-          navigate(-1);
+          navigate(-1); // Navigate back to the previous page
         },
       });
     } catch (error) {
-      // console.error("Error during payment process:", error);
+      console.error("Error during payment process:", error);
     } finally {
       setIsLoading(false);
     }
@@ -143,43 +136,39 @@ const CartBuyNow = () => {
 
   const handleMoveAndDeleteAssets = async (assetDetails) => {
     try {
+      // Move assets to the buyAssets collection
       await moveAssets(assetDetails);
+
+      // Delete items from the cart
       await Promise.all(assetDetails.map(deleteAsset));
-      // eslint-disable-next-line no-unused-vars
     } catch (moveError) {
-      // console.error("Error while moving assets:", moveError);
+      console.error("Error while moving assets:", moveError);
     }
   };
 
   const moveAssets = async (assetDetails) => {
     await axios.post("http://localhost:3000/api/assets/move-assets", {
       uid: user.uid,
-      assets: assetDetails.map(({ assetId, name }) => ({
-        assetId,
-        price: 0,
-        name,
-      })),
+      assets: assetDetails,
     });
   };
 
   const deleteAsset = async (asset) => {
     const docId = `${user.uid}_${asset.assetId}`;
-    const url = `http://localhost:3000/api/assets/delete/cart-buy-now/${docId}`;
-
-    // Hapus item dari API
-    await axios.delete(url);
+    const url = `http://localhost:3000/api/assets/delete/${docId}`;
 
     try {
-      // Mencoba menghapus dokumen dari Firestore
-      const assetDoc = doc(db, "cartBuyNow", asset.id);
+      // Call API to delete asset from backend
+      await axios.delete(url);
+
+      // Remove from Firestore
+      const assetDoc = doc(db, "cartBuyNow", asset.docId);
       await deleteDoc(assetDoc);
-      // console.log(`Aset dengan ID ${asset.id} telah dihapus.`);
-      // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      // console.error(
-      //   `Kesalahan saat menghapus aset dengan assetId ${asset.id}:`,
-      //   error
-      // );
+      console.error(
+        `Error deleting asset with assetId ${asset.assetId}:`,
+        error
+      );
     }
   };
 

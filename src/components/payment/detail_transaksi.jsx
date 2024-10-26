@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // eslint-disable-next-line no-unused-vars
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -20,7 +21,7 @@ const TransactionDetails = () => {
         setTransactionDetails(data);
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching transaction details:", error);
+        // console.error("Error fetching transaction details:", error);
         setLoading(false);
       }
     };

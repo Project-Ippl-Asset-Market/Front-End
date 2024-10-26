@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -158,7 +159,7 @@ function AddAsset3D() {
         navigate("/manage-asset-3D");
       }, 2000);
     } catch (error) {
-      console.error("Error menambahkan asset3D: ", error);
+      // console.error("Error menambahkan asset3D: ", error);
       setAlertError(true);
     }
   };

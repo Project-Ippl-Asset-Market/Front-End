@@ -1,11 +1,22 @@
+/* eslint-disable no-unused-vars */
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconField from "../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../HeaderNav/HeaderNav";
 import { useParams, useNavigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useState } from "react";
-import { doc, getDoc, updateDoc, query, where, collection, getDocs, addDoc, Timestamp } from "firebase/firestore"; // Firebase functions
-import { db, storage, auth } from "../../firebase/firebaseConfig"; // Pastikan ini mengarah ke file konfigurasi Firebase Anda
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  query,
+  where,
+  collection,
+  getDocs,
+  addDoc,
+  Timestamp,
+} from "firebase/firestore";
+import { db, storage, auth } from "../../firebase/firebaseConfig";
 import {
   deleteObject,
   ref,
@@ -50,30 +61,30 @@ function EditNewVideo() {
             where("email", "==", user.email)
           );
           const adminSnapshot = await getDocs(adminQuery);
-          
+
           if (!adminSnapshot.empty) {
             const adminData = adminSnapshot.docs[0].data();
             setRole(adminData.role); // Ambil role dari dokumen 'admins'
             return;
           }
-  
+
           // Jika tidak ditemukan di 'admins', cek di 'users'
           const userQuery = query(
             collection(db, "users"),
             where("email", "==", user.email)
           );
           const userSnapshot = await getDocs(userQuery);
-          
+
           if (!userSnapshot.empty) {
             const userData = userSnapshot.docs[0].data();
             setRole(userData.role); // Ambil role dari dokumen 'users'
           }
         } catch (error) {
-          console.error("Error fetching user role: ", error);
+          // console.error("Error fetching user role: ", error);
         }
       }
     };
-  
+
     fetchUserRole();
   }, [user]);
 
@@ -81,39 +92,42 @@ function EditNewVideo() {
     const fetchCategories = async () => {
       if (user && role) {
         let q;
-  
+
         if (role === "superadmin") {
           // Superadmin bisa melihat semua kategori
           q = query(collection(db, "categoryVideos"));
         } else {
           // Admin dan user hanya melihat kategori berdasarkan userId mereka
-          q = query(collection(db, "categoryVideos"), where("userId", "==", user.uid));
+          q = query(
+            collection(db, "categoryVideos"),
+            where("userId", "==", user.uid)
+          );
         }
-  
+
         try {
           const querySnapshot = await getDocs(q);
-          const categoriesData = querySnapshot.docs.map(doc => ({
+          const categoriesData = querySnapshot.docs.map((doc) => ({
             id: doc.id,
             name: doc.data().name,
           }));
           setCategories(categoriesData);
-          console.log("Fetched categories:", categoriesData);
+          // console.log("Fetched categories:", categoriesData);
         } catch (error) {
-          console.error("Error fetching categories: ", error);
+          // console.error("Error fetching categories: ", error);
         }
       }
     };
-  
+
     fetchCategories();
   }, [user, role]);
-   // Pastikan memanggil ulang saat user berubah
+  // Pastikan memanggil ulang saat user berubah
 
   // Menambahkan dan menghapus kelas overflow-hidden pada body
   useEffect(() => {
     if (showPopup) {
-      document.body.classList.add('overflow-hidden');
+      document.body.classList.add("overflow-hidden");
     } else {
-      document.body.classList.remove('overflow-hidden');
+      document.body.classList.remove("overflow-hidden");
     }
   }, [showPopup]);
 
@@ -132,11 +146,11 @@ function EditNewVideo() {
             setVideoPreview(data.uploadUrlVideo);
           }
         } else {
-          console.log("No such document!");
+          // console.log("No such document!");
           navigate("/manageAssetVideo");
         }
       } catch (error) {
-        console.error("Error fetching video:", error);
+        // console.error("Error fetching video:", error);
       }
     };
 
@@ -205,7 +219,7 @@ function EditNewVideo() {
         navigate("/manage-asset-video");
       }, 2000);
     } catch (error) {
-      console.error("Error updating video: ", error);
+      // console.error("Error updating video: ", error);
       setAlertError(true);
     }
   };
@@ -229,11 +243,14 @@ function EditNewVideo() {
         });
 
         // Update state lokal dengan kategori yang baru ditambahkan
-        setCategories([...categories, { id: categoryDocRef.id, name: newCategory }]);
+        setCategories([
+          ...categories,
+          { id: categoryDocRef.id, name: newCategory },
+        ]);
         setNewCategory(""); // Reset input field
         setShowPopup(false); // Close the popup
       } catch (error) {
-        console.error("Error menambahkan kategori: ", error);
+        // console.error("Error menambahkan kategori: ", error);
         setAlertError(true);
       }
     }
@@ -301,29 +318,33 @@ function EditNewVideo() {
             </div>
           )}
 
-              {showPopup && (
-                <div className="fixed inset-0 flex items-center justify-center  bg-gray-800 bg-opacity-50">
-                  <div className="bg-white dark:bg-neutral-20 p-6 rounded-2xl w-[510px] h-[250px] font-poppins text-black dark:text-white">
-                    <h1 className="h-7 font-semibold">Category</h1>
-                    <h2 className="h-14 flex items-center ">Add Category</h2>
-                          <input
-                            type="text"
-                            value={newCategory}
-                            onChange={(e) => setNewCategory(e.target.value)}
-                            placeholder="type here"
-                            className="border border-[#ECECEC] w-full h-12 mb-1 rounded-lg text-sm text-black placeholder:font-semibold placeholder:opacity-40"
-                          />
-                          <div className="mt-4 flex justify-end">
-                            <button onClick={() => setShowPopup(false)} className="bg-[#9B9B9B] text-white h-12 px-4 py-2  rounded-lg">
-                              Cancel
-                            </button>
-                            <button onClick={handleAddCategory} className="ml-2 bg-[#2563EB] text-white h-12 px-4 py-2 rounded-lg">
-                              Upload
-                            </button>
-                          </div>
-                   </div>
+          {showPopup && (
+            <div className="fixed inset-0 flex items-center justify-center  bg-gray-800 bg-opacity-50">
+              <div className="bg-white dark:bg-neutral-20 p-6 rounded-2xl w-[510px] h-[250px] font-poppins text-black dark:text-white">
+                <h1 className="h-7 font-semibold">Category</h1>
+                <h2 className="h-14 flex items-center ">Add Category</h2>
+                <input
+                  type="text"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  placeholder="type here"
+                  className="border border-[#ECECEC] w-full h-12 mb-1 rounded-lg text-sm text-black placeholder:font-semibold placeholder:opacity-40"
+                />
+                <div className="mt-4 flex justify-end">
+                  <button
+                    onClick={() => setShowPopup(false)}
+                    className="bg-[#9B9B9B] text-white h-12 px-4 py-2  rounded-lg">
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddCategory}
+                    className="ml-2 bg-[#2563EB] text-white h-12 px-4 py-2 rounded-lg">
+                    Upload
+                  </button>
                 </div>
-              )}
+              </div>
+            </div>
+          )}
 
           <form
             onSubmit={handleSubmit}
@@ -479,7 +500,9 @@ function EditNewVideo() {
                     </select>
                   </label>
 
-                  <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl" onClick={() => setShowPopup(true)}>
+                  <div
+                    className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl"
+                    onClick={() => setShowPopup(true)}>
                     +
                   </div>
                 </div>

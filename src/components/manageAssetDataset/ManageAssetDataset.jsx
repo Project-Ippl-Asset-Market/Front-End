@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
@@ -108,7 +109,7 @@ function ManageAssetImage() {
     const fetchData = async () => {
       setIsLoading(true);
       if (!user || !role) {
-        console.log("No user or role detected");
+        // console.log("No user or role detected");
         return;
       }
 
@@ -176,7 +177,7 @@ function ManageAssetImage() {
           setFilteredAssets(items);
         }
       } catch (error) {
-        console.error("Error fetching data: ", error);
+        // console.error("Error fetching data: ", error);
         setAlertError(true);
       } finally {
         setIsLoading(false);
@@ -246,8 +247,7 @@ function ManageAssetImage() {
           className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           } sm:translate-x-0`}
-          aria-label="Sidebar"
-        >
+          aria-label="Sidebar">
           <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
             <NavigationItem />
           </div>
@@ -258,15 +258,13 @@ function ManageAssetImage() {
           <div
             role="alert"
             className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] text-[10px] sm:text-[10px] p-4 bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-            onClick={closeAlert}
-          >
+            onClick={closeAlert}>
             <div className="flex items-center justify-center space-x-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 shrink-0 stroke-current"
                 fill="none"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -284,15 +282,13 @@ function ManageAssetImage() {
           <div
             role="alert"
             className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[340px] text-[10px] sm:text-[10px] p-4 bg-primary-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-            onClick={closeAlert}
-          >
+            onClick={closeAlert}>
             <div className="flex items-center justify-center space-x-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 shrink-0 stroke-current"
                 fill="none"
-                viewBox="0 0 24 24"
-              >
+                viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -317,8 +313,7 @@ function ManageAssetImage() {
               <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
                 <Link
                   to="/manage-asset-dataset/add"
-                  className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]"
-                >
+                  className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
                   + Add Dataset
                 </Link>
               </div>
@@ -378,8 +373,7 @@ function ManageAssetImage() {
                   {currentDatasets.map((assets) => (
                     <tr
                       key={assets.id}
-                      className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9"
-                    >
+                      className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
                       <td className="px-6 py-4">
                         {assets.datasetImage ? (
                           <img
@@ -405,8 +399,7 @@ function ManageAssetImage() {
 
                       <th
                         scope="row"
-                        className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap"
-                      >
+                        className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap">
                         {assets.datasetName}
                       </th>
                       <td className="px-6 py-4">{assets.category}</td>
@@ -439,8 +432,7 @@ function ManageAssetImage() {
             <button
               className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
+              disabled={currentPage === 1}>
               «
             </button>
             <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
@@ -451,8 +443,7 @@ function ManageAssetImage() {
               onClick={() =>
                 setCurrentPage((prev) => Math.min(prev + 1, totalPages))
               }
-              disabled={currentPage === totalPages}
-            >
+              disabled={currentPage === totalPages}>
               »
             </button>
           </div>

@@ -25,7 +25,7 @@ const NavbarSection = () => {
 
   return (
     <>
-      <nav className="dark:bg-neutral-5 dark:text-primary-100 text-neutral-10 w-full fixed font-poppins  bg-neutral-90  ">
+      <nav className="dark:bg-neutral-5 dark:text-primary-100 text-neutral-10 w-full fixed font-poppins  bg-neutral-90  shadow-lg">
         <div className="mx-[20px] flex justify-between items-center mt-0 w-full   ">
           <div className="flex-grow " />
           <button

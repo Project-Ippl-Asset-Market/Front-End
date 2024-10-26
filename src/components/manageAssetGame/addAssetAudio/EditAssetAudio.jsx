@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
@@ -49,11 +51,11 @@ function EditNewAudio() {
             setAudioPreview(data.uploadUrlAudio);
           }
         } else {
-          console.log("No such document!");
+          // console.log("No such document!");
           navigate("/manage-asset-audio");
         }
       } catch (error) {
-        console.error("Error fetching audio:", error);
+        // console.error("Error fetching audio:", error);
       }
     };
 

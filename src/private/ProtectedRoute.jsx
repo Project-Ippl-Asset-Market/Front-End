@@ -1,5 +1,6 @@
+/* eslint-disable react/prop-types */
 import { Navigate } from "react-router-dom";
-import { useUserContext } from "../contexts/UserContext"; // Import UserContext
+import { useUserContext } from "../contexts/UserContext";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const authToken = localStorage.getItem("authToken");

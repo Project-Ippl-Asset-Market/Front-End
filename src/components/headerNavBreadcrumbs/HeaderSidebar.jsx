@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { auth } from "../../firebase/firebaseConfig";
@@ -34,7 +35,7 @@ function HeaderSidebar({ toggleSidebar }) {
       localStorage.removeItem("userRole");
       navigate("/");
     } catch (error) {
-      console.error("Logout failed:", error.message);
+      // console.error("Logout failed:", error.message);
     }
   };
 
@@ -106,7 +107,9 @@ function HeaderSidebar({ toggleSidebar }) {
                               alt="Logout Icon"
                               className="w-5 h-5 me-2"
                             />
-                            <Link to="/profil" type="button">Profile</Link>
+                            <Link to="/profil" type="button">
+                              Profile
+                            </Link>
                           </div>
                         </li>
 

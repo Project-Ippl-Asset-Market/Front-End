@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { auth } from "../../firebase/firebaseConfig";
@@ -12,8 +13,7 @@ import IconLogoutDark from "../../assets/icon/iconDarkMode&LigthMode/logOutDark.
 import IconLogoutLight from "../../assets/icon/iconDarkMode&LigthMode/logOutLight.svg";
 import IconStoreLight from "../../assets/icon/iconHeaderDashboard/iconStoreLight.svg";
 import IconStoreDark from "../../assets/icon/iconHeaderDashboard/iconStoreDark.svg";
-import iconPixelstore from "../../assets/logo/logoLogin.png"
-
+import iconPixelstore from "../../assets/logo/logoLogin.png";
 
 function HeaderSidebarProfil() {
   const { darkMode, toggleDarkMode } = useTheme();
@@ -32,7 +32,7 @@ function HeaderSidebarProfil() {
       localStorage.removeItem("userRole");
       navigate("/");
     } catch (error) {
-      console.error("Logout failed:", error.message);
+      // console.error("Logout failed:", error.message);
     }
   };
 
@@ -94,7 +94,6 @@ function HeaderSidebarProfil() {
                     <details className="relative">
                       <summary className="cursor-pointer">{username}</summary>
                       <ul className="bg-neutral-90 dark:bg-neutral-20 rounded-lg w-48 shadow-lg">
-
                         <li className="flex  mb-1 w-full h-8  transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none">
                           <div className="flex items-center">
                             <img

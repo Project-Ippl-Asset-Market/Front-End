@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { useState, useRef, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
@@ -7,6 +6,8 @@ import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import HeaderSideBar from "../headerNavBreadcrumbs/HeaderSidebar";
 import { FaVideo, FaImage, FaDatabase, FaGamepad } from "react-icons/fa";
 import {
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -14,9 +15,6 @@ import {
   Legend,
   BarChart,
   Bar,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 
 function AdminDashboard() {
@@ -63,7 +61,7 @@ function AdminDashboard() {
 
       setAssetCounts(counts);
     } catch (error) {
-      // console.error("Error fetching asset counts: ", error);
+      console.error("Error fetching asset counts: ", error);
     }
   };
 
@@ -81,7 +79,7 @@ function AdminDashboard() {
 
       setTransactionCount(orderIds.size); // Set jumlah unik orderId
     } catch (error) {
-      // console.error("Error fetching transaction counts: ", error);
+      console.error("Error fetching transaction counts: ", error);
     }
   };
 
@@ -136,17 +134,13 @@ function AdminDashboard() {
     count: count,
   }));
 
-  // Combine total asset and transaction data for Pie Chart
-  const totalAssets = Object.values(assetCounts).reduce(
-    (acc, count) => acc + count,
-    0
-  );
-  const pieChartData = [
-    { name: "Total Assets", value: totalAssets },
-    { name: "Total Transactions", value: transactionCount },
+  // Prepare chart data for transaction count
+  const transactionChartData = [
+    {
+      name: "Total Transaksi",
+      count: transactionCount,
+    },
   ];
-
-  const COLORS = ["#8884d8", "#82ca9d"]; // Colors for the pie chart
 
   return (
     <>
@@ -192,10 +186,10 @@ function AdminDashboard() {
           </div>
 
           {/* Bar Chart for Total Asset Count */}
-          <div className="mt-10 md:mt-14">
+          <div className="mt-10 md:mt-14 ">
             <h2 className="text-2xl mb-4">Total Asset Counts</h2>
             <BarChart
-              width={window.innerWidth > 768 ? 600 : window.innerWidth - 50} // Responsive width
+              width={600}
               height={300}
               data={chartData}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -208,31 +202,21 @@ function AdminDashboard() {
             </BarChart>
           </div>
 
-          {/* Pie Chart for Total Asset and Transaction Counts */}
+          {/* Line Chart for Transaction Counts */}
           <div className="mt-10 md:mt-14">
-            <h2 className="text-2xl mb-4">
-              Total Asset and Transaction Counts
-            </h2>
-            <PieChart
-              width={window.innerWidth > 768 ? 900 : window.innerWidth - 50}
-              height={500}>
-              <Pie
-                data={pieChartData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                outerRadius={window.innerWidth > 768 ? 200 : 100}
-                fill="#8884d8"
-                dataKey="value">
-                {pieChartData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
+            <h2 className="text-2xl mb-4">Total Transaction Counts</h2>
+            <LineChart
+              width={600}
+              height={300}
+              data={transactionChartData}
+              margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
               <Tooltip />
-            </PieChart>
+              <Legend />
+              <Line type="monotone" dataKey="count" stroke="#82ca9d" />
+            </LineChart>
           </div>
         </div>
       </div>

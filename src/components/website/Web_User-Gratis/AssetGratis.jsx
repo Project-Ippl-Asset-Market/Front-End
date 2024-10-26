@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { db } from "../../../firebase/firebaseConfig";
 import { useState, useEffect } from "react";
 import {
@@ -35,10 +36,10 @@ export function AssetGratis() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setCurrentUserId(user.uid);
-        console.log("Current User ID:", user.uid); // Tambahkan log di sini
+        // console.log("Current User ID:", user.uid); // Tambahkan log di sini
       } else {
         setCurrentUserId(null);
-        console.log("Current User ID is null"); // Tambahkan log saat tidak ada user
+        // console.log("Current User ID is null"); // Tambahkan log saat tidak ada user
       }
     });
 
@@ -71,7 +72,7 @@ export function AssetGratis() {
       );
       setAssetsData(filteredAssets);
     } catch (error) {
-      console.error("Error fetching assets: ", error);
+      // console.error("Error fetching assets: ", error);
     }
   };
 
@@ -111,7 +112,7 @@ export function AssetGratis() {
 
         setLikedAssets(userLikes);
       } catch (error) {
-        console.error("Error fetching likes: ", error);
+        // console.error("Error fetching likes: ", error);
       }
     };
 
@@ -162,7 +163,7 @@ export function AssetGratis() {
       });
       await fetchAssets();
     } catch (error) {
-      console.error("Error updating likes: ", error);
+      // console.error("Error updating likes: ", error);
     } finally {
       setIsProcessingLike(false);
     }
@@ -176,18 +177,18 @@ export function AssetGratis() {
     }
 
     // Log untuk memverifikasi currentUserId
-    console.log("Current User ID:", currentUserId);
-    console.log("Selected Asset:", selectedasset);
+    // console.log("Current User ID:", currentUserId);
+    // console.log("Selected Asset:", selectedasset);
 
     // Buat data asset baru dengan userId yang sesuai
     const newAssetData = {
       ...selectedasset,
-      userId: currentUserId, // Tetapkan userId ke currentUserId
+      userId: currentUserId,
       savedAt: new Date(),
     };
 
     // Log untuk memverifikasi data yang akan disimpan
-    console.log("Asset Data to Save:", newAssetData);
+    // console.log("Asset Data to Save:", newAssetData);
 
     try {
       // Cek apakah asset sudah ada di myAssets
@@ -195,7 +196,7 @@ export function AssetGratis() {
         query(
           myAssetsCollectionRef,
           where("userId", "==", currentUserId),
-          where("id", "==", selectedasset.id) // Sesuaikan dengan field asset yang kamu gunakan
+          where("id", "==", selectedasset.id)
         )
       );
 
@@ -208,11 +209,11 @@ export function AssetGratis() {
       // Menambahkan dokumen baru dengan addDoc
       const docRef = await addDoc(myAssetsCollectionRef, newAssetData);
 
-      console.log("Document written with ID: ", docRef.id); // Log ID dokumen yang baru dibuat
+      // console.log("Document written with ID: ", docRef.id);
       alert("Asset telah disimpan ke My Asset!");
       closeModal();
     } catch (error) {
-      console.error("Error saving asset to My Assets: ", error);
+      // console.error("Error saving asset to My Assets: ", error);
       alert("Terjadi kesalahan saat menyimpan asset.");
     }
   };
@@ -233,6 +234,7 @@ export function AssetGratis() {
   const filteredAssetsData = AssetsData.filter((asset) => {
     const datasetName =
       asset.assetAudiosName ||
+      asset.audioName ||
       asset.imageName ||
       asset.asset2DName ||
       asset.asset3DName ||
@@ -329,6 +331,9 @@ export function AssetGratis() {
             let collectionsToFetch = "";
             if (data.assetAudiosName) {
               collectionsToFetch = "assetAudios";
+            }
+            if (data.audioName) {
+              collectionsToFetch = "assetAudios";
             } else if (data.imageName) {
               collectionsToFetch = "assetImages";
             } else if (data.datasetName) {
@@ -383,6 +388,7 @@ export function AssetGratis() {
                   <div className="px-2 py-2">
                     <p className="text-neutral-10 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100 font-semibold">
                       {data.assetAudiosName ||
+                        data.audioName ||
                         data.datasetName ||
                         data.asset2DName ||
                         data.imageName ||

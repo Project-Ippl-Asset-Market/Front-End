@@ -84,6 +84,8 @@ const Cart = () => {
     (total, item) => total + Number(item.price),
     0
   );
+  const taxRate = 0.1; // PPN 10%
+  const totalWithTax = subtotal + subtotal * taxRate;
 
   const handlePayment = async () => {
     if (selectedItems.length === 0) {
@@ -133,7 +135,7 @@ const Cart = () => {
 
       window.snap.pay(transactionData.token, {
         onSuccess: async (result) => {
-          // console.log(result);
+          console.log(result);
           await handleMoveAssets(assetDetails); // Panggil fungsi untuk memindahkan aset di sini
 
           // Hapus item dari keranjang setelah pembayaran berhasil
@@ -160,11 +162,11 @@ const Cart = () => {
           );
         },
         onError: function (result) {
-          // console.error(result);
+          console.error(result);
           setErrorMessage("Pembayaran gagal, silakan coba lagi.");
         },
         onClose: function () {
-          // console.log("Payment dialog closed");
+          console.log("Payment dialog closed");
         },
       });
     } catch (error) {
@@ -182,7 +184,7 @@ const Cart = () => {
       await moveAssets(assetDetails);
       setSuccessMessage("Aset sudah dipindahkan.");
     } catch (moveError) {
-      // console.error("Kesalahan saat memindahkan aset:", moveError);
+      console.error("Kesalahan saat memindahkan aset:", moveError);
       setErrorMessage("Gagal memindahkan aset.");
     }
 
@@ -208,12 +210,12 @@ const Cart = () => {
       // Mencoba menghapus dokumen dari Firestore
       const assetDoc = doc(db, "cartAssets", asset.id);
       await deleteDoc(assetDoc);
-      // console.log(`Aset dengan ID ${asset.id} telah dihapus.`);
+      console.log(`Aset dengan ID ${asset.id} telah dihapus.`);
     } catch (error) {
-      // console.error(
-      //   `Kesalahan saat menghapus aset dengan assetId ${asset.id}:`,
-      //   error
-      // );
+      console.error(
+        `Kesalahan saat menghapus aset dengan assetId ${asset.id}:`,
+        error
+      );
     }
   };
 
@@ -223,7 +225,7 @@ const Cart = () => {
       await deleteDoc(itemDoc);
       setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
     } catch (error) {
-      // console.error("Error deleting item:", error);
+      console.error("Error deleting item:", error);
     }
   };
 
@@ -329,6 +331,10 @@ const Cart = () => {
             <p className="text-gray-700">
               Subtotal ({selectedItems.length} items): Rp.
               {subtotal.toLocaleString("id-ID")}
+            </p>
+            <p className="text-gray-700">
+              Total (Termasuk PPN 10%): Rp.
+              {totalWithTax.toLocaleString("id-ID")}
             </p>
 
             <div className="mt-4">

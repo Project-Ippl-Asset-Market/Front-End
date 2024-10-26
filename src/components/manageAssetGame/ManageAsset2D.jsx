@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
@@ -126,7 +127,7 @@ function ManageAsset2D() {
     const fetchData = async () => {
       setIsLoading(true);
       if (!user || !role) {
-        console.log("No user or role detected");
+        // console.log("No user or role detected");
         return;
       }
 
@@ -194,7 +195,7 @@ function ManageAsset2D() {
           setFilteredAssets(items);
         }
       } catch (error) {
-        console.error("Error fetching data: ", error);
+        // console.error("Error fetching data: ", error);
         setAlertError(true);
       } finally {
         setIsLoading(false);
@@ -220,7 +221,7 @@ function ManageAsset2D() {
         setAssets(assets.filter((asset) => asset.id !== id));
         setAlertSuccess(true);
       } catch (error) {
-        console.error("Error deleting dataset: ", error);
+        // console.error("Error deleting dataset: ", error);
         setAlertError(true);
       }
     } else {

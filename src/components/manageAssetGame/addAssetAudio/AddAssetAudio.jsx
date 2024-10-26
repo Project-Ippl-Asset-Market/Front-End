@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -120,7 +121,7 @@ function AddNewAudio() {
         navigate("/manage-asset-audio");
       }, 2000);
     } catch (error) {
-      console.error("Error menambahkan audio: ", error);
+      // console.error("Error menambahkan audio: ", error);
       setAlertError(true);
     }
   };

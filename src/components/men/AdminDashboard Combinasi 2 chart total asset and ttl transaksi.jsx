@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { useState, useRef, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
@@ -63,7 +62,7 @@ function AdminDashboard() {
 
       setAssetCounts(counts);
     } catch (error) {
-      // console.error("Error fetching asset counts: ", error);
+      console.error("Error fetching asset counts: ", error);
     }
   };
 
@@ -81,7 +80,7 @@ function AdminDashboard() {
 
       setTransactionCount(orderIds.size); // Set jumlah unik orderId
     } catch (error) {
-      // console.error("Error fetching transaction counts: ", error);
+      console.error("Error fetching transaction counts: ", error);
     }
   };
 
@@ -195,7 +194,7 @@ function AdminDashboard() {
           <div className="mt-10 md:mt-14">
             <h2 className="text-2xl mb-4">Total Asset Counts</h2>
             <BarChart
-              width={window.innerWidth > 768 ? 600 : window.innerWidth - 50} // Responsive width
+              width={600}
               height={300}
               data={chartData}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -213,15 +212,15 @@ function AdminDashboard() {
             <h2 className="text-2xl mb-4">
               Total Asset and Transaction Counts
             </h2>
-            <PieChart
-              width={window.innerWidth > 768 ? 900 : window.innerWidth - 50}
-              height={500}>
+            <PieChart width={900} height={500}>
+              {" "}
+              {/* Perbesar width dan height */}
               <Pie
                 data={pieChartData}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                outerRadius={window.innerWidth > 768 ? 200 : 100}
+                outerRadius={200}
                 fill="#8884d8"
                 dataKey="value">
                 {pieChartData.map((entry, index) => (

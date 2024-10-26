@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable react/prop-types */
 // src/contexts/AuthContext.jsx
 import React, { createContext, useState, useContext, useEffect } from "react";
 import { auth, db } from "../firebase/firebaseConfig";

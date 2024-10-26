@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { db } from "../../../firebase/firebaseConfig";
 import { useState, useEffect } from "react";
 import {
@@ -91,7 +92,7 @@ export function AssetDataset() {
 
         setPurchasedAssets(purchasedIds);
       } catch (error) {
-        console.error("Error fetching purchased assets: ", error);
+        // console.error("Error fetching purchased assets: ", error);
       }
     };
 
@@ -126,7 +127,7 @@ export function AssetDataset() {
 
         setLikedAssets(userLikes);
       } catch (error) {
-        console.error("Error fetching likes: ", error);
+        // console.error("Error fetching likes: ", error);
       }
     };
 
@@ -175,7 +176,7 @@ export function AssetDataset() {
         setLikedAssets(newLikedAssets);
       });
     } catch (error) {
-      console.error("Error updating likes: ", error);
+      // console.error("Error updating likes: ", error);
     } finally {
       // Selesaikan proses
       setIsProcessingLike(false);
@@ -190,6 +191,14 @@ export function AssetDataset() {
       );
       return false;
     }
+
+    // ini cek validasi penjual tidak boleh beli asset sendiri
+    // Cek apakah userId penjual sama dengan currentUserId
+    if (selectedasset.userId === currentUserId) {
+      alert("Anda tidak dapat membeli aset yang Anda jual sendiri.");
+      return;
+    }
+
     if (purchasedAssets.has(assetId)) {
       setValidationMessage(
         "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
@@ -232,7 +241,7 @@ export function AssetDataset() {
       });
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {
-      console.error("Error adding to cart: ", error);
+      // console.error("Error adding to cart: ", error);
     }
   };
 
@@ -241,6 +250,13 @@ export function AssetDataset() {
     if (!currentUserId) {
       alert("Anda perlu login untuk menambahkan asset ke keranjang");
       navigate("/login");
+      return;
+    }
+
+    // ini cek validasi penjual tidak boleh beli asset sendiri
+    // Cek apakah userId penjual sama dengan currentUserId
+    if (selectedasset.userId === currentUserId) {
+      alert("Anda tidak dapat membeli aset yang Anda jual sendiri.");
       return;
     }
 
@@ -274,7 +290,7 @@ export function AssetDataset() {
     if (!category) missingFields.push("category");
 
     if (missingFields.length > 0) {
-      console.error("Missing fields in selected asset:", missingFields);
+      // console.error("Missing fields in selected asset:", missingFields);
       alert(`Missing fields: ${missingFields.join(", ")}. Please try again.`);
       return;
     }
@@ -292,7 +308,7 @@ export function AssetDataset() {
 
       navigate("/buy-now-asset");
     } catch (error) {
-      console.error("Error adding to cart: ", error);
+      // console.error("Error adding to cart: ", error);
       alert(
         "Terjadi kesalahan saat menambahkan asset ke keranjang. Silakan coba lagi."
       );

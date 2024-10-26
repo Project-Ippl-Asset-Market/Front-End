@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from "react";
 import { getAuth } from "firebase/auth";
 import { db } from "../../firebase/firebaseConfig";
@@ -135,7 +133,7 @@ const CartBuyNow = () => {
         },
       });
     } catch (error) {
-      // console.error("Error during payment process:", error);
+      console.error("Error during payment process:", error);
     } finally {
       setIsLoading(false);
     }
@@ -145,9 +143,8 @@ const CartBuyNow = () => {
     try {
       await moveAssets(assetDetails);
       await Promise.all(assetDetails.map(deleteAsset));
-      // eslint-disable-next-line no-unused-vars
     } catch (moveError) {
-      // console.error("Error while moving assets:", moveError);
+      console.error("Error while moving assets:", moveError);
     }
   };
 
@@ -164,20 +161,18 @@ const CartBuyNow = () => {
 
   const deleteAsset = async (asset) => {
     const docId = `${user.uid}_${asset.assetId}`;
-    const url = `http://localhost:3000/api/assets/delete/cart-buy-now/${docId}`;
-
-    // Hapus item dari API
-    await axios.delete(url);
+    const url = `http://localhost:3000/api/assets/delete/${docId}`;
 
     try {
-      // Mencoba menghapus dokumen dari Firestore
-      const assetDoc = doc(db, "cartBuyNow", asset.id);
+      // Call API to delete asset from backend
+      await axios.delete(url);
+
+      // Remove from Firestore
+      const assetDoc = doc(db, "cartBuyNow", asset.docId);
       await deleteDoc(assetDoc);
-      // console.log(`Aset dengan ID ${asset.id} telah dihapus.`);
-      // eslint-disable-next-line no-unused-vars
     } catch (error) {
       // console.error(
-      //   `Kesalahan saat menghapus aset dengan assetId ${asset.id}:`,
+      //   `Error deleting asset with assetId ${asset.assetId}:`,
       //   error
       // );
     }

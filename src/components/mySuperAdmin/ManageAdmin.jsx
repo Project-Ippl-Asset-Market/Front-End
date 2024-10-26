@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // eslint-disable-next-line no-unused-vars
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
@@ -48,7 +49,7 @@ function ManageAdmin() {
         setAdmins(response.data);
         setFilteredAdmins(response.data);
       } catch (error) {
-        console.error("Error fetching admin data: ", error);
+        // console.error("Error fetching admin data: ", error);
         setError("Failed to fetch admins. Please try again later.");
       } finally {
         setIsLoading(false);
@@ -89,7 +90,7 @@ function ManageAdmin() {
     setError(null);
     const admin = admins.find((admin) => admin.id === id);
     if (!admin) {
-      console.error("Admin not found in local state");
+      // console.error("Admin not found in local state");
       return;
     }
 
@@ -121,9 +122,9 @@ function ManageAdmin() {
         setError("Failed to delete admin. Please try again.");
       }
     } catch (error) {
-      console.error("Error deleting admin:", error);
+      // console.error("Error deleting admin:", error);
       if (error.response) {
-        console.error("Error response data:", error.response.data);
+        // console.error("Error response data:", error.response.data);
       }
       setError(
         error.response?.data?.message ||

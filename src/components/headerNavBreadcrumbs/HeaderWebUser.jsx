@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
@@ -52,7 +53,7 @@ function HeaderWebUser() {
       localStorage.removeItem("userRole");
       navigate("/");
     } catch (error) {
-      console.error("Logout failed:", error.message);
+      // console.error("Logout failed:", error.message);
     }
   };
 
@@ -68,7 +69,7 @@ function HeaderWebUser() {
   };
 
   return (
-    <div className="h-36 sm:h-0 md:h-0 lg:h-0 xl:h-0 2xl:h-0">
+    <div className="h-36 sm:h-0 md:h-0 lg:h-0 xl:h-0 2xl:h-0 ">
       <section className="navbar h-28 fixed z-30 top-0 left-0 pt-0 text-neutral-10  font-poppins font-semibold dark:text-primary-100 bg-primary-100 dark:bg-neutral-20 gap-2">
         <div className="flex gap-2 items-center">
           <img

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -55,9 +56,9 @@ function AddNewVideo() {
             name: doc.data().name,
           }));
           setCategories(categoriesData);
-          console.log("Fetched categories:", categoriesData); // Log untuk memastikan data yang diambil
+          // console.log("Fetched categories:", categoriesData); // Log untuk memastikan data yang diambil
         } catch (error) {
-          console.error("Error fetching categories: ", error);
+          // console.error("Error fetching categories: ", error);
         }
       }
     };
@@ -137,7 +138,7 @@ function AddNewVideo() {
         navigate("/manage-asset-video");
       }, 2000);
     } catch (error) {
-      console.error("Error menambahkan video: ", error);
+      // console.error("Error menambahkan video: ", error);
       setAlertError(true);
     }
   };
@@ -167,7 +168,7 @@ function AddNewVideo() {
         setNewCategory(""); // Reset input field
         setShowPopup(false); // Close the popup
       } catch (error) {
-        console.error("Error menambahkan kategori: ", error);
+        // console.error("Error menambahkan kategori: ", error);
         setAlertError(true);
       }
     }

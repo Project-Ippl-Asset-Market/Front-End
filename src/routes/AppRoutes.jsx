@@ -3,7 +3,6 @@ import { ThemeProvider } from "../contexts/ThemeContext";
 import ProtectedRoute from "../private/ProtectedRoute";
 import AutoLogout from "../components/auto/autoLogout";
 import ErrorPage from "../pages/errorPage";
-import SearchResults from "../components/searchResults/SearchResults";
 import Register from "../pages/register";
 import Login from "../pages/login";
 import LupaPassword from "../pages/lupaPassword";
@@ -80,7 +79,6 @@ const AppRoutes = ({ handleLogout }) => {
 
           {/* Route halaman web start */}
           <Route path="/" element={<HomePage />} />
-          <Route path="/search" element={<SearchResults />} />
           <Route path="/asset-gratis" element={<AssetGratis />} />
           <Route path="/asset-video" element={<AssetVideo />} />
           <Route path="/asset-image" element={<AssetImage />} />

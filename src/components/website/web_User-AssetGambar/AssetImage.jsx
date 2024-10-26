@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { db } from "../../../firebase/firebaseConfig";
 import { useState, useEffect } from "react";
 import {
@@ -91,7 +92,7 @@ export function AssetImage() {
 
         setPurchasedAssets(purchasedIds);
       } catch (error) {
-        console.error("Error fetching purchased assets: ", error);
+        // console.error("Error fetching purchased assets: ", error);
       }
     };
 
@@ -118,7 +119,7 @@ export function AssetImage() {
 
         setLikedAssets(userLikes);
       } catch (error) {
-        console.error("Error fetching likes: ", error);
+        // console.error("Error fetching likes: ", error);
       }
     };
 
@@ -176,7 +177,7 @@ export function AssetImage() {
         setLikedAssets(newLikedAssets);
       });
     } catch (error) {
-      console.error("Error updating likes: ", error);
+      // console.error("Error updating likes: ", error);
     } finally {
       setIsProcessingLike(false);
     }
@@ -202,6 +203,12 @@ export function AssetImage() {
   // Fungsi untuk menambahkan aset ke keranjang
   const handleAddToCart = async (selectedasset) => {
     if (!validateAddToCart(selectedasset.id)) return; // Validasi
+
+    // Cek apakah userId penjual sama dengan currentUserId
+    if (selectedasset.userId === currentUserId) {
+      alert("Anda tidak dapat membeli aset yang Anda jual sendiri.");
+      return;
+    }
 
     // Membuat referensi dokumen untuk keranjang menggunakan ID aset
     const cartRef = doc(
@@ -232,7 +239,7 @@ export function AssetImage() {
       });
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {
-      console.error("Error adding to cart: ", error);
+      // console.error("Error adding to cart: ", error);
     }
   };
 
@@ -241,6 +248,12 @@ export function AssetImage() {
     if (!currentUserId) {
       alert("Anda perlu login untuk menambahkan asset ke keranjang");
       navigate("/login");
+      return;
+    }
+
+    // Cek apakah userId penjual sama dengan currentUserId
+    if (selectedasset.userId === currentUserId) {
+      alert("Anda tidak dapat membeli aset yang Anda jual sendiri.");
       return;
     }
 
@@ -274,7 +287,7 @@ export function AssetImage() {
     if (!category) missingFields.push("category");
 
     if (missingFields.length > 0) {
-      console.error("Missing fields in selected asset:", missingFields);
+      // console.error("Missing fields in selected asset:", missingFields);
       alert(`Missing fields: ${missingFields.join(", ")}. Please try again.`);
       return;
     }
@@ -292,7 +305,7 @@ export function AssetImage() {
 
       navigate("/buy-now-asset");
     } catch (error) {
-      console.error("Error adding to cart: ", error);
+      // console.error("Error adding to cart: ", error);
       alert(
         "Terjadi kesalahan saat menambahkan asset ke keranjang. Silakan coba lagi."
       );

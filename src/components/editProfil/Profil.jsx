@@ -1,12 +1,7 @@
+/* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import {
-  getAuth,
-  onAuthStateChanged,
-  deleteUser,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-} from "firebase/auth";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
   updateDoc,
   collection,
@@ -14,12 +9,11 @@ import {
   where,
   onSnapshot,
   getDocs,
-  deleteDoc,
 } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
-import Headerprofil from "../../components/headerNavBreadcrumbs/HeaderWebUser";
+import Headerprofil from "../headerNavBreadcrumbs/HeaderWebProfile";
 import Logoprofil from "../../assets/icon/iconWebUser/profil.svg";
 import Logoprofilwhite from "../../assets/icon/iconWebUser/Profilwhite.svg";
 
@@ -27,7 +21,6 @@ function Profil() {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false); // State untuk modal konfirmasi penghapusan
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [newProfileImage, setNewProfileImage] = useState(null);
@@ -129,111 +122,63 @@ function Profil() {
         alert("Dokumen pengguna tidak ditemukan.");
       }
     } catch (error) {
-      console.error("Error saat mengupload foto profil:", error);
+      // console.error("Error saat mengupload foto profil:", error);
       alert("Gagal mengupload foto profil. Silakan coba lagi.");
     }
   };
 
-  // Fungsi untuk menghapus akun
-  const handleDeleteAccount = async () => {
-    if (!currentUserId) {
-      alert("User ID tidak ditemukan.");
-      return;
-    }
-
-    const auth = getAuth();
-    const user = auth.currentUser;
-
-    if (user) {
-      // Minta pengguna untuk memasukkan email dan password mereka
-      const email = prompt("Silakan masukkan email Anda:");
-      const password = prompt("Silakan masukkan password Anda:");
-
-      const credential = EmailAuthProvider.credential(email, password);
-
-      try {
-        // Reauthenticate pengguna
-        await reauthenticateWithCredential(user, credential);
-
-        // Jika reauthentication berhasil, lanjutkan dengan penghapusan
-        const usersCollectionRef = collection(db, "users");
-        const q = query(usersCollectionRef, where("uid", "==", currentUserId));
-        const querySnapshot = await getDocs(q);
-
-        if (!querySnapshot.empty) {
-          const userDoc = querySnapshot.docs[0];
-          const userDocRef = userDoc.ref;
-
-          // Update field deleted menjadi true
-          await updateDoc(userDocRef, { deleted: true });
-
-          // Hapus dokumen pengguna dari Firestore
-          await deleteDoc(userDocRef);
-
-          // Hapus akun pengguna dari Firebase Auth
-          await deleteUser(user);
-
-          alert("Akun Anda berhasil dihapus.");
-          navigate("/"); // Redirect ke halaman utama
-        } else {
-          alert("Dokumen pengguna tidak ditemukan.");
-        }
-      } catch (error) {
-        console.error("Error saat menghapus akun:", error);
-        alert("Gagal menghapus akun. Silakan coba lagi.");
-      }
-    } else {
-      alert("User tidak ditemukan.");
-    }
-  };
-
   return (
-    <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 mt-10 ">
-      <div className="w-full shadow-lg bg-primary-100 dark:text-primary-100 relative z-40 ">
-        <div className="pt-[50px] sm:pt-[70px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
-          <Headerprofil />
-        </div>
-      </div>
-      <div className="dark:bg-neutral-20 dark:text-neutral-90 bg-primary-100 text-black duration-500 flex">
-        <aside className="dark:bg-neutral-20 dark:text-neutral-90 drop-shadow-lg bg-primary-100 w- h-60 p-6 mt-16 rounded-lg ml-10">
-          <ul>
-            <li className='w-24 h-24 block px-4 py-2 place-self-center transition duration-300"'>
-              <img
-                src={Logoprofil}
-                alt="Logoprofil"
-                className="block dark:hidden"
-              />
-              <img
-                src={Logoprofilwhite}
-                alt="Logoprofilwhite"
-                className="hidden dark:block"
-              />
-            </li>
+    <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins mt-10 overflow-hidden">
+      <Headerprofil />
+
+      <div className="p-14 flex bg-primary-100 dark:bg-neutral-20">
+        <aside className="bg-white dark:bg-neutral-800 drop-shadow-lg w-60 h-auto mt-6  rounded-lg flex flex-col items-center">
+          <div className="flex justify-center mb-4">
+            <img
+              src={Logoprofil}
+              alt="User Profile"
+              className="block dark:hidden w-16 h-16 rounded-full border-2 border-blue-600"
+            />
+            <img
+              src={Logoprofilwhite}
+              alt="User Profile"
+              className="hidden dark:block w-16 h-16 rounded-full border-2 border-white"
+            />
+          </div>
+          <h2 className="text-xl font-bold text-center mb-4">User Name</h2>
+          <ul className="space-y-4 w-full">
             <li>
-              <Link
-                to="/"
-                className="block px-4 py-2 rounded-md hover:bg-[#2563eb] transition duration-300">
-                Back To HomePage
-              </Link>
-            </li>
-            <li>
-              <Link
-                onClick={() => setShowDeleteModal(true)} // Menampilkan modal konfirmasi penghapusan
-                to="#"
-                className="block px-4 py-2 text-[#980019] transition duration-300 hover:underline">
-                Delete Account
-              </Link>
+              <button
+                onClick={() => navigate("/")}
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 text-left">
+                <span className="flex  items-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth="2"
+                    stroke="currentColor"
+                    className="w-5 h-5 mr-2">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M3 12l2.25-2.25M21 12l-2.25 2.25M12 3l2.25 2.25M12 21l-2.25-2.25M3.5 3.5L20.5 20.5M3.5 20.5L20.5 3.5"
+                    />
+                  </svg>
+                  <p className="text-center ml-10">Kembali</p>
+                </span>
+              </button>
             </li>
           </ul>
         </aside>
 
-        <main className="dark:bg-neutral-20 dark:text-neutral-90 drop-shadow-xl bg-primary-100 mt-[4%] lg:w-3/4 p-4 rounded-lg ml-6">
+        <main className="bg-primary-100 dark:bg-neutral-20 drop-shadow-xl mt-4 lg:w-3/4 p-4 rounded-lg md:ml-6">
           <h1 className="text-3xl font-bold mb-3">My Profile</h1>
-          <div className="dark:bg-neutral-20 dark:text-neutral-90 bg-primary-100 p-4 rounded-lg mb-4">
+          <div className="bg-primary-100 dark:bg-neutral-20 p-4 rounded-lg mb-4">
             <div className="flex items-center">
               <img
                 src={previewImage || "https://placehold.co/80x80"}
-                alt="Profile Picture"
+                alt="Profile"
                 className="h-20 w-20 rounded-full cursor-pointer"
                 onClick={handleImageClick}
               />
@@ -246,9 +191,10 @@ function Profil() {
             </div>
           </div>
 
+          {/* Modal for profile picture review and upload */}
           {showModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-              <div className="bg-white p-6 rounded-lg ">
+              <div className="bg-white p-6 rounded-lg">
                 <h2 className="text-xl font-bold mb-4">
                   Review Profile Picture
                 </h2>
@@ -261,35 +207,36 @@ function Profil() {
                   type="file"
                   accept="image/png, image/jpeg, image/jpg"
                   onChange={handleFileChange}
+                  className="mt-2"
                 />
                 <div className="mt-4 flex justify-end">
                   <button
-                    className="px-4 py-2 bg-gray-500 text-white rounded-md mr-2"
-                    onClick={() => setShowModal(false)}>
+                    onClick={() => setShowModal(false)}
+                    className="px-4 py-2 bg-gray-500 text-white rounded-md mr-2">
                     Cancel
                   </button>
                   <button
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md cursor-pointer"
                     onClick={handleUpload}
-                    disabled={!selectedImage}>
+                    disabled={!selectedImage}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md cursor-pointer">
                     Upload
                   </button>
                 </div>
               </div>
             </div>
           )}
+
           {/* Personal Information Section */}
-          <div className="dark:bg-neutral-20 dark:text-neutral-90 bg-primary-100 mt-5">
+          <div className="bg-primary-100 dark:bg-neutral-20 mt-5 rounded-lg">
             <div className="flex justify-between items-center mb-2">
-              <h2 className="text-xl font-bold mt-5">Personal Information</h2>
+              <h2 className="text-xl font-bold">Personal Information</h2>
               <Link
                 to="/editprofil1"
-                className="flex items-center p-2 dark:bg-blue-600 dark:text-neutral-90 flex items-center p-2 border-grey-400 bg-blue-600 rounded text-white font-bold">
-                <span className="mr-1">Edit</span>
+                className="flex items-center p-2 border-grey-400 bg-blue-600 rounded text-white font-bold">
+                <span>Edit</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
-                  viewBox="0 0 24 24"
                   strokeWidth="2"
                   stroke="white"
                   className="w-5 h-5">
@@ -301,26 +248,27 @@ function Profil() {
                 </svg>
               </Link>
             </div>
-            <div className="dark:border dark:border-sm dark:border-blue-500  dark:bg-neutral-20 dark:text-neutral-90 bg-primary-100 rounded-lg mb-4">
-              <div className="rounded-lg grid grid-cols-1 lg:grid-cols-2 gap-10 p-5">
+            <div className="bg-primary-100 dark:bg-neutral-20 rounded-lg mb-4">
+              <div className="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-10">
+                {/** Personal Information Rows **/}
                 <div>
-                  <p className="text-black-400 font-bold">First Name</p>
+                  <p className="font-bold">First Name</p>
                   <p>{userProfile?.firstName || "John"}</p>
                 </div>
                 <div>
-                  <p className="text-black-400 font-bold">Last Name</p>
+                  <p className="font-bold">Last Name</p>
                   <p>{userProfile?.lastName || "Doe"}</p>
                 </div>
                 <div>
-                  <p className="text-black-400 font-bold">Email Address</p>
+                  <p className="font-bold">Email Address</p>
                   <p>{userProfile?.email || "john.doe@gmail.com"}</p>
                 </div>
                 <div>
-                  <p className="text-black-400 font-bold">Phone</p>
+                  <p className="font-bold">Phone</p>
                   <p>{userProfile?.phone || "-"}</p>
                 </div>
-                <div className="lg:col-span-2">
-                  <p className="text-black-400 font-bold">Bio</p>
+                <div className="col-span-2">
+                  <p className="font-bold">Bio</p>
                   <p>
                     {userProfile?.bio ||
                       "An experienced web developer specializing in frontend technologies."}
@@ -331,17 +279,16 @@ function Profil() {
           </div>
 
           {/* Address Section */}
-          <div className=" dark:bg-neutral-20 dark:text-neutral-90 bg-primary-100 mb-4">
+          <div className="bg-primary-100 dark:bg-neutral-20 mb-4">
             <div className="flex justify-between items-center mb-2">
-              <h2 className="text-xl font-bold mt-5">Address</h2>
+              <h2 className="text-xl font-bold">Address</h2>
               <Link
                 to="/editprofil2"
-                className="dark:bg-blue-600 dark:text-neutral-90 flex items-center p-2 border-grey-400 bg-blue-600 rounded text-white font-bold">
-                <span className="mr-1">Edit</span>
+                className="flex items-center p-2 border-grey-400 bg-blue-600 rounded text-white font-bold">
+                <span>Edit</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
-                  viewBox="0 0 24 24"
                   strokeWidth="2"
                   stroke="white"
                   className="w-5 h-5">
@@ -353,61 +300,33 @@ function Profil() {
                 </svg>
               </Link>
             </div>
-            <div className=" dark:bg-neutral-20 dark:text-neutral-90  bg-primary-100 p-4 rounded-lg">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <div className="bg-primary-100 dark:bg-neutral-20 p-4 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <p className="text-black-400 font-bold">Country</p>
+                  <p className="font-bold">Country</p>
                   <p>{userProfile?.country || "Indonesia"}</p>
                 </div>
                 <div>
-                  <p className="text-black-400 font-bold">City</p>
+                  <p className="font-bold">City</p>
                   <p>{userProfile?.city || "Jakarta"}</p>
                 </div>
                 <div>
-                  <p className="text-black-400 font-bold">Postal Code</p>
+                  <p className="font-bold">Postal Code</p>
                   <p>{userProfile?.postalCode || "12345"}</p>
                 </div>
                 <div>
-                  <p className="text-black-400 font-bold">Tax ID</p>
+                  <p className="font-bold">Tax ID</p>
                   <p>{userProfile?.taxID || "123456789"}</p>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Modal untuk konfirmasi penghapusan akun */}
-          {showDeleteModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 rounded-xl">
-              <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur bg-opacity-20 rounded-xl">
-                <div className="bg-white p-6 rounded-lg shadow-lg">
-                  <h2 className="text-xl font-bold mb-4">
-                    Konfirmasi Penghapusan Akun
-                  </h2>
-                  <p>
-                    Apakah Anda yakin ingin menghapus akun? Akun akan terhapus
-                    secara permanen.
-                  </p>
-                  <div className="mt-4 flex justify-end">
-                    <button
-                      className="px-4 py-2 bg-gray-500 text-white rounded-md mr-2"
-                      onClick={() => setShowDeleteModal(false)}>
-                      Batal
-                    </button>
-                    <button
-                      className="px-4 py-2 bg-red-600 text-white rounded-md cursor-pointer"
-                      onClick={handleDeleteAccount}>
-                      Hapus Akun
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </main>
       </div>
-      <footer className="bg-[#212121] text-white py-20 mt-10">
+
+      <footer className="bg-[#212121] text-white py-10">
         <div className="container mx-auto flex flex-col items-center">
-          <div className="flex space-x-16 mb-8">
+          <div className="flex space-x-8 mb-4">
             <a href="#" className="hover:text-gray-400 font-bold">
               Terms And Conditions
             </a>
@@ -421,7 +340,7 @@ function Profil() {
               Privacy Policy
             </a>
           </div>
-          <p className="text-sm mb-1">
+          <p className="text-sm">
             Copyright &copy; 2024 All rights reserved by PixelStore
           </p>
         </div>

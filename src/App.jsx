@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { BrowserRouter as Router } from "react-router-dom";
 import AppRoutes from "./routes/AppRoutes";
 import { auth } from "./firebase/firebaseConfig";
@@ -12,7 +13,7 @@ const App = () => {
       localStorage.removeItem("userRole");
       window.location.href = "/";
     } catch (error) {
-      console.error("Logout failed:", error);
+      // console.error("Logout failed:", error);
     }
   };
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // eslint-disable-next-line no-unused-vars
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -81,7 +82,7 @@ function Login() {
         }, 2000);
       }
     } catch (error) {
-      console.error("Login failed:", error.message);
+      // console.error("Login failed:", error.message);
       setErrorModal("Email atau password tidak valid. Silakan coba lagi.");
     } finally {
       setLoading(false);

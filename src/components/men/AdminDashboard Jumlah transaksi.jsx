@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { useState, useRef, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
@@ -7,16 +6,13 @@ import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import HeaderSideBar from "../headerNavBreadcrumbs/HeaderSidebar";
 import { FaVideo, FaImage, FaDatabase, FaGamepad } from "react-icons/fa";
 import {
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   Tooltip,
   CartesianGrid,
   Legend,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
 
 function AdminDashboard() {
@@ -29,7 +25,7 @@ function AdminDashboard() {
     assetImages: 0,
     assetVideos: 0,
   });
-  const [transactionCount, setTransactionCount] = useState(0);
+  const [transactionCount, setTransactionCount] = useState(0); // Tambahkan state untuk jumlah transaksi
 
   const sidebarRef = useRef(null);
 
@@ -63,31 +59,31 @@ function AdminDashboard() {
 
       setAssetCounts(counts);
     } catch (error) {
-      // console.error("Error fetching asset counts: ", error);
+      console.error("Error fetching asset counts: ", error);
     }
   };
 
   const fetchTransactionCount = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "transactions"));
-      const orderIds = new Set();
+      const orderIds = new Set(); // Menggunakan Set untuk menghitung unique orderId
 
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         if (data.orderId) {
-          orderIds.add(data.orderId);
+          orderIds.add(data.orderId); // Tambahkan orderId ke Set
         }
       });
 
       setTransactionCount(orderIds.size); // Set jumlah unik orderId
     } catch (error) {
-      // console.error("Error fetching transaction counts: ", error);
+      console.error("Error fetching transaction counts: ", error);
     }
   };
 
   useEffect(() => {
     fetchAssetCountsFromFirestore();
-    fetchTransactionCount();
+    fetchTransactionCount(); // Panggil fungsi untuk mendapatkan jumlah transaksi
 
     if (isSidebarOpen) {
       document.addEventListener("mousedown", handleClickOutside);
@@ -130,23 +126,11 @@ function AdminDashboard() {
     assetVideos: "Videos",
   };
 
-  // Prepare chart data for asset counts
+  // Persiapkan data untuk chart
   const chartData = Object.entries(assetCounts).map(([key, count]) => ({
     name: assetLabels[key],
     count: count,
   }));
-
-  // Combine total asset and transaction data for Pie Chart
-  const totalAssets = Object.values(assetCounts).reduce(
-    (acc, count) => acc + count,
-    0
-  );
-  const pieChartData = [
-    { name: "Total Assets", value: totalAssets },
-    { name: "Total Transactions", value: transactionCount },
-  ];
-
-  const COLORS = ["#8884d8", "#82ca9d"]; // Colors for the pie chart
 
   return (
     <>
@@ -191,11 +175,23 @@ function AdminDashboard() {
             ))}
           </div>
 
-          {/* Bar Chart for Total Asset Count */}
-          <div className="mt-10 md:mt-14">
+          {/* Menampilkan jumlah transaksi */}
+          <div className="flex items-center justify-center h-32 rounded bg-primary-100 dark:bg-neutral-25 shadow-md dark:shadow-neutral-10 mt-4">
+            <div className="flex flex-col items-center justify-center text-center h-full">
+              <p className="text-lg sm:text-xl md:text-2xl text-neutral-20 dark:text-neutral-90">
+                Jumlah Transaksi
+              </p>
+              <p className="text-lg sm:text-xl md:text-2xl text-neutral-20 dark:text-neutral-90">
+                {transactionCount} Total Transaksi
+              </p>
+            </div>
+          </div>
+
+          {/* Bar Chart untuk jumlah aset */}
+          <div className="mt-10 md:mt-14 min-h-screen">
             <h2 className="text-2xl mb-4">Total Asset Counts</h2>
             <BarChart
-              width={window.innerWidth > 768 ? 600 : window.innerWidth - 50} // Responsive width
+              width={600}
               height={300}
               data={chartData}
               margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -206,33 +202,6 @@ function AdminDashboard() {
               <Legend />
               <Bar dataKey="count" fill="#8884d8" />
             </BarChart>
-          </div>
-
-          {/* Pie Chart for Total Asset and Transaction Counts */}
-          <div className="mt-10 md:mt-14">
-            <h2 className="text-2xl mb-4">
-              Total Asset and Transaction Counts
-            </h2>
-            <PieChart
-              width={window.innerWidth > 768 ? 900 : window.innerWidth - 50}
-              height={500}>
-              <Pie
-                data={pieChartData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                outerRadius={window.innerWidth > 768 ? 200 : 100}
-                fill="#8884d8"
-                dataKey="value">
-                {pieChartData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
           </div>
         </div>
       </div>

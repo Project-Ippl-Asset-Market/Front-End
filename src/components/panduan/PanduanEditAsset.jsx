@@ -1,5 +1,12 @@
 
 import React from 'react';
+import AddImageSudah from '../../assets/Panduan/AddImageSudah.png'
+import edit from '../../assets/Panduan/edit.png'
+import hapus from '../../assets/Panduan/Hapus.png'
+import AddAssetImg from '../../assets/Panduan/AddAssetImg.png'
+import AddImage from '../../assets/Panduan/AddImage.png'
+import PopupDelete from '../../assets/Panduan/PopupDelete.png'
+import Hilang from '../../assets/Panduan/Hilang.png'
 
 
 const EditAsset = () => {
@@ -20,14 +27,14 @@ const EditAsset = () => {
             {/* Step 1 */}
             <div className="mb-8">
               <p className="mb-4">
-              1. Untuk mengedit/menghapus konten yang telah anda upload, anda bisa pergi ke halaman My Asset Market
+              1. Untuk mengedit/menghapus konten yang telah anda upload, anda bisa pergi ke halaman Manage Asset
               </p>
             </div>
 
             {/* Step 2 */}
             <div className="mb-8">
               <p className="mb-4">
-                2. Kemudian pada halaman My Asset Market, anda bisa memilih konten mana yang akan anda edit/Hapus dengan cara klik tombol 
+                2. Kemudian pada halaman Manage Asset, anda bisa memilih konten mana yang akan anda edit/Hapus dengan cara klik tombol 
                 <span style={{ display: 'inline-flex', alignItems: 'center' }}>
                   <img src={edit} alt="Edit" style={{ marginLeft: '5px', marginRight: '5px', verticalAlign: 'middle', height: '1em' }} />
                   untuk mengedit konten atau klik tombol 
@@ -35,7 +42,7 @@ const EditAsset = () => {
                   untuk menghapus konten
                 </span>
               </p>
-              <img src={Dataset} alt="Dataset" className="mb-4" />
+              <img src={AddImageSudah} alt="Add Image" className="mb-4" />
             </div>
 
 
@@ -43,17 +50,17 @@ const EditAsset = () => {
             {/* Step 3 */}
             <div className="mb-8">
               <p className="mb-4">
-              3. Sebagai contoh ketika anda ingin mengedit konten Asset Game, maka anda akan diarahkan ke halaman edit Asset Game 2D, pada halaman ini anda dapat mengedit informasi konten asset yang anda upload sebelumnya.
+              3. Seperti pada halaman "Manage Asset Image," ketika Anda mengklik tombol edit, Anda akan diarahkan ke halaman edit aset. Di sana, Anda dapat melakukan perubahan pada aset sesuai kebutuhan, seperti pada gambar contoh.
               </p>
-              <img src={AddNewDataset} alt="Add Dataset" className="mb-4" />
+              <img src={AddAssetImg} alt="Add Dataset" className="mb-4" />
             </div>
 
             {/* Step 4 */}
             <div className="mb-8">
               <p className="mb-4">
-            4. Setelah selesai mengedit informasi konten asset game, klik save untuk menyimpan perubahan, dan konten yang anda edit akan tampil pada halaman Add new Asset Game 2D, dan klik cancel untuk batal
+            4. Setelah selesai mengedit informasi pada konten aset gambar, klik "Save" untuk menyimpan perubahan. Konten yang Anda edit akan ditampilkan di halaman "Manage Asset Image." Jika Anda ingin membatalkan perubahan, klik "Cancel.".
               </p>
-              <img src={Dataset} alt="Dataset" className="mb-4" />
+              <img src={AddImage} alt="Dataset" className="mb-4" />
             </div>
             {/* Step 5 */}
             <div className="mb-8">

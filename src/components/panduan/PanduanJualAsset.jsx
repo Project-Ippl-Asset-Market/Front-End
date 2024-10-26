@@ -3,6 +3,9 @@ import React from 'react';
 import HomeJualAset from '../../assets/Panduan/HomeJualAset.png'
 import Dashboard from '../../assets/Panduan/Dashboard.png'
 import ManageAssetImg from '../../assets/Panduan/ManageAssetImg.png'
+import File from '../../assets/Panduan/File.png'
+import AddAssetImg from '../../assets/Panduan/AddAssetImg.png'
+import AddImage from '../../assets/Panduan/AddImage.png'
 
 const JualAsset = () => {
   return (
@@ -59,25 +62,25 @@ const JualAsset = () => {
             {/* Step 6 */}
             <div className="mb-8">
               <p className="mb-4">
-            6. Ketika anda memilih Manage Asset 2D maka akan tampil halaman di samping kanan yaitu halaman Manage Asset Game 2D, kemudian klik New Dataset
+            6. Di halaman "add asset image" unggah gambar yang ingin Anda jual. Anda akan langsung diarahkan ke file explorer untuk memilih gambar tersebut.
             </p>
-              <img src={AddDataset} alt="Add Asset" className="mb-4" />
+              <img src={File} alt="Add Asset" className="mb-4" />
             </div>
 
             {/* Step 7 */}
             <div className="mb-8">
               <p className="mb-4">
-            7. Setelah itu anda akan diarahkan ke halaman Add New Dataset, di halaman ini anda bisa mengisi data informasi konten Asset Game 2D yang akan anda jual nantinya seperti data Nama, Kategori, Upload Asset Game 2D, Deskripsi, dan Harga. Setelah selesai mengisi data informasi konten, silahkan klik tombol Save. Harap isi data informasi konten sesuai ketentuan PixelStore
+            7. Setelah menambahkan gambar yang ingin dijual, lengkapi kolom "Image Name" sebagai nama gambar, pilih kategori yang sesuai, tambahkan deskripsi, dan tentukan harga untuk aset tersebut. Jika semua sudah sesuai, klik "Save" untuk menyimpan aset gambar Anda.
             </p>
-              <img src={AddNewDataset} alt="Add New Asset" className="mb-4" />
+              <img src={AddAssetImg} alt="Add Asset Image" className="mb-4" />
             </div>
 
             {/* Step 8 */}
             <div className="mb-8">
               <p className="mb-4">
-            8. Setelah itu anda akan diarahkan ke halaman sebelumnya yaitu Halaman Add New Dataset, dan pada halaman ini anda bisa melihat konten yang telah anda upload
+            8. Setelah itu anda akan diarahkan ke halaman sebelumnya yaitu Halaman Add Image, dan pada halaman ini anda bisa melihat konten yang telah anda upload
             </p>
-              <img src={Dataset} alt="Dataset" className="mb-4" />
+              <img src={AddImage} alt="Dataset" className="mb-4" />
             </div>
           </div>
         </div>

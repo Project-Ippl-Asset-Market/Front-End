@@ -2,7 +2,9 @@
 import React from 'react';
 import LandingPage from '../../assets/Panduan/LandingPage.png'
 import Login from '../../assets/Panduan/Login.png'
-
+import LoginBerhasil from '../../assets/Panduan/LoginBerhasil.png'
+import LoginGagal from '../../assets/Panduan/LoginGagal.png'
+import LandingpageLog from '../../assets/Panduan/LandingpageLog.png'
 
 const PanduanLogin = () => {
   return (
@@ -39,7 +41,7 @@ const PanduanLogin = () => {
             <div className="mb-8">
               
               <p className="mb-4">
-              3. Setelah selesai mengisi data Login akun, jika data yang anda isi benar, maka Popup , dan Klik Lanjut Masuk, dan langsung diarahkan ke halaman Home.
+              3. Setelah selesai mengisi data Login akun, jika data yang anda isi benar, maka Popup "login berhasil" ditampilkan, dan langsung diarahkan ke halaman Landing Page.
               </p>
               <img src={LoginBerhasil} alt="Login Berhasil" className="mb-4" />
             </div>
@@ -47,9 +49,17 @@ const PanduanLogin = () => {
             {/* Step 4 */}
             <div className="mb-8">
               <p className="mb-4">
-            4. Namun jika data yang anda isi tidak sesuai dengan data akun yang anda daftarkan, maka proses Log In anda gagal, dan Klik Ok untuk Isi data ulang
+              4. Namun jika data yang anda isi tidak sesuai dengan data akun yang anda daftarkan, maka proses Log In anda gagal, dan Klik Ok untuk Isi data ulang
               </p>
               <img src={LoginGagal} alt="Login Gagal" className="mb-4" />
+            </div>
+
+            {/* Step 5 */}
+            <div className="mb-8">
+              <p className="mb-4">
+              5. "Selamat datang di halaman utama Pixel Store. Silakan cari dan temukan asset yang Anda butuhkan."
+              </p>
+              <img src={LandingpageLog} alt="Landing Page Login" className="mb-4" />
             </div>
           </div>
         </div>

@@ -1,5 +1,8 @@
 
 import React from 'react';
+import HomeJualAset from '../../assets/Panduan/HomeJualAset.png'
+import Dashboard from '../../assets/Panduan/Dashboard.png'
+import ManageAssetImg from '../../assets/Panduan/ManageAssetImg.png'
 
 const JualAsset = () => {
   return (
@@ -26,32 +29,31 @@ const JualAsset = () => {
             {/* Step 2 */}
             <div className="mb-8">
               <p className="mb-4">
-              2. Kemudian pada halaman Home, klik Jual Asset dan pilih menu Mulai Jual Asset
+              2. Kemudian pada halaman Landing Page, klik Jual Asset dan pilih menu Mulai Jual Asset seperti gambar dibawah.
               </p>
-              <img src={JualAset} alt="Jual Asset" className="mb-4" />
+              <img src={HomeJualAset} alt="Jual Asset" className="mb-4" />
             </div>
 
             {/* Step 3 */}
             <div className="mb-8">
               <p className="mb-4">
-              3. Setelah itu anda akan diarahkan ke halaman My Asset Market
+              3. Setelah itu anda akan diarahkan ke halaman Dashboard untuk mengatur asset yang dijual.
               </p>
-              <img src={AssetMarket} alt="Halaman Asset Market" className="mb-4" />
+              <img src={Dashboard} alt="Halaman Asset Market" className="mb-4" />
             </div>
 
             {/* Step 4 */}
             <div className="mb-8">
               <p className="mb-4">
-            4. Pada Halaman My Asset Market anda dapat memilih konten apa yang anda akan Upload ke PixelStore dan yang akan anda jual nantinya
+            4. Pada Halaman ini anda dapat memilih konten apa yang anda akan Upload ke PixelStore dan yang akan anda jual nantinya
             </p>
             </div>
 
             {/* Step 5 */}
             <div className="mb-8">
               <p className="mb-4">
-            5. Seperti contoh ketika anda ingin menjual Asset Game, maka anda akan diberikan pilihan untuk menjual jenis Asset Game seperti Asset Game 2D, 3D, atau Asset Audio
-            </p>
-              <img src={ManageAsset} alt="Manage Asset" className="mb-4" />
+            5. Sebagai contoh, jika Anda ingin menjual gambar sebagai asset gambar, klik 'Manage Asset Image' di sidebar, kemudian pilih 'Add Image' untuk mengunggah gambar yang ingin dijual. Setelah itu, Anda akan diarahkan langsung ke halaman unggah asset gambar.</p>
+              <img src={ManageAssetImg} alt="Manage Asset" className="mb-4" />
             </div>
 
             {/* Step 6 */}

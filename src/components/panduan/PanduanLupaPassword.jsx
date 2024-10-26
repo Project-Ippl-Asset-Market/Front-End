@@ -1,5 +1,7 @@
 
 import React from 'react';
+import Login from '../../assets/Panduan/Login.png';
+import EmailPass from '../../assets/Panduan/EmailPass.png'
 
 const LupaPassword = () => {
   return (
@@ -20,7 +22,7 @@ const LupaPassword = () => {
             <div className="mb-8">
               <p className="mb-4">
               1. Pada Halaman Login , silahkan klik Lupa Password</p>
-              <img src={Lupa} alt="Lupa Password" className="mb-4" />
+              <img src={Login} alt="Lupa Password" className="mb-4" />
             </div>
 
             {/* Step 2 */}
@@ -38,7 +40,7 @@ const LupaPassword = () => {
               <p className="mb-4">
               3. Dan jika data yang anda isi benar maka perubahan password anda berhasil, dan klik lanjut masuk. Anda Otomatis diarahkan ke Halaman Login
               </p>
-              <img src={PasswordBerhasil} alt="Ganti Password Berhasil" className="mb-4" />
+              <img src={EmailPass} alt="Ganti Password Berhasil" className="mb-4" />
             </div>
           </div>
         </div>

@@ -1,5 +1,7 @@
 
 import React from 'react';
+import LandingPage from '../../assets/Panduan/LandingPage.png'
+import Login from '../../assets/Panduan/Login.png'
 
 
 const PanduanLogin = () => {
@@ -20,24 +22,24 @@ const PanduanLogin = () => {
             {/* Step 1 */}
             <div className="mb-8">
               <p className="mb-4">
-              1. Pada Halaman Home Silahkan Klik “Hello, Sign in” yang terdapat bagian atas kanan halaman lalu , klik “Log In” seperti yang ada di gambar.
+              1. Pada Halaman Home Silahkan Klik “Hello, Sign in” yang terdapat bagian atas kanan halaman lalu , klik “Login” seperti yang ada di gambar.
               </p>
-              <img src={Login} alt="Hello Sign In" className="mb-4" />
+              <img src={LandingPage} alt="Landing Page" className="mb-4" />
             </div>
 
             {/* Step 2 */}
             <div className="mb-8">
               <p className="mb-4">
-              2. Setelah itu anda akan diarakan ke halaman Log in, Isi data berdasarkan data akun yang anda daftarkan sebelumnya di PixelStore, atau anda dapat Log In menggunakan akun google . 
+              2. Setelah itu anda akan diarakan ke halaman Log in, Isi data berdasarkan data akun yang anda daftarkan sebelumnya di PixelStore, atau jika belum punya akun klik daftar.
               </p>
-              <img src={Login2} alt="Log In" className="mb-4" />
+              <img src={Login} alt="Log In" className="mb-4" />
             </div>
 
             {/* Step 3 */}
             <div className="mb-8">
               
               <p className="mb-4">
-              3. Setelah selesai mengisi data Login akun, jika data yang anda isi benar, maka proses Login anda berhasil, dan Klik Lanjut Masuk, dan langsung diarahkan ke halaman Home.
+              3. Setelah selesai mengisi data Login akun, jika data yang anda isi benar, maka Popup , dan Klik Lanjut Masuk, dan langsung diarahkan ke halaman Home.
               </p>
               <img src={LoginBerhasil} alt="Login Berhasil" className="mb-4" />
             </div>

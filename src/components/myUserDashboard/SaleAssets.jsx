@@ -9,6 +9,17 @@ function SaleAssets() {
   const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // State tambahan untuk menyimpan ringkasan dan perbandingan persentase
+  const [summary, setSummary] = useState({
+    totalRevenue: 0,
+    totalAssetsSold: 0,
+    totalLikes: 0,
+    revenueChange: 0,
+    assetsSoldChange: 0,
+    likesChange: 0,
+    comparisonPeriod: 7 // Default perbandingan ke 7 hari yang lalu
+  });
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -36,6 +47,32 @@ function SaleAssets() {
         const response = await fetch("http://localhost:5000/sales-data"); // URL API data sales
         const data = await response.json();
         setSalesData(data);
+
+        // Hitung ringkasan
+        const totalRevenue = data.reduce((sum, item) => sum + item.gross, 0);
+        const totalAssetsSold = data.reduce((sum, item) => sum + item.qty, 0);
+        const totalLikes = data.reduce((sum, item) => sum + item.likes, 0); // pastikan API mengirim data 'likes'
+
+        // Hitung perubahan persentase dibandingkan periode sebelumnya
+        const previousRevenue = 500000; // Contoh nilai periode sebelumnya
+        const previousAssetsSold = 50; // Contoh nilai periode sebelumnya
+        const previousLikes = 100; // Contoh nilai periode sebelumnya
+
+        const revenueChange = ((totalRevenue - previousRevenue) / previousRevenue) * 100;
+        const assetsSoldChange = ((totalAssetsSold - previousAssetsSold) / previousAssetsSold) * 100;
+        const likesChange = ((totalLikes - previousLikes) / previousLikes) * 100;
+
+        // Set ringkasan ke state
+        setSummary({
+          totalRevenue,
+          totalAssetsSold,
+          totalLikes,
+          revenueChange,
+          assetsSoldChange,
+          likesChange,
+          comparisonPeriod: 7 // Misalkan 7 hari sebagai default
+        });
+
         setLoading(false);
       } catch (error) {
         console.error("Error fetching sales data:", error);
@@ -78,18 +115,24 @@ function SaleAssets() {
           <div className="grid grid-cols-3 gap-6 mb-8">
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-lg font-semibold">Total Pendapatan</h3>
-              <p className="text-2xl font-bold">Rp. 45.600.000</p>
-              <span className="text-green-500">+21.6% dari 7 Hari yang lalu</span>
+              <p className="text-2xl font-bold">Rp. {summary.totalRevenue.toLocaleString("id-ID")}</p>
+              <span className={`text-${summary.revenueChange >= 0 ? 'green' : 'red'}-500`}>
+                {summary.revenueChange >= 0 ? '+' : ''}{summary.revenueChange.toFixed(1)}% dari {summary.comparisonPeriod} Hari yang lalu
+              </span>
             </div>
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-lg font-semibold">Asset Terjual</h3>
-              <p className="text-2xl font-bold">67</p>
-              <span className="text-green-500">+21.6% dari 7 Hari yang lalu</span>
+              <p className="text-2xl font-bold">{summary.totalAssetsSold}</p>
+              <span className={`text-${summary.assetsSoldChange >= 0 ? 'green' : 'red'}-500`}>
+                {summary.assetsSoldChange >= 0 ? '+' : ''}{summary.assetsSoldChange.toFixed(1)}% dari {summary.comparisonPeriod} Hari yang lalu
+              </span>
             </div>
             <div className="bg-white shadow rounded-lg p-6">
               <h3 className="text-lg font-semibold">Jumlah Disukai</h3>
-              <p className="text-2xl font-bold">+1240</p>
-              <span className="text-green-500">+21.6% dari 7 Hari yang lalu</span>
+              <p className="text-2xl font-bold">+{summary.totalLikes}</p>
+              <span className={`text-${summary.likesChange >= 0 ? 'green' : 'red'}-500`}>
+                {summary.likesChange >= 0 ? '+' : ''}{summary.likesChange.toFixed(1)}% dari {summary.comparisonPeriod} Hari yang lalu
+              </span>
             </div>
           </div>
 

@@ -8,8 +8,22 @@ function SaleAssets() {
   const sidebarRef = useRef(null);
   const [salesData, setSalesData] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // State untuk pencarian
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  // State untuk kolom yang ingin ditampilkan
+  const [visibleColumns, setVisibleColumns] = useState({
+    packageName: true,
+    price: true,
+    qty: true,
+    refunds: true,
+    chargebacks: true,
+    gross: true,
+    first: true,
+  });
 
-  // State tambahan untuk menyimpan ringkasan dan perbandingan persentase
+  // State tambahan untuk menyimpan ringkasan
   const [summary, setSummary] = useState({
     totalRevenue: 0,
     totalAssetsSold: 0,
@@ -51,7 +65,7 @@ function SaleAssets() {
         // Hitung ringkasan
         const totalRevenue = data.reduce((sum, item) => sum + item.gross, 0);
         const totalAssetsSold = data.reduce((sum, item) => sum + item.qty, 0);
-        const totalLikes = data.reduce((sum, item) => sum + item.likes, 0); // pastikan API mengirim data 'likes'
+        const totalLikes = data.reduce((sum, item) => sum + item.likes, 0); // Pastikan API mengirim data 'likes'
 
         // Hitung perubahan persentase dibandingkan periode sebelumnya
         const previousRevenue = 500000; // Contoh nilai periode sebelumnya
@@ -83,6 +97,24 @@ function SaleAssets() {
     fetchSalesData();
   }, []);
 
+  // Handler untuk pencarian
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Toggle kolom
+  const toggleColumn = (column) => {
+    setVisibleColumns((prev) => ({
+      ...prev,
+      [column]: !prev[column],
+    }));
+  };
+
+  // Filter data berdasarkan pencarian
+  const filteredSalesData = salesData.filter(item =>
+    item.package_name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <>
       <div className="dark:bg-neutral-20 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
@@ -94,9 +126,7 @@ function SaleAssets() {
         <aside
           ref={sidebarRef}
           id="sidebar-multi-level-sidebar"
-          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } sm:translate-x-0`}
+          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} sm:translate-x-0`}
           aria-label="Sidebar"
         >
           <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
@@ -143,20 +173,24 @@ function SaleAssets() {
                 type="text"
                 placeholder="Search packages"
                 className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300"
+                value={searchTerm}
+                onChange={handleSearchChange}
               />
-              <button className="text-blue-600 hover:underline">Columns</button>
+              <button className="text-blue-600 hover:underline" onClick={() => toggleColumn('price')}>
+                {visibleColumns.price ? 'Hide Price' : 'Show Price'}
+              </button>
             </div>
 
             <table className="w-full text-sm text-left text-gray-500 bg-white dark:bg-neutral-25 dark:text-neutral-90">
               <thead className="text-xs text-neutral-500 uppercase bg-gray-100 dark:bg-neutral-800 dark:text-neutral-300 border-b dark:border-neutral-20">
                 <tr>
-                  <th scope="col" className="px-6 py-3">Package Name</th>
-                  <th scope="col" className="px-6 py-3">Price</th>
-                  <th scope="col" className="px-6 py-3">Qty</th>
-                  <th scope="col" className="px-6 py-3">Refunds</th>
-                  <th scope="col" className="px-6 py-3">Chargebacks</th>
-                  <th scope="col" className="px-6 py-3">Gross</th> 
-                  <th scope="col" className="px-6 py-3">First</th>
+                  {visibleColumns.packageName && <th scope="col" className="px-6 py-3">Package Name</th>}
+                  {visibleColumns.price && <th scope="col" className="px-6 py-3">Price</th>}
+                  {visibleColumns.qty && <th scope="col" className="px-6 py-3">Qty</th>}
+                  {visibleColumns.refunds && <th scope="col" className="px-6 py-3">Refunds</th>}
+                  {visibleColumns.chargebacks && <th scope="col" className="px-6 py-3">Chargebacks</th>}
+                  {visibleColumns.gross && <th scope="col" className="px-6 py-3">Gross</th>} 
+                  {visibleColumns.first && <th scope="col" className="px-6 py-3">First</th>}
                 </tr>
               </thead>
               <tbody>
@@ -166,16 +200,16 @@ function SaleAssets() {
                       Loading...
                     </td>
                   </tr>
-                ) : salesData.length > 0 ? (
-                  salesData.map((item, index) => (
+                ) : filteredSalesData.length > 0 ? (
+                  filteredSalesData.map((item, index) => (
                     <tr key={index} className="bg-white dark:bg-neutral-25 dark:text-neutral-90">
-                      <td className="px-6 py-4">{item.package_name}</td>
-                      <td className="px-6 py-4">Rp {item.price.toLocaleString("id-ID")}</td>
-                      <td className="px-6 py-4">{item.qty}</td>
-                      <td className="px-6 py-4">{item.refunds}</td>
-                      <td className="px-6 py-4">{item.chargebacks}</td>
-                      <td className="px-6 py-4">Rp {item.gross.toLocaleString("id-ID")}</td>
-                      <td className="px-6 py-4">{item.first}</td>
+                      {visibleColumns.packageName && <td className="px-6 py-4">{item.package_name}</td>}
+                      {visibleColumns.price && <td className="px-6 py-4">Rp {item.price.toLocaleString("id-ID")}</td>}
+                      {visibleColumns.qty && <td className="px-6 py-4">{item.qty}</td>}
+                      {visibleColumns.refunds && <td className="px-6 py-4">{item.refunds}</td>}
+                      {visibleColumns.chargebacks && <td className="px-6 py-4">{item.chargebacks}</td>}
+                      {visibleColumns.gross && <td className="px-6 py-4">Rp {item.gross.toLocaleString("id-ID")}</td>}
+                      {visibleColumns.first && <td className="px-6 py-4">{item.first}</td>}
                     </tr>
                   ))
                 ) : (

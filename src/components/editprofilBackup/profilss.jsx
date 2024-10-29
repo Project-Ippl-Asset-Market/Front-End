@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import HeaderNav from "../headerNavBreadcrumbs/HeaderWebUser";
-import NavbarSection from "../../components/website/web_User-LandingPage/NavbarSection";
+import NavbarSection from "../website/web_User-LandingPage/NavbarSection";
 import { Link } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from "firebase/auth"; // Import Firebase Auth
 import { collection, query, where, onSnapshot, doc, updateDoc } from "firebase/firestore"; // Import Firestore

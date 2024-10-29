@@ -31,10 +31,8 @@ ChartJS.register(
 
 function Revenue() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [transactionCount, setTransactionCount] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalLikes, setTotalLikes] = useState(0);
-  const [currentUserId, setCurrentUserId] = useState(null);
   const [userAssets, setUserAssets] = useState([]);
   const sidebarRef = useRef(null);
 
@@ -53,8 +51,6 @@ function Revenue() {
     const user = auth.currentUser;
 
     if (user) {
-      setCurrentUserId(user.uid);
-
       const unsubscribe = onSnapshot(
         collection(db, "transactions"),
         (snapshot) => {
@@ -82,7 +78,6 @@ function Revenue() {
           });
 
           setUserAssets(filteredAssets);
-          setTransactionCount(orderIds.size);
           setTotalRevenue(totalPrice);
         }
       );
@@ -137,34 +132,48 @@ function Revenue() {
     }
   }, []);
 
-  // Mengubah chartData untuk satu garis
   const chartData = {
     labels: ["Aset Terjual", "Pendapatan"],
     datasets: [
       {
-        label: "Perbandingan Aset Terjual dan Pendapatan",
-        data: [userAssets.length, totalRevenue],
+        label: "Jumlah Aset Terjual",
+        data: [userAssets.length, 0], // No revenue data here
         backgroundColor: "rgba(75, 192, 192, 0.2)",
         borderColor: "#3F83F8",
         borderWidth: 2,
         fill: true,
+        yAxisID: "left-y-axis", // Assign to left Y axis
+      },
+      {
+        label: "Total Pendapatan",
+        data: [0, totalRevenue], // No assets sold data here
+        backgroundColor: "rgba(255, 206, 86, 0.2)",
+        borderColor: "#FFCE56",
+        borderWidth: 2,
+        fill: true,
+        yAxisID: "right-y-axis", // Assign to right Y axis
       },
     ],
   };
 
   const options = {
     scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: "Jumlah / Pendapatan",
+      "left-y-axis": {
+        type: "linear",
+        position: "left",
+        ticks: {
+          beginAtZero: true,
         },
       },
-    },
-    plugins: {
-      legend: {
-        position: "top",
+      "right-y-axis": {
+        type: "linear",
+        position: "right",
+        ticks: {
+          beginAtZero: true,
+        },
+        grid: {
+          drawOnChartArea: false, // Don't show grid lines for the right axis
+        },
       },
     },
   };

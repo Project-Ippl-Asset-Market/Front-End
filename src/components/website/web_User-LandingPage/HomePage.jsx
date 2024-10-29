@@ -492,17 +492,17 @@ export function HomePage() {
       </div>
       <div className="bg-primary-100 dark:bg-neutral-20">
         <img
-          className="w-[300vh] mt-[100px] sm:mt-[110px] md:mt-[90px] lg:mt-[100px] xl:mt-[100px] 2xl:mt-[130px]"
+          className="w-[300vh] mt-[145px] sm:mt-[170px] md:mt-[140px] lg:mt-[150px] xl:mt-[150px] 2xl:mt-[130px]"
           src={BannerBG}
           alt="Banner"
         />
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[47%] xl:left-[45%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[145px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[300px] lg:w-[500px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[47%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[193px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[570px] sm:w-[400px] md:w-[450px] lg:w-[700px] xl:w-[800px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[850px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}>
               <div className="relative">
                 <div className="relative">
@@ -559,14 +559,14 @@ export function HomePage() {
           </button>
         </div>
       )}
-      <div className="relative min-h-screen flex items-center justify-center">
+      <div className="relative  flex items-center justify-center">
         <div className="text-center">
           {searchResults.length === 0 && searchTerm && (
-            <p className="text-black text-[20px]">No assets found</p>
+            <p className="text-black text-[20px] mt-40">No assets found</p>
           )}
         </div>
       </div>
-      <div className="w-full p-12 mx-auto mt-32 sm:mt-32 md:mt-40 lg:mt-32 xl:mt-48 2xl:mt-52">
+      <div className="w-full p-4 mx-auto ">
         {alertLikes && (
           <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
             <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
@@ -585,8 +585,8 @@ export function HomePage() {
           </div>
         )}
       </div>
-      <div className="pt-2 -mt-[750px] sm:-mt-[750px] md:-mt-[750px] lg:-mt-[750px] xl:-mt-[850px] 2xl:-mt-[1350px] w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen ">
-        <div className=" mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-4 sm:gap-2 md:gap-4 lg:gap-16 xl:gap-12 2xl:gap-12">
+      <div className="pt-2  w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14   ">
+        <div className=" mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-4 sm:gap-2 md:gap-4 lg:gap-10 xl:gap-10 2xl:gap-12">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
@@ -817,7 +817,7 @@ export function HomePage() {
           </div>
         </div>
       )}
-      <footer className=" min-h-[181px] flex flex-col items-center justify-center">
+      <footer className="h-full mt-[1000px] flex flex-col items-center justify-center">
         <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
           <a href="#">Teams And Conditions</a>
           <a href="#">File Licenses</a>

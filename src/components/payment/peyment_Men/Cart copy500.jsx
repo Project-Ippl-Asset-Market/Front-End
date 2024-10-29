@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { FaTrashAlt } from "react-icons/fa";
 import { getAuth } from "firebase/auth";
-import { db } from "../../firebase/firebaseConfig";
+import { db } from "../../../firebase/firebaseConfig";
 import axios from "axios";
 import {
   collection,
@@ -15,8 +15,8 @@ import {
   getDocs,
   setDoc,
 } from "firebase/firestore";
-import Header from "../headerNavBreadcrumbs/HeaderWebUser";
-import NavbarSection from "../website/web_User-LandingPage/NavbarSection";
+import Header from "../../headerNavBreadcrumbs/HeaderWebUser";
+import NavbarSection from "../../website/web_User-LandingPage/NavbarSection";
 import CustomImage from "../../assets/assetmanage/Iconrarzip.svg";
 
 const Cart = () => {

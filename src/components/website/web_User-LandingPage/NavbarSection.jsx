@@ -44,7 +44,7 @@ const NavbarSection = () => {
           className={`${
             isOpen ? "block" : "hidden sm:flex navbar-hidden "
           } absolute top-full left-0 w-full sm:relative sm:w-auto bg-neutral-90 dark:bg-neutral-5 dark:text-primary-100 text-neutral-10 shadow-lg  `}>
-          <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 text-right mx-2 mt-0 sm:mt-4 md:mt-4 lg:mt-6 xl:mt-8 2xl:mt-10">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 text-right mx-2 mt-0 sm:mt-4 md:mt-8 lg:mt-10 xl:mt-10  2xl:mt-10">
             {/* Telusuri Semua */}
             <div className="relative group mt-4 flex">
               <Link
@@ -61,7 +61,7 @@ const NavbarSection = () => {
                 dark:hover:bg-secondary-40 sm:dark:hover:bg-secondary-40 md:dark:hover:bg-secondary-40 lg:dark:hover:bg-transparent xl:dark:hover:bg-transparent 2xl:dark:hover:bg-transparent 
                 text-neutral-10 group-hover:no-underline`}>
                 <div>
-                  <p>Telusuri Semua</p>
+                  <p>Telusuri_Semua</p>
                 </div>
                 <span className="hidden sm:flex items-center text-[24px] ml-4 mt-0 sm:-mt-2 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
                   |
@@ -97,7 +97,7 @@ const NavbarSection = () => {
                 hover:bg-secondary-40 sm:hover:bg-secondary-40 md:hover:bg-secondary-40 lg:hover:bg-transparent xl:hover:bg-transparent 2xl:hover:bg-transparent 
                 dark:hover:bg-secondary-40 sm:dark:hover:bg-secondary-40 md:dark:hover:bg-secondary-40 lg:dark:hover:bg-transparent xl:dark:hover:bg-transparent 2xl:dark:hover:bg-transparent 
                 text-neutral-10 group-hover:no-underline`}>
-                Asset Video
+                Asset_Video
                 <span className="absolute bottom-0 left-0 right-0 mx-auto h-[2px] ">
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
@@ -133,7 +133,7 @@ const NavbarSection = () => {
                 hover:bg-secondary-40 sm:hover:bg-secondary-40 md:hover:bg-secondary-40 lg:hover:bg-transparent xl:hover:bg-transparent 2xl:hover:bg-transparent 
                 dark:hover:bg-secondary-40 sm:dark:hover:bg-secondary-40 md:dark:hover:bg-secondary-40 lg:dark:hover:bg-transparent xl:dark:hover:bg-transparent 2xl:dark:hover:bg-transparent 
                 text-neutral-10 group-hover:no-underline`}>
-                Asset Image
+                Asset_Image
                 <span className="absolute bottom-0 left-0 right-0 mx-auto h-[2px] ">
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
@@ -169,7 +169,7 @@ const NavbarSection = () => {
                 hover:bg-secondary-40 sm:hover:bg-secondary-40 md:hover:bg-secondary-40 lg:hover:bg-transparent xl:hover:bg-transparent 2xl:hover:bg-transparent 
                 dark:hover:bg-secondary-40 sm:dark:hover:bg-secondary-40 md:dark:hover:bg-secondary-40 lg:dark:hover:bg-transparent xl:dark:hover:bg-transparent 2xl:dark:hover:bg-transparent 
                 text-neutral-10 group-hover:no-underline`}>
-                Asset Dataset
+                Asset_Dataset
                 <span className="absolute bottom-0 left-0 right-0 mx-auto h-[2px] ">
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
@@ -205,7 +205,7 @@ const NavbarSection = () => {
                 hover:bg-secondary-40 sm:hover:bg-secondary-40 md:hover:bg-secondary-40 lg:hover:bg-transparent xl:hover:bg-transparent 2xl:hover:bg-transparent 
                 dark:hover:bg-secondary-40 sm:dark:hover:bg-secondary-40 md:dark:hover:bg-secondary-40 lg:dark:hover:bg-transparent xl:dark:hover:bg-transparent 2xl:dark:hover:bg-transparent 
                 text-neutral-10 group-hover:no-underline`}>
-                Asset Game
+                Asset_Game
                 <span className="absolute bottom-0 left-0 right-0 mx-auto h-[2px] ">
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
@@ -243,7 +243,7 @@ const NavbarSection = () => {
                 hover:bg-secondary-40 sm:hover:bg-secondary-40 md:hover:bg-secondary-40 lg:hover:bg-transparent xl:hover:bg-transparent 2xl:hover:bg-transparent 
                 dark:hover:bg-secondary-40 sm:dark:hover:bg-secondary-40 md:dark:hover:bg-secondary-40 lg:dark:hover:bg-transparent xl:dark:hover:bg-transparent 2xl:dark:hover:bg-transparent 
                 text-neutral-10 group-hover:no-underline`}>
-                    Asset Gratis
+                    Asset_Gratis
                     <span className="absolute bottom-0 left-0 right-0 mx-auto h-[2px] ">
                       <span
                         className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
@@ -268,49 +268,51 @@ const NavbarSection = () => {
           </div>
 
           {/* Jual Asset */}
-          <div className="flex flex-col space-y-4 sm:flex-row mb-6 sm:-space-x-3 text-right mx-2 sm:ml-6 md:-ml-0 lg:ml-auto xl:ml-auto 2xl:ml-auto mt-0 sm:mt-1 md:mt-3 lg:mt-6 xl:mt-6 2xl:mt-8">
-            <span className="hidden sm:flex items-center text-[24px]  mt-4 ml-4">
+          <div className="flex flex-col space-y-4 sm:flex-row mb-6 text-right mx-2 sm:ml-6 md:ml-0 lg:ml-auto mt-0 sm:mt-1 md:mt-6 lg:mt-8">
+            <span className="hidden sm:flex items-center text-[24px] mt-4 ml-4">
               |
             </span>
-            <div className="relative group w-[120px] sm:w-auto -ml-5">
+            <div className="relative group w-full sm:w-auto">
               <div className="dropdown bg-none">
                 <div
                   tabIndex={0}
                   role="button"
-                  className="btn text-neutral-10 dark:text-primary-100 flex items-center bg-transparent border-none font-normal hover:bg-transparent text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px]">
-                  Jual Asset
-                  <svg
-                    className="w-4 h-4 ml-2"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 10 6">
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="m1 1 4 4 4-4"
-                    />
-                  </svg>
+                  className="btn text-neutral-10 dark:text-primary-100 flex items-center bg-transparent border-none font-normal hover:bg-transparent text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px]">
+                  <div className="flex">
+                    Jual_Asset
+                    <svg
+                      className="w-4 h-4 ml-2"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 10 6">
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="m1 1 4 4 4-4"
+                      />
+                    </svg>
+                  </div>
                 </div>
                 <div
                   tabIndex={0}
-                  className="dropdown-content bg-neutral-90 dark:bg-neutral-20 card card-compact text-start text-primary-content z-[1] w-[200px] min-sm:w-full p-2 shadow -pr-20 ml-0 md:-ml-20 lg:-ml-24 xl:-ml-24 2xl:-ml-14  rounded-none">
-                  <div className="card-body ">
+                  className="dropdown-content bg-neutral-90 dark:bg-neutral-20 card card-compact text-start text-primary-content z-[1] w-full sm:w-[200px] p-2 shadow rounded-none">
+                  <div className="card-body">
                     <Link
                       to={isLoggedIn ? "/dashboard" : "/login"}
                       onClick={handleClick}
-                      className="hover:bg-secondary-40 hover:rounded-md hover:text-primary-100 sm:hover:text-primary-100 dark:hover:bg-secondary-40 dark:text-primary-100 dark:hover:text-primary-100 text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px] xl:text-[14px] 2xl:text-[14px] h-10 p-3 transition-all duration-200 ">
+                      className="hover:bg-secondary-40 hover:rounded-md hover:text-primary-100 text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px] xl:text-[14px] h-10 p-3 transition-all duration-200">
                       Mulai Jual Asset
                     </Link>
                     <Link
                       to=""
-                      className="hover:bg-secondary-40 hover:rounded-md hover:text-primary-100 sm:hover:text-primary-100 dark:hover:bg-secondary-40 dark:text-primary-100 dark:hover:text-primary-100 text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px] xl:text-[13px] 2xl:text-[14px] h-10 p-3 transition-all duration-200 ">
+                      className="hover:bg-secondary-40 hover:rounded-md hover:text-primary-100 text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px] xl:text-[13px] h-10 p-3 transition-all duration-200">
                       Halaman Bantuan
                     </Link>
                     <Link
                       to="/panduan-registrasi"
-                      className="hover:bg-secondary-40 hover:rounded-md hover:text-primary-100 sm:hover:text-primary-100 dark:hover:bg-secondary-40 dark:text-primary-100 dark:hover:text-primary-100 text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px] xl:text-[14px] 2xl:text-[14px] h-10 p-3 transition-all duration-200 ">
+                      className="hover:bg-secondary-40 hover:rounded-md hover:text-primary-100 text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px] xl:text-[14px] h-10 p-3 transition-all duration-200">
                       Panduan
                     </Link>
                   </div>

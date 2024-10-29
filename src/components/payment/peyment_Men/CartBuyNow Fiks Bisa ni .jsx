@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { getAuth } from "firebase/auth";
-import { db } from "../../firebase/firebaseConfig";
+import { db } from "../../../firebase/firebaseConfig";
 import axios from "axios";
 import {
   collection,
@@ -13,18 +13,25 @@ import {
   getDocs,
   setDoc,
 } from "firebase/firestore";
-import { useUserContext } from "../../contexts/UserContext";
+import { useUserContext } from "../../../contexts/UserContext";
+import { useNavigate } from "react-router-dom";
 
 const CartBuyNow = () => {
+  const navigate = useNavigate(); // Tambahkan navigasi
   const [cartItems, setCartItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
-  const [snapReady, setSnapReady] = useState(false); // To track if the script is loaded
+  const [snapReady, setSnapReady] = useState(false);
   const auth = getAuth();
   const user = auth.currentUser;
   const { userRole } = useUserContext();
+
+  // Fungsi untuk kembali ke halaman sebelumnya jika transaksi gagal atau dibatalkan
+  const navigateBack = () => {
+    navigate(-1); // Arahkan kembali ke halaman sebelumnya
+  };
 
   // Load the Midtrans snap script and set snapReady to true when it's fully loaded
   useEffect(() => {
@@ -48,7 +55,6 @@ const CartBuyNow = () => {
   useEffect(() => {
     if (user) {
       const userId = user.uid;
-      console.log("User ID:", userId);
       const cartCollectionRef = collection(db, "cartAssets");
       const queryRef = query(cartCollectionRef, where("userId", "==", userId));
 
@@ -92,30 +98,6 @@ const CartBuyNow = () => {
     }
   }, [cartItems, snapReady]); // Trigger when both cartItems and snap script are ready
 
-  const itemName = (item) => {
-    return (
-      item.audioName ||
-      item.asset2DName ||
-      item.asset3DName ||
-      item.datasetName ||
-      item.imageName ||
-      item.videoName ||
-      "Unknown Name"
-    );
-  };
-
-  const itemImage = (item) => {
-    return (
-      item.Image ||
-      item.uploadUrlImage ||
-      item.datasetImage ||
-      item.assetAudiosImage ||
-      item.asset2DImage ||
-      item.asset3DImage ||
-      "Unknown Image"
-    );
-  };
-
   const handlePayment = async (selectedItems) => {
     if (selectedItems.length === 0 || !userRole || isPaymentOpen) {
       return;
@@ -126,13 +108,12 @@ const CartBuyNow = () => {
 
     try {
       const orderId = `order_${Date.now()}`;
-      console.log("Order ID:", orderId);
-
       const assetDetails = selectedItems.map((item) => ({
         assetId: item.assetId,
         price: item.price,
-        name: itemName(item),
-        image: itemImage(item),
+        name: item.name || "Item Name Not Available",
+        image:
+          item.image || item.video || item.assetImageGame || "url not found",
         docId: item.id,
         userId: item.userId,
         description: item.description || "No Description",
@@ -141,12 +122,10 @@ const CartBuyNow = () => {
         assetOwnerID: item.assetOwnerID,
       }));
 
-      console.log("Asset Details:", assetDetails);
       const subtotal = assetDetails.reduce(
         (total, item) => total + Number(item.price),
         0
       );
-      console.log("Subtotal:", subtotal);
 
       const response = await axios.post(
         "http://localhost:3000/api/transactions/create-transaction",
@@ -162,13 +141,12 @@ const CartBuyNow = () => {
           },
         }
       );
-      console.log("Transaction Response:", response);
+
       const transactionData = response.data;
 
       // Trigger Midtrans Snap
       window.snap.pay(transactionData.token, {
         onSuccess: async (result) => {
-          // Step 1: Save Transaction
           await saveTransaction(
             "Success",
             orderId,
@@ -177,11 +155,9 @@ const CartBuyNow = () => {
             assetDetails
           );
 
-          // Step 2: Move Assets to buyAssets
           const moveAssetsSuccess = await handleMoveAssets(assetDetails);
 
           if (moveAssetsSuccess) {
-            // Step 3: Delete items from cartAssets
             await deleteCartItems(assetDetails);
             setSuccessMessage(
               "Pembayaran berhasil. Aset telah dipindahkan ke koleksi dan item lainnya dihapus dari keranjang."
@@ -207,6 +183,11 @@ const CartBuyNow = () => {
         onError: function (result) {
           console.error("Snap Payment Error:", result);
           setErrorMessage("Pembayaran gagal, silakan coba lagi.");
+          navigateBack();
+        },
+        onClose: function () {
+          setErrorMessage("Pembayaran dibatalkan.");
+          navigateBack();
         },
       });
     } catch (error) {
@@ -217,6 +198,7 @@ const CartBuyNow = () => {
       setErrorMessage(
         `Error: ${error.response?.data?.message || error.message}`
       );
+      navigateBack();
     } finally {
       setIsLoading(false);
     }
@@ -227,12 +209,11 @@ const CartBuyNow = () => {
       const moveResult = await Promise.all(
         assetDetails.map(moveAssetToBuyAssets)
       );
-      // Return whether all assets were moved successfully
       return moveResult.every((result) => result !== null);
     } catch (moveError) {
       console.error("Error moving assets:", moveError);
       setErrorMessage("Gagal memindahkan aset.");
-      return false; // Return false if there was any error
+      return false;
     }
   };
 
@@ -243,18 +224,19 @@ const CartBuyNow = () => {
         uid: user.uid,
         assetId: asset.assetId,
         name: asset.name,
-        price: 0, // Assuming you want to set it to zero for clarity
+        price: 0,
         assetOwnerID: asset.assetOwnerID,
         description: asset.description || "No Description",
         category: asset.category || "Uncategorized",
-        image: asset.image,
+        image:
+          asset.image || asset.video || asset.assetImageGame || "url not found",
         purchasedAt: new Date(),
       };
       await setDoc(buyAssetDocRef, assetData);
-      return assetData; // Return the asset data to indicate success
+      return assetData;
     } catch (error) {
       console.error("Error moving asset to buyAssets:", error);
-      return null; // Return null to indicate failure
+      return null;
     }
   };
 
@@ -264,6 +246,11 @@ const CartBuyNow = () => {
         assetDetails.map(async (asset) => {
           const cartDocRef = doc(db, "cartAssets", asset.docId);
           await deleteDoc(cartDocRef);
+
+          // Panggil API untuk menghapus cartAssets
+          await axios.delete(
+            `http://localhost:3000/api/assets/delete/${asset.docId}`
+          );
         })
       );
     } catch (error) {
@@ -295,7 +282,11 @@ const CartBuyNow = () => {
           price: asset.price,
           description: asset.description,
           category: asset.category,
-          image: { url: asset.image },
+          image:
+            asset.image ||
+            asset.video ||
+            asset.assetImageGame ||
+            "url not found",
           assetOwnerID: asset.assetOwnerID,
         })),
       });
@@ -306,19 +297,16 @@ const CartBuyNow = () => {
   };
 
   const resetCustomerInfoAndCart = () => {
-    setCartItems((prevItems) => prevItems.filter((item) => !item.selected));
+    setCartItems([]);
+    setIsPaymentOpen(false);
   };
 
   return (
-    <div className="font-poppins dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen bg-primary-100 opacity-90">
-      <div className="container mx-auto py-40">
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64 mt-20">
-            <div className="animate-spin rounded-full h-60 w-60 border-b-2 border-gray-900"></div>
-          </div>
-        ) : (
-          <></>
-        )}
+    <div className="font-poppins dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90">
+      <div className="text-center">
+        {isLoading && <p>Loading...</p>}
+        {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+        {successMessage && <p className="text-green-500">{successMessage}</p>}
       </div>
     </div>
   );

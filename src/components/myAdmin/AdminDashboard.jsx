@@ -228,7 +228,7 @@ function AdminDashboard() {
   const COLORS = ["#8884d8", "#31C48D", "#3F83F8"];
 
   return (
-    <div className="dark:bg-neutral-20 dark:text-primary-100 min-h-screen font-poppins bg-primary-100 p-20 -mt-14">
+    <div className="dark:bg-neutral-20 dark:text-primary-100 min-h-screen font-poppins bg-primary-100 p-4 -mx-4 -mt-2">
       <HeaderSideBar
         isSidebarOpen={isSidebarOpen}
         toggleSidebar={toggleSidebar}
@@ -271,19 +271,19 @@ function AdminDashboard() {
 
         <div className="mt-10 md:mt-14 w-full">
           <h2 className="text-2xl mb-4 text-neutral-20 dark:text-primary-100">
-            Total Asset Counts
+            Grafik Asset
           </h2>
-          <div className="w-full" style={{ height: 300 }}>
+          <div className="w-full" style={{ height: 350 }}>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={chartData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                margin={{ top: 5, right: 100, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="createdAt"
                   tick={CustomXAxisTick}
                   interval={0}
-                  height={50}
+                  height={100}
                 />
                 <YAxis />
                 <Tooltip content={<CustomTooltip />} /> <Legend />
@@ -296,7 +296,7 @@ function AdminDashboard() {
         {/* Pie Chart for Total Asset and Transaction Counts */}
         <div className="mt-10 md:mt-14 w-full">
           <h2 className="text-2xl mb-4 text-neutral-20 dark:text-primary-100">
-            Total Asset and Transaction Counts
+            Total Asset and Transaction
           </h2>
           <div className="w-full" style={{ height: 400 }}>
             <ResponsiveContainer width="100%" height="100%">

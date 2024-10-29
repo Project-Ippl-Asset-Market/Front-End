@@ -4,9 +4,6 @@ import { useNavigate, Link } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../../firebase/firebaseConfig";
 import { useTheme } from "../../contexts/ThemeContext";
-// Import Firebase Firestore
-import { db } from "../../firebase/firebaseConfig"; // Import your firebase config including Firestore
-import { collection, query, where, getDocs } from "firebase/firestore"; // Firestore methods
 import IconLightMode from "../../assets/icon/iconDarkMode&LigthMode/ligth_mode.svg";
 import IconDarkMode from "../../assets/icon/iconDarkMode&LigthMode/dark_mode.svg";
 import IconUserDark from "../../assets/icon/iconDarkMode&LigthMode/iconUserDark.svg";
@@ -36,25 +33,9 @@ function HeaderWebUser() {
       } else {
         setUser(null);
         setUsername("");
-        setCartCount(0); // Reset count when user is logged out
+        setCartCount(0);
       }
     });
-
-    // Fetch Cart Count
-    const fetchCartCount = async () => {
-      if (user) {
-        const cartCollection = collection(db, "cartAssets");
-        // Create a query to filter by user UID
-        const q = query(cartCollection, where("userId", "==", user.uid));
-        const cartSnapshot = await getDocs(q);
-
-        // Set the cartCount based on the size of the cartSnapshot
-        setCartCount(cartSnapshot.size);
-      }
-    };
-
-    // Fetch cart count whenever the user changes
-    fetchCartCount();
 
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
@@ -63,7 +44,7 @@ function HeaderWebUser() {
       unsubscribeAuth();
       window.removeEventListener("resize", handleResize);
     };
-  }, [user]); // Add user as dependency to fetch count only when user changes
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -72,7 +53,7 @@ function HeaderWebUser() {
       localStorage.removeItem("userRole");
       navigate("/");
     } catch (error) {
-      // Handle logout error here if needed
+      // console.error("Logout failed:", error.message);
     }
   };
 
@@ -94,25 +75,25 @@ function HeaderWebUser() {
           <img
             src={logoWeb}
             alt="logo"
-            className="w-12 sm:w-16 md:w-20 lg:w-24 xl:w-28 2xl:w-32 h-auto"
+            className="w-20 lg:w-20 xl:w-20 2xl:w-20 h-20"
           />
-          <h2 className="text-[8px] sm:text-sm md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl hidden sm:block">
+          <h2 className="text-[10px] hidden sm:hidden md:block sm:text-2xl md:text-2xl lg:text-2xl xl:text-2xl 2xl:text-2xl">
             PixelStore
           </h2>
         </div>
 
         <div className="fixed top-0 right-0 p-4 z-10">
           {/* cart an my asset */}
-          <div className="gap-14 sm:gap-1 md:gap-1 lg:gap-1 xl:gap-1 2xl:gap-2 flex justify-center items-center">
+          <div className="gap-14 sm:gap-1 md:gap-8 lg:gap-8 xl:gap-2 2xl:gap-10 flex justify-center items-center">
             <Link
               to="/my-asset"
-              className="  w-[45px] sm:w-[45px] md:w-[44px] lg:w-[44px] xl:w-[60px] 2xl:w-[34px] h-[20px] sm:h-[28px] md:h-[28px] lg:h-[28px] xl:h-[28px] 2xl:h[28px] -ml-[30px] sm:ml-1 md:ml-1 lg:ml-0 xl:ml-0 2xl:ml-2 gap-1 text-[8px] sm:text-[10px] md:text-[10px] lg:text-[10px] xl:text-[10px] 2xl:text-[10px]">
+              className="w-[45px] sm:w-[45px] md:w-[44px] lg:w-[44px] xl:w-[60px] 2xl:w-[34px] h-[20px] sm:h-[28px] md:h-[28px] lg:h-[28px] xl:h-[28px] 2xl:h[28px] -ml-[30px] sm:ml-1 md:ml-1 lg:ml-0 xl:ml-0 2xl:ml-2 gap-2 text-[8px] sm:text-[10px] md:text-[10px] lg:text-[10px] xl:text-[10px] 2xl:text-[10px]">
               <img
                 src={IconMyAsset}
                 alt="icon my asset"
                 className="w-[24px] h-[24px]"
               />
-              <label className="-ml-3">My asset</label>
+              <label className="-ml-4">My asset</label>
             </Link>
 
             <Link

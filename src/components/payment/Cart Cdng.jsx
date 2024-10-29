@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-catch */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { FaTrashAlt } from "react-icons/fa";
@@ -35,7 +36,7 @@ const Cart = () => {
   useEffect(() => {
     if (user) {
       const userId = user.uid;
-      console.log("User ID:", userId);
+      // console.log("User ID:", userId);
       const cartCollectionRef = collection(db, "cartAssets");
       const queryRef = query(cartCollectionRef, where("userId", "==", userId));
 
@@ -93,7 +94,7 @@ const Cart = () => {
 
   const handlePayment = async () => {
     if (selectedItems.length === 0) {
-      setErrorMessage("Tidak ada item dalam keranjang untuk pembayaran.");
+      // setErrorMessage("Tidak ada item dalam keranjang untuk pembayaran.");
       return;
     }
 
@@ -102,7 +103,7 @@ const Cart = () => {
       !customerInfo.email ||
       !customerInfo.phoneNumber
     ) {
-      setErrorMessage("Mohon lengkapi detail pelanggan.");
+      // setErrorMessage("Mohon lengkapi detail pelanggan.");
       return;
     }
 
@@ -113,35 +114,25 @@ const Cart = () => {
     try {
       const orderId = `order_${Date.now()}`;
 
-      const itemName = (item) => {
-        return (
+      const assetDetails = selectedItems.map((item) => ({
+        assetId: item.assetId,
+        price: item.price,
+        name:
+          item.name ||
           item.audioName ||
           item.asset2DName ||
           item.asset3DName ||
           item.datasetName ||
           item.imageName ||
           item.videoName ||
-          "Unknown Name"
-        );
-      };
-
-      const itemImage = (item) => {
-        return (
-          item.Image ||
-          item.uploadUrlImage ||
+          "Unknown Name",
+        image:
+          item.image ||
+          item.video ||
+          item.assetImageGame ||
+          item.Image_umum ||
           item.datasetImage ||
-          item.assetAudiosImage ||
-          item.asset2DImage ||
-          item.asset3DImage ||
-          "Unknown Image"
-        );
-      };
-
-      const assetDetails = selectedItems.map((item) => ({
-        assetId: item.assetId,
-        price: item.price,
-        name: itemName(item),
-        image: itemImage(item),
+          "Image not found",
         docId: item.id,
         userId: item.userId,
         description: item.description || "No Description",
@@ -154,7 +145,7 @@ const Cart = () => {
         (total, item) => total + Number(item.price),
         0
       );
-      console.log("Subtotal:", subtotal);
+      // console.log("Subtotal:", subtotal);
 
       const response = await axios.post(
         "http://localhost:3000/api/transactions/create-transaction",
@@ -172,11 +163,11 @@ const Cart = () => {
       );
 
       const transactionData = response.data;
-      console.log("Transaction Data:", transactionData);
+      // console.log("Transaction Data:", transactionData);
 
       window.snap.pay(transactionData.token, {
         onSuccess: async (result) => {
-          console.log("Payment successful:", result);
+          // console.log("Payment successful:", result);
           try {
             await saveTransaction(
               "Success",
@@ -188,17 +179,17 @@ const Cart = () => {
 
             await handleMoveAssets(assetDetails);
 
-            setSuccessMessage(
-              "Pembayaran berhasil. Aset telah dipindahkan ke koleksi dan item lainnya dihapus dari keranjang."
-            );
+            // setSuccessMessage(
+            //   "Pembayaran berhasil. Aset telah dipindahkan ke koleksi dan item lainnya dihapus dari keranjang."
+            // );
             resetCustomerInfoAndCart();
           } catch (saveError) {
-            console.error("Error saving transaction:", saveError);
-            setErrorMessage("Gagal menyimpan transaksi.");
+            // console.error("Error saving transaction:", saveError);
+            // setErrorMessage("Gagal menyimpan transaksi.");
           }
         },
         onPending: async (result) => {
-          console.log("Payment pending:", result);
+          // console.log("Payment pending:", result);
           try {
             await saveTransaction(
               "Pending",
@@ -207,25 +198,25 @@ const Cart = () => {
               transactionData.token,
               assetDetails
             );
-            setSuccessMessage(
-              "Pembayaran tertunda, cek status di dashboard transaksi."
-            );
+            // setSuccessMessage(
+            //   "Pembayaran tertunda, cek status di dashboard transaksi."
+            // );
             pollPaymentStatus(orderId);
           } catch (saveError) {
-            console.error("Error saving transaction:", saveError);
-            setErrorMessage("Gagal menyimpan transaksi.");
+            // console.error("Error saving transaction:", saveError);
+            // setErrorMessage("Gagal menyimpan transaksi.");
           }
         },
         onError: function (result) {
-          console.error("Payment error:", result);
-          setErrorMessage("Pembayaran gagal, silakan coba lagi.");
+          // console.error("Payment error:", result);
+          // setErrorMessage("Pembayaran gagal, silakan coba lagi.");
         },
       });
     } catch (error) {
-      console.error("Error during transaction:", error);
-      setErrorMessage(
-        `Error: ${error.response?.data?.message || error.message}`
-      );
+      // console.error("Error during transaction:", error);
+      // setErrorMessage(
+      //   `Error: ${error.response?.data?.message || error.message}`
+      // );
     } finally {
       setIsLoading(false);
     }
@@ -254,7 +245,13 @@ const Cart = () => {
           price: asset.price,
           description: asset.description,
           category: asset.category,
-          image: { url: asset.image },
+          image:
+            asset.image ||
+            asset.video ||
+            asset.assetImageGame ||
+            asset.Image_umum ||
+            asset.datasetImage ||
+            "Image not found",
           assetOwnerID: asset.assetOwnerID,
         })),
         customerDetails: {
@@ -263,9 +260,9 @@ const Cart = () => {
           phoneNumber: customerInfo.phoneNumber,
         },
       });
-      console.log("Transaction saved successfully");
+      // console.log("Transaction saved successfully");
     } catch (error) {
-      console.error("Error saving transaction:", error);
+      // console.error("Error saving transaction:", error);
       throw error;
     }
   };
@@ -298,7 +295,13 @@ const Cart = () => {
         assetOwnerID: asset.assetOwnerID,
         description: asset.description || "No Description",
         category: asset.category || "Uncategorized",
-        image: asset.image,
+        image:
+          asset.image ||
+          asset.video ||
+          asset.assetImageGame ||
+          asset.datasetImage ||
+          asset.Image_umum ||
+          "Image not found",
         purchasedAt: new Date(),
       };
 
@@ -310,7 +313,7 @@ const Cart = () => {
   };
 
   const deleteAsset = async (asset) => {
-    const docId = `${user.uid}_${asset.assetId}`;
+    const docId = `${asset.assetId}`;
     const url = `http://localhost:3000/api/assets/delete/${docId}`;
 
     await axios.delete(url);
@@ -410,9 +413,9 @@ const Cart = () => {
                     checked={item.selected}
                     onChange={() => handleCheckboxChange(item.id)}
                   />
-                  {item.uploadUrlVideo ? (
+                  {item.video ? (
                     <video
-                      src={item.uploadUrlVideo}
+                      src={item.video}
                       alt="Asset Video"
                       className="h-20 sm:h-40 md:h-20 lg:h-20 xl:h-20 2xl:h-20 w-full md:w-48 overflow-hidden relative mx-auto border-none cursor-pointer"
                       controls
@@ -426,6 +429,7 @@ const Cart = () => {
                         item.assetAudiosImage ||
                         item.asset2DImage ||
                         item.asset3DImage ||
+                        item.Image_umum ||
                         CustomImage
                       }
                       alt="Asset Image"
@@ -438,7 +442,8 @@ const Cart = () => {
                   )}
                   <div className="ml-0 md:ml-4 mt-4 md:mt-0 w-full">
                     <h3 className="font-semibold text-sm md:text-base">
-                      {item.datasetName ||
+                      {item.name ||
+                        item.datasetName ||
                         item.videoName ||
                         item.assetNameGame ||
                         item.imageName ||

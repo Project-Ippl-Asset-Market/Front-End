@@ -28,10 +28,10 @@ const CartBuyNow = () => {
   const user = auth.currentUser;
   const { userRole } = useUserContext();
 
-  // Fungsi untuk kembali ke halaman sebelumnya jika transaksi gagal atau dibatalkan
-  const navigateBack = () => {
-    navigate(-1); // Arahkan kembali ke halaman sebelumnya
-  };
+  // // Fungsi untuk kembali ke halaman sebelumnya jika transaksi gagal atau dibatalkan
+  // const navigateBack = () => {
+  //   navigate(-1); // Arahkan kembali ke halaman sebelumnya
+  // };
 
   // Load the Midtrans snap script and set snapReady to true when it's fully loaded
   useEffect(() => {
@@ -113,7 +113,12 @@ const CartBuyNow = () => {
         price: item.price,
         name: item.name || "Item Name Not Available",
         image:
-          item.image || item.video || item.assetImageGame || "url not found",
+          item.image ||
+          item.video ||
+          item.assetImageGame ||
+          item.Image_umum ||
+          item.datasetImage ||
+          "url not found",
         docId: item.id,
         userId: item.userId,
         description: item.description || "No Description",
@@ -159,11 +164,11 @@ const CartBuyNow = () => {
 
           if (moveAssetsSuccess) {
             await deleteCartItems(assetDetails);
-            setSuccessMessage(
-              "Pembayaran berhasil. Aset telah dipindahkan ke koleksi dan item lainnya dihapus dari keranjang."
-            );
+            // setSuccessMessage(
+            //   "Pembayaran berhasil. Aset telah dipindahkan ke koleksi dan item lainnya dihapus dari keranjang."
+            // );
           } else {
-            setErrorMessage("Gagal memindahkan aset ke koleksi.");
+            // setErrorMessage("Gagal memindahkan aset ke koleksi.");
           }
 
           resetCustomerInfoAndCart();
@@ -176,29 +181,29 @@ const CartBuyNow = () => {
             transactionData.token,
             assetDetails
           );
-          setSuccessMessage(
-            "Pembayaran tertunda, cek status di dashboard transaksi."
-          );
+          // setSuccessMessage(
+          //   "Pembayaran tertunda, cek status di dashboard transaksi."
+          // );
         },
         onError: function (result) {
-          console.error("Snap Payment Error:", result);
-          setErrorMessage("Pembayaran gagal, silakan coba lagi.");
-          navigateBack();
+          // console.error("Snap Payment Error:", result);
+          // setErrorMessage("Pembayaran gagal, silakan coba lagi.");
+          // navigateBack();
         },
         onClose: function () {
-          setErrorMessage("Pembayaran dibatalkan.");
-          navigateBack();
+          // setErrorMessage("Pembayaran dibatalkan.");
+          // navigateBack();
         },
       });
     } catch (error) {
-      console.error(
-        "Error during transaction process:",
-        error.response || error.message
-      );
-      setErrorMessage(
-        `Error: ${error.response?.data?.message || error.message}`
-      );
-      navigateBack();
+      // console.error(
+      //   "Error during transaction process:",
+      //   error.response || error.message
+      // );
+      // setErrorMessage(
+      //   `Error: ${error.response?.data?.message || error.message}`
+      // );
+      // navigateBack();
     } finally {
       setIsLoading(false);
     }
@@ -211,8 +216,8 @@ const CartBuyNow = () => {
       );
       return moveResult.every((result) => result !== null);
     } catch (moveError) {
-      console.error("Error moving assets:", moveError);
-      setErrorMessage("Gagal memindahkan aset.");
+      // console.error("Error moving assets:", moveError);
+      // setErrorMessage("Gagal memindahkan aset.");
       return false;
     }
   };
@@ -229,13 +234,18 @@ const CartBuyNow = () => {
         description: asset.description || "No Description",
         category: asset.category || "Uncategorized",
         image:
-          asset.image || asset.video || asset.assetImageGame || "url not found",
+          asset.image ||
+          asset.video ||
+          asset.assetImageGame ||
+          asset.Image_umum ||
+          asset.datasetImage ||
+          "url not found",
         purchasedAt: new Date(),
       };
       await setDoc(buyAssetDocRef, assetData);
       return assetData;
     } catch (error) {
-      console.error("Error moving asset to buyAssets:", error);
+      // console.error("Error moving asset to buyAssets:", error);
       return null;
     }
   };
@@ -254,8 +264,8 @@ const CartBuyNow = () => {
         })
       );
     } catch (error) {
-      console.error("Error deleting cart items:", error);
-      setErrorMessage("Gagal menghapus item dari keranjang.");
+      // console.error("Error deleting cart items:", error);
+      // setErrorMessage("Gagal menghapus item dari keranjang.");
     }
   };
 
@@ -286,13 +296,15 @@ const CartBuyNow = () => {
             asset.image ||
             asset.video ||
             asset.assetImageGame ||
+            asset.Image_umum ||
+            asset.datasetImage ||
             "url not found",
           assetOwnerID: asset.assetOwnerID,
         })),
       });
     } catch (error) {
-      console.error("Error saving transaction:", error);
-      setErrorMessage("Gagal menyimpan transaksi.");
+      // console.error("Error saving transaction:", error);
+      // setErrorMessage("Gagal menyimpan transaksi.");
     }
   };
 

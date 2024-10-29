@@ -12,9 +12,10 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  setDoc,
 } from "firebase/firestore";
-import Header from "../../components/headerNavBreadcrumbs/HeaderWebUser";
-import NavbarSection from "../../components/website/web_User-LandingPage/NavbarSection";
+import Header from "../headerNavBreadcrumbs/HeaderWebUser";
+import NavbarSection from "../website/web_User-LandingPage/NavbarSection";
 import CustomImage from "../../assets/assetmanage/Iconrarzip.svg";
 
 const Cart = () => {
@@ -34,6 +35,7 @@ const Cart = () => {
   useEffect(() => {
     if (user) {
       const userId = user.uid;
+      console.log("User ID:", userId);
       const cartCollectionRef = collection(db, "cartAssets");
       const queryRef = query(cartCollectionRef, where("userId", "==", userId));
 
@@ -58,7 +60,11 @@ const Cart = () => {
         );
 
         setCartItems(
-          filteredItems.map((item) => ({ ...item, selected: false }))
+          filteredItems.map((item) => ({
+            ...item,
+            selected: false,
+            userId: item.userId,
+          }))
         );
       });
 
@@ -84,8 +90,6 @@ const Cart = () => {
     (total, item) => total + Number(item.price),
     0
   );
-  const taxRate = 0.1; // PPN 10%
-  const totalWithTax = subtotal + subtotal * taxRate;
 
   const handlePayment = async () => {
     if (selectedItems.length === 0) {
@@ -108,14 +112,50 @@ const Cart = () => {
 
     try {
       const orderId = `order_${Date.now()}`;
+
+      const itemName = (item) => {
+        return (
+          item.audioName ||
+          item.asset2DName ||
+          item.asset3DName ||
+          item.datasetName ||
+          item.imageName ||
+          item.videoName ||
+          "Unknown Name"
+        );
+      };
+
+      const itemImage = (item) => {
+        return (
+          item.Image ||
+          item.uploadUrlImage ||
+          item.datasetImage ||
+          item.assetAudiosImage ||
+          item.asset2DImage ||
+          item.asset3DImage ||
+          "Unknown Image"
+        );
+      };
+
       const assetDetails = selectedItems.map((item) => ({
         assetId: item.assetId,
         price: item.price,
-        name: item.datasetName || "Unknown Asset",
+        name: itemName(item),
+        image: itemImage(item),
         docId: item.id,
+        userId: item.userId,
+        description: item.description || "No Description",
+        category: item.category || "Uncategorized",
+        uid: user.uid,
+        assetOwnerID: item.assetOwnerID,
       }));
 
-      // Send request to create a transaction
+      const subtotal = assetDetails.reduce(
+        (total, item) => total + Number(item.price),
+        0
+      );
+      console.log("Subtotal:", subtotal);
+
       const response = await axios.post(
         "http://localhost:3000/api/transactions/create-transaction",
         {
@@ -132,44 +172,57 @@ const Cart = () => {
       );
 
       const transactionData = response.data;
+      console.log("Transaction Data:", transactionData);
 
       window.snap.pay(transactionData.token, {
         onSuccess: async (result) => {
-          console.log(result);
-          await handleMoveAssets(assetDetails); // Panggil fungsi untuk memindahkan aset di sini
+          console.log("Payment successful:", result);
+          try {
+            await saveTransaction(
+              "Success",
+              orderId,
+              subtotal,
+              transactionData.token,
+              assetDetails
+            );
 
-          // Hapus item dari keranjang setelah pembayaran berhasil
-          await Promise.all(
-            selectedItems.map(async (item) => {
-              await handleDeleteItem(item.id); // Memanggil fungsi untuk menghapus item dari keranjang
-            })
-          );
+            await handleMoveAssets(assetDetails);
 
-          // Tampilkan pesan sukses
-          setSuccessMessage(
-            "Pembayaran berhasil. Aset telah dipindahkan dan item dihapus dari keranjang."
-          );
-
-          // Clear the customer info and selected items if necessary
-          setCustomerInfo({ fullName: "", email: "", phoneNumber: "" });
-          setCartItems((prevItems) =>
-            prevItems.filter((item) => !item.selected)
-          );
+            setSuccessMessage(
+              "Pembayaran berhasil. Aset telah dipindahkan ke koleksi dan item lainnya dihapus dari keranjang."
+            );
+            resetCustomerInfoAndCart();
+          } catch (saveError) {
+            console.error("Error saving transaction:", saveError);
+            setErrorMessage("Gagal menyimpan transaksi.");
+          }
         },
-        onPending: function (result) {
-          setSuccessMessage(
-            "Pembayaran tertunda, cek status di dashboard transaksi."
-          );
+        onPending: async (result) => {
+          console.log("Payment pending:", result);
+          try {
+            await saveTransaction(
+              "Pending",
+              orderId,
+              subtotal,
+              transactionData.token,
+              assetDetails
+            );
+            setSuccessMessage(
+              "Pembayaran tertunda, cek status di dashboard transaksi."
+            );
+            pollPaymentStatus(orderId);
+          } catch (saveError) {
+            console.error("Error saving transaction:", saveError);
+            setErrorMessage("Gagal menyimpan transaksi.");
+          }
         },
         onError: function (result) {
-          console.error(result);
+          console.error("Payment error:", result);
           setErrorMessage("Pembayaran gagal, silakan coba lagi.");
-        },
-        onClose: function () {
-          console.log("Payment dialog closed");
         },
       });
     } catch (error) {
+      console.error("Error during transaction:", error);
       setErrorMessage(
         `Error: ${error.response?.data?.message || error.message}`
       );
@@ -178,45 +231,133 @@ const Cart = () => {
     }
   };
 
-  const handleMoveAssets = async (assetDetails) => {
+  const saveTransaction = async (
+    status,
+    orderId,
+    subtotal,
+    token,
+    assetDetails
+  ) => {
+    const transactionDocRef = doc(collection(db, "transactions"));
     try {
-      // Pindahkan aset dari cartAssets ke buyAssets
-      await moveAssets(assetDetails);
-      setSuccessMessage("Aset sudah dipindahkan.");
-    } catch (moveError) {
-      console.error("Kesalahan saat memindahkan aset:", moveError);
-      setErrorMessage("Gagal memindahkan aset.");
+      await setDoc(transactionDocRef, {
+        orderId,
+        uid: user.uid,
+        grossAmount: subtotal,
+        token,
+        status,
+        createdAt: new Date(),
+        assets: assetDetails.map((asset) => ({
+          docId: asset.docId,
+          uid: user.uid,
+          name: asset.name,
+          price: asset.price,
+          description: asset.description,
+          category: asset.category,
+          image: { url: asset.image },
+          assetOwnerID: asset.assetOwnerID,
+        })),
+        customerDetails: {
+          fullName: customerInfo.fullName,
+          email: customerInfo.email,
+          phoneNumber: customerInfo.phoneNumber,
+        },
+      });
+      console.log("Transaction saved successfully");
+    } catch (error) {
+      console.error("Error saving transaction:", error);
+      throw error;
     }
-
-    // Memproses penghapusan aset untuk setiap detail aset
-    await Promise.all(assetDetails.map(deleteAsset));
   };
 
-  const moveAssets = async (assetDetails) => {
-    await axios.post("http://localhost:3000/api/assets/move-assets", {
-      uid: user.uid,
-      assets: assetDetails.map(({ assetId }) => ({ assetId })),
-    });
+  const resetCustomerInfoAndCart = () => {
+    setCustomerInfo({ fullName: "", email: "", phoneNumber: "" });
+    setCartItems((prevItems) => prevItems.filter((item) => !item.selected));
+  };
+
+  const handleMoveAssets = async (assetDetails) => {
+    try {
+      await Promise.all(assetDetails.map(moveAssetToBuyAssets));
+      await Promise.all(assetDetails.map(deleteAsset));
+      setSuccessMessage("Aset sudah dipindahkan.");
+    } catch (moveError) {
+      console.error("Error moving assets:", moveError);
+      setErrorMessage("Gagal memindahkan aset.");
+      return;
+    }
+  };
+
+  const moveAssetToBuyAssets = async (asset) => {
+    try {
+      const buyAssetDocRef = doc(collection(db, "buyAssets"));
+      const assetData = {
+        uid: user.uid,
+        assetId: asset.assetId,
+        name: asset.name,
+        price: 0,
+        assetOwnerID: asset.assetOwnerID,
+        description: asset.description || "No Description",
+        category: asset.category || "Uncategorized",
+        image: asset.image,
+        purchasedAt: new Date(),
+      };
+
+      await setDoc(buyAssetDocRef, assetData);
+    } catch (error) {
+      console.error("Error saving asset to buyAssets:", error);
+      throw error;
+    }
   };
 
   const deleteAsset = async (asset) => {
     const docId = `${user.uid}_${asset.assetId}`;
     const url = `http://localhost:3000/api/assets/delete/${docId}`;
 
-    // Hapus item dari API
     await axios.delete(url);
 
     try {
-      // Mencoba menghapus dokumen dari Firestore
-      const assetDoc = doc(db, "cartAssets", asset.id);
+      const assetDoc = doc(db, "cartAssets", asset.docId);
       await deleteDoc(assetDoc);
-      console.log(`Aset dengan ID ${asset.id} telah dihapus.`);
     } catch (error) {
       console.error(
         `Kesalahan saat menghapus aset dengan assetId ${asset.id}:`,
         error
       );
     }
+  };
+
+  const pollPaymentStatus = async (
+    orderId,
+    interval = 5000,
+    timeout = 30000
+  ) => {
+    const startTime = Date.now();
+
+    const checkStatus = async () => {
+      if (Date.now() - startTime >= timeout) {
+        console.error("Polling timeout reached");
+        return;
+      }
+
+      const response = await axios.get(
+        `http://localhost:3000/api/transactions/check-status/${orderId}`
+      );
+      if (response.data.status === "settlement") {
+        await updateTransactionStatus(orderId, "Success");
+      } else if (response.data.status === "expire") {
+        await updateTransactionStatus(orderId, "Expired");
+      } else {
+        console.log(`Transaction status: ${response.data.status}`);
+      }
+      setTimeout(checkStatus, interval);
+    };
+
+    checkStatus();
+  };
+
+  const updateTransactionStatus = async (orderId, status) => {
+    const transactionDocRef = doc(collection(db, "transactions"), orderId);
+    await setDoc(transactionDocRef, { status }, { merge: true });
   };
 
   const handleDeleteItem = async (id) => {
@@ -295,7 +436,6 @@ const Cart = () => {
                       className="h-full w-full md:w-48 overflow-hidden relative mx-auto border-none cursor-pointer"
                     />
                   )}
-
                   <div className="ml-0 md:ml-4 mt-4 md:mt-0 w-full">
                     <h3 className="font-semibold text-sm md:text-base">
                       {item.datasetName ||
@@ -331,10 +471,6 @@ const Cart = () => {
             <p className="text-gray-700">
               Subtotal ({selectedItems.length} items): Rp.
               {subtotal.toLocaleString("id-ID")}
-            </p>
-            <p className="text-gray-700">
-              Total (Termasuk PPN 10%): Rp.
-              {totalWithTax.toLocaleString("id-ID")}
             </p>
 
             <div className="mt-4">

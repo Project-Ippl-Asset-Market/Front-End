@@ -1,5 +1,3 @@
-/* eslint-disable react/prop-types */
-/* eslint-disable no-unused-vars */
 import { useState, useRef, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
@@ -13,45 +11,13 @@ import {
   Tooltip,
   CartesianGrid,
   Legend,
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   PieChart,
   Pie,
   Cell,
   ResponsiveContainer,
 } from "recharts";
-
-// Custom Tick Component for XAxis
-const CustomXAxisTick = ({ x, y, stroke, payload }) => {
-  return (
-    <g>
-      <text x={x} y={y} dy={14} textAnchor="middle" fill={stroke}>
-        {payload.value}
-      </text>
-      <text x={x} y={y + 20} textAnchor="middle" fill="#333">
-        {payload.title}
-      </text>
-    </g>
-  );
-};
-
-// Custom Tooltip Component
-const CustomTooltip = ({ active, payload }) => {
-  if (active && payload && payload.length) {
-    const { createdAt, title, count, collectionName } = payload[0].payload;
-
-    return (
-      <div className="bg-white border border-gray-300 rounded shadow-lg p-2">
-        <p className="text-gray-700">{`Date: ${new Date(
-          createdAt
-        ).toLocaleString()}`}</p>
-        <p className="text-gray-700">{`Count: ${count}`}</p>
-        <p className="text-gray-700">{`Collection: ${collectionName}`}</p>
-      </div>
-    );
-  }
-  return null;
-};
 
 function useWindowDimensions() {
   const [windowDimensions, setWindowDimensions] = useState({
@@ -86,8 +52,6 @@ function AdminDashboard() {
     assetVideos: 0,
   });
   const [transactionCount, setTransactionCount] = useState(0);
-  const [chartData, setChartData] = useState([]);
-  const [userCount, setUserCount] = useState(0);
 
   const sidebarRef = useRef(null);
 
@@ -113,40 +77,39 @@ function AdminDashboard() {
       ];
 
       const counts = {};
-      let assetData = [];
 
       for (const { name, key } of collections) {
         const querySnapshot = await getDocs(collection(db, name));
         counts[key] = querySnapshot.size;
 
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          const createdAt = data.createdAt?.toDate();
-          if (createdAt) {
-            assetData.push({
-              createdAt: createdAt.toString(),
-              title: assetLabels[key],
-              count: counts[key],
-              collectionName: name,
-            });
-          }
-        });
+        // Get the createdAt date for the last created asset
+        const lastCreatedAt = querySnapshot.docs
+          .map((doc) => doc.data().createdAt?.toDate()) // Convert Firestore Timestamp to Date
+          .sort((a, b) => (b ? b - a : 0))[0]; // Get the most recent date
+
+        // Format the createdAt date
+        if (lastCreatedAt) {
+          const options = {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+            second: "numeric",
+            timeZoneName: "short",
+          };
+          counts[`${key}CreatedAt`] = lastCreatedAt.toLocaleString(
+            "en-US",
+            options
+          );
+        } else {
+          counts[`${key}CreatedAt`] = ""; // Remove this to avoid "N/A"
+        }
       }
 
-      setChartData(assetData);
       setAssetCounts(counts);
     } catch (error) {
       console.error("Error fetching asset counts: ", error);
-    }
-  };
-
-  const fetchUserCount = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, "users"));
-      const totalUsers = querySnapshot.size;
-      setUserCount(totalUsers);
-    } catch (error) {
-      console.error("Error fetching user count: ", error);
     }
   };
 
@@ -170,7 +133,6 @@ function AdminDashboard() {
 
   useEffect(() => {
     fetchAssetCountsFromFirestore();
-    fetchUserCount();
     fetchTransactionCount();
 
     if (isSidebarOpen) {
@@ -186,22 +148,22 @@ function AdminDashboard() {
 
   const assetIcons = {
     assetAudios: (
-      <FaGamepad className="text-4xl text-neutral-20 dark:text-primary-100 mb-2" />
+      <FaGamepad className="text-4xl text-neutral-20 dark:text-neutral-90 mb-2" />
     ),
     assetImage2D: (
-      <FaImage className="text-4xl text-neutral-20 dark:text-primary-100 mb-2" />
+      <FaImage className="text-4xl text-neutral-20 dark:text-neutral-90 mb-2" />
     ),
     assetImage3D: (
-      <FaImage className="text-4xl text-neutral-20 dark:text-primary-100 mb-2" />
+      <FaImage className="text-4xl text-neutral-20 dark:text-neutral-90 mb-2" />
     ),
     assetDatasets: (
-      <FaDatabase className="text-4xl text-neutral-20 dark:text-primary-100 mb-2" />
+      <FaDatabase className="text-4xl text-neutral-20 dark:text-neutral-90 mb-2" />
     ),
     assetImages: (
-      <FaImage className="text-4xl text-neutral-20 dark:text-primary-100 mb-2" />
+      <FaImage className="text-4xl text-neutral-20 dark:text-neutral-90 mb-2" />
     ),
     assetVideos: (
-      <FaVideo className="text-4xl text-neutral-20 dark:text-primary-100 mb-2" />
+      <FaVideo className="text-4xl text-neutral-20 dark:text-neutral-90 mb-2" />
     ),
   };
 
@@ -214,6 +176,12 @@ function AdminDashboard() {
     assetVideos: "Videos",
   };
 
+  // Prepare chart data for asset counts
+  const chartData = Object.entries(assetCounts).map(([key, count]) => ({
+    name: assetLabels[key],
+    count: count,
+  }));
+
   // Combine total asset and transaction data for Pie Chart
   const totalAssets = Object.values(assetCounts).reduce(
     (acc, count) => acc + count,
@@ -222,13 +190,12 @@ function AdminDashboard() {
   const pieChartData = [
     { name: "Total Assets", value: totalAssets },
     { name: "Total Transactions", value: transactionCount },
-    { name: "Total Users", value: userCount },
   ];
 
-  const COLORS = ["#8884d8", "#31C48D", "#3F83F8"];
+  const COLORS = ["#8884d8", "#82ca9d"];
 
   return (
-    <div className="dark:bg-neutral-20 dark:text-primary-100 min-h-screen font-poppins bg-primary-100 p-20 -mt-14">
+    <div className="dark:bg-neutral-90 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
       <HeaderSideBar
         isSidebarOpen={isSidebarOpen}
         toggleSidebar={toggleSidebar}
@@ -258,47 +225,46 @@ function AdminDashboard() {
               className="flex items-center justify-center h-24 sm:h-32 rounded bg-primary-100 dark:bg-neutral-25 shadow-md dark:shadow-neutral-10 hover:shadow-lg transition-shadow duration-200">
               <div className="flex flex-col items-center justify-center text-center h-full p-2">
                 {assetIcons[key]}
-                <p className="text-base sm:text-md md:text-lg text-neutral-20 dark:text-primary-100">
+                <p className="text-base sm:text-lg md:text-xl text-neutral-20 dark:text-neutral-90">
                   {assetLabels[key]}
                 </p>
-                <p className="text-[8px] sm:text-[10px] text-neutral-20 dark:text-primary-100">
-                  {assetCounts[key]} Total {assetLabels[key]}
+                <p className="text-xs sm:text-sm text-neutral-20 dark:text-neutral-90">
+                  {assetCounts[key]} Total
                 </p>
+                {/* Display Created At Date */}
+                {assetCounts[`${key}CreatedAt`] && (
+                  <p className="text-xs text-neutral-20 dark:text-neutral-90">
+                    Created At: {assetCounts[`${key}CreatedAt`]}
+                  </p>
+                )}
               </div>
             </div>
           ))}
         </div>
 
+        {/* Bar Chart for Total Asset Count */}
         <div className="mt-10 md:mt-14 w-full">
-          <h2 className="text-2xl mb-4 text-neutral-20 dark:text-primary-100">
-            Total Asset Counts
-          </h2>
+          <h2 className="text-2xl mb-4">Total Asset Counts</h2>
           <div className="w-full" style={{ height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart
+              <BarChart
                 data={chartData}
                 margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="createdAt"
-                  tick={CustomXAxisTick}
-                  interval={0}
-                  height={50}
-                />
+                <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip content={<CustomTooltip />} /> <Legend />
-                <Line type="monotone" dataKey="count" stroke="#3F83F8" />
-              </LineChart>
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="count" fill="#8884d8" />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Pie Chart for Total Asset and Transaction Counts */}
         <div className="mt-10 md:mt-14 w-full">
-          <h2 className="text-2xl mb-4 text-neutral-20 dark:text-primary-100">
-            Total Asset and Transaction Counts
-          </h2>
-          <div className="w-full" style={{ height: 400 }}>
+          <h2 className="text-2xl mb-4">Total Asset and Transaction Counts</h2>
+          <div className="w-full" style={{ height: 300 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie

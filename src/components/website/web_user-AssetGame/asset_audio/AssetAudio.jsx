@@ -159,10 +159,10 @@ export function AssetAudio() {
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
-        datasetName: selectedasset.assetAudiosName,
+        name: selectedasset.assetAudiosName,
         description: selectedasset.description,
         price: selectedasset.price,
-        datasetImage: selectedasset.uploadUrlAudio,
+        image: selectedasset.uploadUrlAudio,
         category: selectedasset.category,
         createdAt: selectedasset.createdAt,
         uploadedByEmail: selectedasset.uploadedByEmail,

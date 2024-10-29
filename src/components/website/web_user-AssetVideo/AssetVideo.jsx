@@ -65,27 +65,32 @@ export function AssetVideo() {
     return () => unsubscribe();
   }, []);
 
-  // Mengambil aset yang telah dibeli oleh pengguna
+  // Menangani pengambilan aset yang telah dibeli
   useEffect(() => {
     const fetchUserPurchasedAssets = async () => {
       if (!currentUserId) return;
 
       const purchasedQuery = query(
         collection(db, "buyAssets"),
-        where("boughtBy", "==", currentUserId)
+        where("uid", "==", currentUserId)
       );
+
       try {
         const purchasedSnapshot = await getDocs(purchasedQuery);
         const purchasedIds = new Set();
 
         purchasedSnapshot.forEach((doc) => {
+          // Menambahkan assetId dari dokumen ke dalam Set
           purchasedIds.add(doc.data().assetId);
         });
+
+        // Mengupdate state dengan assetId yang dibeli
         setPurchasedAssets(purchasedIds);
       } catch (error) {
-        // console.error("Error fetching purchased assets: ", error);
+        console.error("Error fetching purchased assets: ", error);
       }
     };
+
     fetchUserPurchasedAssets();
   }, [currentUserId]);
 
@@ -166,74 +171,67 @@ export function AssetVideo() {
     }
   };
 
-  const handleAddToCart = async (selectedasset) => {
+  // Fungsi untuk memvalidasi apakah pengguna dapat menambahkan aset ke keranjang
+  const validateAddToCart = (assetId) => {
     if (!currentUserId) {
-      alert("Anda perlu login untuk menambahkan asset ke keranjang");
-      navigate("/login");
-      return;
+      setValidationMessage(
+        "Anda perlu login untuk menambahkan asset ke keranjang."
+      );
+      return false;
     }
+    if (purchasedAssets.has(assetId)) {
+      setValidationMessage(
+        "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
+      );
+      return false;
+    }
+    return true;
+  };
 
-    // ini cek validasi penjual tidak boleh beli asset sendiri
+  // Fungsi untuk menambahkan aset ke keranjang
+  const handleAddToCart = async (selectedasset) => {
+    if (!validateAddToCart(selectedasset.id)) return;
+
     // Cek apakah userId penjual sama dengan currentUserId
     if (selectedasset.userId === currentUserId) {
       alert("Anda tidak dapat membeli aset yang Anda jual sendiri.");
       return;
     }
 
-    if (purchasedAssets.has(selectedasset.id)) {
-      alert(
-        "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
-      );
-      return;
-    }
+    // Ambil userId dari selectedasset dan simpan dalam array
+    const userIdFromAsset = [selectedasset.userId];
+    console.log("User ID from Asset: ", userIdFromAsset);
 
-    // Document ID sekarang mengikuti asset ID
-    const cartRef = doc(
-      db,
-      "cartAssets",
-      `${currentUserId}_${selectedasset.id}`
-    );
-    const cartSnapshot = await getDoc(cartRef);
-    if (cartSnapshot.exists()) {
-      alert("Anda sudah menambahkan asset ini ke keranjang.");
-      return;
-    }
-
-    const { id, videoName, description, price, uploadUrlVideo, category } =
-      selectedasset;
-
-    const missingFields = [];
-    if (!videoName) missingFields.push("videoName");
-    if (!description) missingFields.push("description");
-    if (price === undefined) missingFields.push("price");
-    if (!uploadUrlVideo) missingFields.push("uploadUrlVideo");
-    if (!category) missingFields.push("category");
-
-    if (missingFields.length > 0) {
-      // console.error("Missing fields in selected asset:", missingFields);
-      alert(`Missing fields: ${missingFields.join(", ")}. Please try again.`);
-      return;
-    }
+    // Membuat referensi dokumen untuk keranjang menggunakan ID aset
+    const cartRef = doc(db, "cartAssets", `${selectedasset.id}`);
 
     try {
+      const cartSnapshot = await getDoc(cartRef);
+
+      if (cartSnapshot.exists()) {
+        setValidationMessage("Anda sudah menambahkan asset ini ke keranjang.");
+        return;
+      }
+
+      // Menambahkan aset ke keranjang, termasuk userId dari selectedasset
       await setDoc(cartRef, {
         userId: currentUserId,
-        assetId: id,
-        videoName: videoName,
-        description: description,
-        price: price,
-        uploadUrlVideo: uploadUrlVideo,
-        category: category,
+        assetId: selectedasset.id,
+        video: selectedasset.uploadUrlVideo,
+        name: selectedasset.videoName,
+        description: selectedasset.description,
+        price: selectedasset.price,
+        category: selectedasset.category,
+        assetOwnerID: userIdFromAsset[0],
       });
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {
-      // console.error("Error adding to cart: ", error);
-      alert(
-        "Terjadi kesalahan saat menambahkan asset ke keranjang. Silakan coba lagi."
-      );
+      console.error("Error adding to cart: ", error);
+      alert("Terjadi kesalahan saat menambahkan aset ke keranjang.");
     }
   };
 
+  // Fungsi untuk menangani pembelian aset
   const handleBuyNow = async (selectedasset) => {
     if (!currentUserId) {
       alert("Anda perlu login untuk menambahkan asset ke keranjang");
@@ -241,7 +239,6 @@ export function AssetVideo() {
       return;
     }
 
-    // ini cek validasi penjual tidak boleh beli asset sendiri
     // Cek apakah userId penjual sama dengan currentUserId
     if (selectedasset.userId === currentUserId) {
       alert("Anda tidak dapat membeli aset yang Anda jual sendiri.");
@@ -256,14 +253,10 @@ export function AssetVideo() {
     }
 
     // Document ID sekarang mengikuti asset ID
-    const cartRef = doc(
-      db,
-      "cartBuyNow", // Ubah ke koleksi 'cartBuyNow'
-      `${currentUserId}_${selectedasset.id}`
-    );
+    const cartRef = doc(db, "buyNow", ` ${selectedasset.id}`);
     const cartSnapshot = await getDoc(cartRef);
     if (cartSnapshot.exists()) {
-      alert("Anda sudah Membeli Asset ini.");
+      // alert("Anda sudah Membeli Asset ini.");
       return;
     }
 
@@ -271,14 +264,13 @@ export function AssetVideo() {
       selectedasset;
 
     const missingFields = [];
-    if (!videoName) missingFields.push("videoName");
+    if (!videoName) missingFields.push("name");
     if (!description) missingFields.push("description");
     if (price === undefined) missingFields.push("price");
-    if (!uploadUrlVideo) missingFields.push("uploadUrlVideo");
+    if (!uploadUrlVideo) missingFields.push("video");
     if (!category) missingFields.push("category");
 
     if (missingFields.length > 0) {
-      // console.error("Missing fields in selected asset:", missingFields);
       alert(`Missing fields: ${missingFields.join(", ")}. Please try again.`);
       return;
     }
@@ -287,20 +279,38 @@ export function AssetVideo() {
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: id,
-        videoName: videoName,
+        name: videoName,
         description: description,
         price: price,
-        uploadUrlVideo: uploadUrlVideo,
+        video: uploadUrlVideo,
         category: category,
+        assetOwnerID: selectedasset.userId,
       });
 
       navigate("/buy-now-asset");
     } catch (error) {
-      // console.error("Error adding to cart: ", error);
+      console.error("Error adding to cart: ", error);
       alert(
         "Terjadi kesalahan saat menambahkan asset ke keranjang. Silakan coba lagi."
       );
     }
+  };
+
+  // Function to validate asset fields
+  const validateAssetFields = ({
+    videoName,
+    description,
+    price,
+    uploadUrlVideo,
+    category,
+  }) => {
+    const missingFields = [];
+    if (!videoName) missingFields.push("name");
+    if (!description) missingFields.push("description");
+    if (price === undefined) missingFields.push("price");
+    if (!uploadUrlVideo) missingFields.push("video");
+    if (!category) missingFields.push("category");
+    return missingFields;
   };
 
   const openModal = (asset) => {

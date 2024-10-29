@@ -55,7 +55,7 @@ const CartBuyNow = () => {
   useEffect(() => {
     if (user) {
       const userId = user.uid;
-      const cartCollectionRef = collection(db, "buyNow");
+      const cartCollectionRef = collection(db, "cartAssets");
       const queryRef = query(cartCollectionRef, where("userId", "==", userId));
 
       const unsubscribe = onSnapshot(queryRef, async (snapshot) => {
@@ -244,10 +244,10 @@ const CartBuyNow = () => {
     try {
       await Promise.all(
         assetDetails.map(async (asset) => {
-          const cartDocRef = doc(db, "buyNow", asset.docId);
+          const cartDocRef = doc(db, "cartAssets", asset.docId);
           await deleteDoc(cartDocRef);
 
-          // Panggil API untuk menghapus buyNow
+          // Panggil API untuk menghapus cartAssets
           await axios.delete(
             `http://localhost:3000/api/assets/delete/${asset.docId}`
           );

@@ -79,7 +79,7 @@ export function AssetDataset() {
 
       const purchasedQuery = query(
         collection(db, "buyAssets"),
-        where("boughtBy", "==", currentUserId)
+        where("uid", "==", currentUserId)
       );
 
       try {
@@ -87,12 +87,14 @@ export function AssetDataset() {
         const purchasedIds = new Set();
 
         purchasedSnapshot.forEach((doc) => {
+          // Menambahkan assetId dari dokumen ke dalam Set
           purchasedIds.add(doc.data().assetId);
         });
 
+        // Mengupdate state dengan assetId yang dibeli
         setPurchasedAssets(purchasedIds);
       } catch (error) {
-        // console.error("Error fetching purchased assets: ", error);
+        console.error("Error fetching purchased assets: ", error);
       }
     };
 
@@ -191,57 +193,59 @@ export function AssetDataset() {
       );
       return false;
     }
-
-    // ini cek validasi penjual tidak boleh beli asset sendiri
-    // Cek apakah userId penjual sama dengan currentUserId
-    if (selectedasset.userId === currentUserId) {
-      alert("Anda tidak dapat membeli aset yang Anda jual sendiri.");
-      return;
-    }
-
     if (purchasedAssets.has(assetId)) {
       setValidationMessage(
         "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
       );
       return false;
     }
-    return true; // Validasi berhasil
+    return true;
   };
 
   // Fungsi untuk menambahkan aset ke keranjang
   const handleAddToCart = async (selectedasset) => {
-    if (!validateAddToCart(selectedasset.id)) return; // Validasi
+    if (!validateAddToCart(selectedasset.id)) return;
+
+    // Cek apakah userId penjual sama dengan currentUserId
+    if (selectedasset.userId === currentUserId) {
+      alert("Anda tidak dapat membeli aset yang Anda jual sendiri.");
+      return;
+    }
+
+    // Ambil userId dari selectedasset dan simpan dalam array
+    const userIdFromAsset = [selectedasset.userId];
+    console.log("User ID from Asset: ", userIdFromAsset);
 
     // Membuat referensi dokumen untuk keranjang menggunakan ID aset
     const cartRef = doc(
       db,
       "cartAssets",
-      `${currentUserId}_${selectedasset.id}` // ID dokumen mengikuti ID asset
+      `${currentUserId}_${selectedasset.id}`
     );
 
     try {
-      // Menggunakan getDoc untuk mendapatkan snapshot dokumen
       const cartSnapshot = await getDoc(cartRef);
 
-      // Memeriksa keberadaan dokumen keranjang
       if (cartSnapshot.exists()) {
         setValidationMessage("Anda sudah menambahkan asset ini ke keranjang.");
         return;
       }
 
-      // Menambahkan aset ke keranjang
+      // Menambahkan aset ke keranjang, termasuk userId dari selectedasset
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
-        datasetImage: selectedasset.datasetImage,
-        datasetName: selectedasset.datasetName,
+        Image: selectedasset.datasetImage,
+        name: selectedasset.datasetName,
         description: selectedasset.description,
         price: selectedasset.price,
         category: selectedasset.category,
+        assetOwnerID: userIdFromAsset[0],
       });
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {
-      // console.error("Error adding to cart: ", error);
+      console.error("Error adding to cart: ", error);
+      alert("Terjadi kesalahan saat menambahkan aset ke keranjang.");
     }
   };
 
@@ -253,7 +257,6 @@ export function AssetDataset() {
       return;
     }
 
-    // ini cek validasi penjual tidak boleh beli asset sendiri
     // Cek apakah userId penjual sama dengan currentUserId
     if (selectedasset.userId === currentUserId) {
       alert("Anda tidak dapat membeli aset yang Anda jual sendiri.");
@@ -268,11 +271,7 @@ export function AssetDataset() {
     }
 
     // Document ID sekarang mengikuti asset ID
-    const cartRef = doc(
-      db,
-      "cartBuyNow", // Ubah ke koleksi 'cartBuyNow'
-      `${currentUserId}_${selectedasset.id}`
-    );
+    const cartRef = doc(db, "buyNow", ` ${selectedasset.id}`);
     const cartSnapshot = await getDoc(cartRef);
     if (cartSnapshot.exists()) {
       // alert("Anda sudah Membeli Asset ini.");
@@ -283,14 +282,13 @@ export function AssetDataset() {
       selectedasset;
 
     const missingFields = [];
-    if (!datasetName) missingFields.push("datasetName");
+    if (!datasetName) missingFields.push("name");
     if (!description) missingFields.push("description");
     if (price === undefined) missingFields.push("price");
-    if (!datasetImage) missingFields.push("datasetImage");
+    if (!datasetImage) missingFields.push("video");
     if (!category) missingFields.push("category");
 
     if (missingFields.length > 0) {
-      // console.error("Missing fields in selected asset:", missingFields);
       alert(`Missing fields: ${missingFields.join(", ")}. Please try again.`);
       return;
     }
@@ -299,20 +297,38 @@ export function AssetDataset() {
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: id,
-        datasetName: datasetName,
+        name: datasetName,
         description: description,
         price: price,
-        datasetImage: datasetImage,
+        video: datasetImage,
         category: category,
+        assetOwnerID: selectedasset.userId,
       });
 
       navigate("/buy-now-asset");
     } catch (error) {
-      // console.error("Error adding to cart: ", error);
+      console.error("Error adding to cart: ", error);
       alert(
         "Terjadi kesalahan saat menambahkan asset ke keranjang. Silakan coba lagi."
       );
     }
+  };
+
+  // Function to validate asset fields
+  const validateAssetFields = ({
+    datasetName,
+    description,
+    price,
+    datasetImage,
+    category,
+  }) => {
+    const missingFields = [];
+    if (!datasetName) missingFields.push("name");
+    if (!description) missingFields.push("description");
+    if (price === undefined) missingFields.push("price");
+    if (!datasetImage) missingFields.push("datasetImage");
+    if (!category) missingFields.push("category");
+    return missingFields;
   };
 
   // Menampilkan modal

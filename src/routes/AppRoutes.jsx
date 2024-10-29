@@ -53,7 +53,6 @@ import { AssetGame } from "../components/website/web_user-AssetGame/AssetGame";
 
 //Import Halaman Panduan Start
 import Panduan from "../components/Panduan/Panduan";
-import PanduanRegistrasi from "../components/Panduan/PanduanRegistrasi";
 //import Halaman Panduan End
 
 // eslint-disable-next-line react/prop-types
@@ -338,9 +337,9 @@ const AppRoutes = ({ handleLogout }) => {
               </ProtectedRoute>
             }
           />
-          <Route path="/panduan" element={<Panduan/>} />
-          <Route path="/panduanregistrasi" element={<PanduanRegistrasi/>} />
+          <Route path="/panduan/*" element={<Panduan />} />
           
+
           <Route path="/" element={<HomePage />} />
           <Route path="*" element={<ErrorPage />} />
         </Routes>

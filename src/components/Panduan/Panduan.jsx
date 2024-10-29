@@ -1,7 +1,11 @@
+// src/components/Panduan/Panduan.js
 import React, { useState } from 'react';
 import { FiMenu } from 'react-icons/fi';
-import { Link, Routes, Route, useLocation } from 'react-router-dom'; 
-import DarkMode from '../website/web_User-LandingPage/DarkMode'; 
+import { IoArrowBack } from 'react-icons/io5';
+import { RiMoonLine } from "react-icons/ri";
+import { BiSun } from "react-icons/bi";
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useTheme } from '../../contexts/ThemeContext';
 import PanduanRegistrasi from './PanduanRegistrasi';
 import PanduanLogin from './PanduanLogin';
 import PanduanLupaPassword from './PanduanLupaPassword';
@@ -9,23 +13,35 @@ import PanduanJualAsset from './PanduanJualAsset';
 import PanduanEditAsset from './PanduanEditAsset';
 
 const Panduan = () => {
+  const { darkMode, toggleDarkMode } = useTheme();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const location = useLocation();
+  const [activePage, setActivePage] = useState(null); // State untuk halaman panduan yang aktif
+  const navigate = useNavigate(); // Inisialisasi navigate
 
-  const getPageTitle = () => {
-    switch (location.pathname) {
-      case '/panduanregistrasi':
-        return 'Panduan Registrasi';
-      case '/panduanlogin':
-        return 'Panduan Login';
-      case '/panduanlupapassword':
-        return 'Panduan Lupa Password';
-      case '/panduanjualaset':
-        return 'Panduan Jual Asset';
-      case '/panduaneditaset':
-        return 'Panduan Edit Asset';
+  const renderContent = () => {
+    switch (activePage) {
+      case 'registrasi':
+        return <PanduanRegistrasi />;
+      case 'login':
+        return <PanduanLogin />;
+      case 'lupapassword':
+        return <PanduanLupaPassword />;
+      case 'jualaset':
+        return <PanduanJualAsset />;
+      case 'editaset':
+        return <PanduanEditAsset />;
       default:
-        return 'Panduan';
+        return (
+          <div>
+            <h1 className="text-4xl font-bold mb-6">Selamat Datang di Panduan!</h1>
+            <p className="text-lg mb-4">
+              Gunakan sidebar di sebelah kiri untuk memilih panduan yang Anda butuhkan. Klik pada item menu seperti Registrasi, Login, Lupa Password, Jual Asset, atau Edit Asset untuk memulai.
+            </p>
+            <p className="text-lg">
+              Jika Anda menggunakan perangkat mobile, tekan ikon <FiMenu className="inline-block text-2xl" /> di bagian atas untuk membuka menu.
+            </p>
+          </div>
+        );
     }
   };
 
@@ -37,59 +53,56 @@ const Panduan = () => {
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } top-0 left-0 z-30`}
       >
+        {/* Back Button */}
+        <div className="flex items-center space-x-4 mb-4">
+          <IoArrowBack
+            className="text-2xl cursor-pointer hover:text-gray-500 dark:hover:text-gray-400"
+            onClick={() => navigate('/')} // Navigasi ke halaman utama
+          />
+          <span className="text-xl font-semibold">Kembali</span>
+        </div>
         <div className="space-y-4">
-          <Link to="/panduanregistrasi" className="text-lg font-medium py-2 px-4 block rounded-full hover:bg-gray-300 dark:hover:bg-gray-700">
+          <button onClick={() => setActivePage('registrasi')} className="text-lg font-medium py-2 px-4 block rounded-full hover:bg-gray-300 dark:hover:bg-gray-700">
             Registrasi
-          </Link>
-          <Link to="/panduanlogin" className="text-lg font-medium py-2 px-4 block rounded-full hover:bg-gray-300 dark:hover:bg-gray-700">
+          </button>
+          <button onClick={() => setActivePage('login')} className="text-lg font-medium py-2 px-4 block rounded-full hover:bg-gray-300 dark:hover:bg-gray-700">
             Login
-          </Link>
-          <Link to="/panduanlupapassword" className="text-lg font-medium py-2 px-4 block rounded-full hover:bg-gray-300 dark:hover:bg-gray-700">
+          </button>
+          <button onClick={() => setActivePage('lupapassword')} className="text-lg font-medium py-2 px-4 block rounded-full hover:bg-gray-300 dark:hover:bg-gray-700">
             Lupa Password
-          </Link>
-          <Link to="/panduanjualaset" className="text-lg font-medium py-2 px-4 block rounded-full hover:bg-gray-300 dark:hover:bg-gray-700">
+          </button>
+          <button onClick={() => setActivePage('jualaset')} className="text-lg font-medium py-2 px-4 block rounded-full hover:bg-gray-300 dark:hover:bg-gray-700">
             Jual Asset
-          </Link>
-          <Link to="/panduaneditaset" className="text-lg font-medium py-2 px-4 block rounded-full hover:bg-gray-300 dark:hover:bg-gray-700">
+          </button>
+          <button onClick={() => setActivePage('editaset')} className="text-lg font-medium py-2 px-4 block rounded-full hover:bg-gray-300 dark:hover:bg-gray-700">
             Edit Asset
-          </Link>
+          </button>
         </div>
       </div>
 
-      {/* Halaman utama dengan routing */}
+      {/* Main content */}
       <div className="flex-grow p-8">
         <div className="md:hidden flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">{getPageTitle()}</h1>
+          <h1 className="text-2xl font-bold">{activePage ? `Panduan ${activePage.charAt(0).toUpperCase() + activePage.slice(1)}` : 'Panduan'}</h1>
           <FiMenu className="text-2xl cursor-pointer" onClick={() => setIsSidebarOpen(!isSidebarOpen)} />
         </div>
 
         {/* Dark Mode Toggle */}
         <div className="flex justify-end mb-4">
-          <DarkMode />
+          <button
+            onClick={toggleDarkMode}
+            className="min-h-[44px] w-[40px] bg-[#F2F2F2] text-black rounded-[5px] border-[1px] border-black flex items-center justify-center gap-1"
+          >
+            {darkMode ? (
+              <BiSun className="text-xl text-black drop-shadow-sm cursor-pointer" />
+            ) : (
+              <RiMoonLine className="text-xl text-black drop-shadow-sm cursor-pointer" />
+            )}
+          </button>
         </div>
 
-        {/* Define Routes for different guides */}
-        <Routes>
-          <Route path="/panduanregistrasi" element={<PanduanRegistrasi />} />
-          <Route path="/panduanlogin" element={<PanduanLogin />} />
-          <Route path="/panduanlupapassword" element={<PanduanLupaPassword />} />
-          <Route path="/panduanjualaset" element={<PanduanJualAsset />} />
-          <Route path="/panduaneditaset" element={<PanduanEditAsset />} />
-          <Route
-            path="*"
-            element={
-              <div>
-                <h1 className="text-4xl font-bold mb-6">Selamat Datang di Panduan!</h1>
-                <p className="text-lg mb-4">
-                  Gunakan sidebar di sebelah kiri untuk memilih panduan yang Anda butuhkan. Klik pada item menu seperti Registrasi, Login, Lupa Password, Jual Asset, atau Edit Asset untuk memulai.
-                </p>
-                <p className="text-lg">
-                  Jika Anda menggunakan perangkat mobile, tekan ikon <FiMenu className="inline-block text-2xl" /> di bagian atas untuk membuka menu.
-                </p>
-              </div>
-            }
-          />
-        </Routes>
+        {/* Render Content */}
+        {renderContent()}
       </div>
     </div>
   );

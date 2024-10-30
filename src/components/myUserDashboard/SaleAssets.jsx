@@ -5,10 +5,6 @@ import { getAuth } from "firebase/auth";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
-import { Bar } from 'react-chartjs-2'; // Import Bar
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js'; // Import scale and bar element
-
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 const AssetRow = ({ asset }) => {
   const { previewImageURL, name, category, price, createdAt, docId } = asset;
@@ -31,7 +27,7 @@ function SaleAssets() {
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [userAssets, setUserAssets] = useState([]);
-  const [categoryCounts, setCategoryCounts] = useState({}); // State untuk menyimpan jumlah per kategori
+  const [categoryCounts, setCategoryCounts] = useState({});
   const sidebarRef = useRef(null);
 
   const toggleSidebar = () => {
@@ -56,7 +52,7 @@ function SaleAssets() {
         (snapshot) => {
           const assetsOwnedByUser = [];
           let totalPrice = 0;
-          const counts = {}; // Objek untuk menghitung jumlah aset per kategori
+          const counts = {};
 
           snapshot.forEach((doc) => {
             const data = doc.data();
@@ -75,7 +71,7 @@ function SaleAssets() {
                   if (asset.price) {
                     totalPrice += Number(asset.price);
                   }
-                  
+
                   // Menghitung jumlah per kategori
                   if (counts[asset.category]) {
                     counts[asset.category] += 1;
@@ -89,7 +85,7 @@ function SaleAssets() {
 
           setUserAssets(assetsOwnedByUser);
           setTotalRevenue(totalPrice);
-          setCategoryCounts(counts); // Set jumlah per kategori
+          setCategoryCounts(counts);
         }
       );
 
@@ -108,18 +104,6 @@ function SaleAssets() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isSidebarOpen]);
-
-  // Mempersiapkan data untuk diagram batang
-  const barData = {
-    labels: Object.keys(categoryCounts),
-    datasets: [
-      {
-        label: 'Jumlah Aset per Kategori',
-        data: Object.values(categoryCounts),
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-      },
-    ],
-  };
 
   return (
     <>
@@ -184,12 +168,6 @@ function SaleAssets() {
                 )}
               </tbody>
             </table>
-          </div>
-
-          {/* Diagram Batang untuk menampilkan jumlah aset per kategori, ditempatkan di bawah tabel */}
-          <div className="bg-white shadow rounded-lg p-6 mb-6">
-            <h3 className="text-lg font-semibold">Jumlah Aset per Kategori</h3>
-            <Bar data={barData} />
           </div>
         </div>
       </div>

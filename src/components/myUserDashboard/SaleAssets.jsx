@@ -1,33 +1,18 @@
+/* eslint-disable no-unused-vars */
 import { useState, useRef, useEffect } from "react";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { getAuth } from "firebase/auth";
+import { FaChartLine, FaDollarSign, FaThumbsUp } from "react-icons/fa";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
 
-const AssetRow = ({ asset }) => {
-  const { previewImageURL, name, category, price, createdAt, docId } = asset;
-
-  return (
-    <tr key={docId}>
-      <td className="py-2 px-4 border text-center">
-        <img src={previewImageURL} alt="Preview" className="w-12 h-12 object-cover rounded" />
-      </td>
-      <td className="py-2 px-4 border">{name}</td>
-      <td className="py-2 px-4 border">{category}</td>
-      <td className="py-2 px-4 border">Rp. {price}</td>
-      <td className="py-2 px-4 border">{createdAt}</td>
-    </tr>
-  );
-};
-
-function SaleAssets() {
+function Revenue() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [totalRevenue, setTotalRevenue] = useState(0);
-  const [currentUserId, setCurrentUserId] = useState(null);
+  const [totalLikes, setTotalLikes] = useState(0);
   const [userAssets, setUserAssets] = useState([]);
-  const [categoryCounts, setCategoryCounts] = useState({});
   const sidebarRef = useRef(null);
 
   const toggleSidebar = () => {
@@ -45,53 +30,36 @@ function SaleAssets() {
     const user = auth.currentUser;
 
     if (user) {
-      setCurrentUserId(user.uid);
-
-      const unsubscribeAssets = onSnapshot(
+      const unsubscribe = onSnapshot(
         collection(db, "transactions"),
         (snapshot) => {
-          const assetsOwnedByUser = [];
+          const filteredAssets = [];
           let totalPrice = 0;
-          const counts = {};
 
           snapshot.forEach((doc) => {
             const data = doc.data();
+
             if (data.status === "Success" && data.assets) {
               data.assets.forEach((asset) => {
                 if (asset.assetOwnerID === user.uid) {
-                  assetsOwnedByUser.push({
+                  filteredAssets.push({
                     ...asset,
                     docId: doc.id,
-                    previewImageURL: asset.previewImageURL || "/default-preview.png",
-                    name: asset.name,
-                    category: asset.category,
-                    price: asset.price ? Number(asset.price).toLocaleString() : "N/A",
-                    createdAt: asset.createdAt ? new Date(asset.createdAt.toDate()).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" }) : "N/A",
                   });
                   if (asset.price) {
                     totalPrice += Number(asset.price);
-                  }
-
-                  // Menghitung jumlah per kategori
-                  if (counts[asset.category]) {
-                    counts[asset.category] += 1;
-                  } else {
-                    counts[asset.category] = 1;
                   }
                 }
               });
             }
           });
 
-          setUserAssets(assetsOwnedByUser);
+          setUserAssets(filteredAssets);
           setTotalRevenue(totalPrice);
-          setCategoryCounts(counts);
         }
       );
 
-      return () => {
-        unsubscribeAssets();
-      };
+      return () => unsubscribe();
     }
 
     if (isSidebarOpen) {
@@ -105,9 +73,45 @@ function SaleAssets() {
     };
   }, [isSidebarOpen]);
 
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+      const assetCollections = [
+        "assetAudios",
+        "assetImage2D",
+        "assetImage3D",
+        "assetDatasets",
+        "assetImages",
+        "assetVideos",
+      ];
+
+      const fetchLikes = async () => {
+        let likesCount = 0;
+
+        for (const collectionName of assetCollections) {
+          const querySnapshot = await getDocs(collection(db, collectionName));
+
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+
+            if (data.userId === user.uid && data.likeAsset) {
+              likesCount += Number(data.likeAsset);
+            }
+          });
+        }
+
+        setTotalLikes(likesCount);
+      };
+
+      fetchLikes();
+    }
+  }, []);
+
   return (
     <>
-      <div className="dark:bg-neutral-20 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
+      <div className="min-h-screen font-poppins dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-20">
         <HeaderSidebar
           isSidebarOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}
@@ -116,56 +120,100 @@ function SaleAssets() {
         <aside
           ref={sidebarRef}
           id="sidebar-multi-level-sidebar"
-          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} sm:translate-x-0`}
+          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } sm:translate-x-0`}
           aria-label="Sidebar">
           <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
             <NavigationItem />
           </div>
         </aside>
 
-        <div className="p-8 sm:ml-[280px] h-full bg-primary-100 text-neutral-10 dark:bg-neutral-20 dark:text-neutral-10 min-h-screen pt-24">
+        <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 min-h-screen pt-24">
           <div className="breadcrumbs text-sm mt-1 mb-10">
             <Breadcrumb />
           </div>
 
           <div className="grid grid-cols-3 gap-6 mb-8">
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold">Total Pendapatan</h3>
-              <p className="text-2xl font-bold">
-                Rp. {totalRevenue.toLocaleString()}
-              </p>
+            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
+              <FaDollarSign className="text-4xl text-green-500 mr-4" />
+              <div>
+                <h3 className="text-lg font-semibold">Total Pendapatan</h3>
+                <p className="text-2xl font-bold">
+                  Rp. {totalRevenue.toLocaleString()}
+                </p>
+              </div>
             </div>
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold">Aset Terjual</h3>
-              <p className="text-2xl font-bold">{userAssets.length}</p>
+            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center text-neutral-10">
+              <FaChartLine className="text-4xl text-blue-500 mr-4" />
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-10">
+                  Aset Terjual
+                </h3>
+                <p className="text-2xl font-bold text-neutral-10">
+                  {userAssets.length}
+                </p>
+              </div>
             </div>
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold">Jumlah Disukai</h3>
-              <p className="text-2xl font-bold">+0</p>
+            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
+              <FaThumbsUp className="text-4xl text-yellow-500 mr-4" />
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-10">
+                  Jumlah Disukai
+                </h3>
+                <p className="text-2xl font-bold">+{totalLikes}</p>
+              </div>
             </div>
           </div>
 
-          {/* Tabel untuk menampilkan aset yang dimiliki */}
-          <div className="bg-white shadow rounded-lg p-6 mb-6">
-            <h3 className="text-lg font-semibold">Daftar Aset yang Dimiliki</h3>
-            <table className="min-w-full mt-4">
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold mb-4 text-neutral-10">
+              Daftar Aset
+            </h3>
+            <table className="min-w-full bg-white border border-gray-200">
               <thead>
-                <tr className="bg-gray-100">
-                  <th className="py-2 px-4 border font-bold">PREVIEW</th>
-                  <th className="py-2 px-4 border font-bold">IMAGE NAME</th>
-                  <th className="py-2 px-4 border font-bold">CATEGORY</th>
-                  <th className="py-2 px-4 border font-bold">HARGA</th>
-                  <th className="py-2 px-4 border font-bold">CREATED AT</th>
+                <tr>
+                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Preview
+                  </th>
+                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Dataset Name
+                  </th>
+                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Harga
+                  </th>
+                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created At
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {userAssets.length > 0 ? (
-                  userAssets.map(asset => <AssetRow key={asset.docId} asset={asset} />)
-                ) : (
-                  <tr>
-                    <td colSpan="5" className="py-2 px-4 border text-center">Belum ada data</td>
+                {userAssets.map((asset) => (
+                  <tr key={asset.docId}>
+                    <td className="px-6 py-4 border-b border-gray-200">
+                      <img
+                        src={asset.previewUrl || "https://via.placeholder.com/50"}
+                        alt="Preview"
+                        className="w-10 h-10 object-cover"
+                      />
+                    </td>
+                    <td className="px-6 py-4 border-b border-gray-200">
+                      {asset.datasetName || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 border-b border-gray-200">
+                      {asset.category || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 border-b border-gray-200">
+                      Rp. {asset.price ? Number(asset.price).toLocaleString() : "0"}
+                    </td>
+                    <td className="px-6 py-4 border-b border-gray-200">
+                      {asset.createdAt || "N/A"}
+                    </td>
                   </tr>
-                )}
+                ))}
               </tbody>
             </table>
           </div>
@@ -175,4 +223,4 @@ function SaleAssets() {
   );
 }
 
-export default SaleAssets;
+export default Revenue;

@@ -311,7 +311,7 @@ const NavbarSection = () => {
                       Halaman Bantuan
                     </Link>
                     <Link
-                      to="/panduan-registrasi"
+                      to="/panduan"
                       className="hover:bg-secondary-40 hover:rounded-md hover:text-primary-100 text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px] xl:text-[14px] h-10 p-3 transition-all duration-200">
                       Panduan
                     </Link>

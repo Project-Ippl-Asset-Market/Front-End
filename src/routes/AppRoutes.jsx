@@ -39,7 +39,6 @@ import SaleAssets from "../components/myUserDashboard/SaleAssets";
 import Revenue from "../components/myUserDashboard/Revenue";
 // Import Halaman Dashboard End
 
-//import Halaman Panduan
 
 // Import Halaman Website start
 import Cart from "../components/payment/Cart";
@@ -57,12 +56,7 @@ import { AssetGame } from "../components/website/web_user-AssetGame/AssetGame";
 import { MyAsset } from "../components/website/web_User-MyAsset/MyAsset";
 import EditProfil from "../components/editProfil/Profil";
 
-import SidebarPanduan from "../components/panduan/SidebarPanduan";
-import PanduanRegistrasi from "../components/panduan/PanduanRegistrasi";
-import PanduanLogin from "../components/panduan/PanduanLogin";
-import PanduanLupaPassword from "../components/panduan/PanduanLupaPassword";
-import PanduanJualAsset from "../components/panduan/PanduanJualAsset";
-import PanduanEditAsset from "../components/panduan/PanduanEditAsset";
+import Panduan from "../components/panduan/SidebarPanduan";
 
 // Import Halaman Website End
 
@@ -88,15 +82,8 @@ const AppRoutes = ({ handleLogout }) => {
           <Route path="/asset-game/Asset-3D" element={<Asset3D />} />
           <Route path="/asset-game/Asset-audio" element={<AssetAudio />} />
           <Route path="/my-asset" element={<MyAsset />} />
-          <Route path="/sidebarPanduan" element={<SidebarPanduan />} />
-          <Route path="/panduan-registrasi" element={<PanduanRegistrasi />} />
-          <Route path="/panduan-login" element={<PanduanLogin />} />
-          <Route
-            path="/panduan-lupa-password"
-            element={<PanduanLupaPassword />}
-          />
-          <Route path="/panduan-jual-asset" element={<PanduanJualAsset />} />
-          <Route path="/panduan-edit-asset" element={<PanduanEditAsset />} />
+          <Route path="/Panduan/*" element={<Panduan />} />
+          
           {/* Route halaman web End */}
 
           <Route

@@ -196,7 +196,7 @@ function SalesAsset() {
                   <tr key={asset.docId}>
                     <td className="px-6 py-4 border-b border-gray-200">
                       <img
-                        src={asset.previewUrl || "https://via.placeholder.com/50"}
+                        src={asset.image || "https://via.placeholder.com/50"}
                         alt="Preview"
                         className="w-10 h-10 object-cover"
                       />

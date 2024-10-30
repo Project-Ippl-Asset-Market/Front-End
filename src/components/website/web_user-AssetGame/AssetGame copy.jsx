@@ -21,83 +21,7 @@ import IconDownload from "../../../assets/icon/iconDownload/iconDownload.svg";
 import IconDollar from "../../../assets/assetWeb/iconDollarLight.svg";
 import IconCart from "../../../assets/assetWeb/iconCart.svg";
 import { AiOutlineInfoCircle } from "react-icons/ai";
-import { useNavigate, Link } from "react-router-dom";
-
-const DropdownMenu = ({ onCategorySelect }) => {
-  const [isHovered, setIsHovered] = useState(null);
-
-  const dropdownItems = {
-    "All Category": [{ name: "See all" }],
-    "3D": [
-      { name: "Animations" },
-      { name: "3D Character" },
-      { name: "3D Environment" },
-      { name: "3D GUI" },
-      { name: "Props" },
-      { name: "Vegetation" },
-      { name: "Vehicle" },
-    ],
-    "2D": [
-      { name: "Characters" },
-      { name: "Environment" },
-      { name: "Fonts" },
-      { name: "GUI" },
-      { name: "Textures & Materials" },
-    ],
-    Audio: [
-      { name: "Audio Effects" },
-      { name: "Background Music" },
-      { name: "Voice Overs" },
-      { name: "Sound Design" },
-    ],
-  };
-
-  const handleClick = (category, subCategory) => {
-    onCategorySelect(category, subCategory);
-  };
-
-  return (
-    <>
-      <div className="flex space-x-8 relative z-20  left-0 p-[35px] mt-[170px] sm:mt-[170px] md:mt-[130px] lg:mt-[150px] xl:mt-[170px] 2xl:mt-[170px]">
-        {Object.keys(dropdownItems).map((category) => (
-          <div
-            key={category}
-            className="relative inline-block group"
-            onMouseEnter={() => setIsHovered(category)}
-            onMouseLeave={() => setIsHovered(null)}>
-            <button
-              className={`relative px-4 py-2 text-neutral-20 bg-neutral-90 rounded-md transition duration-300 ease-in-out`}
-              aria-haspopup="true"
-              aria-expanded={isHovered === category}>
-              {category}
-              <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-secondary-40 transition-all duration-1000 transform group-hover:left-0 group-hover:w-1/2 z-20"></span>
-              <span className="absolute bottom-0 right-1/2 w-0 h-[2px] bg-secondary-40 transition-all duration-1000 transform group-hover:right-0 group-hover:w-1/2 z-20"></span>
-            </button>
-
-            {isHovered === category && (
-              <div
-                className="absolute left-0 z-20 w-64 mt-0.5 bg-neutral-90 rounded-md shadow-lg transition-opacity duration-300 ease-in-out"
-                onMouseEnter={() => setIsHovered(category)}
-                onMouseLeave={() => setIsHovered(null)}>
-                <div className="p-4 text-neutral-20">
-                  <h4 className="font-bold mb-1">{category}</h4>
-                  {dropdownItems[category].map(({ name }) => (
-                    <Link
-                      key={name}
-                      className="block py-2 hover:bg-gray-700 transition duration-200"
-                      onClick={() => handleClick(category, name)}>
-                      {name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </>
-  );
-};
+import { useNavigate } from "react-router-dom";
 
 export function AssetGame() {
   const [AssetsData, setAssetsData] = useState([]);
@@ -111,9 +35,21 @@ export function AssetGame() {
   const [searchResults, setSearchResults] = useState([]);
   const [purchasedAssets, setPurchasedAssets] = useState(new Set());
   const [validationMessage, setValidationMessage] = useState("");
-  const [selectedSubCategory, setSelectedSubCategory] = useState(null);
-  const [fetchMessage, setFetchMessage] = useState("");
   const navigate = useNavigate();
+
+  // Mengambil ID pengguna saat ini (jika ada)
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUserId(user.uid);
+      } else {
+        setCurrentUserId(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
@@ -158,59 +94,32 @@ export function AssetGame() {
     fetchUserPurchasedAssets();
   }, [currentUserId]);
 
-  const fetchAssets = async (selectedSubCategory) => {
-    const collectionsFetch = ["assetAudios", "assetImage2D", "assetImage3D"];
+  const fetchAssets = async () => {
+    const collectionsToFetch = ["assetAudios", "assetImage2D", "assetImage3D"];
 
     try {
-      const promises = collectionsFetch.map((collectionName) => {
-        let q;
+      const allAssets = await Promise.all(
+        collectionsToFetch.map(async (collectionName) => {
+          const snapshot = await getDocs(collection(db, collectionName));
+          return snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+        })
+      );
 
-        if (selectedSubCategory && selectedSubCategory != "See all") {
-          q = query(
-            collection(db, collectionName),
-            where("category", "==", selectedSubCategory)
-          );
-        } else {
-          q = collection(db, collectionName);
-        }
-        return getDocs(q);
-      });
-
-      const results = await Promise.allSettled(promises);
-
-      const successfulSnapshots = results
-        .filter((result) => result.status === "fulfilled")
-        .map((result) => result.value);
-
-      const allAssets = successfulSnapshots.reduce((accumulator, snapshot) => {
-        const docsData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        return [...accumulator, ...docsData];
-      }, []);
-
-      const filteredAssets = allAssets
-        .flat()
-        .filter((asset) => asset.price > 0);
-
+      const filteredAssets = allAssets.flat();
       filteredAssets.sort((a, b) => (b.likeAsset || 0) - (a.likeAsset || 0));
-
-      if (filteredAssets.length === 0) {
-        setFetchMessage("No assets found.");
-      } else {
-        setFetchMessage("");
-      }
 
       setAssetsData(filteredAssets);
     } catch (error) {
-      console.error("Error fetching assets: ", error);
+      // console.error("Error fetching assets: ", error);
     }
   };
 
   useEffect(() => {
-    fetchAssets(selectedSubCategory);
-  }, [selectedSubCategory]);
+    fetchAssets();
+  }, []);
 
   // Filter pencarian
   useEffect(() => {
@@ -333,7 +242,11 @@ export function AssetGame() {
     console.log("User ID from Asset: ", userIdFromAsset);
 
     // Membuat referensi dokumen untuk keranjang menggunakan ID aset
-    const cartRef = doc(db, "cartAssets", `${selectedasset.id}`);
+    const cartRef = doc(
+      db,
+      "cartAssets",
+      `${currentUserId}_${selectedasset.id}`
+    );
 
     try {
       const cartSnapshot = await getDoc(cartRef);
@@ -503,19 +416,12 @@ export function AssetGame() {
 
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
-      <div className="w-full bg-primary-100 dark:text-primary-100 relative z-40 ">
+      <div className="w-full shadow-lg bg-primary-100 dark:text-primary-100 relative z-40 ">
         <div className="-mt-10 pt-[2px] sm:pt-[60px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
           <HeaderNav />
         </div>
-        <div className="mt-0 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10 z-50">
+        <div className="mt-0 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
           <NavbarSection />
-        </div>
-        <div className="pt-[0px] relative -z-40 ">
-          <DropdownMenu
-            onCategorySelect={(category, subCategory) => {
-              setSelectedSubCategory(subCategory);
-            }}
-          />
         </div>
       </div>
 
@@ -562,7 +468,7 @@ export function AssetGame() {
         </div>
       </div>
 
-      <div className="relative flex items-center justify-center">
+      <div className="relative  flex items-center justify-center">
         <div className="text-center">
           {searchResults.length === 0 && searchTerm && (
             <p className="text-black text-[20px]">No assets found</p>
@@ -589,7 +495,7 @@ export function AssetGame() {
         </div>
       )}
 
-      <div className="w-full p-6 mx-auto">
+      <div className="w-full p-16 mx-auto">
         {alertLikes && (
           <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
             <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
@@ -608,9 +514,11 @@ export function AssetGame() {
           </div>
         )}
       </div>
-      <div className="pt-2  w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen ">
-        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
-          {fetchMessage && <p>{fetchMessage}</p>}
+      <h1 className=" text-2xl font-semibold text-neutral-10 dark:text-primary-100  p-10">
+        All Category
+      </h1>
+      <div className="pt-2  w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14   ">
+        <div className=" mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-4 sm:gap-2 md:gap-4 lg:gap-16 xl:gap-12 2xl:gap-12">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
@@ -632,11 +540,13 @@ export function AssetGame() {
                   onClick={() => openModal(data)}
                   className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[120px] lg:w-full lg:h-[183px]    xl:h-full 2xl:h-full ">
                   <div className="w-full h-[150px] relative">
-                    {data.uploadUrlAudio ? (
-                      <audio controls className="w-full">
-                        <source src={data.uploadUrlAudio} type="audio/mpeg" />
-                        Your browser does not support the audio element.
-                      </audio>
+                    {data.uploadUrlVideo ? (
+                      <video
+                        src={data.uploadUrlVideo}
+                        alt="Asset Video"
+                        className="h-28 sm:h-28 md:h-36 lg:h-40 xl:h-full 2xl:h-full w-full rounded-t-[10px] mx-auto border-none"
+                        controls
+                      />
                     ) : (
                       <img
                         src={
@@ -716,14 +626,13 @@ export function AssetGame() {
               onClick={() => openModal(selectedasset)}
               className="flex-1 flex   items-center justify-center mb-4">
               <div className="w-full h-[290px] relative">
-                {selectedasset.uploadUrlAudio ? (
-                  <audio controls className="w-full">
-                    <source
-                      src={selectedasset.uploadUrlAudio}
-                      type="audio/mpeg"
-                    />
-                    Your browser does not support the audio element.
-                  </audio>
+                {selectedasset.uploadUrlVideo ? (
+                  <video
+                    src={selectedasset.uploadUrlVideo}
+                    alt="Asset Video"
+                    className="w-full h-[300px] object-cover"
+                    controls
+                  />
                 ) : (
                   <img
                     src={

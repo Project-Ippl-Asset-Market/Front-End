@@ -306,9 +306,9 @@ const NavbarSection = () => {
                       Mulai Jual Asset
                     </Link>
                     <Link
-                      to=""
+                      to="/riwayat-transaksi"
                       className="hover:bg-secondary-40 hover:rounded-md hover:text-primary-100 text-[10px] sm:text-[10px] md:text-[12px] lg:text-[12px] xl:text-[13px] h-10 p-3 transition-all duration-200">
-                      Halaman Bantuan
+                      Riwayat Transaksi
                     </Link>
                     <Link
                       to="/panduan-registrasi"
@@ -325,6 +325,5 @@ const NavbarSection = () => {
     </>
   );
 };
-// jangan ubah udah ku costum
 
 export default NavbarSection;

@@ -137,7 +137,7 @@ function Revenue() {
     }
   }, []);
 
-  // Mengubah chartData untuk satu garis
+
   const chartData = {
     labels: ["Aset Terjual", "Pendapatan"],
     datasets: [

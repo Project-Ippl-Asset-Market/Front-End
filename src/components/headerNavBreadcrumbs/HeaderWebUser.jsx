@@ -5,8 +5,8 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "../../firebase/firebaseConfig";
 import { useTheme } from "../../contexts/ThemeContext";
 // Import Firebase Firestore
-import { db } from "../../firebase/firebaseConfig"; // Import your firebase config including Firestore
-import { collection, query, where, getDocs } from "firebase/firestore"; // Firestore methods
+import { db } from "../../firebase/firebaseConfig";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import IconLightMode from "../../assets/icon/iconDarkMode&LigthMode/ligth_mode.svg";
 import IconDarkMode from "../../assets/icon/iconDarkMode&LigthMode/dark_mode.svg";
 import IconUserDark from "../../assets/icon/iconDarkMode&LigthMode/iconUserDark.svg";
@@ -36,7 +36,7 @@ function HeaderWebUser() {
       } else {
         setUser(null);
         setUsername("");
-        setCartCount(0); // Reset count when user is logged out
+        setCartCount(0);
       }
     });
 
@@ -63,7 +63,7 @@ function HeaderWebUser() {
       unsubscribeAuth();
       window.removeEventListener("resize", handleResize);
     };
-  }, [user]); // Add user as dependency to fetch count only when user changes
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -103,10 +103,10 @@ function HeaderWebUser() {
 
         <div className="fixed top-0 right-0 p-4 z-10">
           {/* cart an my asset */}
-          <div className="gap-14 sm:gap-1 md:gap-1 lg:gap-1 xl:gap-1 2xl:gap-2 flex justify-center items-center">
+          <div className="z-50  gap-14 sm:gap-1 md:gap-1 lg:gap-1 xl:gap-1 2xl:gap-2 flex justify-center items-center">
             <Link
               to="/my-asset"
-              className="  w-[45px] sm:w-[45px] md:w-[44px] lg:w-[44px] xl:w-[60px] 2xl:w-[34px] h-[20px] sm:h-[28px] md:h-[28px] lg:h-[28px] xl:h-[28px] 2xl:h[28px] -ml-[30px] sm:ml-1 md:ml-1 lg:ml-0 xl:ml-0 2xl:ml-2 gap-1 text-[8px] sm:text-[10px] md:text-[10px] lg:text-[10px] xl:text-[10px] 2xl:text-[10px]">
+              className="z-20  w-[45px] sm:w-[45px] md:w-[44px] lg:w-[44px] xl:w-[60px] 2xl:w-[34px] h-[20px] sm:h-[28px] md:h-[28px] lg:h-[28px] xl:h-[28px] 2xl:h[28px] -ml-[30px] sm:ml-1 md:ml-1 lg:ml-0 xl:ml-0 2xl:ml-2 gap-1 text-[8px] sm:text-[10px] md:text-[10px] lg:text-[10px] xl:text-[10px] 2xl:text-[10px]">
               <img
                 src={IconMyAsset}
                 alt="icon my asset"

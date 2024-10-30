@@ -1,17 +1,17 @@
 /* eslint-disable no-unused-vars */
 import { useState, useRef, useEffect } from "react";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { getAuth } from "firebase/auth";
+import { FaChartLine, FaDollarSign, FaThumbsUp } from "react-icons/fa";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
 
-function SaleAssets() {
+function SalesAsset() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [transactionCount, setTransactionCount] = useState(0);
-  const [totalRevenue, setTotalRevenue] = useState(0);
-  const [currentUserId, setCurrentUserId] = useState(null);
+  const [totalSales, setTotalSales] = useState(0);
+  const [totalLikes, setTotalLikes] = useState(0);
   const [userAssets, setUserAssets] = useState([]);
   const sidebarRef = useRef(null);
 
@@ -27,42 +27,35 @@ function SaleAssets() {
 
   useEffect(() => {
     const auth = getAuth();
-    const assetId = auth.currentUser;
+    const user = auth.currentUser;
 
-    if (assetId) {
-      setCurrentUserId(assetId.uid);
-
-      // Mendengarkan perubahan data secara real-time menggunakan onSnapshot
+    if (user) {
       const unsubscribe = onSnapshot(
         collection(db, "transactions"),
         (snapshot) => {
-          const orderIds = new Set();
+          const filteredAssets = [];
           let totalPrice = 0;
-          const assetsOwnedByUser = [];
 
           snapshot.forEach((doc) => {
             const data = doc.data();
 
-            // Filter transaksi berdasarkan status "Success"
             if (data.status === "Success" && data.assets) {
               data.assets.forEach((asset) => {
-                if (asset.assetOwnerID === assetId.uid) {
-                  assetsOwnedByUser.push({
+                if (asset.assetOwnerID === user.uid) {
+                  filteredAssets.push({
                     ...asset,
-                    docId: doc.id, // Menambahkan docId ke data aset
+                    docId: doc.id,
                   });
                   if (asset.price) {
                     totalPrice += Number(asset.price);
                   }
                 }
               });
-              orderIds.add(data.orderId);
             }
           });
 
-          setUserAssets(assetsOwnedByUser);
-          setTransactionCount(orderIds.size);
-          setTotalRevenue(totalPrice);
+          setUserAssets(filteredAssets);
+          setTotalSales(totalPrice);
         }
       );
 
@@ -80,9 +73,45 @@ function SaleAssets() {
     };
   }, [isSidebarOpen]);
 
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+      const assetCollections = [
+        "assetAudios",
+        "assetImage2D",
+        "assetImage3D",
+        "assetDatasets",
+        "assetImages",
+        "assetVideos",
+      ];
+
+      const fetchLikes = async () => {
+        let likesCount = 0;
+
+        for (const collectionName of assetCollections) {
+          const querySnapshot = await getDocs(collection(db, collectionName));
+
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+
+            if (data.userId === user.uid && data.likeAsset) {
+              likesCount += Number(data.likeAsset);
+            }
+          });
+        }
+
+        setTotalLikes(likesCount);
+      };
+
+      fetchLikes();
+    }
+  }, []);
+
   return (
     <>
-      <div className="dark:bg-neutral-20 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
+      <div className="min-h-screen font-poppins dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-20">
         <HeaderSidebar
           isSidebarOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}
@@ -100,41 +129,96 @@ function SaleAssets() {
           </div>
         </aside>
 
-        <div className="p-8 sm:ml-[280px] h-full bg-primary-100 text-neutral-10 dark:bg-neutral-20 dark:text-neutral-10 min-h-screen pt-24">
+        <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 min-h-screen pt-24">
           <div className="breadcrumbs text-sm mt-1 mb-10">
             <Breadcrumb />
           </div>
 
           <div className="grid grid-cols-3 gap-6 mb-8">
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold">Total Pendapatan</h3>
-              <p className="text-2xl font-bold">
-                Rp. {totalRevenue.toLocaleString()}
-              </p>
-              <span className="text-green-500">
-                +21.6% dari 7 Hari yang lalu
-              </span>
+            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
+              <FaDollarSign className="text-4xl text-green-500 mr-4" />
+              <div>
+                <h3 className="text-lg font-semibold">Total Penjualan</h3>
+                <p className="text-2xl font-bold">
+                  Rp. {totalSales.toLocaleString()}
+                </p>
+              </div>
             </div>
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold">Aset Terjual</h3>
-              <p className="text-2xl font-bold">{userAssets.length}</p>
-              <span className="text-green-500">
-                +21.6% dari 7 Hari yang lalu
-              </span>
+            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center text-neutral-10">
+              <FaChartLine className="text-4xl text-blue-500 mr-4" />
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-10">
+                  Aset Terjual
+                </h3>
+                <p className="text-2xl font-bold text-neutral-10">
+                  {userAssets.length}
+                </p>
+              </div>
             </div>
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold">Jumlah Disukai</h3>
-              <p className="text-2xl font-bold">+1240</p>
-              <span className="text-green-500">
-                +21.6% dari 7 Hari yang lalu
-              </span>
+            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
+              <FaThumbsUp className="text-4xl text-yellow-500 mr-4" />
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-10">
+                  Jumlah Disukai
+                </h3>
+                <p className="text-2xl font-bold">+{totalLikes}</p>
+              </div>
             </div>
           </div>
 
-          <div className="bg-white shadow rounded-lg p-6 mb-6">
-            <h3 className="text-lg font-semibold">Total Transaksi</h3>
-            <p className="text-2xl font-bold">{transactionCount}</p>{" "}
-            {/* Tampilkan jumlah transaksi yang berhasil */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold mb-4 text-neutral-10">
+              Daftar Aset
+            </h3>
+            <table className="min-w-full bg-white border border-gray-200">
+              <thead>
+                <tr>
+                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Preview
+                  </th>
+                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nama Dataset
+                  </th>
+                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Kategori
+                  </th>
+                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Harga
+                  </th>
+                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Dibuat Pada
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {userAssets.map((asset) => (
+                  <tr key={asset.docId}>
+                    <td className="px-6 py-4 border-b border-gray-200">
+                      <img
+                        src={
+                          asset.previewUrl || "https://via.placeholder.com/50"
+                        }
+                        alt="Preview"
+                        className="w-10 h-10 object-cover"
+                      />
+                    </td>
+                    <td className="px-6 py-4 border-b border-gray-200">
+                      {asset.datasetName || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 border-b border-gray-200">
+                      {asset.category || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 border-b border-gray-200">
+                      Rp.{" "}
+                      {asset.price ? Number(asset.price).toLocaleString() : "0"}
+                    </td>
+                    <td className="px-6 py-4 border-b border-gray-200">
+                      {asset.createdAt || "N/A"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -142,4 +226,4 @@ function SaleAssets() {
   );
 }
 
-export default SaleAssets;
+export default SalesAsset;

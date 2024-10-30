@@ -56,6 +56,8 @@ import { AssetAudio } from "../components/website/web_user-AssetGame/asset_audio
 import { AssetGame } from "../components/website/web_user-AssetGame/AssetGame";
 import { MyAsset } from "../components/website/web_User-MyAsset/MyAsset";
 import EditProfil from "../components/editProfil/Profil";
+import RiwayatTransaksi from "../components/riwayat/RiwayatTransaksi";
+import DetailTransaksi from "../components/riwayat/detail_transaksi";
 
 import SidebarPanduan from "../components/panduan/SidebarPanduan";
 import PanduanRegistrasi from "../components/panduan/PanduanRegistrasi";
@@ -63,7 +65,13 @@ import PanduanLogin from "../components/panduan/PanduanLogin";
 import PanduanLupaPassword from "../components/panduan/PanduanLupaPassword";
 import PanduanJualAsset from "../components/panduan/PanduanJualAsset";
 import PanduanEditAsset from "../components/panduan/PanduanEditAsset";
-
+import MainHelp_Page from "../components/Help_Page/mainHelp_Page";
+import HalamanBantuan from "../components/Help_Page/Bantuan";
+import AkunDanKeamanan from "../components/Help_Page/AkundanKeamanan";
+import Pembelian from "../components/Help_Page/Pembelian";
+import PenjualanAsset from "../components/Help_Page/PenjualanAsset";
+import Layanan from "../components/Help_Page/Layanan";
+import KebijakanPixelStore from "../components/Help_Page/KebijakanPixelStore";
 // Import Halaman Website End
 
 // eslint-disable-next-line react/prop-types
@@ -88,6 +96,11 @@ const AppRoutes = ({ handleLogout }) => {
           <Route path="/asset-game/Asset-3D" element={<Asset3D />} />
           <Route path="/asset-game/Asset-audio" element={<AssetAudio />} />
           <Route path="/my-asset" element={<MyAsset />} />
+          <Route path="/riwayat-transaksi" element={<RiwayatTransaksi />} />
+          <Route
+            path="/transaction-detail/:orderId"
+            element={<DetailTransaksi />}
+          />
           <Route path="/sidebarPanduan" element={<SidebarPanduan />} />
           <Route path="/panduan-registrasi" element={<PanduanRegistrasi />} />
           <Route path="/panduan-login" element={<PanduanLogin />} />
@@ -97,6 +110,16 @@ const AppRoutes = ({ handleLogout }) => {
           />
           <Route path="/panduan-jual-asset" element={<PanduanJualAsset />} />
           <Route path="/panduan-edit-asset" element={<PanduanEditAsset />} />
+          <Route path="/mainHelp_Page" element={<MainHelp_Page />} />
+          <Route path="/halaman-bantuan" element={<HalamanBantuan />} />
+          <Route path="/akun-dan-keamanan" element={<AkunDanKeamanan />} />
+          <Route path="/pembelian" element={<Pembelian />} />
+          <Route path="/penjualan-asset" element={<PenjualanAsset />} />
+          <Route path="/layanan" element={<Layanan />} />
+          <Route
+            path="/kebijakan-pixel-store"
+            element={<KebijakanPixelStore />}
+          />
           {/* Route halaman web End */}
 
           <Route

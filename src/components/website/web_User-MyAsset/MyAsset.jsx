@@ -1,9 +1,9 @@
+/* eslint-disable no-unused-vars */
 import { db } from "../../../firebase/firebaseConfig";
 import { useState, useEffect } from "react";
 import {
   collection,
   doc,
-  setDoc,
   query,
   where,
   runTransaction,
@@ -14,7 +14,6 @@ import HeaderNav from "../../headerNavBreadcrumbs/HeaderWebUser";
 import NavbarSection from "../web_User-LandingPage/NavbarSection";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import CustomImage from "../../../assets/assetmanage/Iconrarzip.svg";
-import IconDownload from "../../../assets/icon/iconDownload/iconDownload.svg";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 
 export function MyAsset() {
@@ -51,23 +50,21 @@ export function MyAsset() {
       "assetImage2D",
       "assetDatasets",
     ];
-    const buyAssetsCollection = "buyAssets"; // Koleksi untuk buyAssets
-    const myAssetsCollection = "myAssets"; // Koleksi untuk myAssets
+    const buyAssetsCollection = "buyAssets";
+    const myAssetsCollection = "myAssets";
 
     try {
-      // Step 1: Ambil semua data dari koleksi buyAssets
       const buyAssetsSnapshot = await getDocs(
         collection(db, buyAssetsCollection)
       );
       const buyAssetsData = buyAssetsSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        assetId: doc.data().assetId, // Ambil assetId dari buyAssets
-        userId: doc.data().boughtBy, // Ambil userId dari buyAssets
-        price: doc.data().price, // Ambil price dari buyAssets (asumsi ada field price)
+        assetId: doc.data().assetId,
+        userId: doc.data().uid,
+        price: doc.data().price,
       }));
 
-      // Step 2: Ambil semua dokumen dari collectionsToFetch
       const allAssets = await Promise.all(
         collectionsToFetch.map(async (collectionName) => {
           const snapshot = await getDocs(collection(db, collectionName));
@@ -77,11 +74,8 @@ export function MyAsset() {
           }));
         })
       );
-
-      // Gabungkan semua dokumen dari koleksi yang berbeda
       const combinedAssets = allAssets.flat();
 
-      // Step 3: Ambil data dari myAssets dan filter berdasarkan currentUserId
       const myAssetsSnapshot = await getDocs(
         collection(db, myAssetsCollection)
       );
@@ -90,9 +84,8 @@ export function MyAsset() {
           id: doc.id,
           ...doc.data(),
         }))
-        .filter((asset) => asset.userId === currentUserId); // Filter berdasarkan currentUserId
+        .filter((asset) => asset.userId === currentUserId);
 
-      // Step 4: Gabungkan matchedAssets dari buyAssets dan myAssets
       const matchedAssets = combinedAssets.filter((asset) =>
         buyAssetsData.some(
           (buyAsset) =>
@@ -100,25 +93,20 @@ export function MyAsset() {
         )
       );
 
-      // Step 5: Gabungkan matchedAssets dengan myAssets
       const allFilteredAssets = [...matchedAssets, ...myAssetsData];
 
-      // Step 6: Set data yang sudah difilter berdasarkan assetId, userId, dan price
       const finalAssetsData = allFilteredAssets.map((asset) => {
         const buyAsset = buyAssetsData.find(
           (buyAsset) => buyAsset.assetId === asset.id
         );
-
-        // Jika asset ditemukan di buyAssets, tambahkan data userId dan price dari buyAssets
         return buyAsset
           ? { ...asset, userId: buyAsset.userId, price: buyAsset.price }
           : asset;
       });
 
-      // Set AssetsData dengan hasil akhir
       setAssetsData(finalAssetsData);
     } catch (error) {
-      console.error("Error fetching assets: ", error);
+      console.error("Error fetching assets:", error);
     }
   };
 
@@ -230,7 +218,7 @@ export function MyAsset() {
   // Filter berdasarkan pencarian
   const filteredAssetsData = AssetsData.filter((asset) => {
     const datasetName =
-      asset.assetAudiosName ||
+      asset.audioName ||
       asset.imageName ||
       asset.asset2DName ||
       asset.asset3DName ||
@@ -254,10 +242,10 @@ export function MyAsset() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[47%] xl:left-[45%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[145px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[300px] lg:w-[500px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[47%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[193px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[570px] sm:w-[400px] md:w-[450px] lg:w-[700px] xl:w-[800px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[850px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}>
               <div className="relative">
                 <div className="relative">
@@ -324,7 +312,7 @@ export function MyAsset() {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
             let collectionsToFetch = "";
-            if (data.assetAudiosName) {
+            if (data.audioName) {
               collectionsToFetch = "myAssets";
             } else if (data.imageName) {
               collectionsToFetch = "myAssets";
@@ -341,7 +329,7 @@ export function MyAsset() {
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[330px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
                 <div
                   onClick={() => openModal(data)}
                   className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px]">
@@ -360,7 +348,7 @@ export function MyAsset() {
                         src={
                           data.uploadUrlImage ||
                           data.datasetImage ||
-                          data.assetAudiosImage ||
+                          data.uploadUrlAudio ||
                           data.asset2DImage ||
                           data.asset3DImage ||
                           (data.videoName ? CustomImage : null) ||
@@ -378,14 +366,36 @@ export function MyAsset() {
                 </div>
                 <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-10">
                   <div className="px-2 py-2">
-                    <p className="text-neutral-10 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100 font-semibold">
-                      {data.assetAudiosName ||
+                    {/* <p className="text-neutral-10 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100 font-semibold">
+                      {data.audioName ||
                         data.datasetName ||
                         data.asset2DName ||
                         data.imageName ||
                         data.videoName ||
                         "Nama Tidak Tersedia"}
+                    </p> */}
+
+                    <p className="text-neutral-10 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px] dark:text-primary-100 font-semibold">
+                      {(
+                        data.audioName ||
+                        data.datasetName ||
+                        data.asset2DName ||
+                        data.imageName ||
+                        data.videoName ||
+                        "Nama Tidak Tersedia"
+                      ).slice(0, 20) +
+                        ((
+                          data.audioName ||
+                          data.datasetName ||
+                          data.asset2DName ||
+                          data.imageName ||
+                          data.videoName ||
+                          "Nama Tidak Tersedia"
+                        ).length > 20
+                          ? "..."
+                          : "")}
                     </p>
+
                     <p className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100">
                       {data.description.length > 24
                         ? `${data.description.substring(0, 24)}......`
@@ -470,17 +480,6 @@ export function MyAsset() {
               <p className="text-sm mb-2 dark:text-primary-100">
                 Kategori: {selectedasset.category}
               </p>
-              {/* <button
-                className="text-primary-100 flex p-2 text-center items-center justify-center bg-neutral-60 w-48 h-10 mt-36 rounded-md"
-                onClick={handleSaveToMyAssets}
-              >
-                <img
-                  src={IconDownload}
-                  alt="Cart Icon"
-                  className="w-6 h-6 mr-2"
-                />
-                <p>Simpan ke My Asset</p>
-              </button> */}
             </div>
           </div>
         </div>

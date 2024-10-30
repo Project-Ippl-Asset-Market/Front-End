@@ -349,7 +349,7 @@ export function AssetGratis() {
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[360px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
                 <div
                   onClick={() => openModal(data)}
                   className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px]">
@@ -386,7 +386,7 @@ export function AssetGratis() {
                 </div>
                 <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-10">
                   <div className="px-2 py-2">
-                    <p className="text-neutral-10 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100 font-semibold">
+                    {/* <p className="text-neutral-10 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100 font-semibold">
                       {data.assetAudiosName ||
                         data.audioName ||
                         data.datasetName ||
@@ -394,7 +394,31 @@ export function AssetGratis() {
                         data.imageName ||
                         data.videoName ||
                         "Nama Tidak Tersedia"}
+                    </p> */}
+
+                    <p className="text-neutral-10 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px] dark:text-primary-100 font-semibold">
+                      {(
+                        data.assetAudiosName ||
+                        data.audioName ||
+                        data.datasetName ||
+                        data.asset2DName ||
+                        data.imageName ||
+                        data.videoName ||
+                        "Nama Tidak Tersedia"
+                      ).substring(0, 20)}
+                      {(
+                        data.assetAudiosName ||
+                        data.audioName ||
+                        data.datasetName ||
+                        data.asset2DName ||
+                        data.imageName ||
+                        data.videoName ||
+                        "Nama Tidak Tersedia"
+                      ).length > 20
+                        ? "..."
+                        : ""}
                     </p>
+
                     <p className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100">
                       {data.description.length > 24
                         ? `${data.description.substring(0, 24)}......`
@@ -440,7 +464,7 @@ export function AssetGratis() {
               onClick={closeModal}>
               &times;
             </button>
-            <div className="w-full h-[250px] relative">
+            <div className=" h-[240px] relative">
               {selectedasset.uploadUrlVideo ? (
                 <video
                   src={selectedasset.uploadUrlVideo}
@@ -479,7 +503,7 @@ export function AssetGratis() {
                 Kategori: {selectedasset.category}
               </p>
               <button
-                className="text-primary-100 flex p-2 text-center items-center justify-center bg-neutral-60 w-48 h-10 mt-36 rounded-md"
+                className="text-primary-100 flex p-2 text-center items-center justify-center bg-neutral-60 h-10 mt-36 rounded-md w-full"
                 onClick={handleSaveToMyAssets}>
                 <img
                   src={IconDownload}
@@ -500,7 +524,7 @@ export function AssetGratis() {
         </div>
       </div>
 
-      <footer className="mt-60 min-h-screen   flex flex-col items-center justify-center">
+      <footer className="mt-[1000px] flex flex-col items-center justify-center">
         <div className=" flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
           <a href="#">Teams And Conditions</a>
           <a href="#">File Licenses</a>

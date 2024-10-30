@@ -1,4 +1,4 @@
-// src/components/Panduan/Panduan.js
+
 import React, { useState, useEffect } from 'react';
 import { FiMenu } from 'react-icons/fi';
 import { IoArrowBack } from 'react-icons/io5';

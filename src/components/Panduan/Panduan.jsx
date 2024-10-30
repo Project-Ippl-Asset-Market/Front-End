@@ -36,11 +36,6 @@ const Panduan = () => {
     }
   };
 
-  // Effect to set the document title based on activePage
-  useEffect(() => {
-    document.title = getPageTitle();
-  }, [activePage]);
-
   const renderContent = () => {
     switch (activePage) {
       case 'registrasi':

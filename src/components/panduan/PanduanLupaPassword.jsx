@@ -7,13 +7,7 @@ import EmailPass from '../../assets/Panduan/EmailPass.png';
 const LupaPassword = () => {
   return (
     <div className="flex-1 overflow-y-auto min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white transition-colors duration-300">
-      {/* Navbar */}
-      <nav className="bg-gray-100 dark:bg-gray-800 text-black dark:text-white shadow-lg mb-8 transition-colors duration-300">
-        <div className="container mx-auto px-4 h-16 flex justify-center items-center">
-          <h1 className="text-xl font-bold">Panduan Lupa Password</h1>
-        </div>
-      </nav>
-
+      
       {/* Guide Content */}
       <div className="container mx-auto px-4 py-8">
         {/* Step 1 */}

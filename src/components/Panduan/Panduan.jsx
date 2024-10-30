@@ -1,10 +1,10 @@
 // src/components/Panduan/Panduan.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FiMenu } from 'react-icons/fi';
 import { IoArrowBack } from 'react-icons/io5';
 import { RiMoonLine } from "react-icons/ri";
 import { BiSun } from "react-icons/bi";
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import PanduanRegistrasi from './PanduanRegistrasi';
 import PanduanLogin from './PanduanLogin';
@@ -15,8 +15,31 @@ import PanduanEditAsset from './PanduanEditAsset';
 const Panduan = () => {
   const { darkMode, toggleDarkMode } = useTheme();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [activePage, setActivePage] = useState(null); // State untuk halaman panduan yang aktif
-  const navigate = useNavigate(); // Inisialisasi navigate
+  const [activePage, setActivePage] = useState(null);
+  const navigate = useNavigate();
+
+  // Function to get the page title based on activePage
+  const getPageTitle = () => {
+    switch (activePage) {
+      case 'registrasi':
+        return 'Panduan Registrasi';
+      case 'login':
+        return 'Panduan Login';
+      case 'lupapassword':
+        return 'Panduan Lupa Password';
+      case 'jualaset':
+        return 'Panduan Jual Asset';
+      case 'editaset':
+        return 'Panduan Edit Asset';
+      default:
+        return 'Panduan';
+    }
+  };
+
+  // Effect to set the document title based on activePage
+  useEffect(() => {
+    document.title = getPageTitle();
+  }, [activePage]);
 
   const renderContent = () => {
     switch (activePage) {
@@ -57,7 +80,7 @@ const Panduan = () => {
         <div className="flex items-center space-x-4 mb-4">
           <IoArrowBack
             className="text-2xl cursor-pointer hover:text-gray-500 dark:hover:text-gray-400"
-            onClick={() => navigate('/')} // Navigasi ke halaman utama
+            onClick={() => navigate('/')} // Navigate back to the main page
           />
           <span className="text-xl font-semibold">Kembali</span>
         </div>
@@ -82,13 +105,8 @@ const Panduan = () => {
 
       {/* Main content */}
       <div className="flex-grow p-8">
-        <div className="md:hidden flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">{activePage ? `Panduan ${activePage.charAt(0).toUpperCase() + activePage.slice(1)}` : 'Panduan'}</h1>
-          <FiMenu className="text-2xl cursor-pointer" onClick={() => setIsSidebarOpen(!isSidebarOpen)} />
-        </div>
-
-        {/* Dark Mode Toggle */}
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-between items-center mb-6">
+          {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
             className="min-h-[44px] w-[40px] bg-[#F2F2F2] text-black rounded-[5px] border-[1px] border-black flex items-center justify-center gap-1"
@@ -99,6 +117,12 @@ const Panduan = () => {
               <RiMoonLine className="text-xl text-black drop-shadow-sm cursor-pointer" />
             )}
           </button>
+
+          {/* Page Title */}
+          <h1 className="text-2xl font-bold flex-1 text-center">{getPageTitle()}</h1>
+
+          {/* Sidebar Toggle Icon for Mobile */}
+          <FiMenu className="text-2xl cursor-pointer md:hidden" onClick={() => setIsSidebarOpen(!isSidebarOpen)} />
         </div>
 
         {/* Render Content */}

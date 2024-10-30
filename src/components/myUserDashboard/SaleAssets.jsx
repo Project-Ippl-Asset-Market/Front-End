@@ -8,9 +8,9 @@ import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
 
-function Revenue() {
+function SalesAsset() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [totalSales, setTotalSales] = useState(0);
   const [totalLikes, setTotalLikes] = useState(0);
   const [userAssets, setUserAssets] = useState([]);
   const sidebarRef = useRef(null);
@@ -55,7 +55,7 @@ function Revenue() {
           });
 
           setUserAssets(filteredAssets);
-          setTotalRevenue(totalPrice);
+          setTotalSales(totalPrice);
         }
       );
 
@@ -138,9 +138,9 @@ function Revenue() {
             <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
               <FaDollarSign className="text-4xl text-green-500 mr-4" />
               <div>
-                <h3 className="text-lg font-semibold">Total Pendapatan</h3>
+                <h3 className="text-lg font-semibold">Total Penjualan</h3>
                 <p className="text-2xl font-bold">
-                  Rp. {totalRevenue.toLocaleString()}
+                  Rp. {totalSales.toLocaleString()}
                 </p>
               </div>
             </div>
@@ -177,16 +177,16 @@ function Revenue() {
                     Preview
                   </th>
                   <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Dataset Name
+                    Nama Dataset
                   </th>
                   <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
+                    Kategori
                   </th>
                   <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Harga
                   </th>
                   <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created At
+                    Dibuat Pada
                   </th>
                 </tr>
               </thead>
@@ -223,4 +223,4 @@ function Revenue() {
   );
 }
 
-export default Revenue;
+export default SalesAsset;

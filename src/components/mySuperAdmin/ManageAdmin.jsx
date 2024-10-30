@@ -16,12 +16,18 @@ function ManageAdmin() {
     "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp";
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [admins, setAdmins] = useState([]);
+  const [filteredAdmins, setFilteredAdmins] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [adminToDelete, setAdminToDelete] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const sidebarRef = useRef(null);
   const navigate = useNavigate();
+
+  // Pagination state untuk tabelnya
+  const [currentPage, setCurrentPage] = useState(1);
+  const adminsPerPage = 5;
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -40,6 +46,7 @@ function ManageAdmin() {
       try {
         const response = await axios.get("http://localhost:3000/api/admins");
         setAdmins(response.data);
+        setFilteredAdmins(response.data);
       } catch (error) {
         console.error("Error fetching admin data: ", error);
         setError("Failed to fetch admins. Please try again later.");
@@ -60,6 +67,22 @@ function ManageAdmin() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isSidebarOpen]);
+
+  useEffect(() => {
+    // Filter admins whenever search term changes
+    if (searchTerm) {
+      setFilteredAdmins(
+        admins.filter((admin) =>
+          admin.username.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredAdmins(admins);
+    }
+
+    // Reset current page to 1 when search term changes
+    setCurrentPage(1);
+  }, [searchTerm, admins]);
 
   const handleDeleteAdmin = async (id) => {
     setIsLoading(true);
@@ -92,6 +115,7 @@ function ManageAdmin() {
 
         // Perbarui state Admin
         setAdmins((prev) => prev.filter((admin) => admin.id !== id));
+        setFilteredAdmins((prev) => prev.filter((admin) => admin.id !== id));
         navigate("/manage-admin");
       } else {
         setError("Failed to delete admin. Please try again.");
@@ -118,6 +142,14 @@ function ManageAdmin() {
     }
   };
 
+  // Menghitung jumlah halaman
+  const totalPages = Math.ceil(filteredAdmins.length / adminsPerPage);
+  const startIndex = (currentPage - 1) * adminsPerPage;
+  const currentAdmins = filteredAdmins.slice(
+    startIndex,
+    startIndex + adminsPerPage
+  );
+
   return (
     <div className="dark:bg-neutral-90 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
       <HeaderSidebar
@@ -130,7 +162,8 @@ function ManageAdmin() {
         className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } sm:translate-x-0`}
-        aria-label="Sidebar">
+        aria-label="Sidebar"
+      >
         <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
           <NavigationItem />
         </div>
@@ -146,7 +179,8 @@ function ManageAdmin() {
               <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-48">
                 <Link
                   to="/manage-admin/add"
-                  className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
+                  className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]"
+                >
                   + Add new Admin
                 </Link>
               </div>
@@ -163,6 +197,8 @@ function ManageAdmin() {
               <input
                 type="text"
                 placeholder="Search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="input border-none bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10 h-[40px] w-full focus:outline-none"
               />
             </div>
@@ -183,10 +219,10 @@ function ManageAdmin() {
                     Photo
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    UserName
+                    Username
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Roles
+                    Role
                   </th>
                   <th scope="col" className="px-6 py-3">
                     Email
@@ -200,10 +236,11 @@ function ManageAdmin() {
                 </tr>
               </thead>
               <tbody>
-                {admins.map((admin) => (
+                {currentAdmins.map((admin) => (
                   <tr
                     key={admin.id}
-                    className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
+                    className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9"
+                  >
                     <td className="px-6 py-4">
                       <img
                         src={admin.profileImageUrl || defaultImageUrl}
@@ -213,7 +250,8 @@ function ManageAdmin() {
                     </td>
                     <th
                       scope="row"
-                      className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 space-nowrap">
+                      className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 space-nowrap"
+                    >
                       {admin.username}
                     </th>
                     <td className="px-6 py-4">{admin.role}</td>
@@ -259,10 +297,12 @@ function ManageAdmin() {
         {isModalOpen && (
           <div
             className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
-            onClick={() => setIsModalOpen(false)}>
+            onClick={() => setIsModalOpen(false)}
+          >
             <div
               className="bg-white rounded-lg p-6 shadow-lg"
-              onClick={(e) => e.stopPropagation()}>
+              onClick={(e) => e.stopPropagation()}
+            >
               <h2 className="text-lg font-semibold">Konfirmasi Penghapusan</h2>
               <p className="mt-2">
                 Apakah Anda yakin ingin menghapus admin
@@ -271,12 +311,14 @@ function ManageAdmin() {
               <div className="mt-4 flex justify-end">
                 <button
                   className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2"
-                  onClick={confirmDeleteAdmin}>
+                  onClick={confirmDeleteAdmin}
+                >
                   Hapus
                 </button>
                 <button
                   className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg"
-                  onClick={() => setIsModalOpen(false)}>
+                  onClick={() => setIsModalOpen(false)}
+                >
                   Batal
                 </button>
               </div>
@@ -286,13 +328,23 @@ function ManageAdmin() {
 
         {/* Pagination Section */}
         <div className="flex join pt-72 justify-end">
-          <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
+          <button
+            className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
             «
           </button>
           <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
-            Page 1
+            Page {currentPage} of {totalPages}
           </button>
-          <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
+          <button
+            className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}
+          >
             »
           </button>
         </div>

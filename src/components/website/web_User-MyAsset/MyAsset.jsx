@@ -14,7 +14,6 @@ import HeaderNav from "../../headerNavBreadcrumbs/HeaderWebUser";
 import NavbarSection from "../web_User-LandingPage/NavbarSection";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import CustomImage from "../../../assets/assetmanage/Iconrarzip.svg";
-import IconDownload from "../../../assets/icon/iconDownload/iconDownload.svg";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 
 export function MyAsset() {
@@ -51,20 +50,22 @@ export function MyAsset() {
       "assetImage2D",
       "assetDatasets",
     ];
-    const buyAssetsCollection = "buyAssets"; // Koleksi untuk buyAssets
-    const myAssetsCollection = "myAssets"; // Koleksi untuk myAssets
+    const buyAssetsCollection = "buyAssets";
+    const myAssetsCollection = "myAssets";
 
     try {
-      // Step 1: Ambil semua data dari koleksi buyAssets
       const buyAssetsSnapshot = await getDocs(
         collection(db, buyAssetsCollection)
       );
       const buyAssetsData = buyAssetsSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
+        assetId: doc.data().assetId,
+        userId: doc.data().uid,
+        price: doc.data().price,
       }));
+      console.log("buyAssetsData:", buyAssetsData);
 
-      // Step 2: Ambil semua dokumen dari collectionsToFetch
       const allAssets = await Promise.all(
         collectionsToFetch.map(async (collectionName) => {
           const snapshot = await getDocs(collection(db, collectionName));
@@ -74,11 +75,9 @@ export function MyAsset() {
           }));
         })
       );
-
-      // Gabungkan semua dokumen dari koleksi yang berbeda
       const combinedAssets = allAssets.flat();
+      console.log("combinedAssets:", combinedAssets);
 
-      // Step 3: Ambil data dari myAssets dan filter berdasarkan currentUserId
       const myAssetsSnapshot = await getDocs(
         collection(db, myAssetsCollection)
       );
@@ -87,23 +86,33 @@ export function MyAsset() {
           id: doc.id,
           ...doc.data(),
         }))
-        .filter((asset) => asset.userId === currentUserId); // Filter berdasarkan currentUserId
+        .filter((asset) => asset.userId === currentUserId);
+      console.log("myAssetsData (filtered by currentUserId):", myAssetsData);
 
-      // Step 4: Gabungkan matchedAssets dari buyAssets dan myAssets
       const matchedAssets = combinedAssets.filter((asset) =>
         buyAssetsData.some(
           (buyAsset) =>
-            buyAsset.assetId === asset.id && buyAsset.boughtBy === currentUserId
+            buyAsset.assetId === asset.id && buyAsset.userId === currentUserId
         )
       );
+      console.log("matchedAssets:", matchedAssets);
 
-      // Step 5: Gabungkan matchedAssets dengan myAssets
       const allFilteredAssets = [...matchedAssets, ...myAssetsData];
+      console.log("allFilteredAssets:", allFilteredAssets);
 
-      // Set data yang sudah difilter berdasarkan assetId dan currentUserId
-      setAssetsData(allFilteredAssets);
+      const finalAssetsData = allFilteredAssets.map((asset) => {
+        const buyAsset = buyAssetsData.find(
+          (buyAsset) => buyAsset.assetId === asset.id
+        );
+        return buyAsset
+          ? { ...asset, userId: buyAsset.userId, price: buyAsset.price }
+          : asset;
+      });
+      console.log("finalAssetsData:", finalAssetsData);
+
+      setAssetsData(finalAssetsData);
     } catch (error) {
-      console.error("Error fetching assets: ", error);
+      console.error("Error fetching assets:", error);
     }
   };
 
@@ -215,7 +224,7 @@ export function MyAsset() {
   // Filter berdasarkan pencarian
   const filteredAssetsData = AssetsData.filter((asset) => {
     const datasetName =
-      asset.assetAudiosName ||
+      asset.audioName ||
       asset.imageName ||
       asset.asset2DName ||
       asset.asset3DName ||
@@ -239,10 +248,10 @@ export function MyAsset() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[40%] xl:left-[40%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[146px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-[550px] sm:w-[300px] md:w-[300px] lg:w-[600px] xl:w-[800px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[47%] xl:left-[45%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[145px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[300px] lg:w-[500px] xl:w-[600px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[470px] sm:w-[490px] md:w-[400px] lg:w-[600px] xl:w-[800px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[570px] sm:w-[400px] md:w-[450px] lg:w-[700px] xl:w-[800px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}
             >
               <div className="relative">
@@ -281,11 +290,6 @@ export function MyAsset() {
             </form>
           </div>
         </div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-          {searchResults.length === 0 && searchTerm && (
-            <p className="text-black text-[20px]">No assets found</p>
-          )}
-        </div>
       </div>
 
       <div className="w-full p-12 mx-auto">
@@ -312,13 +316,13 @@ export function MyAsset() {
           My Asset
         </h1>
       </div>
-      <div className="pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
+      <div className="pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] min-h-screen">
         <div className=" mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]  ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
             let collectionsToFetch = "";
-            if (data.assetAudiosName) {
+            if (data.audioName) {
               collectionsToFetch = "myAssets";
             } else if (data.imageName) {
               collectionsToFetch = "myAssets";
@@ -348,13 +352,15 @@ export function MyAsset() {
                         alt="Asset Video"
                         className="h-full w-full rounded-t-[10px] mx-auto border-none"
                         controls
+                        controlsList="nodownload"
+                        onContextMenu={(e) => e.preventDefault()}
                       />
                     ) : (
                       <img
                         src={
                           data.uploadUrlImage ||
                           data.datasetImage ||
-                          data.assetAudiosImage ||
+                          data.uploadUrlAudio ||
                           data.asset2DImage ||
                           data.asset3DImage ||
                           (data.videoName ? CustomImage : null) ||
@@ -373,7 +379,7 @@ export function MyAsset() {
                 <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-10">
                   <div className="px-2 py-2">
                     <p className="text-neutral-10 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100 font-semibold">
-                      {data.assetAudiosName ||
+                      {data.audioName ||
                         data.datasetName ||
                         data.asset2DName ||
                         data.imageName ||
@@ -405,7 +411,7 @@ export function MyAsset() {
                     <p className="text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
                       {data.price % 1000 === 0 && data.price >= 1000
                         ? `Rp. ${(data.price / 1000).toLocaleString("id-ID")}k`
-                        : `Rp. ${data.price.toLocaleString("id-ID")}`}
+                        : "My Asset"}
                     </p>
                   </div>
                 </div>
@@ -417,9 +423,9 @@ export function MyAsset() {
 
       {/* Modal untuk detail asset */}
       {modalIsOpen && selectedasset && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] mx-4 flex relative">
+        <div className="fixed inset-0 flex items-center justify-center z-50 ">
+          <div className="fixed inset-0 bg-neutral-10 bg-opacity-50 "></div>
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[500px] mx-4 flex relative">
             <button
               className="absolute right-3 text-gray-600 dark:text-gray-400 text-2xl"
               onClick={closeModal}
@@ -434,6 +440,7 @@ export function MyAsset() {
                   className="h-full w-full rounded-t-[10px]"
                   controls
                   controlsList="nodownload"
+                  onContextMenu={(e) => e.preventDefault()}
                 />
               ) : (
                 <img
@@ -447,12 +454,16 @@ export function MyAsset() {
                 />
               )}
             </div>
-            <div className="w-1/2 pl-4 ">
+            <div className="w-[500px] pl-4 ">
               <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
                 {selectedasset.datasetName}
               </h2>
-              <p className="text-sm mb-2 dark:text-primary-100">
-                Rp. {selectedasset.price.toLocaleString("id-ID")}
+              <p className="text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
+                {selectedasset.price % 1000 === 0 && selectedasset.price >= 1000
+                  ? `Rp. ${(selectedasset.price / 1000).toLocaleString(
+                      "id-ID"
+                    )}k`
+                  : "My Asset"}
               </p>
               <div className="text-sm mb-2 dark:text-primary-100">
                 <label className="flex-col mt-2">Deskripsi Video:</label>
@@ -461,17 +472,6 @@ export function MyAsset() {
               <p className="text-sm mb-2 dark:text-primary-100">
                 Kategori: {selectedasset.category}
               </p>
-              {/* <button
-                className="text-primary-100 flex p-2 text-center items-center justify-center bg-neutral-60 w-48 h-10 mt-36 rounded-md"
-                onClick={handleSaveToMyAssets}
-              >
-                <img
-                  src={IconDownload}
-                  alt="Cart Icon"
-                  className="w-6 h-6 mr-2"
-                />
-                <p>Simpan ke My Asset</p>
-              </button> */}
             </div>
           </div>
         </div>

@@ -56,6 +56,7 @@ function SalesAsset() {
 
           setUserAssets(filteredAssets);
           setTotalSales(totalPrice);
+          console.log("Filtered Assets: ", filteredAssets); // Debugging
         }
       );
 
@@ -201,16 +202,16 @@ function SalesAsset() {
                       />
                     </td>
                     <td className="px-6 py-4 border-b border-gray-200">
-                      {asset.datasetName || "N/A"}
+                      {asset.Name || "Tidak ada"} {/* Perubahan di sini */}
                     </td>
                     <td className="px-6 py-4 border-b border-gray-200">
-                      {asset.category || "N/A"}
+                      {asset.category || "Tidak ada"} {/* Perubahan di sini */}
                     </td>
                     <td className="px-6 py-4 border-b border-gray-200">
                       Rp. {asset.price ? Number(asset.price).toLocaleString() : "0"}
                     </td>
                     <td className="px-6 py-4 border-b border-gray-200">
-                      {asset.createdAt || "N/A"}
+                      {asset.createdAt || "Tidak ada"} {/* Perubahan di sini */}
                     </td>
                   </tr>
                 ))}

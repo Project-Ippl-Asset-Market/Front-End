@@ -1,4 +1,5 @@
-// Kerjaan Fhiqi
+/* eslint-disable react/prop-types */
+/* eslint-disable no-unused-vars */
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -67,7 +68,7 @@ function AddCategory({ isOpen, onClose, onAddCategory }) {
       setCategoryName(""); // Reset input
       onClose(); // Tutup modal
     } catch (error) {
-      console.error("Error menambahkan kategori: ", error);
+      // console.error("Error menambahkan kategori: ", error);
       alert("Terjadi kesalahan saat menambahkan kategori. Silakan coba lagi.");
     } finally {
       setIsSubmitting(false);
@@ -142,9 +143,9 @@ function AddNewDataset() {
             ...doc.data(),
           }));
           setCategories(categoriesData);
-          console.log("Fetched categories", categoriesData);
+          // console.log("Fetched categories", categoriesData);
         } catch (error) {
-          console.error("Error fetching categories: ", error);
+          // console.error("Error fetching categories: ", error);
         }
       }
     };
@@ -171,7 +172,8 @@ function AddNewDataset() {
     category: "",
     description: "",
     price: "",
-    datasetImage: null,
+    datasetFile: null,
+    datasetThumbnail: null,
   });
 
   useEffect(() => {
@@ -191,10 +193,10 @@ function AddNewDataset() {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    if (name === "datasetImage" && files[0]) {
+    if (name === "datasetThumbnail" && files[0]) {
       setDataset({
         ...dataset,
-        datasetImage: files[0],
+        datasetThumbnail: files[0],
       });
 
       // Create image preview
@@ -232,7 +234,8 @@ function AddNewDataset() {
       const docRef = await addDoc(collection(db, "assetDatasets"), {
         category: dataset.category,
         createdAt: Timestamp.now(),
-        datasetImage: "",
+        datasetFile: "",
+        datasetThumbnail: "",
         datasetName: dataset.datasetName,
         description: dataset.description,
         price: priceAsNumber, // Simpan sebagai number
@@ -243,26 +246,30 @@ function AddNewDataset() {
       const docId = docRef.id;
 
       // Upload dataset image/file to Firebase Storage
-      let datasetImageUrl = "";
-      if (dataset.datasetImage) {
-        // Ambil nama asli file dan ekstrak ekstensi
-        const originalFileName = dataset.datasetImage.name;
-        const fileExtension = originalFileName.split(".").pop(); // Mengambil ekstensi file
-
+      let datasetFileUrl = "";
+      if (dataset.datasetFile) {
         // Ref untuk upload file ke Storage dengan ekstensi asli
-        const imageRef = ref(
-          storage,
-          `images-dataset/dataset-${docId}.${fileExtension}`
-        );
+        const datasetRef = ref(storage, `images-dataset/dataset-${docId}.zip`);
 
         // Upload file ke Storage
-        await uploadBytes(imageRef, dataset.datasetImage);
-        datasetImageUrl = await getDownloadURL(imageRef);
+        await uploadBytes(datasetRef, dataset.datasetFile);
+        datasetFileUrl = await getDownloadURL(datasetRef);
+      }
+
+      let datasetThumbnailUrl = "";
+      if (dataset.datasetThumbnail) {
+        // Ref untuk upload file ke Storage dengan ekstensi asli
+        const datasetRef = ref(storage, `images-dataset/dataset-${docId}.jpg`);
+
+        // Upload file ke Storage
+        await uploadBytes(datasetRef, dataset.datasetThumbnail);
+        datasetThumbnailUrl = await getDownloadURL(datasetRef);
       }
 
       // Update Firestore dengan URL gambar yang diupload
       await updateDoc(doc(db, "assetDatasets", docId), {
-        datasetImage: datasetImageUrl,
+        datasetFile: datasetFileUrl,
+        datasetThumbnail: datasetThumbnailUrl,
       });
 
       // Reset the form
@@ -271,7 +278,8 @@ function AddNewDataset() {
         category: "",
         description: "",
         price: "",
-        datasetImage: null,
+        datasetFile: null,
+        datasetThumbnail: null,
       });
       setPreviewImage(null);
 
@@ -292,6 +300,58 @@ function AddNewDataset() {
 
   const closeAlert = () => {
     setAlertError(false);
+  };
+
+  const [fileSize, setFileSize] = useState(null);
+  const [error, setError] = useState(null);
+
+  const handleFileChange = (event) => {
+    const { name, value, files } = event.target;
+    const file = event.target.files[0];
+
+    if (name === "datasetFile" && files[0]) {
+      setDataset({
+        ...dataset,
+        datasetFile: files[0],
+      });
+    } else {
+      setDataset({
+        ...dataset,
+        [name]: value,
+      });
+    }
+
+    if (file) {
+      if (file.type !== "application/zip" && !file.name.endsWith(".zip")) {
+        setError("File yang diunggah harus berformat .zip");
+        setFileSize(null);
+        event.target.value = null;
+        return;
+      } else {
+        setError(null); // Reset error jika file sesuai
+      }
+
+      let size = file.size; // Ukuran file dalam bytes
+      let unit = "Bytes";
+
+      if (size >= 1073741824) {
+        // Lebih besar atau sama dengan 1 GB
+        size = (size / 1073741824).toFixed(2);
+        unit = "GB";
+      } else if (size >= 1048576) {
+        // Lebih besar atau sama dengan 1 MB
+        size = (size / 1048576).toFixed(2);
+        unit = "MB";
+      } else if (size >= 1024) {
+        // Lebih besar atau sama dengan 1 KB
+        size = (size / 1024).toFixed(2);
+        unit = "KB";
+      }
+
+      setFileSize(`${size} ${unit}`);
+    } else {
+      setFileSize(null);
+    }
   };
 
   return (
@@ -385,8 +445,42 @@ function AddNewDataset() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
-                    Format foto harus .jpg, jpeg,png dan ukuran minimal 300 x
-                    300 px.
+                    Format file harus .zip
+                  </p>
+                </div>
+
+                <div>
+                  <input
+                    className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                    id="file_input"
+                    type="file"
+                    accept=".zip"
+                    onChange={handleFileChange}
+                    name="datasetFile"
+                  />
+                  {error && (
+                    <p className="text-red-500 mt-1 text-sm">{error}</p>
+                  )}
+                  {fileSize && (
+                    <p className="mt-1 text-sm">Ukuran file: {fileSize}</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+                <div className="w-full sm:w-[150px] md:w-[170px] lg:w-[200px] xl:w-[220px] 2xl:w-[170px]">
+                  <div className="flex items-center gap-1">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+                      Upload Thumbnail Dataset
+                    </h3>
+                    <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
+                    />
+                  </div>
+                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
+                    Format thumbnail harus .jpg, .jpeg, .png dan ukuran minimal
+                    300 x 300 px.
                   </p>
                 </div>
                 <div className="p-0">
@@ -404,7 +498,7 @@ function AddNewDataset() {
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                              Upload Foto
+                              Upload Thumbnail
                             </span>
                           </>
                         )}
@@ -412,10 +506,9 @@ function AddNewDataset() {
                         <input
                           type="file"
                           id="fileUpload"
-                          name="datasetImage"
+                          name="datasetThumbnail"
                           onChange={handleChange}
-                          multiple
-                          accept=".jpg,.jpeg,.png,.zip,.rar,.csv,.xls,.xlsx,.pdf"
+                          accept=".jpg,.jpeg,.png"
                           className="hidden"
                         />
 
@@ -430,7 +523,10 @@ function AddNewDataset() {
                               type="button"
                               onClick={() => {
                                 setPreviewImage(null);
-                                setDataset({ ...dataset, datasetImage: null });
+                                setDataset({
+                                  ...dataset,
+                                  datasetThumbnail: null,
+                                });
                               }}
                               className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded"
                             >
@@ -491,7 +587,8 @@ function AddNewDataset() {
                     />
                   </div>
                   <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Silahkan Pilih Kategori Yang Sesuai Dengan Dataset Anda.
+                    Silahkan Pilih Kategori yang Sesuai Dengan Dataset Anda atau
+                    Tambahkan Kategori Sendiri.
                   </p>
                 </div>
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // eslint-disable-next-line no-unused-vars
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -110,7 +111,7 @@ function AddNewUser() {
         navigate("/manage-users");
       }, 2000);
     } catch (error) {
-      console.error("Error menambahkan user: ", error);
+      // console.error("Error menambahkan user: ", error);
       setAlertError(true);
     }
   };

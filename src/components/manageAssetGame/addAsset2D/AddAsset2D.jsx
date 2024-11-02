@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -156,7 +157,7 @@ function AddAsset2D() {
         navigate("/manage-asset-2D");
       }, 2000);
     } catch (error) {
-      console.error("Error menambahkan asset2D: ", error);
+      // console.error("Error menambahkan asset2D: ", error);
       setAlertError(true);
     }
   };
@@ -384,10 +385,6 @@ function AddAsset2D() {
                       ))}
                     </select>
                   </label>
-
-                  <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
-                    +
-                  </div>
                 </div>
               </div>
 

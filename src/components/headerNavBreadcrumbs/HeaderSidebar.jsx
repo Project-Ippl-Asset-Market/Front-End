@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { auth } from "../../firebase/firebaseConfig";
@@ -34,7 +35,7 @@ function HeaderSidebar({ toggleSidebar }) {
       localStorage.removeItem("userRole");
       navigate("/");
     } catch (error) {
-      console.error("Logout failed:", error.message);
+      // console.error("Logout failed:", error.message);
     }
   };
 
@@ -106,7 +107,9 @@ function HeaderSidebar({ toggleSidebar }) {
                               alt="Logout Icon"
                               className="w-5 h-5 me-2"
                             />
-                            <button type="button">Profile</button>
+                            <Link to="/profil" type="button">
+                              Profile
+                            </Link>
                           </div>
                         </li>
 
@@ -127,7 +130,7 @@ function HeaderSidebar({ toggleSidebar }) {
                           <div className="flex items-center justify-center p-2 bg-neutral-90 dark:bg-neutral-20 transition-all duration-300 rounded-lg">
                             <div
                               onClick={toggleDarkMode}
-                              className="flex gap-4 -ml-4 sm:ml-0 md:ml-0 lg:-ml-4 xl:-ml-6 2x:-ml-10 items-center justify-center w-full h-8  transition-colors duration-300 hover:bg-secondary-40  focus:outline-none">
+                              className="flex gap-4 -ml-4 sm:ml-0 md:ml-0 lg:-ml-4 xl:-ml-8 2x:-ml-10 items-center justify-center w-full h-8  transition-colors duration-300 hover:bg-secondary-40  focus:outline-none">
                               {darkMode ? (
                                 <img
                                   src={IconDarkMode}
@@ -152,7 +155,7 @@ function HeaderSidebar({ toggleSidebar }) {
                             </div>
                           </div>
                         </li>
-                        <li className="flex  mb-1 w-full h-8  transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none">
+                        <li className="flex  mb-1 w-full h-8  ml-2 transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none">
                           <div className="flex items-center">
                             <img
                               src={darkMode ? IconLogoutDark : IconLogoutLight}

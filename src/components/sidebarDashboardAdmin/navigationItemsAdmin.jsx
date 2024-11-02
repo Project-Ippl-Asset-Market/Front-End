@@ -1,9 +1,11 @@
+/* eslint-disable no-unused-vars */
 // eslint-disable-next-line no-unused-vars
 import React, { Children } from "react";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../../firebase/firebaseConfig";
 import { useTheme } from "../../contexts/ThemeContext";
+import { useUserContext } from "../../contexts/UserContext";
 import SidebarNavItem from "../../components/sidebarDashboardAdmin/SidebarNavItemAdmin";
 import IconDashboardDark from "../../assets/icon/iconSidebar/iconDashboard.png";
 import IconAssetVideoDark from "../../assets/icon/iconSidebar/iconAssetVideo.png";
@@ -29,6 +31,7 @@ import Logo from "../../assets/logo/logoWeb.png";
 const Sidebar = () => {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
+  const { userRole } = useUserContext("userRole");
 
   const handleLogout = async () => {
     try {
@@ -37,10 +40,9 @@ const Sidebar = () => {
       localStorage.removeItem("userRole");
       navigate("/");
     } catch (error) {
-      console.error("Logout failed:", error.message);
+      // console.error("Logout failed:", error.message);
     }
   };
-  const userRole = localStorage.getItem("userRole");
 
   const navigationItems = [
     {

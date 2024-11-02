@@ -1,10 +1,11 @@
+/* eslint-disable no-unused-vars */
 //Fixed
 import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { doc, getDoc, updateDoc } from "firebase/firestore"; // Firebase functions
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db, storage } from "../../../firebase/firebaseConfig";
 import {
   deleteObject,
@@ -55,11 +56,11 @@ function EditNewAsset3D() {
             setImagePreview(data.asset3DImage);
           }
         } else {
-          console.log("No such document!");
+          // console.log("No such document!");
           navigate("/manage-asset-3D");
         }
       } catch (error) {
-        console.error("Error fetching Asset 3D:", error);
+        // console.error("Error fetching Asset 3D:", error);
       } finally {
         setIsLoading(false);
       }
@@ -354,10 +355,6 @@ function EditNewAsset3D() {
                       ))}
                     </select>
                   </label>
-
-                  <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
-                    +
-                  </div>
                 </div>
               </div>
 

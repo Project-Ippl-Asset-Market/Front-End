@@ -42,12 +42,12 @@ const Chart = () => {
     },
     series: [
       {
-        name: "asset sold",
+        name: "ASset Terjual",
         data: [6500, 6418, 6456, 6526, 6356, 6456],
         color: "#FFB3AF",
       },
       {
-        name: "users",
+        name: "Transaksi",
         data: [6456, 6356, 6526, 6332, 6418, 6500],
         color: "#BE0924",
       },
@@ -103,7 +103,7 @@ const Chart = () => {
           <div className="grid gap-4 grid-cols-2">
             <div>
               <h5 className="flex items-center text-gray-500 dark:text-gray-400 mb-2">
-                asset sold
+                All Asset
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="w-6 h-3 text-gray-400 hover:text-gray-900 dark:hover:text-white cursor-pointer ms-1"
@@ -130,7 +130,7 @@ const Chart = () => {
             </div>
             <div>
               <h5 className="flex items-center text-gray-500 dark:text-gray-400 mb-2">
-                users
+                Asset Terjual
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="w-10 h-4 text-gray-400 hover:text-gray-900 dark:hover:text-white cursor-pointer ms-1"

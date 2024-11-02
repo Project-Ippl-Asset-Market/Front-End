@@ -159,9 +159,14 @@ export function AssetAudio() {
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
-        datasetName: selectedasset.datasetName,
+        name: selectedasset.assetAudiosName,
+        description: selectedasset.description,
         price: selectedasset.price,
-        datasetImage: selectedasset.datasetImage,
+        image: selectedasset.uploadUrlAudio,
+        category: selectedasset.category,
+        createdAt: selectedasset.createdAt,
+        uploadedByEmail: selectedasset.uploadedByEmail,
+        likeAsset: selectedasset.likeAsset,
       });
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {
@@ -181,6 +186,7 @@ export function AssetAudio() {
 
   // Menampilkan modal
   const openModal = (asset) => {
+    console.log("Opening modal for asset:", asset); // Add this line
     setSelectedasset(asset);
     setModalIsOpen(true);
   };
@@ -235,7 +241,7 @@ export function AssetAudio() {
                     target="_blank"
                     rel="noopener noreferrer">
                     <img
-                      src={data.datasetImage || CustomImage}
+                      src={data.assetAudiosImage || CustomImage}
                       alt="Asset Image"
                       className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
                       onClick={() => openModal(data)}
@@ -296,7 +302,7 @@ export function AssetAudio() {
               &times;
             </button>
             <img
-              src={selectedasset.datasetImage || CustomImage}
+              src={selectedasset.assetAudiosImage || CustomImage}
               alt="asset Image"
               className="w-1/2 h-[260px] mb-4"
               onError={(e) => {

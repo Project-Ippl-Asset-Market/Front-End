@@ -1,15 +1,12 @@
+/* eslint-disable no-unused-vars */
 // eslint-disable-next-line no-unused-vars
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-} from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { auth, db } from "../firebase/firebaseConfig";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/solid";
-import IconGoogle from "../assets/icon/iconGoogle.png";
+import { useUserContext } from "../contexts/UserContext";
 import BgLogin from "../assets/Background/bgLogin3.png";
 import Logo from "../assets/icon/logo.jpg";
 import IconModalError from "../assets/icon/iconModal/iconModalError.png";
@@ -23,6 +20,8 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [modalMessage, setModalMessage] = useState(null);
   const [errorModal, setErrorModal] = useState("");
+
+  const { saveUserRole } = useUserContext();
 
   const handleChange = (e) => {
     if (e.target.name === "email") {
@@ -56,82 +55,35 @@ function Login() {
         loginPassword
       );
       const user = userCredential.user;
-
-      // Get token
       const token = await user.getIdToken();
       localStorage.setItem("authToken", token);
-
       const adminRole = await checkAdminRole(user.email);
-      console.log("Admin Role:", adminRole);
 
       if (adminRole === "superadmin") {
         setModalMessage("Login sebagai Superadmin berhasil!");
+        saveUserRole("superadmin");
         setTimeout(() => {
           setModalMessage(null);
-          localStorage.setItem("userRole", "superadmin");
           navigate("/dashboard");
         }, 2000);
       } else if (adminRole === "admin") {
         setModalMessage("Login sebagai Admin berhasil!");
+        saveUserRole("admin");
         setTimeout(() => {
           setModalMessage(null);
-          localStorage.setItem("userRole", "admin");
           navigate("/dashboard");
         }, 2000);
       } else {
         setModalMessage("Login sebagai pengguna biasa berhasil!");
+        saveUserRole("user");
         setTimeout(() => {
           setModalMessage(null);
-          localStorage.setItem("userRole", "user");
           navigate("/");
         }, 2000);
       }
     } catch (error) {
-      console.error("Login failed:", error.message);
+      // console.error("Login failed:", error.message);
       setErrorModal("Email atau password tidak valid. Silakan coba lagi.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const signInWithGoogle = async () => {
-    setLoading(true);
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-
-      // Get token
-      const token = await user.getIdToken();
-      localStorage.setItem("authToken", token);
-
-      const adminRole = await checkAdminRole(user.email);
-      console.log("Admin Role:", adminRole);
-
-      if (adminRole === "superadmin") {
-        setModalMessage("Login sebagai Superadmin dengan Google berhasil!");
-        setTimeout(() => {
-          setModalMessage(null);
-          localStorage.setItem("userRole", "superadmin");
-          navigate("/dashboard");
-        }, 2000);
-      } else if (adminRole === "admin") {
-        setModalMessage("Login sebagai Admin dengan Google berhasil!");
-        setTimeout(() => {
-          setModalMessage(null);
-          localStorage.setItem("userRole", "admin");
-          navigate("/dashboard");
-        }, 2000);
-      } else {
-        setModalMessage("Login sebagai pengguna biasa berhasil!");
-        setTimeout(() => {
-          setModalMessage(null);
-          localStorage.setItem("userRole", "user");
-          navigate("/");
-        }, 2000);
-      }
-    } catch {
-      setErrorModal("Google sign-in gagal. Silakan coba lagi.");
     } finally {
       setLoading(false);
     }
@@ -243,13 +195,6 @@ function Login() {
                   </Link>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={signInWithGoogle}
-                className="border border-neutral-80 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-80 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]  btn btn-outline mt-6 ">
-                <img src={IconGoogle} alt="Google" className="w-6 h-6 mr-2" />
-                Masuk menggunakan google
-              </button>
               <div className="form-control mt-6">
                 <button
                   type="submit"

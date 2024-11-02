@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -106,7 +107,7 @@ function EditUser() {
       }, 2000);
     } catch (error) {
       setAlertError(true);
-      console.error("Update Error:", error);
+      // console.error("Update Error:", error);
     }
   };
 

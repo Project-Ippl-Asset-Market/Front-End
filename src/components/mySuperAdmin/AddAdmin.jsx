@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // eslint-disable-next-line no-unused-vars
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -58,7 +59,7 @@ function AddNewAdmin() {
       );
       return signInMethods.length > 0; // If greater than 0, the email is already registered
     } catch (error) {
-      console.error("Error fetching sign-in methods: ", error);
+      // console.error("Error fetching sign-in methods: ", error);
       return false; // Return false if there's an error
     }
   };
@@ -117,7 +118,7 @@ function AddNewAdmin() {
         navigate("/manage-admin");
       }, 2000);
     } catch (error) {
-      console.error("Error menambahkan admin: ", error);
+      // console.error("Error menambahkan admin: ", error);
       setAlertError(true);
     }
   };

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
@@ -50,7 +51,7 @@ function HeaderNav() {
       localStorage.removeItem("userRole");
       navigate("/");
     } catch (error) {
-      console.error("Logout failed:", error.message);
+      // console.error("Logout failed:", error.message);
     }
   };
 

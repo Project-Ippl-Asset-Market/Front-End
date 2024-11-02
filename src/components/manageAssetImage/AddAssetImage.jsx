@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -122,7 +123,7 @@ function AddNewImage() {
         navigate("/manage-asset-image");
       }, 2000);
     } catch (error) {
-      console.error("Error menambahkan image: ", error);
+      // console.error("Error menambahkan image: ", error);
       setAlertError(true);
     }
   };

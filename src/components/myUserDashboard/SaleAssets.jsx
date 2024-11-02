@@ -1,12 +1,18 @@
-import { Link } from "react-router-dom";
+/* eslint-disable no-unused-vars */
 import { useState, useRef, useEffect } from "react";
+import { collection, getDocs, onSnapshot } from "firebase/firestore";
+import { db } from "../../firebase/firebaseConfig";
+import { getAuth } from "firebase/auth";
+import { FaChartLine, FaDollarSign, FaThumbsUp } from "react-icons/fa";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
-import IconSearch from "../../assets/icon/iconHeader/iconSearch.svg";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
 
-function SaleAssets() {
+function SalesAsset() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [totalSales, setTotalSales] = useState(0);
+  const [totalLikes, setTotalLikes] = useState(0);
+  const [userAssets, setUserAssets] = useState([]);
   const sidebarRef = useRef(null);
 
   const toggleSidebar = () => {
@@ -20,6 +26,42 @@ function SaleAssets() {
   };
 
   useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+      const unsubscribe = onSnapshot(
+        collection(db, "transactions"),
+        (snapshot) => {
+          const filteredAssets = [];
+          let totalPrice = 0;
+
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+
+            if (data.status === "Success" && data.assets) {
+              data.assets.forEach((asset) => {
+                if (asset.assetOwnerID === user.uid) {
+                  filteredAssets.push({
+                    ...asset,
+                    docId: doc.id,
+                  });
+                  if (asset.price) {
+                    totalPrice += Number(asset.price);
+                  }
+                }
+              });
+            }
+          });
+
+          setUserAssets(filteredAssets);
+          setTotalSales(totalPrice);
+        }
+      );
+
+      return () => unsubscribe();
+    }
+
     if (isSidebarOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     } else {
@@ -31,9 +73,45 @@ function SaleAssets() {
     };
   }, [isSidebarOpen]);
 
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+      const assetCollections = [
+        "assetAudios",
+        "assetImage2D",
+        "assetImage3D",
+        "assetDatasets",
+        "assetImages",
+        "assetVideos",
+      ];
+
+      const fetchLikes = async () => {
+        let likesCount = 0;
+
+        for (const collectionName of assetCollections) {
+          const querySnapshot = await getDocs(collection(db, collectionName));
+
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+
+            if (data.userId === user.uid && data.likeAsset) {
+              likesCount += Number(data.likeAsset);
+            }
+          });
+        }
+
+        setTotalLikes(likesCount);
+      };
+
+      fetchLikes();
+    }
+  }, []);
+
   return (
     <>
-      <div className="dark:bg-neutral-20 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
+      <div className="min-h-screen font-poppins dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-20">
         <HeaderSidebar
           isSidebarOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}
@@ -51,82 +129,94 @@ function SaleAssets() {
           </div>
         </aside>
 
-        {/* Isi Konten */}
-        <div className="p-8 sm:ml-[280px] h-full bg-primary-100 text-neutral-10 dark:bg-neutral-20 dark:text-neutral-10 min-h-screen pt-24">
-          {/* Breadcrumb */}
+        <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 min-h-screen pt-24">
           <div className="breadcrumbs text-sm mt-1 mb-10">
             <Breadcrumb />
           </div>
 
-          {/* Section: Cards */}
           <div className="grid grid-cols-3 gap-6 mb-8">
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold">Total Pendapatan</h3>
-              <p className="text-2xl font-bold">Rp. 45.600.000</p>
-              <span className="text-green-500">
-                +21.6% dari 7 Hari yang lalu
-              </span>
+            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
+              <FaDollarSign className="text-4xl text-green-500 mr-4" />
+              <div>
+                <h3 className="text-lg font-semibold">Total Penjualan</h3>
+                <p className="text-2xl font-bold">
+                  Rp. {totalSales.toLocaleString()}
+                </p>
+              </div>
             </div>
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold">Asset Terjual</h3>
-              <p className="text-2xl font-bold">67</p>
-              <span className="text-green-500">
-                +21.6% dari 7 Hari yang lalu
-              </span>
+            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center text-neutral-10">
+              <FaChartLine className="text-4xl text-blue-500 mr-4" />
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-10">
+                  Aset Terjual
+                </h3>
+                <p className="text-2xl font-bold text-neutral-10">
+                  {userAssets.length}
+                </p>
+              </div>
             </div>
-            <div className="bg-white shadow rounded-lg p-6">
-              <h3 className="text-lg font-semibold">Jumlah Disukai</h3>
-              <p className="text-2xl font-bold">+1240</p>
-              <span className="text-green-500">
-                +21.6% dari 7 Hari yang lalu
-              </span>
+            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
+              <FaThumbsUp className="text-4xl text-yellow-500 mr-4" />
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-10">
+                  Jumlah Disukai
+                </h3>
+                <p className="text-2xl font-bold">+{totalLikes}</p>
+              </div>
             </div>
           </div>
 
-          {/* Section: Table */}
-          <div className="relative mt-6 overflow-x-auto shadow-md sm:rounded-lg p-8 dark:bg-neutral-25">
-            <table className="w-full text-sm text-left rtl:text-right text-gray-500 bg-primary-100 dark:text-neutral-90 ">
-              <thead className="text-xs text-neutral-20 uppercase dark:bg-neutral-25 dark:text-neutral-90 border-b dark:border-neutral-20">
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold mb-4 text-neutral-10">
+              Daftar Aset
+            </h3>
+            <table className="min-w-full bg-white border border-gray-200">
+              <thead>
                 <tr>
-                  <th scope="col" className="px-6 py-3">
-                    Gambar
+                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Preview
                   </th>
-                  <th scope="col" className="px-6 py-3">
+                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nama Dataset
+                  </th>
+                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Kategori
                   </th>
-                  <th scope="col" className="px-6 py-3">
-                    Status
+                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Harga
                   </th>
-                  <th scope="col" className="px-6 py-3">
-                    Tanggal
-                  </th>
-                  <th scope="col" className="px-6 py-3">
-                    Action
+                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Dibuat Pada
                   </th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="bg-white dark:bg-neutral-25 dark:text-neutral-9">
-                  <td className="px-6 py-4">
-                    <img
-                      src="https://via.placeholder.com/40"
-                      alt="Gambar"
-                      className="w-10 h-10 rounded-full"
-                    />
-                  </td>
-                  <td className="px-6 py-4">Text</td>
-                  <td className="px-6 py-4">Berbayar</td>
-                  <td className="px-6 py-4">20-12-2024</td>
-                  <td className="px-6 py-4">
-                    <button className="text-blue-600 hover:underline">
-                      Edit
-                    </button>
-                    <button className="text-red-600 hover:underline ml-4">
-                      Hapus
-                    </button>
-                  </td>
-                </tr>
-                {/* Tambahkan lebih banyak baris di sini sesuai dengan data */}
+                {userAssets.map((asset) => (
+                  <tr key={asset.docId}>
+                    <td className="px-6 py-4 border-b border-gray-200">
+                      <img
+                        src={
+                          asset.previewUrl || "https://via.placeholder.com/50"
+                        }
+                        alt="Preview"
+                        className="w-10 h-10 object-cover"
+                      />
+                    </td>
+                    <td className="px-6 py-4 border-b border-gray-200">
+                      {asset.datasetName || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 border-b border-gray-200">
+                      {asset.category || "N/A"}
+                    </td>
+                    <td className="px-6 py-4 border-b border-gray-200">
+                      Rp.{" "}
+                      {asset.price ? Number(asset.price).toLocaleString() : "0"}
+                    </td>
+                    <td className="px-6 py-4 border-b border-gray-200">
+                      {asset.createdAt || "N/A"}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -136,4 +226,4 @@ function SaleAssets() {
   );
 }
 
-export default SaleAssets;
+export default SalesAsset;

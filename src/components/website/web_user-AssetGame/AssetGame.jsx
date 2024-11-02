@@ -27,7 +27,7 @@ const DropdownMenu = ({ onCategorySelect }) => {
   const [isHovered, setIsHovered] = useState(null);
 
   const dropdownItems = {
-    "All Category": [{name: "See all"}],
+    "All Category": [{ name: "See all" }],
     "3D": [
       { name: "Animations" },
       { name: "3D Character" },
@@ -64,13 +64,11 @@ const DropdownMenu = ({ onCategorySelect }) => {
             key={category}
             className="relative inline-block group"
             onMouseEnter={() => setIsHovered(category)}
-            onMouseLeave={() => setIsHovered(null)}
-          >
+            onMouseLeave={() => setIsHovered(null)}>
             <button
               className={`relative px-4 py-2 text-neutral-20 bg-neutral-90 rounded-md transition duration-300 ease-in-out`}
               aria-haspopup="true"
-              aria-expanded={isHovered === category}
-            >
+              aria-expanded={isHovered === category}>
               {category}
               <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-secondary-40 transition-all duration-1000 transform group-hover:left-0 group-hover:w-1/2 z-20"></span>
               <span className="absolute bottom-0 right-1/2 w-0 h-[2px] bg-secondary-40 transition-all duration-1000 transform group-hover:right-0 group-hover:w-1/2 z-20"></span>
@@ -80,16 +78,14 @@ const DropdownMenu = ({ onCategorySelect }) => {
               <div
                 className="absolute left-0 z-20 w-64 mt-0.5 bg-neutral-90 rounded-md shadow-lg transition-opacity duration-300 ease-in-out"
                 onMouseEnter={() => setIsHovered(category)}
-                onMouseLeave={() => setIsHovered(null)}
-              >
+                onMouseLeave={() => setIsHovered(null)}>
                 <div className="p-4 text-neutral-20">
                   <h4 className="font-bold mb-1">{category}</h4>
                   {dropdownItems[category].map(({ name }) => (
                     <Link
                       key={name}
                       className="block py-2 hover:bg-gray-700 transition duration-200"
-                      onClick={() => handleClick(category, name)}
-                    >
+                      onClick={() => handleClick(category, name)}>
                       {name}
                     </Link>
                   ))}
@@ -116,9 +112,8 @@ export function AssetGame() {
   const [purchasedAssets, setPurchasedAssets] = useState(new Set());
   const [validationMessage, setValidationMessage] = useState("");
   const [selectedSubCategory, setSelectedSubCategory] = useState(null);
-  const [fetchMessage, setFetchMessage] = useState(""); 
+  const [fetchMessage, setFetchMessage] = useState("");
   const navigate = useNavigate();
-
 
   // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
@@ -169,7 +164,7 @@ export function AssetGame() {
     try {
       const promises = collectionsFetch.map((collectionName) => {
         let q;
-      
+
         if (selectedSubCategory && selectedSubCategory != "See all") {
           q = query(
             collection(db, collectionName),
@@ -202,9 +197,9 @@ export function AssetGame() {
       filteredAssets.sort((a, b) => (b.likeAsset || 0) - (a.likeAsset || 0));
 
       if (filteredAssets.length === 0) {
-        setFetchMessage("No assets found."); 
+        setFetchMessage("No assets found.");
       } else {
-        setFetchMessage(""); 
+        setFetchMessage("");
       }
 
       setAssetsData(filteredAssets);
@@ -338,11 +333,7 @@ export function AssetGame() {
     console.log("User ID from Asset: ", userIdFromAsset);
 
     // Membuat referensi dokumen untuk keranjang menggunakan ID aset
-    const cartRef = doc(
-      db,
-      "cartAssets",
-      `${currentUserId}_${selectedasset.id}`
-    );
+    const cartRef = doc(db, "cartAssets", `${selectedasset.id}`);
 
     try {
       const cartSnapshot = await getDoc(cartRef);
@@ -498,8 +489,12 @@ export function AssetGame() {
 
   // Filter berdasarkan pencarian
   const filteredAssetsData = AssetsData.filter((asset) => {
-    const datasetName = asset.name ||
-      asset.audioName || asset.asset2DName || asset.asset3DName || "";
+    const datasetName =
+      asset.name ||
+      asset.audioName ||
+      asset.asset2DName ||
+      asset.asset3DName ||
+      "";
     return (
       datasetName &&
       datasetName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -512,10 +507,10 @@ export function AssetGame() {
         <div className="-mt-10 pt-[2px] sm:pt-[60px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
           <HeaderNav />
         </div>
-        <div className="mt-0 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10 relative z-30">
+        <div className="mt-0 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10 z-50">
           <NavbarSection />
         </div>
-        <div className="pt-[0px] relative z-20 ">
+        <div className="pt-[0px] relative -z-40 ">
           <DropdownMenu
             onCategorySelect={(category, subCategory) => {
               setSelectedSubCategory(subCategory);
@@ -525,10 +520,10 @@ export function AssetGame() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[47%] xl:left-[45%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[145px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[300px] lg:w-[500px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[47%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[193px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[570px] sm:w-[400px] md:w-[450px] lg:w-[700px] xl:w-[800px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[850px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}>
               <div className="relative">
                 <div className="relative">
@@ -566,6 +561,7 @@ export function AssetGame() {
           </div>
         </div>
       </div>
+
       <div className="relative flex items-center justify-center">
         <div className="text-center">
           {searchResults.length === 0 && searchTerm && (
@@ -638,9 +634,9 @@ export function AssetGame() {
                   <div className="w-full h-[150px] relative">
                     {data.uploadUrlAudio ? (
                       <audio controls className="w-full">
-                      <source src={data.uploadUrlAudio} type="audio/mpeg" />
-                      Your browser does not support the audio element.
-                    </audio>
+                        <source src={data.uploadUrlAudio} type="audio/mpeg" />
+                        Your browser does not support the audio element.
+                      </audio>
                     ) : (
                       <img
                         src={
@@ -722,12 +718,12 @@ export function AssetGame() {
               <div className="w-full h-[290px] relative">
                 {selectedasset.uploadUrlAudio ? (
                   <audio controls className="w-full">
-                  <source
-                    src={selectedasset.uploadUrlAudio}
-                    type="audio/mpeg"
-                  />
-                  Your browser does not support the audio element.
-                </audio>
+                    <source
+                      src={selectedasset.uploadUrlAudio}
+                      type="audio/mpeg"
+                    />
+                    Your browser does not support the audio element.
+                  </audio>
                 ) : (
                   <img
                     src={

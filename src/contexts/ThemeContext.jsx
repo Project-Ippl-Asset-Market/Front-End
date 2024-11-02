@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 // src/context/ThemeContext.js
 import { createContext, useContext, useState, useEffect } from "react";
 

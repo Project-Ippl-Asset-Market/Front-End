@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
@@ -108,7 +109,7 @@ function ManageAssetImage() {
     const fetchData = async () => {
       setIsLoading(true);
       if (!user || !role) {
-        console.log("No user or role detected");
+        // console.log("No user or role detected");
         return;
       }
 
@@ -139,6 +140,7 @@ function ManageAssetImage() {
             data.createdAt?.toDate().toLocaleString("id-ID", {
               year: "numeric",
               month: "long",
+              day: "numeric",
             }) || "N/A";
 
           items.push({
@@ -146,7 +148,8 @@ function ManageAssetImage() {
             datasetName: data.datasetName,
             description: data.description,
             price: `Rp. ${data.price}`,
-            datasetImage: data.datasetImage,
+            datasetFile: data.datasetFile,
+            datasetThumbnail: data.datasetThumbnail,
             category: data.category,
             createdAt,
             userId: data.userId,
@@ -176,7 +179,7 @@ function ManageAssetImage() {
           setFilteredAssets(items);
         }
       } catch (error) {
-        console.error("Error fetching data: ", error);
+        // console.error("Error fetching data: ", error);
         setAlertError(true);
       } finally {
         setIsLoading(false);
@@ -213,7 +216,9 @@ function ManageAssetImage() {
     if (confirmDelete) {
       try {
         // Update the storage path based on assetDatasets structure
-        const ImageRef = ref(storage, `images-dataset/dataset-${id}.zip`);
+        const FileRef = ref(storage, `images-dataset/dataset-${id}.zip`);
+        await deleteObject(FileRef);
+        const ImageRef = ref(storage, `images-dataset/dataset-${id}.jpg`);
         await deleteObject(ImageRef);
         await deleteDoc(doc(db, "assetDatasets", id));
         setAssets(assets.filter((assets) => assets.id !== id));
@@ -381,11 +386,11 @@ function ManageAssetImage() {
                       className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9"
                     >
                       <td className="px-6 py-4">
-                        {assets.datasetImage ? (
+                        {assets.datasetThumbnail ? (
                           <img
-                            src={assets.datasetImage || CustomImage}
+                            src={assets.datasetThumbnail || CustomImage}
                             alt="Image"
-                            className="h-14 w-14 overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                            className="h-14 w-14 overflow-hidden relative mx-auto border-none max-h-full cursor-pointer"
                             onError={(e) => {
                               e.target.onerror = null;
                               e.target.src = CustomImage;

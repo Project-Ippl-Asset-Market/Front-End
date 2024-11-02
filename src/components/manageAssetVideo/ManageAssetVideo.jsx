@@ -1,4 +1,6 @@
-import { Link } from "react-router-dom";
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
+import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
 import IconSearch from "../../assets/icon/iconHeader/iconSearch.svg";
@@ -23,10 +25,16 @@ function ManageAssetVideo() {
   const sidebarRef = useRef(null);
   const [assets, setAssets] = useState([]);
   const [user, setUser] = useState(null);
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState(""); // Menyimpan role pengguna
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const assetsPerPage = 5; // Set jumlah aset per halaman
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -50,13 +58,12 @@ function ManageAssetVideo() {
     };
   }, [isSidebarOpen]);
 
-  // Observe user authentication status
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setIsLoading(true);
       if (currentUser) {
         setUser(currentUser);
 
-        // Fetch user role (admin or superadmin)
         const adminQuery = query(
           collection(db, "admins"),
           where("uid", "==", currentUser.uid)
@@ -65,37 +72,42 @@ function ManageAssetVideo() {
 
         if (!adminSnapshot.empty) {
           const adminData = adminSnapshot.docs[0].data();
-          setRole(adminData.role); // Set role
+          setRole(adminData.role);
         } else {
-          setRole("user"); // Set as a normal user
+          const userQuery = query(
+            collection(db, "users"),
+            where("uid", "==", currentUser.uid)
+          );
+          const userSnapshot = await getDocs(userQuery);
+          if (!userSnapshot.empty) {
+            setRole("user");
+          }
         }
       } else {
         setUser(null);
       }
+      setIsLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  // Fetch data based on user role
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
-      if (!user) {
-        console.log("No user detected");
+      if (!user || !role) {
         return;
       }
 
       try {
         let q;
-        if (role === "superadmin" || role === "admin") {
-          // Fetch all videos for admin and superadmin
+        if (role === "superadmin") {
           q = query(collection(db, "assetVideos"));
-        } else {
-          // Regular users can only see their videos
+        } else if (role === "admin") {
+          q = query(collection(db, "assetVideos"));
+        } else if (role === "user") {
           q = query(
             collection(db, "assetVideos"),
-            where("userID", "==", user.uid)
+            where("userId", "==", user.uid)
           );
         }
 
@@ -105,7 +117,7 @@ function ManageAssetVideo() {
         for (const doc of querySnapshot.docs) {
           const data = doc.data();
           const createdAt =
-            data.uploadedAt?.toDate().toLocaleDateString("id-ID", {
+            data.createdAt?.toDate().toLocaleDateString("id-ID", {
               year: "numeric",
               month: "long",
               day: "numeric",
@@ -119,25 +131,53 @@ function ManageAssetVideo() {
             video: data.uploadUrlVideo,
             category: data.category,
             createdAt,
-            uploadedByEmail: data.uploadedByEmail,
-            userId: data.userID,
+            userId: data.userId,
           });
         }
 
-        setAssets(items);
+        if (role === "admin") {
+          const superadminQuery = query(
+            collection(db, "admins"),
+            where("role", "==", "superadmin")
+          );
+          const superadminSnapshot = await getDocs(superadminQuery);
+          const superadminIds = superadminSnapshot.docs.map(
+            (doc) => doc.data().uid
+          );
+          const filteredItems = items.filter(
+            (item) => !superadminIds.includes(item.userId)
+          );
+          setAssets(filteredItems);
+        } else {
+          setAssets(items);
+        }
       } catch (error) {
-        console.error("Error fetching data: ", error);
-      } finally {
-        setIsLoading(false);
+        // console.error("Error fetching data: ", error);
       }
     };
 
-    if (user) {
+    if (user && role) {
       fetchData();
     }
   }, [user, role]);
 
-  // Function to delete a video
+  const filteredAssets = assets.filter(
+    (asset) =>
+      asset.videoName &&
+      asset.videoName.toLowerCase().startsWith(searchTerm.toLowerCase())
+  );
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredAssets.length / assetsPerPage);
+  const startIndex = (currentPage - 1) * assetsPerPage;
+  const currentAssets = filteredAssets.slice(
+    startIndex,
+    startIndex + assetsPerPage
+  );
+
+  // Fungsi untuk berpindah halaman
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this video?"
@@ -153,17 +193,12 @@ function ManageAssetVideo() {
         setAssets(assets.filter((asset) => asset.id !== id));
         setAlertSuccess(true);
       } catch (error) {
-        console.error("Error deleting video: ", error);
+        // console.error("Error deleting video: ", error);
         setAlertError(true);
       }
     } else {
       alert("Deletion cancelled");
     }
-  };
-
-  const closeAlert = () => {
-    setAlertSuccess(false);
-    setAlertError(false);
   };
 
   return (
@@ -263,6 +298,8 @@ function ManageAssetVideo() {
                 <input
                   type="text"
                   placeholder="Search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   className="input border-none bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10 h-[40px] w-full focus:outline-none"
                 />
               </div>
@@ -301,11 +338,11 @@ function ManageAssetVideo() {
                   </tr>
                 </thead>
                 <tbody>
-                  {assets.map((asset) => (
+                  {currentAssets.map((asset) => (
                     <tr
                       key={asset.id}
                       className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-4">
                         <a
                           href={asset.video}
                           target="_blank"
@@ -319,10 +356,10 @@ function ManageAssetVideo() {
                         className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap">
                         {asset.videoName}
                       </th>
-                      <td className="px-6 py-4">{asset.category}</td>
-                      <td className="px-6 py-4">{asset.price}</td>
-                      <td className="px-6 py-4">{asset.createdAt || "N/A"}</td>
-                      <td className="mx-auto flex gap-4 mt-20">
+                      <td className="px-4  py-4">{asset.category}</td>
+                      <td className="px-4 py-4">{asset.price}</td>
+                      <td className="px-4 py-4">{asset.createdAt || "N/A"}</td>
+                      <td className="mx-auto flex gap-4 mt-4">
                         <Link to={`/manage-asset-video/edit/${asset.id}`}>
                           <img
                             src={IconEdit}
@@ -344,15 +381,22 @@ function ManageAssetVideo() {
               </table>
             </div>
           )}
-
           <div className="flex join pt-72 justify-end ">
-            <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
+            <button
+              className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}>
               «
             </button>
-            <button className="join-item btn dark:bg-neutral-25 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-25 border-neutral-60 dark:border-neutral-25">
-              Page 1
+            <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
+              Page {currentPage} of {totalPages}
             </button>
-            <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
+            <button
+              className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}>
               »
             </button>
           </div>

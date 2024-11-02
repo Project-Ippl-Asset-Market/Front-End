@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
@@ -52,11 +53,11 @@ function EditNewAsset2D() {
             setImagePreview(data.asset2DImage);
           }
         } else {
-          console.log("No such document!");
+          // console.log("No such document!");
           navigate("/manage-asset-2D");
         }
       } catch (error) {
-        console.error("Error fetching Asset 2D:", error);
+        // console.error("Error fetching Asset 2D:", error);
       } finally {
         setIsLoading(false);
       }
@@ -123,7 +124,7 @@ function EditNewAsset2D() {
         navigate("/manage-asset-2D");
       }, 2000);
     } catch (error) {
-      console.error("Error updating asset 2D: ", error);
+      // console.error("Error updating asset 2D: ", error);
       setAlertError(true);
     }
   };
@@ -351,10 +352,6 @@ function EditNewAsset2D() {
                       ))}
                     </select>
                   </label>
-
-                  <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
-                    +
-                  </div>
                 </div>
               </div>
 

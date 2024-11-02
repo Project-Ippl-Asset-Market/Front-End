@@ -51,14 +51,14 @@ export default {
           90: "#D9E7FF",
           95: "#FFFBFF",
           99: "#FFFBFF",
-          100: "#FFFFFF", //bg untuk light mode
+          100: "#FFFFFF",
         },
         neutral: {
           0: "#000000",
           5: "#201E43",
           10: "#171717",
-          20: "#212121", //bg untuk dark mode
-          25: "#303030", //content manage
+          20: "#212121",
+          25: "#303030",
           30: "#454747",
           40: "#5D5F5F",
           50: "#767777",

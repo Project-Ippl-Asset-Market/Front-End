@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { db } from "../../../firebase/firebaseConfig";
 import { useState, useEffect } from "react";
 import {
@@ -6,6 +7,7 @@ import {
   query,
   where,
   runTransaction,
+  addDoc,
   getDocs,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -14,11 +16,9 @@ import NavbarSection from "../web_User-LandingPage/NavbarSection";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import CustomImage from "../../../assets/assetmanage/Iconrarzip.svg";
 import IconDownload from "../../../assets/icon/iconDownload/iconDownload.svg";
-// import { useNavigate } from "react-router-dom";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 
 export function AssetGratis() {
-  // const navigate = useNavigate();
   const [AssetsData, setAssetsData] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [likedAssets, setLikedAssets] = useState(new Set());
@@ -26,6 +26,9 @@ export function AssetGratis() {
   const [selectedasset, setSelectedasset] = useState(null);
   const [alertLikes, setAlertLikes] = useState(false);
   const [isProcessingLike, setIsProcessingLike] = useState(false);
+  const myAssetsCollectionRef = collection(db, "myAssets");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
 
   // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
@@ -33,62 +36,63 @@ export function AssetGratis() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setCurrentUserId(user.uid);
+        // console.log("Current User ID:", user.uid); // Tambahkan log di sini
       } else {
         setCurrentUserId(null);
+        // console.log("Current User ID is null"); // Tambahkan log saat tidak ada user
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, []); // Tidak ada dependensi karena ini hanya perlu dijalankan sekali
+
+  const fetchAssets = async () => {
+    const collectionsToFetch = [
+      "assetAudios",
+      "assetImages",
+      "assetDatasets",
+      "assetImage2D",
+      "assetImage3D",
+      "assetVideos",
+    ];
+
+    try {
+      const allAssets = await Promise.all(
+        collectionsToFetch.map(async (collectionName) => {
+          const snapshot = await getDocs(collection(db, collectionName));
+          return snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+        })
+      );
+      const combinedAssets = allAssets.flat();
+      const filteredAssets = combinedAssets.filter(
+        (asset) => parseFloat(asset.price) === 0
+      );
+      setAssetsData(filteredAssets);
+    } catch (error) {
+      // console.error("Error fetching assets: ", error);
+    }
+  };
 
   useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setCurrentUserId(user.uid);
-      } else {
-        setCurrentUserId(null);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const fetchAssets = async () => {
-      const collectionsToFetch = [
-        "assetAudios",
-        "assetImages",
-        "assetDatasets",
-        "assetImage2D",
-        "assetImage3D",
-        "assetVideos",
-      ];
-
-      try {
-        const allAssets = await Promise.all(
-          collectionsToFetch.map(async (collectionName) => {
-            const snapshot = await getDocs(collection(db, collectionName));
-            return snapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }));
-          })
-        );
-        const combinedAssets = allAssets.flat();
-
-        const filteredAssets = combinedAssets.filter(
-          (asset) => parseFloat(asset.price) === 0
-        );
-
-        setAssetsData(filteredAssets);
-      } catch (error) {
-        console.error("Error fetching assets: ", error);
-      }
-    };
-
     fetchAssets();
   }, []);
+
+  // Filter pencarian
+  useEffect(() => {
+    if (searchTerm) {
+      const results = AssetsData.filter(
+        (asset) =>
+          asset.datasetName &&
+          asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setSearchResults(results);
+    } else {
+      setSearchResults(AssetsData);
+    }
+  }, [searchTerm, AssetsData]);
 
   useEffect(() => {
     const fetchUserLikes = async () => {
@@ -102,21 +106,20 @@ export function AssetGratis() {
         const likesSnapshot = await getDocs(likesQuery);
         const userLikes = new Set();
 
-        // Menambahkan assetId ke dalam set likedAssets
         likesSnapshot.forEach((doc) => {
-          userLikes.add(doc.data().assetId);
+          userLikes.add(doc.data().id);
         });
 
         setLikedAssets(userLikes);
       } catch (error) {
-        console.error("Error fetching likes: ", error);
+        // console.error("Error fetching likes: ", error);
       }
     };
 
     fetchUserLikes();
   }, [currentUserId]);
 
-  const handleLikeClick = async (assetId, currentLikes) => {
+  const handleLikeClick = async (id, currentLikes, collectionsToFetch) => {
     if (isProcessingLike) return;
 
     if (!currentUserId) {
@@ -130,38 +133,88 @@ export function AssetGratis() {
     // Tandai bahwa kita sedang memproses
     setIsProcessingLike(true);
 
-    const assetRef = doc(db, "assetImage2D", assetId);
-    const likeRef = doc(db, "likes", `${currentUserId}_${assetId}`);
+    const assetRef = doc(db, collectionsToFetch, id);
+    const likeRef = doc(db, "likes", `${currentUserId}_${id}`);
 
     try {
       await runTransaction(db, async (transaction) => {
         const newLikedAssets = new Set(likedAssets);
         let newLikesAsset;
-        if (newLikedAssets.has(assetId)) {
+        if (newLikedAssets.has(id)) {
           // Untuk Hapus like
           transaction.delete(likeRef);
           newLikesAsset = Math.max(0, currentLikes - 1);
           transaction.update(assetRef, { likeAsset: newLikesAsset });
-          newLikedAssets.delete(assetId);
+          newLikedAssets.delete(id);
         } else {
           // Untuk Tambah like
           transaction.set(likeRef, {
             userId: currentUserId,
-            assetId: assetId,
+            id: id,
+            collectionsToFetch: collectionsToFetch,
           });
           newLikesAsset = currentLikes + 1;
           transaction.update(assetRef, { likeAsset: newLikesAsset });
-          newLikedAssets.add(assetId);
+          newLikedAssets.add(id);
         }
 
         // Update state setelah transaksi sukses
         setLikedAssets(newLikedAssets);
       });
+      await fetchAssets();
     } catch (error) {
-      console.error("Error updating likes: ", error);
+      // console.error("Error updating likes: ", error);
     } finally {
-      // Selesaikan proses
       setIsProcessingLike(false);
+    }
+  };
+
+  const handleSaveToMyAssets = async () => {
+    // Periksa apakah currentUserId dan selectedasset ada
+    if (!currentUserId || !selectedasset) {
+      alert("Anda perlu login untuk menyimpan Asset ini.");
+      return;
+    }
+
+    // Log untuk memverifikasi currentUserId
+    // console.log("Current User ID:", currentUserId);
+    // console.log("Selected Asset:", selectedasset);
+
+    // Buat data asset baru dengan userId yang sesuai
+    const newAssetData = {
+      ...selectedasset,
+      userId: currentUserId,
+      savedAt: new Date(),
+    };
+
+    // Log untuk memverifikasi data yang akan disimpan
+    // console.log("Asset Data to Save:", newAssetData);
+
+    try {
+      // Cek apakah asset sudah ada di myAssets
+      const querySnapshot = await getDocs(
+        query(
+          myAssetsCollectionRef,
+          where("userId", "==", currentUserId),
+          where("id", "==", selectedasset.id)
+        )
+      );
+
+      if (!querySnapshot.empty) {
+        // Asset sudah ada, tampilkan peringatan
+        alert("Asset ini sudah disimpan ke My Asset!");
+        return;
+      }
+
+      // Menambahkan dokumen baru dengan addDoc
+      const docRef = await addDoc(myAssetsCollectionRef, newAssetData);
+
+      // console.log("Document written with ID: ", docRef.id);
+      alert("Asset telah disimpan ke My Asset!");
+      closeModal();
+    } catch (error) {
+      // console.error("Error saving asset to My Assets: ", error);
+      alert("Terjadi kesalahan saat menyimpan asset.");
     }
   };
 
@@ -177,13 +230,74 @@ export function AssetGratis() {
     setSelectedasset(null);
   };
 
+  // Filter berdasarkan pencarian
+  const filteredAssetsData = AssetsData.filter((asset) => {
+    const datasetName =
+      asset.assetAudiosName ||
+      asset.audioName ||
+      asset.imageName ||
+      asset.asset2DName ||
+      asset.asset3DName ||
+      asset.videoName ||
+      "";
+    return (
+      datasetName &&
+      datasetName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
+
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
-      <div className="w-full shadow-md bg-primary-100 dark:text-primary-100 relative z-40 ">
-        <div className="pt-[50px] sm:pt-[70px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
+      <div className="w-full shadow-lg bg-primary-100 dark:text-primary-100 relative z-40 ">
+        <div className="-mt-10 pt-[2px] sm:pt-[60px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
           <HeaderNav />
         </div>
-        <NavbarSection />
+        <div className="mt-0 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+          <NavbarSection />
+        </div>
+      </div>
+
+      <div className="absolute ">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[47%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[193px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
+          <div className="justify-center">
+            <form
+              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[850px] 2xl:w-[1200px]"
+              onSubmit={(e) => e.preventDefault()}>
+              <div className="relative">
+                <div className="relative">
+                  <input
+                    type="search"
+                    id="location-search"
+                    className="block w-full p-4 pl-24 placeholder:pr-10 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                    placeholder="Search assets..."
+                    required
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <span className="absolute inset-y-0 left-8 flex items-center text-gray-500 dark:text-gray-400">
+                    <svg
+                      className="w-6 h-6 mx-auto"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 18 18">
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+                      />
+                    </svg>
+                  </span>
+                  <span className="absolute inset-y-0 left-20 flex items-center text-neutral-20 dark:text-neutral-20 text-[20px]">
+                    |
+                  </span>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
 
       <div className="w-full p-12 mx-auto">
@@ -204,65 +318,118 @@ export function AssetGratis() {
             </button>
           </div>
         )}
-        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
+
+        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[90px] -mb-20">
           All Category
         </h1>
       </div>
       <div className="pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
         <div className=" mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]  ">
-          {AssetsData.map((data) => {
+          {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
+            let collectionsToFetch = "";
+            if (data.assetAudiosName) {
+              collectionsToFetch = "assetAudios";
+            }
+            if (data.audioName) {
+              collectionsToFetch = "assetAudios";
+            } else if (data.imageName) {
+              collectionsToFetch = "assetImages";
+            } else if (data.datasetName) {
+              collectionsToFetch = "assetDatasets";
+            } else if (data.asset2DName) {
+              collectionsToFetch = "assetImage2D";
+            } else if (data.asset3DName) {
+              collectionsToFetch = "assetImage3D";
+            } else if (data.videoName) {
+              collectionsToFetch = "assetVideos";
+            }
+
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
-                <div className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px]">
-                  {data.uploadUrlVideo ? (
-                    <video
-                      src={data.uploadUrlVideo}
-                      alt="Video Preview"
-                      className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
-                      controls
-                      onClick={() => openModal(data)}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = CustomImage;
-                      }}>
-                      Your browser does not support the video tag.
-                    </video>
-                  ) : (
-                    <img
-                      src={data.datasetImage || CustomImage}
-                      alt="Image"
-                      className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
-                      onClick={() => openModal(data)}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = CustomImage;
-                      }}
-                    />
-                  )}
+                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[360px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                <div
+                  onClick={() => openModal(data)}
+                  className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px]">
+                  <div className="w-full h-[150px] relative">
+                    {data.uploadUrlVideo ? (
+                      <video
+                        src={data.uploadUrlVideo}
+                        alt="Asset Video"
+                        className="h-full w-full rounded-t-[10px] mx-auto border-none"
+                        onContextMenu={(e) => e.preventDefault()}
+                        controls
+                        controlsList="nodownload"
+                      />
+                    ) : (
+                      <img
+                        src={
+                          data.uploadUrlImage ||
+                          data.datasetImage ||
+                          data.assetAudiosImage ||
+                          data.asset2DImage ||
+                          data.asset3DImage ||
+                          (data.videoName ? CustomImage : null) ||
+                          CustomImage
+                        }
+                        alt="Asset Image"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = CustomImage;
+                        }}
+                        className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                      />
+                    )}
+                  </div>
                 </div>
-
-                {/* Details Section */}
                 <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-10">
-                  <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
-                    {data.assetAudiosName ||
-                      data.datasetName ||
-                      data.asset2DName ||
-                      data.imageName ||
-                      data.videoName ||
-                      "Nama Tidak Tersedia"}
-                  </p>
+                  <div className="px-2 py-2">
+                    {/* <p className="text-neutral-10 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100 font-semibold">
+                      {data.assetAudiosName ||
+                        data.audioName ||
+                        data.datasetName ||
+                        data.asset2DName ||
+                        data.imageName ||
+                        data.videoName ||
+                        "Nama Tidak Tersedia"}
+                    </p> */}
 
-                  <h4 className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100">
-                    {data.description || "Deskripsi Tidak Tersedia"}{" "}
-                  </h4>
+                    <p className="text-neutral-10 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px] dark:text-primary-100 font-semibold">
+                      {(
+                        data.assetAudiosName ||
+                        data.audioName ||
+                        data.datasetName ||
+                        data.asset2DName ||
+                        data.imageName ||
+                        data.videoName ||
+                        "Nama Tidak Tersedia"
+                      ).substring(0, 20)}
+                      {(
+                        data.assetAudiosName ||
+                        data.audioName ||
+                        data.datasetName ||
+                        data.asset2DName ||
+                        data.imageName ||
+                        data.videoName ||
+                        "Nama Tidak Tersedia"
+                      ).length > 20
+                        ? "..."
+                        : ""}
+                    </p>
 
-                  <div className="flex justify-between items-center mt-auto gap-2">
+                    <p className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100">
+                      {data.description.length > 24
+                        ? `${data.description.substring(0, 24)}......`
+                        : data.description || "Deskripsi Tidak Tersedia"}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between px-2 py-2   dark:bg-neutral-80">
                     <button
-                      onClick={() => handleLikeClick(data.id, likesAsset)}
+                      onClick={() =>
+                        handleLikeClick(data.id, likesAsset, collectionsToFetch)
+                      }
                       className="flex justify-start items-center mr-2">
                       {likedByCurrentUser ? (
                         <FaHeart className="text-red-600" />
@@ -273,8 +440,11 @@ export function AssetGratis() {
                         ({likesAsset})
                       </p>
                     </button>
-                    <p className="flex justify-end w-full text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
-                      Rp. {data.price.toLocaleString("id-ID")}
+
+                    <p className="text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
+                      {data.price % 1000 === 0 && data.price >= 1000
+                        ? `Rp. ${(data.price / 1000).toLocaleString("id-ID")}k`
+                        : "Free"}
                     </p>
                   </div>
                 </div>
@@ -288,51 +458,74 @@ export function AssetGratis() {
       {modalIsOpen && selectedasset && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] sm:w-[700px] md:w-[700px] lg:w-[700px] xl:w-[700px] 2xl:w-[700px] mx-4 flex relative">
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] mx-4 flex relative">
             <button
-              className="absolute top-1 sm:top-2 md:top-2 lg:top-3 xl:top-2 2xl:top-2 right-3 sm:right-2 md:right-2 lg:right-3 xl:right-2 2xl:right-2 text-gray-600 dark:text-gray-400 text-2xl sm:text-xl md:text-xl lg:text-[35px] xl:text-[40px] 2xl:text-2xl"
+              className="absolute right-3 text-gray-600 dark:text-gray-400 text-2xl"
               onClick={closeModal}>
               &times;
             </button>
-            <img
-              src={selectedasset.datasetImage || CustomImage}
-              alt="asset Image"
-              className="w-1/2 h-auto mb-4"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = CustomImage;
-              }}
-            />
+            <div className=" h-[240px] relative">
+              {selectedasset.uploadUrlVideo ? (
+                <video
+                  src={selectedasset.uploadUrlVideo}
+                  alt="Asset Video"
+                  className="h-full w-full rounded-t-[10px]"
+                  onContextMenu={(e) => e.preventDefault()}
+                  controls
+                  controlsList="nodownload"
+                />
+              ) : (
+                <img
+                  src={selectedasset.uploadUrlImage || CustomImage}
+                  alt="Asset Image"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = CustomImage;
+                  }}
+                  className="h-full w-full mx-auto border-none"
+                />
+              )}
+            </div>
             <div className="w-1/2 pl-4 ">
               <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
                 {selectedasset.datasetName}
               </h2>
-              <p className="text-sm mb-2 dark:text-primary-100 mt-4">
-                Rp. {selectedasset.price.toLocaleString("id-ID")}
+              <p className="text-sm mb-2 dark:text-primary-100">
+                {selectedasset.price > 0
+                  ? `Rp ${selectedasset.price.toLocaleString("id-ID")}`
+                  : "Free"}
               </p>
-              <div className="text-sm mb-2 dark:text-primary-100 mt-4">
+              <div className="text-sm mb-2 dark:text-primary-100">
                 <label className="flex-col mt-2">Deskripsi Video:</label>
                 <div className="mt-2">{selectedasset.description}</div>
               </div>
-
-              <p className="text-sm mb-2 dark:text-primary-100 mt-4">
+              <p className="text-sm mb-2 dark:text-primary-100">
                 Kategori: {selectedasset.category}
               </p>
-              <button className="flex p-2 text-center items-center justify-center bg-neutral-60 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-10 rounded-md">
+              <button
+                className="text-primary-100 flex p-2 text-center items-center justify-center bg-neutral-60 h-10 mt-36 rounded-md w-full"
+                onClick={handleSaveToMyAssets}>
                 <img
                   src={IconDownload}
                   alt="Cart Icon"
                   className="w-6 h-6 mr-2"
                 />
-                <p>Unduh</p>
+                <p>Simpan ke My Asset</p>
               </button>
             </div>
           </div>
         </div>
       )}
+      <div className="relative -mt-60 flex items-center justify-center">
+        <div className="text-center">
+          {searchResults.length === 0 && searchTerm && (
+            <p className="text-black text-[20px]">No assets found</p>
+          )}
+        </div>
+      </div>
 
-      <footer className=" min-h-[181px] flex flex-col items-center justify-center">
-        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
+      <footer className="mt-[1000px] flex flex-col items-center justify-center">
+        <div className=" flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
           <a href="#">Teams And Conditions</a>
           <a href="#">File Licenses</a>
           <a href="#">Refund Policy</a>
@@ -345,3 +538,5 @@ export function AssetGratis() {
     </div>
   );
 }
+
+export default AssetGratis;

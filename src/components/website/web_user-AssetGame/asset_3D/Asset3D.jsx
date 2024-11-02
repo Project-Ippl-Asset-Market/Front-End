@@ -266,7 +266,7 @@ export function Asset3D() {
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
           <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] sm:w-[700px] md:w-[700px] lg:w-[700px] xl:w-[700px] 2xl:w-[700px] mx-4 flex relative">
             <button
-              className="absolute top-1 sm:top-2 md:top-2 lg:top-3 xl:top-2 2xl:top-2 right-3 sm:right-2 md:right-2 lg:right-3 xl:right-2 2xl:right-2 text-gray-600 dark:text-gray-400 text-2xl sm:text-xl md:text-xl lg:text-[35px] xl:text-[40px] 2xl:text-2xl"
+              className=" absolute top-1 right-4 text-gray-600 dark:text-gray-400 text-4xl"
               onClick={closeModal}>
               &times;
             </button>

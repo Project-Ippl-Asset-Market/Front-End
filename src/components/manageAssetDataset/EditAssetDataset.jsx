@@ -1,3 +1,5 @@
+/* eslint-disable react/prop-types */
+/* eslint-disable no-unused-vars */
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconField from "../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../HeaderNav/HeaderNav";
@@ -70,7 +72,7 @@ function AddCategory({ isOpen, onClose, onAddCategory }) {
       setCategoryName(""); // Reset input
       onClose(); // Tutup modal
     } catch (error) {
-      console.error("Error menambahkan kategori: ", error);
+      // console.error("Error menambahkan kategori: ", error);
       alert("Terjadi kesalahan saat menambahkan kategori. Silakan coba lagi.");
     } finally {
       setIsSubmitting(false);
@@ -136,7 +138,7 @@ function EditNewDataset() {
   useEffect(() => {
     const fetchCategories = async () => {
       if (!user || !role) {
-        console.log("No user or role detected");
+        // console.log("No user or role detected");
         return;
       }
 
@@ -184,10 +186,10 @@ function EditNewDataset() {
         } else {
           // Jika bukan admin, set assets langsung
           setCategories(items);
-          console.log("Fetched categories", items);
+          // console.log("Fetched categories", items);
         }
       } catch (error) {
-        console.error("Error fetching categories: ", error);
+        // console.error("Error fetching categories: ", error);
       }
     };
 
@@ -250,7 +252,7 @@ function EditNewDataset() {
     category: "",
     description: "",
     price: "",
-    datasetImage: null,
+    datasetThumbnail: null,
   });
 
   // Fetch existing data based on id
@@ -264,15 +266,15 @@ function EditNewDataset() {
           const data = docSnap.data();
           setDataset(data);
 
-          if (data.datasetImage) {
-            setImagePreview(data.datasetImage);
+          if (data.datasetThumbnail) {
+            setImagePreview(data.datasetThumbnail);
           }
         } else {
-          console.log("No such document!");
+          // console.log("No such document!");
           navigate("/manage-asset-dataset");
         }
       } catch (error) {
-        console.error("Error fetching dataset:", error);
+        // console.error("Error fetching dataset:", error);
       }
     };
 
@@ -282,10 +284,10 @@ function EditNewDataset() {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    if (name === "datasetImage" && files[0]) {
+    if (name === "datasetThumbnail" && files[0]) {
       setDataset({
         ...dataset,
-        datasetImage: files[0],
+        datasetThumbnail: files[0],
       });
 
       // Create image preview
@@ -297,7 +299,7 @@ function EditNewDataset() {
         reader.readAsDataURL(files[0]);
       } else {
         // Reset preview jika file bukan gambar
-        setImagePreview(files.datasetImage);
+        setImagePreview(files.datasetThumbnail);
       }
     } else {
       setDataset({
@@ -318,32 +320,20 @@ function EditNewDataset() {
         throw new Error("Invalid price: must be a number.");
       }
 
-      let datasetImage = dataset.datasetImage;
-
-      if (imagePreview !== dataset.datasetImage) {
-        const fileName = imagePreview.split("/").pop().split("?")[0];
-        const fileExtension = fileName.split(".").pop(); // Ekstensi file
-        // console.log(fileExtension);
-
-        const storageFileName = `images-dataset/dataset-${id}.${fileExtension}`;
-
+      let datasetThumbnail = dataset.datasetThumbnail;
+      if (imagePreview !== dataset.datasetThumbnail) {
+        const storageFileName = `images-dataset/dataset-${id}.jpg`;
         // Delete the old image if a new image is being uploaded
         const oldImageRef = ref(storage, storageFileName);
         await deleteObject(oldImageRef); // Delete the old image
 
-        const originalFileName = dataset.datasetImage.name;
-        const newFileExtension = originalFileName.split(".").pop();
-        // console.log(newFileExtension);
         // Upload the new image
-        const imageRef = ref(
-          storage,
-          `images-dataset/dataset-${id}.${newFileExtension}`
-        );
-        await uploadBytes(imageRef, dataset.datasetImage);
-        datasetImage = await getDownloadURL(imageRef);
+        const imageRef = ref(storage, `images-dataset/dataset-${id}.jpg`);
+        await uploadBytes(imageRef, dataset.datasetThumbnail);
+        datasetThumbnail = await getDownloadURL(imageRef);
       } else {
         // If no new image is uploaded, keep the old image URL
-        datasetImage = imagePreview;
+        datasetThumbnail = imagePreview;
       }
 
       const datasetRef = doc(db, "assetDatasets", id);
@@ -352,7 +342,7 @@ function EditNewDataset() {
         category: dataset.category,
         description: dataset.description,
         price: priceAsNumber,
-        datasetImage: datasetImage,
+        datasetThumbnail: datasetThumbnail,
       });
 
       setAlertSuccess(true);
@@ -360,7 +350,7 @@ function EditNewDataset() {
         navigate("/manage-asset-dataset");
       }, 2000);
     } catch (error) {
-      console.error("Error updating dataset: ", error);
+      // console.error("Error updating dataset: ", error);
       setAlertError(true);
     }
   };
@@ -455,7 +445,7 @@ function EditNewDataset() {
                 <div className="w-full sm:w-[150px] md:w-[170px] lg:w-[200px] xl:w-[220px] 2xl:w-[170px]">
                   <div className="flex items-center gap-1">
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                      Upload File
+                      Edit Thumbnail Dataset
                     </h3>
                     <img
                       src={IconField}
@@ -464,8 +454,8 @@ function EditNewDataset() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px] mb-2">
-                    Format foto harus .jpg, jpeg, png dan ukuran minimal 300 x
-                    300 px.
+                    Format thumbnail harus .jpg, jpeg, png dan ukuran minimal
+                    300 x 300 px.
                   </p>
                 </div>
                 <div className="p-0">
@@ -483,7 +473,7 @@ function EditNewDataset() {
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                              Upload Dataset
+                              Upload Thumbnail
                             </span>
                           </>
                         )}
@@ -491,10 +481,10 @@ function EditNewDataset() {
                         <input
                           type="file"
                           id="fileUpload"
-                          name="datasetImage"
+                          name="datasetThumbnail"
                           onChange={handleChange}
                           multiple
-                          accept=".jpg,.jpeg,.png,.zip,.rar,.csv,.xls,.xlsx,.pdf"
+                          accept=".jpg,.jpeg,.png"
                           className="hidden"
                         />
 
@@ -512,7 +502,10 @@ function EditNewDataset() {
                               type="button"
                               onClick={() => {
                                 setImagePreview(null);
-                                setDataset({ ...dataset, datasetImage: null });
+                                setDataset({
+                                  ...dataset,
+                                  datasetThumbnail: null,
+                                });
                               }}
                               className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded"
                             >

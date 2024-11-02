@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconField from "../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../HeaderNav/HeaderNav";
@@ -51,11 +52,11 @@ function EditNewImage() {
             setImagePreview(data.uploadUrlImage);
           }
         } else {
-          console.log("No such document!");
+          // console.log("No such document!");
           navigate("/manage-asset-image");
         }
       } catch (error) {
-        console.error("Error fetching image:", error);
+        // console.error("Error fetching image:", error);
       }
     };
 
@@ -121,7 +122,7 @@ function EditNewImage() {
         navigate("/manage-asset-image");
       }, 2000);
     } catch (error) {
-      console.error("Error updating image: ", error);
+      // console.error("Error updating image: ", error);
       setAlertError(true);
     }
   };

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
@@ -12,71 +13,76 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 
-function EditNewAudio() {
+function EditNewAsset2D() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [audioPreview, setAudioPreview] = useState("");
+  const [imagePreview, setImagePreview] = useState("");
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
+  // eslint-disable-next-line no-unused-vars
+  const [isLoading, setIsLoading] = useState(true);
 
   const categories = [
-    { id: 1, name: "Audio Effects" },
-    { id: 2, name: "Background Music" },
-    { id: 3, name: "Voice Overs" },
-    { id: 4, name: "Sound Design" },
+    { id: 1, name: "Characters" },
+    { id: 2, name: "Environment" },
+    { id: 3, name: "Fonts" },
+    { id: 4, name: "GUI" },
+    { id: 5, name: "Textures & Materials" },
   ];
 
-  const [audio, setAudio] = useState({
-    audioName: "",
+  const [asset2D, setAsset2D] = useState({
+    datasetName: "",
     category: "",
     description: "",
     price: "",
-    uploadUrlAudio: null,
+    datasetImage: null,
   });
 
   // Fetch existing data based on id
   useEffect(() => {
-    const fetchaAudio = async () => {
+    const fetchDataset = async () => {
       try {
-        const docRef = doc(db, "assetAudios", id);
+        const docRef = doc(db, "assetImage2D", id);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           const data = docSnap.data();
-          setAudio(data);
+          setAsset2D(data);
 
-          if (data.uploadUrlAudio) {
-            setAudioPreview(data.uploadUrlAudio);
+          if (data.asset2DImage) {
+            setImagePreview(data.asset2DImage);
           }
         } else {
-          console.log("No such document!");
-          navigate("/manage-asset-audio");
+          // console.log("No such document!");
+          navigate("/manage-asset-2D");
         }
       } catch (error) {
-        console.error("Error fetching audio:", error);
+        // console.error("Error fetching Asset 2D:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchaAudio();
+    fetchDataset();
   }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    if (name === "uploadUrlAudio" && files[0]) {
-      setAudio({
-        ...audio,
-        uploadUrlAudio: files[0],
+    if (name === "asset2DImage" && files[0]) {
+      setAsset2D({
+        ...asset2D,
+        asset2DImage: files[0],
       });
 
       const reader = new FileReader();
       reader.onloadend = () => {
-        setAudioPreview(reader.result);
+        setImagePreview(reader.result);
       };
       reader.readAsDataURL(files[0]);
     } else {
-      setAudio({
-        ...audio,
+      setAsset2D({
+        ...asset2D,
         [name]: value,
       });
     }
@@ -86,46 +92,45 @@ function EditNewAudio() {
     e.preventDefault();
 
     try {
-      let uploadUrlAudio = audio.uploadUrlAudio;
+      let asset2DImage = asset2D.asset2DImage;
+      let datasetImage; //Deklarasikan variabel datasetImage
 
-      if (typeof uploadUrlAudio === "object" && uploadUrlAudio) {
+      if (typeof asset2DImage === "object" && asset2DImage) {
         // Delete the old image if a new image is being uploaded
-        const oldAudioRef = ref(
-          storage,
-          `image-asset-audio/uploadUrlAudio-${id}.mp3`
-        );
-        await deleteObject(oldAudioRef); // Delete the old image
+        const oldImageRef = ref(storage, `images-asset-2d/asset2d-${id}.jpg`);
+        await deleteObject(oldImageRef); // Delete the old image
 
         // Upload the new image
-        const audioRef = ref(storage, `image-asset-audio/uploadUrlAudio-${id}.mp3`);
-        await uploadBytes(audioRef, audio.uploadUrlaudio);
-        uploadUrlAudio = await getDownloadURL(audioRefRef);
+        const imageRef = ref(storage, `images-asset-2d/asset2d-${id}.jpg`);
+        await uploadBytes(imageRef, asset2D.asset2DImage);
+        datasetImage = await getDownloadURL(imageRef);
       } else {
         // If no new image is uploaded, keep the old image URL
-        uploadUrlAudio = audioPreview;
+        // eslint-disable-next-line no-unused-vars
+        datasetImage = imagePreview;
       }
 
-      const audioRef = doc(db, "assetAudios", id);
-      await updateDoc(audioRef, {
-        audioName: audio.audioName,
-        category: audio.category,
-        description: audio.description,
-        price: audio.price,
-        uploadUrlAudio: uploadUrlAudio,
+      const asset2DRef = doc(db, "assetImage2D", id);
+      await updateDoc(asset2DRef, {
+        asset2DName: asset2D.asset2DName,
+        category: asset2D.category,
+        description: asset2D.description,
+        price: asset2D.price,
+        asset2DImage: asset2DImage,
       });
 
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manage-asset-audio");
+        navigate("/manage-asset-2D");
       }, 2000);
     } catch (error) {
-      console.error("Error updating audio: ", error);
+      // console.error("Error updating asset 2D: ", error);
       setAlertError(true);
     }
   };
 
   const handleCancel = () => {
-    navigate(-1); // Navigate to the previous page or you can set a specific route like navigate("/dimage-list");
+    navigate(-1); // Navigate to the previous page or you can set a specific route like navigate("/dataset-list");
   };
 
   const closeAlert = () => {
@@ -165,7 +170,7 @@ function EditNewAudio() {
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>Audio berhasil diperbarui.</span>
+                <span>Asset 2D berhasil diperbarui.</span>
               </div>
             </div>
           )}
@@ -189,7 +194,7 @@ function EditNewAudio() {
                     d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>Gagal memperbarui audio silahkan coba lagi</span>
+                <span>Gagal memperbarui asset 2D silahkan coba lagi</span>
               </div>
             </div>
           )}
@@ -198,11 +203,11 @@ function EditNewAudio() {
             onSubmit={handleSubmit}
             className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24   h-[1434px] gap-[50px]  overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0">
             <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-10 dark:text-primary-100 p-4">
-              Edit audio
+              Edit Asset 2D
             </h1>
             <div className="p-8 -mt-4  bg-primary-100  dark:bg-neutral-20 rounded-sm shadow-lg">
               <h2 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                Audio Information
+                Asset 2D Information
               </h2>
 
               <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
@@ -218,7 +223,8 @@ function EditNewAudio() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px] mb-2">
-                    Format audio harus mp3
+                    Format foto harus .jpg, jpeg, png dan ukuran minimal 300 x
+                    300 px.
                   </p>
                 </div>
                 <div className="p-0">
@@ -227,15 +233,15 @@ function EditNewAudio() {
                       <label
                         htmlFor="fileUpload"
                         className="flex flex-col justify-center items-center cursor-pointer text-center">
-                        {!audioPreview && (
+                        {!imagePreview && (
                           <>
-                            <img 
+                            <img
                               alt=""
                               className="w-6 h-6"
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                              Upload Audio
+                              Upload Asset 2D
                             </span>
                           </>
                         )}
@@ -243,26 +249,25 @@ function EditNewAudio() {
                         <input
                           type="file"
                           id="fileUpload"
-                          name="uploadUrlAudio"
+                          name="asset2DImage"
                           onChange={handleChange}
                           multiple
-                          accept="mp3"
+                          accept="image/jpeg,image/png,image/jpg"
                           className="hidden"
                         />
 
-                        {audioPreview && (
-                          <div className="mt-2 relative w-40 h-40 sm:w-40 sm:h-40 md:w-40 md:h-40 lg:w-[150px] lg:h-[156px] xl:w-[150px] xl:h-[156px] 2xl:w-[150px] 2xl:h-[157px] flex justify-center items-center bg-gray-200 rounded">
-                            <audio
-                              controls 
-                              src={audioPreview}
+                        {imagePreview && (
+                          <div className="mt-2 relative">
+                            <img
+                              src={imagePreview}
                               alt="Preview"
-                              className="object-cover rounded"
+                              className="w-40 sm:w-40 md:w-40 lg:w-[150px] xl:w-[150px] 2xl:w-[150px] h-40 sm:h-40 md:h-40 lg:h-[156px] xl:h-[156px] 2xl:h-[157px] -mt-2.5 object-cover rounded"
                             />
                             <button
                               type="button"
                               onClick={() => {
-                                setAudioPreview(null);
-                                setAudio({ ...audio, uploadUrlAudio: null });
+                                setImagePreview(null);
+                                setAsset2D({ ...asset2D, asset2DImage: null });
                               }}
                               className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded">
                               x
@@ -275,12 +280,12 @@ function EditNewAudio() {
                 </div>
               </div>
 
-              {/* image Name */}
+              {/* Dataset Name */}
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-1">
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                      Audio Name
+                      Asset 2D Name
                     </h3>
                     <img
                       src={IconField}
@@ -289,15 +294,15 @@ function EditNewAudio() {
                     />
                   </div>
                   <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Masukkan Nama Untuk audio Maximal 40 Huruf
+                    Masukkan Nama Untuk Asset 2D Maximal 40 Huruf
                   </p>
                 </div>
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <input
                       type="text"
-                      name="audioName"
-                      value={audio.audioName}
+                      name="asset2DName"
+                      value={asset2D.asset2DName}
                       onChange={handleChange}
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px]"
                       placeholder="Enter name...."
@@ -321,7 +326,7 @@ function EditNewAudio() {
                     />
                   </div>
                   <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Silahkan Pilih Kategori Yang Sesuai Dengan audio Anda.
+                    Silahkan Pilih Kategori Yang Sesuai Dengan Asset 2D Anda.
                   </p>
                 </div>
 
@@ -329,11 +334,11 @@ function EditNewAudio() {
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <select
                       name="category"
-                      value={audio.category} // Bind value to dimage.category
+                      value={asset2D.category} // Bind value to dataset.category
                       onChange={(e) =>
-                        setAudio((prevState) => ({
+                        setAsset2D((prevState) => ({
                           ...prevState,
-                          category: e.target.value, // Update category inside image state
+                          category: e.target.value, // Update category inside dataset state
                         }))
                       }
                       className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md">
@@ -364,14 +369,14 @@ function EditNewAudio() {
                     />
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px]">
-                    Berikan Deskripsi Pada audio Anda Maximal 200 Huruf
+                    Berikan Deskripsi Pada Asset 2D Anda Maximal 200 Huruf
                   </p>
                 </div>
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <textarea
                       name="description"
-                      value={audio.description}
+                      value={asset2D.description}
                       onChange={handleChange}
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px] h-[48px] sm:h-[60px] md:h-[80px] lg:h-[80px] xl:h-[100px] bg-transparent"
                       placeholder="Deskripsi"
@@ -390,16 +395,16 @@ function EditNewAudio() {
                     </h3>
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Silahkan Masukkan Harga Untuk Audio jika asset gratis
+                    Silahkan Masukkan Harga Untuk Asset 2D jika asset gratis
                     silahkan dikosongkan.
                   </p>
                 </div>
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <input
-                      type="number"
+                      type="Rp"
                       name="price"
-                      value={audio.price}
+                      value={asset2D.price}
                       onChange={handleChange}
                       className="input border-0 focus:outline-none focus:ring-0  w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
                       placeholder="Rp"
@@ -430,4 +435,4 @@ function EditNewAudio() {
   );
 }
 
-export default EditNewAudio;
+export default EditNewAsset2D;

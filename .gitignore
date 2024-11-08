@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 servis-api-crud-firebase
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

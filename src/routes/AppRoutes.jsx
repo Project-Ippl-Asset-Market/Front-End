@@ -36,6 +36,10 @@ import EditUsers from "../components/myAdmin/EditUser";
 import ManageAsset2D from "../components/daff 2d 3d/ManageAsset2D";
 import SaleAssets from "../components/myUserDashboard/SaleAssets";
 import Revenue from "../components/myUserDashboard/Revenue";
+import Pengaturanbayar from "../components/myUserDashboard/pengaturanpembayaran";
+import WithDraw from "../components/myUserDashboard/Withdrawal";
+import ManageBankAccounts from "../components/myAdmin/managebankAccounts";
+import AdminWithdraw from "../components/myUserDashboard/adminwithdrawrequest";
 // Import Halaman Dashboard End
 
 // Import Halaman Website start
@@ -49,6 +53,26 @@ import { Asset2D } from "../components/website/web_user-AssetGame/asset_2D/Asset
 import { Asset3D } from "../components/website/web_user-AssetGame/asset_3D/Asset3D";
 import { AssetAudio } from "../components/website/web_user-AssetGame/asset_audio/AssetAudio";
 import { AssetGame } from "../components/website/web_user-AssetGame/AssetGame";
+import { MyAsset } from "../components/website/web_User-MyAsset/MyAsset";
+import EditProfil from "../components/editProfil/Profil";
+import RiwayatTransaksi from "../components/riwayat/RiwayatTransaksi";
+import DetailTransaksi from "../components/riwayat/detail_transaksi";
+import WithdrawRequest from "../components/myUserDashboard/withDrawalReq";
+
+import SidebarPanduan from "../components/panduan/SidebarPanduan";
+import PanduanRegistrasi from "../components/panduan/PanduanRegistrasi";
+import PanduanLogin from "../components/panduan/PanduanLogin";
+import PanduanLupaPassword from "../components/panduan/PanduanLupaPassword";
+import PanduanJualAsset from "../components/panduan/PanduanJualAsset";
+import PanduanEditAsset from "../components/panduan/PanduanEditAsset";
+import MainHelp_Page from "../components/Help_Page/mainHelp_Page";
+import HalamanBantuan from "../components/Help_Page/Bantuan";
+import AkunDanKeamanan from "../components/Help_Page/AkundanKeamanan";
+import Pembelian from "../components/Help_Page/Pembelian";
+import PenjualanAsset from "../components/Help_Page/PenjualanAsset";
+import Layanan from "../components/Help_Page/Layanan";
+import KebijakanPixelStore from "../components/Help_Page/KebijakanPixelStore";
+
 // Import Halaman Website End
 
 // eslint-disable-next-line react/prop-types
@@ -61,6 +85,12 @@ const AppRoutes = ({ handleLogout }) => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/lupa-password" element={<LupaPassword />} />
+
+          <Route path="/withdraw" element={<WithDraw />} />
+          {/* <Route path="/aturbayar" element={<Pengaturanbayar />} /> */}
+          <Route path="/withdrawreq" element={<WithDraw />} />
+          <Route path="/managebankaccounts" element={<ManageBankAccounts />} />
+          <Route path="/adminwithdraw" element={<AdminWithdraw />} />
 
           {/* Route halaman web start */}
           <Route path="/" element={<HomePage />} />
@@ -291,6 +321,15 @@ const AppRoutes = ({ handleLogout }) => {
 
           <Route
             path="/manage-users/edit/:id"
+            element={
+              <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+                <EditUsers onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/managebankaccounts"
             element={
               <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
                 <EditUsers onLogout={handleLogout} />

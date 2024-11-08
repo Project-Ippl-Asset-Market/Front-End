@@ -136,6 +136,36 @@ const Sidebar = () => {
             <img src={IconRevenueDark} alt="IconRevenueDark" />
           ),
         },
+
+        {
+          href: "/managebankaccounts",
+          label: "Manage Bank Accounts",
+          icon: darkMode ? (
+            <img src={IconRevenueLight} alt="IconRevenueLight" />
+          ) : (
+            <img src={IconRevenueDark} alt="IconRevenueDark" />
+          ),
+        },
+
+        {
+          href: "/withdrawreq",
+          label: "Request",
+          icon: darkMode ? (
+            <img src={IconRevenueLight} alt="IconRevenueLight" />
+          ) : (
+            <img src={IconRevenueDark} alt="IconRevenueDark" />
+          ),
+        },
+
+        {
+          href: "/adminwithdraw",
+          label: "List Withdraw",
+          icon: darkMode ? (
+            <img src={IconRevenueLight} alt="IconRevenueLight" />
+          ) : (
+            <img src={IconRevenueDark} alt="IconRevenueDark" />
+          ),
+        },
       ],
     },
 
@@ -213,7 +243,8 @@ const Sidebar = () => {
           {section.items.map((item, itemIndex) => (
             <div
               key={itemIndex}
-              className={section.section === "Manage Assets" ? "mb-2" : ""}>
+              className={section.section === "Manage Assets" ? "mb-2" : ""}
+            >
               <SidebarNavItem
                 item={item}
                 isActive={false}

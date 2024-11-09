@@ -1,7 +1,5 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FiMenu } from 'react-icons/fi';
-import { IoArrowBack } from 'react-icons/io5';
 import { RiMoonLine } from "react-icons/ri";
 import { BiSun } from "react-icons/bi";
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +9,7 @@ import PanduanLogin from './PanduanLogin';
 import PanduanLupaPassword from './PanduanLupaPassword';
 import PanduanJualAsset from './PanduanJualAsset';
 import PanduanEditAsset from './PanduanEditAsset';
+import Logo from '../../assets/logo/logoLogin.png';
 
 const Panduan = () => {
   const { darkMode, toggleDarkMode } = useTheme();
@@ -18,7 +17,6 @@ const Panduan = () => {
   const [activePage, setActivePage] = useState(null);
   const navigate = useNavigate();
 
-  // Function to get the page title based on activePage
   const getPageTitle = () => {
     switch (activePage) {
       case 'registrasi':
@@ -53,10 +51,7 @@ const Panduan = () => {
           <div>
             <h1 className="text-4xl font-bold mb-6">Selamat Datang di Panduan!</h1>
             <p className="text-lg mb-4">
-              Gunakan sidebar di sebelah kiri untuk memilih panduan yang Anda butuhkan. Klik pada item menu seperti Registrasi, Login, Lupa Password, Jual Asset, atau Edit Asset untuk memulai.
-            </p>
-            <p className="text-lg">
-              Jika Anda menggunakan perangkat mobile, tekan ikon <FiMenu className="inline-block text-2xl" /> di bagian atas untuk membuka menu.
+              Gunakan sidebar di sebelah kiri untuk memilih panduan yang Anda butuhkan.
             </p>
           </div>
         );
@@ -71,14 +66,17 @@ const Panduan = () => {
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } top-0 left-0 z-30`}
       >
-        {/* Back Button */}
-        <div className="flex items-center space-x-4 mb-4">
-          <IoArrowBack
-            className="text-2xl cursor-pointer hover:text-gray-500 dark:hover:text-gray-400"
-            onClick={() => navigate('/')} // Navigate back to the main page
+        {/* Logo di tengah sidebar dengan posisi lebih ke atas */}
+        <div className="flex items-center justify-center mt-2 mb-8">
+          <img
+            src={Logo}
+            alt="Logo"
+            className="h-12 w-12 cursor-pointer hover:opacity-80 transition duration-200"
+            onClick={() => navigate('/')}
           />
-          <span className="text-xl font-semibold">Kembali</span>
         </div>
+
+        {/* Menu Sidebar */}
         <div className="space-y-4">
           <button onClick={() => setActivePage('registrasi')} className="text-lg font-medium py-2 px-4 block rounded-full hover:bg-gray-300 dark:hover:bg-gray-700">
             Registrasi
@@ -99,8 +97,20 @@ const Panduan = () => {
       </div>
 
       {/* Main content */}
-      <div className="flex-grow p-8">
-        <div className="flex justify-between items-center mb-6">
+      <div className="flex-grow">
+        {/* Sticky Navbar (Full Width) */}
+        <div className="sticky top-0 bg-white dark:bg-gray-900 z-30 flex items-center justify-between py-4 px-6 border-b border-gray-200 dark:border-gray-700 shadow-md w-full">
+          {/* FiMenu Icon for Mobile (Left-aligned) */}
+          <div className="md:hidden flex items-center">
+            <FiMenu
+              className="text-2xl cursor-pointer mr-4"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
+          </div>
+
+          {/* Page Title */}
+          <h1 className="text-2xl font-bold flex-1 text-center">{getPageTitle()}</h1>
+
           {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
@@ -112,16 +122,10 @@ const Panduan = () => {
               <RiMoonLine className="text-xl text-black drop-shadow-sm cursor-pointer" />
             )}
           </button>
-
-          {/* Page Title */}
-          <h1 className="text-2xl font-bold flex-1 text-center">{getPageTitle()}</h1>
-
-          {/* Sidebar Toggle Icon for Mobile */}
-          <FiMenu className="text-2xl cursor-pointer md:hidden" onClick={() => setIsSidebarOpen(!isSidebarOpen)} />
         </div>
 
         {/* Render Content */}
-        {renderContent()}
+        <div className="p-8">{renderContent()}</div>
       </div>
     </div>
   );

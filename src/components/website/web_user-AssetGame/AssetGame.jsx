@@ -22,6 +22,7 @@ import IconDollar from "../../../assets/assetWeb/iconDollarLight.svg";
 import IconCart from "../../../assets/assetWeb/iconCart.svg";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 import { useNavigate, Link } from "react-router-dom";
+import Footer from "../../website/Footer/Footer";
 
 const DropdownMenu = ({ onCategorySelect }) => {
   const [isHovered, setIsHovered] = useState(null);
@@ -816,17 +817,7 @@ export function AssetGame() {
         </div>
       )}
 
-      <footer className=" min-h-[181px] flex flex-col items-center justify-center">
-        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
-          <a href="#">Teams And Conditions</a>
-          <a href="#">File Licenses</a>
-          <a href="#">Refund Policy</a>
-          <a href="#">Privacy Policy</a>
-        </div>
-        <p className="text-[10px] md:text-[12px]">
-          Copyright © 2024 - All right reserved by ACME Industries Ltd
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -1,120 +1,147 @@
 import React, { useState } from "react";
-import { FiArrowLeft, FiMenu } from "react-icons/fi";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { FiMenu } from "react-icons/fi";
+import { RiMoonLine } from "react-icons/ri";
+import { BiSun } from "react-icons/bi";
+import { useNavigate } from "react-router-dom";
+import { useTheme } from "../../contexts/ThemeContext";
+import PanduanRegistrasi from "./PanduanRegistrasi";
+import PanduanLogin from "./PanduanLogin";
+import PanduanLupaPassword from "./PanduanLupaPassword";
+import PanduanJualAsset from "./PanduanJualAsset";
+import PanduanEditAsset from "./PanduanEditAsset";
+import Logo from "../../assets/logo/logoLogin.png";
 
-const SidebarPanduan = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation(); // Mendapatkan rute saat ini
-  const navigate = useNavigate(); // Fungsi navigasi untuk versi baru
+const Panduan = () => {
+  const { darkMode, toggleDarkMode } = useTheme();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [activePage, setActivePage] = useState(null);
+  const navigate = useNavigate();
 
-  // Fungsi untuk mengecek apakah tombol sedang aktif
-  const isActive = (path) => location.pathname === path;
+  const getPageTitle = () => {
+    switch (activePage) {
+      case "registrasi":
+        return "Panduan Registrasi";
+      case "login":
+        return "Panduan Login";
+      case "lupapassword":
+        return "Panduan Lupa Password";
+      case "jualaset":
+        return "Panduan Jual Asset";
+      case "editaset":
+        return "Panduan Edit Asset";
+      default:
+        return "Panduan";
+    }
+  };
 
-  // // Fungsi untuk menentukan judul berdasarkan path
-  // const getPageTitle = () => {
-  //   switch (location.pathname) {
-  //     case "/panduan-registrasi":
-  //       return "Panduan Registrasi";
-  //     case "/panduan-login":
-  //       return "Panduan Login";
-  //     case "/panduan-lupa-password":
-  //       return "Panduan Lupa Password";
-  //     case "/panduan-jual-asset":
-  //       return "Panduan Jual Asset";
-  //     case "/panduan-edit-asset":
-  //       return "Panduan Edit Asset";
-  //     default:
-  //       return "Panduan"; // Judul default
-  //   }
-  // };
+  const renderContent = () => {
+    switch (activePage) {
+      case "registrasi":
+        return <PanduanRegistrasi />;
+      case "login":
+        return <PanduanLogin />;
+      case "lupapassword":
+        return <PanduanLupaPassword />;
+      case "jualaset":
+        return <PanduanJualAsset />;
+      case "editaset":
+        return <PanduanEditAsset />;
+      default:
+        return (
+          <div>
+            <h1 className="text-4xl font-bold mb-6">
+              Selamat Datang di Panduan!
+            </h1>
+            <p className="text-lg mb-4">
+              Gunakan sidebar di sebelah kiri untuk memilih panduan yang Anda
+              butuhkan.
+            </p>
+          </div>
+        );
+    }
+  };
 
   return (
-    <>
-      {/* Navbar untuk menampilkan hamburger dan judul di atas kiri */}
-      <div className="md:hidden flex items-center p-4 bg-gray-900 text-white fixed top-0 left-0 w-full z-20">
-        <FiMenu
-          className="text-2xl cursor-pointer"
-          onClick={() => setIsOpen(!isOpen)}
-        />
-      </div>
-
+    <div className="flex bg-white dark:bg-gray-900 text-black dark:text-white min-h-screen transition-colors duration-300">
       {/* Sidebar */}
       <div
-        className={`bg-gray-900 text-white w-64 min-h-screen p-6 absolute md:relative transition-transform transform md:translate-x-0 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        } top-0 left-0 z-30`}
-        style={{ margin: 0, border: "none", boxShadow: "none", padding: 0 }} // Hilangkan margin, border, dan shadow
-      >
-        <div className="flex items-center space-x-2 mb-8 p-4">
-          <FiArrowLeft
-            className="text-2xl cursor-pointer"
-            onClick={() => navigate("/")} // Navigasi ke landing page
+        className={`bg-gray-200 dark:bg-gray-800 text-black dark:text-white w-64 min-h-screen p-6 absolute md:relative transition-transform transform md:translate-x-0 ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } top-0 left-0 z-30`}>
+        {/* Logo di tengah sidebar dengan posisi lebih ke atas */}
+        <div className="flex items-center justify-center mt-2 mb-8">
+          <img
+            src={Logo}
+            alt="Logo"
+            className="h-12 w-12 cursor-pointer hover:opacity-80 transition duration-200"
+            onClick={() => navigate("/")}
           />
         </div>
-        <div className="flex flex-col space-y-4 p-4">
-          {/* Link ke Halaman Registrasi */}
-          <Link
-            to="/panduan-registrasi"
-            className={`text-left text-lg font-medium py-2 px-4 rounded-r-full ${
-              isActive("/panduan-registrasi")
-                ? "bg-blue-500"
-                : "hover:bg-gray-800"
-            }`}>
+
+        {/* Menu Sidebar */}
+        <div className="space-y-4">
+          <button
+            onClick={() => setActivePage("registrasi")}
+            className="text-lg font-medium py-2 px-4 block rounded-full hover:bg-gray-300 dark:hover:bg-gray-700">
             Registrasi
-          </Link>
-
-          {/* Link ke Halaman Login */}
-          <Link
-            to="/panduan-login"
-            className={`text-left text-lg font-medium py-2 px-4 rounded-r-full ${
-              isActive("/panduan-login") ? "bg-blue-500" : "hover:bg-gray-800"
-            }`}>
+          </button>
+          <button
+            onClick={() => setActivePage("login")}
+            className="text-lg font-medium py-2 px-4 block rounded-full hover:bg-gray-300 dark:hover:bg-gray-700">
             Login
-          </Link>
-
-          {/* Link ke Halaman Panduan Lupa Password */}
-          <Link
-            to="/panduan-lupa-password"
-            className={`text-left text-lg font-medium py-2 px-4 rounded-r-full ${
-              isActive("/panduan-lupa-password")
-                ? "bg-blue-500"
-                : "hover:bg-gray-800"
-            }`}>
+          </button>
+          <button
+            onClick={() => setActivePage("lupapassword")}
+            className="text-lg font-medium py-2 px-4 block rounded-full hover:bg-gray-300 dark:hover:bg-gray-700">
             Lupa Password
-          </Link>
-
-          {/* Link ke Halaman Panduan Jual Asset */}
-          <Link
-            to="/panduan-jual-asset"
-            className={`text-left text-lg font-medium py-2 px-4 rounded-r-full ${
-              isActive("/panduan-jual-asset")
-                ? "bg-blue-500"
-                : "hover:bg-gray-800"
-            }`}>
+          </button>
+          <button
+            onClick={() => setActivePage("jualaset")}
+            className="text-lg font-medium py-2 px-4 block rounded-full hover:bg-gray-300 dark:hover:bg-gray-700">
             Jual Asset
-          </Link>
-
-          {/* Link ke Halaman Panduan Edit Asset */}
-          <Link
-            to="/panduan-edit-asset"
-            className={`text-left text-lg font-medium py-2 px-4 rounded-r-full ${
-              isActive("/panduan-edit-asset")
-                ? "bg-blue-500"
-                : "hover:bg-gray-800"
-            }`}>
+          </button>
+          <button
+            onClick={() => setActivePage("editaset")}
+            className="text-lg font-medium py-2 px-4 block rounded-full hover:bg-gray-300 dark:hover:bg-gray-700">
             Edit Asset
-          </Link>
+          </button>
         </div>
       </div>
 
-      {/* Overlay untuk menutup sidebar di tampilan mobile */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden"
-          onClick={() => setIsOpen(false)}></div>
-      )}
-    </>
+      {/* Main content */}
+      <div className="flex-grow">
+        {/* Sticky Navbar (Full Width) */}
+        <div className="sticky top-0 bg-white dark:bg-gray-900 z-30 flex items-center justify-between py-4 px-6 border-b border-gray-200 dark:border-gray-700 shadow-md w-full">
+          {/* FiMenu Icon for Mobile (Left-aligned) */}
+          <div className="md:hidden flex items-center">
+            <FiMenu
+              className="text-2xl cursor-pointer mr-4"
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
+          </div>
+
+          {/* Page Title */}
+          <h1 className="text-2xl font-bold flex-1 text-center">
+            {getPageTitle()}
+          </h1>
+
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={toggleDarkMode}
+            className="min-h-[44px] w-[40px] bg-[#F2F2F2] text-black rounded-[5px] border-[1px] border-black flex items-center justify-center gap-1">
+            {darkMode ? (
+              <BiSun className="text-xl text-black drop-shadow-sm cursor-pointer" />
+            ) : (
+              <RiMoonLine className="text-xl text-black drop-shadow-sm cursor-pointer" />
+            )}
+          </button>
+        </div>
+
+        {/* Render Content */}
+        <div className="p-8">{renderContent()}</div>
+      </div>
+    </div>
   );
 };
 
-export default SidebarPanduan;
+export default Panduan;

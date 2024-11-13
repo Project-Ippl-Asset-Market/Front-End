@@ -24,6 +24,7 @@ import IconCart from "../../../assets/assetWeb/iconCart.svg";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 const myAssetsCollectionRef = collection(db, "myAssets");
+import Footer from "../../website/Footer/Footer";
 
 export function HomePage() {
   const [AssetsData, setAssetsData] = useState([]);
@@ -642,6 +643,9 @@ export function HomePage() {
                           e.target.onerror = null;
                           e.target.src = CustomImage;
                         }}
+                        onContextMenu={(e) => e.preventDefault()}
+                        draggable={false}
+                        onDragStart={(e) => e.preventDefault()}
                         className="h-28 sm:h-28 md:h-36 lg:h-40 xl:h-full 2xl:h-full w-full rounded-t-[10px] mx-auto border-none"
                       />
                     )}
@@ -737,6 +741,9 @@ export function HomePage() {
                       e.target.onerror = null;
                       e.target.src = CustomImage;
                     }}
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
                     className="w-full h-[300px] object-cover"
                   />
                 )}
@@ -817,17 +824,9 @@ export function HomePage() {
           </div>
         </div>
       )}
-      <footer className="h-full mt-[1000px] flex flex-col items-center justify-center">
-        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
-          <a href="#">Teams And Conditions</a>
-          <a href="#">File Licenses</a>
-          <a href="#">Refund Policy</a>
-          <a href="#">Privacy Policy</a>
-        </div>
-        <p className="text-[10px] md:text-[12px]">
-          Copyright © 2024 - All right reserved by ACME Industries Ltd
-        </p>
-      </footer>
+      <div className="mt-96">
+        <Footer />
+      </div>
     </div>
   );
 }

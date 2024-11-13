@@ -94,7 +94,7 @@ function HeaderWebUser() {
           <img
             src={logoWeb}
             alt="logo"
-            className="w-12 sm:w-16 md:w-20 lg:w-24 xl:w-28 2xl:w-32 h-auto"
+            className="w-12 sm:w-16 md:w-18 lg:w-20 xl:w-20 2xl:w-24 h-auto"
           />
           <h2 className="text-[8px] sm:text-sm md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl hidden sm:block">
             PixelStore

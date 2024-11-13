@@ -1,29 +1,24 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
-import Breadcrumb from "../breadcrumbs/Breadcrumbs";
-import IconField from "../../assets/icon/iconField/icon.svg";
-import HeaderNav from "../HeaderNav/HeaderNav";
-import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
+  collection,
   addDoc,
-  doc,
-  Timestamp,
-  getDoc,
   getDocs,
   updateDoc,
-  collection,
+  Timestamp,
+  doc,
   query,
   where,
 } from "firebase/firestore";
-import { db, storage, auth } from "../../firebase/firebaseConfig";
-import {
-  deleteObject,
-  ref,
-  uploadBytes,
-  getDownloadURL,
-} from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { onAuthStateChanged } from "firebase/auth";
+import { db, storage, auth } from "../../firebase/firebaseConfig";
+import Breadcrumb from "../breadcrumbs/Breadcrumbs";
+import IconField from "../../assets/icon/iconField/icon.svg";
+import HeaderNav from "../HeaderNav/HeaderNav";
 import DefaultPreview from "../../assets/icon/iconSidebar/datasetzip.png";
 
 function AddCategory({ isOpen, onClose, onAddCategory }) {
@@ -32,14 +27,16 @@ function AddCategory({ isOpen, onClose, onAddCategory }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    // Listen for authentication state changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        setUser(currentUser);
+        setUser(currentUser); // Set the logged-in user
       } else {
-        setUser(null);
+        setUser(null); // No user is logged in
       }
     });
 
+    // Cleanup listener on unmount
     return () => unsubscribe();
   }, []);
 
@@ -58,16 +55,20 @@ function AddCategory({ isOpen, onClose, onAddCategory }) {
         userId: user.uid,
       });
 
+      // Buat objek kategori baru
       const newCategory = {
         id: docRef.id,
         name: categoryName,
         createdAt: new Date(),
       };
 
+      // Panggil fungsi dari komponen induk untuk menambahkan kategori ke state
       onAddCategory(newCategory);
-      setCategoryName("");
-      onClose();
+
+      setCategoryName(""); // Reset input
+      onClose(); // Tutup modal
     } catch (error) {
+      // console.error("Error menambahkan kategori: ", error);
       alert("Terjadi kesalahan saat menambahkan kategori. Silakan coba lagi.");
     } finally {
       setIsSubmitting(false);
@@ -76,21 +77,23 @@ function AddCategory({ isOpen, onClose, onAddCategory }) {
 
   if (!isOpen) return null;
 
+  // Fungsi untuk menutup popup
   const handleClose = () => {
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+    <div className="fixed inset-0 bg-black  bg-opacity-60 flex justify-center items-center z-50">
       <div className="bg-white dark:bg-neutral-20 p-6 rounded-2xl w-[510px] h-[250px] font-poppins text-black dark:text-white">
         <h1 className="h-7 font-semibold">Category</h1>
         <h2 className="h-14 flex items-center">Add category</h2>
+        {/* Form untuk menambahkan kategori */}
         <input
           type="text"
           placeholder="type here"
           className="border border-[#ECECEC] w-full h-12 mb-1 rounded-lg text-sm text-black placeholder:font-semibold placeholder:opacity-40"
           value={categoryName}
-          onChange={(e) => setCategoryName(e.target.value)}
+          onChange={(e) => setCategoryName(e.target.value)} // Mengambil input dari pengguna
           disabled={isSubmitting}
         />
         <div className="relative h-[70px]">
@@ -103,7 +106,7 @@ function AddCategory({ isOpen, onClose, onAddCategory }) {
             <button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className={`bg-[#2563EB] text-white h-12 px-4 py-2 rounded-lg ${
+              className={`bg-[#2563EB] text-white h-12 px-4 py-2 rounded-lg  ${
                 isSubmitting ? "opacity-50 cursor-not-allowed" : ""
               }`}>
               {isSubmitting ? "Uploading..." : "Upload"}
@@ -115,117 +118,53 @@ function AddCategory({ isOpen, onClose, onAddCategory }) {
   );
 }
 
-function EditNewDataset() {
-  const { id } = useParams();
+function AddNewDataset() {
   const navigate = useNavigate();
-  // const [imagePreview, setImagePreview] = useState("");
+  // const [previewImage, setPreviewImage] = useState(null);
   const [previewImages, setPreviewImages] = useState([]);
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [user, setUser] = useState(null);
-  const [role, setRole] = useState("");
 
   useEffect(() => {
     const fetchCategories = async () => {
-      if (!user || !role) {
-        return;
-      }
-
-      try {
-        let q;
-        if (role === "superadmin") {
-          q = query(collection(db, "categoryDataset"));
-        } else if (role === "admin" || role === "user") {
-          q = query(
-            collection(db, "categoryDataset"),
-            where("userId", "==", user.uid)
-          );
+      if (user) {
+        const q = query(
+          collection(db, "categoryDataset"),
+          where("userId", "==", user.uid)
+        );
+        try {
+          const querySnapshot = await getDocs(q);
+          const categoriesData = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setCategories(categoriesData);
+          // console.log("Fetched categories", categoriesData);
+        } catch (error) {
+          // console.error("Error fetching categories: ", error);
         }
-
-        const querySnapshot = await getDocs(q);
-        const items = [];
-
-        for (const docSnap of querySnapshot.docs) {
-          const data = docSnap.data();
-          items.push({
-            id: docSnap.id,
-            ...docSnap.data(),
-          });
-        }
-
-        if (role === "admin") {
-          const superadminQuery = query(
-            collection(db, "admins"),
-            where("role", "==", "superadmin")
-          );
-          const superadminSnapshot = await getDocs(superadminQuery);
-          const superadminIds = superadminSnapshot.docs.map(
-            (doc) => doc.data().uid
-          );
-
-          const filteredItems = items.filter(
-            (item) => !superadminIds.includes(item.userId)
-          );
-          setCategories(filteredItems);
-        } else {
-          setCategories(items);
-        }
-      } catch (error) {
-        console.error("Error fetching categories: ", error);
       }
     };
 
-    if (user && role) {
-      fetchCategories();
-    }
-  }, [user, role]);
+    fetchCategories();
+  }, [user]);
 
   const handleAddCategory = (newCategory) => {
     setCategories((prevCategories) => [...prevCategories, newCategory]);
   };
 
+  // Fungsi untuk membuka popup AddCategory
   const handleOpenAddCategory = () => {
     setIsAddCategoryOpen(true);
   };
 
+  // Fungsi untuk menutup popup AddCategory
   const handleCloseAddCategory = () => {
     setIsAddCategoryOpen(false);
   };
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-
-        const adminQuery = query(
-          collection(db, "admins"),
-          where("uid", "==", currentUser.uid)
-        );
-        const adminSnapshot = await getDocs(adminQuery);
-
-        if (!adminSnapshot.empty) {
-          const adminData = adminSnapshot.docs[0].data();
-          setRole(adminData.role);
-        } else {
-          const userQuery = query(
-            collection(db, "users"),
-            where("uid", "==", currentUser.uid)
-          );
-          const userSnapshot = await getDocs(userQuery);
-          if (!userSnapshot.empty) {
-            setRole("user");
-          }
-        }
-      } else {
-        setUser(null);
-        setRole("");
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   const [dataset, setDataset] = useState({
     datasetName: "",
@@ -233,106 +172,19 @@ function EditNewDataset() {
     description: "",
     price: "",
     datasetFile: null,
-    datasetThumbnail: null,
+    datasetThumbnail: [],
   });
 
   useEffect(() => {
-    const fetchDataset = async () => {
-      try {
-        const docRef = doc(db, "assetDatasets", id);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setDataset(data);
-          if (data.datasetThumbnail) {
-            setPreviewImages(data.datasetThumbnail);
-          }
-        } else {
-          navigate("/manage-asset-dataset");
-        }
-      } catch (error) {
-        console.error("Error fetching dataset:", error);
-      }
-    };
-
-    fetchDataset();
-  }, [id, navigate]);
-
-  const [error, setError] = useState(null);
-  const [fileSize, setFileSize] = useState(null);
-
-  const handleFileChange = (event) => {
-    const { name, files } = event.target;
-    const file = files[0]; // Mengambil file pertama yang diunggah
-
-    if (name === "datasetFile" && file) {
-      // Cek apakah file adalah file ZIP berdasarkan tipe dan nama file
-      if (file.type !== "application/zip" && !file.name.endsWith(".zip")) {
-        setError("File yang diunggah harus berformat .zip");
-        setDataset({
-          ...dataset,
-          datasetFile: null,
-        });
-        setFileSize(null);
-        event.target.value = null; // Reset input file
-        return;
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
       } else {
-        setError(null); // Reset error jika file sesuai
-        setDataset({
-          ...dataset,
-          datasetFile: file,
-        });
+        setUser(null);
       }
-
-      // Konversi ukuran file ke dalam format yang lebih mudah dibaca
-      let size = file.size; // Ukuran file dalam bytes
-      let unit = "Bytes";
-
-      if (size >= 1073741824) {
-        size = (size / 1073741824).toFixed(2); // Konversi ke GB
-        unit = "GB";
-      } else if (size >= 1048576) {
-        size = (size / 1048576).toFixed(2); // Konversi ke MB
-        unit = "MB";
-      } else if (size >= 1024) {
-        size = (size / 1024).toFixed(2); // Konversi ke KB
-        unit = "KB";
-      }
-
-      setFileSize(`${size} ${unit}`);
-    } else {
-      setDataset({
-        ...dataset,
-        [name]: event.target.value,
-      });
-    }
-  };
-
-  // // Fungsi untuk menangani perubahan input
-  // const handleChange = (e) => {
-  //   const { name, value, files } = e.target;
-
-  //   if (name === "datasetThumbnail" && files[0]) {
-  //     setDataset({
-  //       ...dataset,
-  //       datasetThumbnail: files[0],
-  //     });
-
-  //     // Menampilkan pratinjau gambar
-  //     const reader = new FileReader();
-  //     reader.onloadend = () => {
-  //       setPreviewImages(reader.result);
-  //     };
-  //     reader.readAsDataURL(files[0]);
-  //   } else {
-  //     // Menangani input teks lainnya
-  //     setDataset({
-  //       ...dataset,
-  //       [name]: value,
-  //     });
-  //   }
-  // };
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -378,88 +230,140 @@ function EditNewDataset() {
     }));
   };
 
-  // Fungsi untuk upload file dan mendapatkan URL download
-  const uploadFile = async (file, path) => {
-    try {
-      const fileRef = ref(storage, path);
-      await uploadBytes(fileRef, file);
-      const downloadURL = await getDownloadURL(fileRef);
-      console.log("File uploaded successfully, URL:", downloadURL);
-      return downloadURL;
-    } catch (error) {
-      console.error("Error uploading file:", error.message || error);
-      throw new Error("Gagal mengunggah file. Silakan coba lagi.");
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
+      // Konversi dataset.price menjadi number
       const priceAsNumber = parseInt(dataset.price);
+
       if (isNaN(priceAsNumber)) {
-        throw new Error("Harga tidak valid: harus berupa angka.");
+        // Validasi jika harga yang diinput tidak valid
+        throw new Error("Invalid price: must be a number.");
       }
 
-      const updatedData = {
+      // Save dataset details to Firestore
+      const docRef = await addDoc(collection(db, "assetDatasets"), {
         category: dataset.category,
         createdAt: Timestamp.now(),
         datasetFile: "",
-        datasetThumbnail: [],
+        datasetThumbnail: [], // ""
         datasetName: dataset.datasetName,
         description: dataset.description,
         price: priceAsNumber,
         uploadedByEmail: user.email,
         userId: user.uid,
-      };
+      });
 
-      // Upload file ZIP ke folder /images-dataset jika ada
+      const docId = docRef.id;
+
+      // Upload dataset image/file to Firebase Storage
+      let datasetFileUrl = "";
       if (dataset.datasetFile) {
-        const filePath = `images-dataset/dataset-${id}.zip`; // Path folder baru
-        const datasetFileUrl = await uploadFile(dataset.datasetFile, filePath);
-        updatedData.datasetFile = datasetFileUrl;
+        // Ref untuk upload file ke Storage dengan ekstensi asli
+        const datasetRef = ref(storage, `images-dataset/dataset-${docId}.zip`);
+
+        // Upload file ke Storage
+        await uploadBytes(datasetRef, dataset.datasetFile);
+        datasetFileUrl = await getDownloadURL(datasetRef);
       }
 
-      // Upload thumbnails jika ada
-      if (dataset.datasetThumbnail && dataset.datasetThumbnail.length > 0) {
-        const thumbnailUrls = await Promise.all(
-          dataset.datasetThumbnail.map((thumbnail, index) => {
-            const thumbnailPath = `images-dataset/dataset-${id}-${index}.jpg`;
-            return uploadFile(thumbnail, thumbnailPath);
-          })
-        );
-        updatedData.datasetThumbnail = thumbnailUrls; // Menyimpan semua URL thumbnail
+      let datasetThumbnailUrl = "";
+      if (dataset.datasetThumbnail) {
+        // Ref untuk upload file ke Storage dengan ekstensi asli
+        const datasetRef = ref(storage, `images-dataset/dataset-${docId}.jpg`);
+
+        // Upload file ke Storage
+        await uploadBytes(datasetRef, dataset.datasetThumbnail);
+        datasetThumbnailUrl = await getDownloadURL(datasetRef);
       }
 
-      const datasetRef = doc(db, "assetDatasets", id);
-      await updateDoc(datasetRef, updatedData);
+      // Update Firestore dengan URL gambar yang diupload
+      await updateDoc(doc(db, "assetDatasets", docId), {
+        datasetFile: datasetFileUrl,
+        datasetThumbnail: datasetThumbnailUrl,
+      });
 
+      // Reset the form
+      setDataset({
+        datasetName: "",
+        category: "",
+        description: "",
+        price: "",
+        datasetFile: null,
+        datasetThumbnail: [],
+      });
+      setPreviewImages(null);
+
+      // Navigate back to /manage-asset-dataset
       setAlertSuccess(true);
       setTimeout(() => {
         navigate("/manage-asset-dataset");
       }, 2000);
     } catch (error) {
-      console.error("Error updating dataset:", error.message || error);
+      console.error("Error menambahkan dataset: ", error);
       setAlertError(true);
     }
   };
 
-  const deleteFile = async (path) => {
-    const fileRef = ref(storage, path);
-    try {
-      await deleteObject(fileRef);
-      console.log("File deleted successfully:", path);
-    } catch (error) {
-      console.error("Error deleting file:", error);
-    }
-  };
-
   const handleCancel = () => {
-    navigate(-1);
+    navigate("/manage-asset-dataset");
   };
 
   const closeAlert = () => {
     setAlertError(false);
+  };
+
+  const [fileSize, setFileSize] = useState(null);
+  const [error, setError] = useState(null);
+
+  const handleFileChange = (event) => {
+    const { name, value, files } = event.target;
+    const file = event.target.files[0];
+
+    if (name === "datasetFile" && files[0]) {
+      setDataset({
+        ...dataset,
+        datasetFile: files[0],
+      });
+    } else {
+      setDataset({
+        ...dataset,
+        [name]: value,
+      });
+    }
+
+    if (file) {
+      if (file.type !== "application/zip" && !file.name.endsWith(".zip")) {
+        setError("File yang diunggah harus berformat .zip");
+        setFileSize(null);
+        event.target.value = null;
+        return;
+      } else {
+        setError(null); // Reset error jika file sesuai
+      }
+
+      let size = file.size; // Ukuran file dalam bytes
+      let unit = "Bytes";
+
+      if (size >= 1073741824) {
+        // Lebih besar atau sama dengan 1 GB
+        size = (size / 1073741824).toFixed(2);
+        unit = "GB";
+      } else if (size >= 1048576) {
+        // Lebih besar atau sama dengan 1 MB
+        size = (size / 1048576).toFixed(2);
+        unit = "MB";
+      } else if (size >= 1024) {
+        // Lebih besar atau sama dengan 1 KB
+        size = (size / 1024).toFixed(2);
+        unit = "KB";
+      }
+
+      setFileSize(`${size} ${unit}`);
+    } else {
+      setFileSize(null);
+    }
   };
 
   return (
@@ -469,17 +373,18 @@ function EditNewDataset() {
           <HeaderNav />
         </div>
 
-        <div className="overflow-scroll">
+        <div className="overflow-scroll ">
           <div className="bg-primary-100 dark:bg-neutral-20 dark:text-primary-100 flex flex-col">
             <div className="text-2xl dark:text-primary-100 p-4">
               <Breadcrumb />
             </div>
           </div>
 
+          {/* Alert Success */}
           {alertSuccess && (
             <div
               role="alert"
-              className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[10px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4 bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
+              className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[10px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4  bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
               onClick={closeAlert}>
               <div className="flex items-center justify-center space-x-2">
                 <svg
@@ -494,15 +399,16 @@ function EditNewDataset() {
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>Dataset berhasil diperbarui.</span>
+                <span>Dataset baru berhasil ditambahkan dan tersimpan.</span>
               </div>
             </div>
           )}
 
+          {/* Alert Error */}
           {alertError && (
             <div
               role="alert"
-              className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[340px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[8px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4 bg-primary-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
+              className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[340px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[8px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4  bg-primary-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
               onClick={closeAlert}>
               <div className="flex items-center justify-center space-x-2">
                 <svg
@@ -517,26 +423,26 @@ function EditNewDataset() {
                     d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>Gagal memperbarui dataset silahkan coba lagi</span>
+                <span>Gagal menambahkan dataset baru silahkan coba lagi</span>
               </div>
             </div>
           )}
 
           <form
             onSubmit={handleSubmit}
-            className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24 h-[1434px] gap-[50px] overflow-hidden mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0">
-            <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-10 dark:text-primary-100 p-4">
-              Edit Dataset
+            className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24   h-[1434px] gap-[50px]  overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0">
+            <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-10 dark:text-primary-100 p-4">
+              Add New Dataset
             </h1>
-            <div className="p-8 -mt-4 bg-primary-100 dark:bg-neutral-20 rounded-sm shadow-lg">
-              <h2 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+            <div className="p-8 -mt-4  bg-primary-100  dark:bg-neutral-20 rounded-sm shadow-lg">
+              <h2 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
                 Dataset Information
               </h2>
 
               <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-[150px] md:w-[170px] lg:w-[200px] xl:w-[220px] 2xl:w-[170px]">
                   <div className="flex items-center gap-1">
-                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
                       Upload File
                     </h3>
                     <img
@@ -545,32 +451,10 @@ function EditNewDataset() {
                       className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
                     />
                   </div>
-                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px] mb-2">
+                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
                     Format file harus .zip
                   </p>
                 </div>
-
-                {/* <div>
-                  <input
-                    className="block min-w-full sm:w-[150px] md:w-[450px] lg:w-[670px] xl:w-[670px] 2xl:w-[1200px] text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                    id="file_input"
-                    type="file"
-                    accept=".zip"
-                    onChange={handleChange}
-                    name="datasetFile"
-                  />
-                  {error && (
-                    <p className="text-red-500 mt-1 text-sm">{error}</p>
-                  )}
-                  {dataset.datasetFile && (
-                    <div className="mt-2">
-                      <p className="text-sm">File yang diunggah:</p>
-                      <span className="text-blue-500 hover:underline">
-                        {dataset.datasetFile.name}
-                      </span>
-                    </div>
-                  )}
-                </div> */}
 
                 <div>
                   <input
@@ -594,7 +478,7 @@ function EditNewDataset() {
                 <div className="w-full sm:w-[150px] md:w-[170px] lg:w-[200px] xl:w-[220px] 2xl:w-[170px]">
                   <div className="flex items-center gap-1">
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                      Edit Thumbnail Dataset
+                      Upload Thumbnail Dataset
                     </h3>
                     <img
                       src={IconField}
@@ -603,10 +487,11 @@ function EditNewDataset() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px] mb-2">
-                    Format thumbnail harus .jpg, jpeg, png dan ukuran minimal
+                    Format thumbnail harus .jpg, .jpeg, .png dan ukuran minimal
                     300 x 300 px.
                   </p>
                 </div>
+
                 <div className="flex flex-col md:flex-row items-start gap-4">
                   <div className="p-0 flex flex-col items-center">
                     <div className="mt-2 relative flex flex-row items-center gap-4">
@@ -653,7 +538,9 @@ function EditNewDataset() {
                   </div>
                 </div>
               </div>
+              </div>
 
+              {/* Dataset Name */}
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-1">
@@ -670,14 +557,15 @@ function EditNewDataset() {
                     Masukkan Nama Untuk Dataset Maximal 40 Huruf
                   </p>
                 </div>
+
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <input
                       type="text"
+                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px]"
                       name="datasetName"
                       value={dataset.datasetName}
                       onChange={handleChange}
-                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px]"
                       placeholder="Enter name...."
                       required
                     />
@@ -685,6 +573,7 @@ function EditNewDataset() {
                 </div>
               </div>
 
+              {/* Category */}
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-1">
@@ -694,11 +583,12 @@ function EditNewDataset() {
                     <img
                       src={IconField}
                       alt=""
-                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:w-3 -mt-5"
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
                     />
                   </div>
                   <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Silahkan Pilih Kategori Yang Sesuai Dengan Dataset Anda.
+                    Silahkan Pilih Kategori yang Sesuai Dengan Dataset Anda atau
+                    Tambahkan Kategori Sendiri.
                   </p>
                 </div>
 
@@ -734,36 +624,38 @@ function EditNewDataset() {
                 </div>
               </div>
 
+              {/* Description */}
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-1">
-                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px]  font-bold text-neutral-20 dark:text-primary-100">
                       Deskripsi
                     </h3>
                     <img
                       src={IconField}
                       alt=""
-                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:w-3 -mt-5"
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
                     />
                   </div>
-                  <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
+                  <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px]">
                     Berikan Deskripsi Pada Dataset Anda Maximal 200 Huruf
                   </p>
                 </div>
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <textarea
+                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px] h-[48px] sm:h-[60px] md:h-[80px] lg:h-[80px] xl:h-[100px] bg-transparent"
                       name="description"
                       value={dataset.description}
                       onChange={handleChange}
-                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px] h-[48px] sm:h-[60px] md:h-[80px] lg:h-[80px] xl:h-[100px] bg-transparent"
                       placeholder="Deskripsi"
-                      required
+                      rows="4"
                     />
                   </label>
                 </div>
               </div>
 
+              {/* Price */}
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-1">
@@ -780,10 +672,10 @@ function EditNewDataset() {
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <input
                       type="number"
+                      className="input border-0 focus:outline-none focus:ring-0  w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
                       name="price"
                       value={dataset.price}
                       onChange={handleChange}
-                      className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px]"
                       placeholder="Rp"
                       required
                     />
@@ -792,16 +684,16 @@ function EditNewDataset() {
               </div>
             </div>
 
-            <div className="w-full inline-flex sm:gap-6 xl:gap-[21px] justify-center sm:justify-center md:justify-end gap-6 mt-12 sm:mt-12 md:mt-14 lg:mt-14 xl:mt-12">
+            {/* Buttons */}
+            <div className="w-full inline-flex sm:gap-6 xl:gap-[21px] justify-center sm:justify-center md:justify-end  gap-6 mt-12 sm:mt-12 md:mt-14 lg:mt-14 xl:mt-12  ">
               <button
-                type="button"
                 onClick={handleCancel}
-                className="btn bg-neutral-60 border-neutral-60 hover:bg-neutral-60 hover:border-neutral-60 rounded-lg font-semibold text-primary-100 text-center text-[10px] sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px] w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
+                className="btn bg-neutral-60 border-neutral-60 hover:bg-neutral-60 hover:border-neutral-60 rounded-lg  font-semibold   text-primary-100 text-center text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
                 Cancel
               </button>
               <button
                 type="submit"
-                className="btn bg-secondary-40 border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg font-semibold leading-[24px] text-primary-100 text-center text-[10px] sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px] w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
+                className="btn  bg-secondary-40 border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg  font-semibold leading-[24px]  text-primary-100 text-center  text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
                 Save
               </button>
             </div>
@@ -817,4 +709,4 @@ function EditNewDataset() {
   );
 }
 
-export default EditNewDataset;
+export default AddNewDataset;

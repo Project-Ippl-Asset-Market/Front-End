@@ -1,12 +1,17 @@
+/* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   collection,
   addDoc,
+  getDocs,
+  updateDoc,
   Timestamp,
   doc,
-  updateDoc,
+  query,
+  where,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { onAuthStateChanged } from "firebase/auth";
@@ -14,28 +19,160 @@ import { db, storage, auth } from "../../firebase/firebaseConfig";
 import Breadcrumb from "../breadcrumbs/Breadcrumbs";
 import IconField from "../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../HeaderNav/HeaderNav";
+import DefaultPreview from "../../assets/icon/iconSidebar/datasetzip.png";
 
-function AddNewImage() {
+function AddCategory({ isOpen, onClose, onAddCategory }) {
   const [user, setUser] = useState(null);
-  const [image, setImage] = useState({
-    imageName: "",
-    category: "",
-    description: "",
-    price: "",
-    uploadUrlImage: null,
-  });
+  const [categoryName, setCategoryName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    // Listen for authentication state changes
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser); // Set the logged-in user
+      } else {
+        setUser(null); // No user is logged in
+      }
+    });
+
+    // Cleanup listener on unmount
+    return () => unsubscribe();
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!categoryName.trim()) {
+      alert("Nama kategori tidak boleh kosong.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const docRef = await addDoc(collection(db, "categoryDataset"), {
+        name: categoryName,
+        createdAt: new Date(),
+        userId: user.uid,
+      });
+
+      // Buat objek kategori baru
+      const newCategory = {
+        id: docRef.id,
+        name: categoryName,
+        createdAt: new Date(),
+      };
+
+      // Panggil fungsi dari komponen induk untuk menambahkan kategori ke state
+      onAddCategory(newCategory);
+
+      setCategoryName(""); // Reset input
+      onClose(); // Tutup modal
+    } catch (error) {
+      // console.error("Error menambahkan kategori: ", error);
+      alert("Terjadi kesalahan saat menambahkan kategori. Silakan coba lagi.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  // Fungsi untuk menutup popup
+  const handleClose = () => {
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black  bg-opacity-60 flex justify-center items-center z-50">
+      <div className="bg-white dark:bg-neutral-20 p-6 rounded-2xl w-[510px] h-[250px] font-poppins text-black dark:text-white">
+        <h1 className="h-7 font-semibold">Category</h1>
+        <h2 className="h-14 flex items-center">Add category</h2>
+        {/* Form untuk menambahkan kategori */}
+        <input
+          type="text"
+          placeholder="type here"
+          className="border border-[#ECECEC] w-full h-12 mb-1 rounded-lg text-sm text-black placeholder:font-semibold placeholder:opacity-40"
+          value={categoryName}
+          onChange={(e) => setCategoryName(e.target.value)} // Mengambil input dari pengguna
+          disabled={isSubmitting}
+        />
+        <div className="relative h-[70px]">
+          <div className="absolute bottom-0 right-0 flex justify-end space-x-2 font-semibold text-sm">
+            <button
+              onClick={handleClose}
+              className="bg-[#9B9B9B] text-white h-12 px-4 py-2 rounded-lg">
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting} // Disable tombol saat proses submit
+              className={`bg-[#2563EB] text-white h-12 px-4 py-2 rounded-lg  ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : ""
+              }`}>
+              {isSubmitting ? "Uploading..." : "Upload"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AddNewDataset() {
   const navigate = useNavigate();
   const [previewImage, setPreviewImage] = useState(null);
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
-  const categories = [
-    { id: 1, name: "Nature" },
-    { id: 2, name: "Architecture" },
-    { id: 3, name: "Animals" },
-    { id: 4, name: "People" },
-    { id: 5, name: "Technology" },
-    { id: 6, name: "Fotografi Urban" },
-  ];
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false); // State untuk popup AddCategory
+  const [categories, setCategories] = useState([]);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      if (user) {
+        const q = query(
+          collection(db, "categoryDataset"),
+          where("userId", "==", user.uid)
+        );
+        try {
+          const querySnapshot = await getDocs(q);
+          const categoriesData = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setCategories(categoriesData);
+          // console.log("Fetched categories", categoriesData);
+        } catch (error) {
+          // console.error("Error fetching categories: ", error);
+        }
+      }
+    };
+
+    fetchCategories();
+  }, [user]);
+
+  const handleAddCategory = (newCategory) => {
+    setCategories((prevCategories) => [...prevCategories, newCategory]);
+  };
+
+  // Fungsi untuk membuka popup AddCategory
+  const handleOpenAddCategory = () => {
+    setIsAddCategoryOpen(true);
+  };
+
+  // Fungsi untuk menutup popup AddCategory
+  const handleCloseAddCategory = () => {
+    setIsAddCategoryOpen(false);
+  };
+
+  const [dataset, setDataset] = useState({
+    datasetName: "",
+    category: "",
+    description: "",
+    price: "",
+    datasetFile: null,
+    datasetThumbnail: null,
+  });
 
   useEffect(() => {
     // Listen for authentication state changes
@@ -54,21 +191,26 @@ function AddNewImage() {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    if (name === "uploadUrlImage" && files[0]) {
-      setImage({
-        ...image,
-        uploadUrlImage: files[0],
+    if (name === "datasetThumbnail" && files[0]) {
+      setDataset({
+        ...dataset,
+        datasetThumbnail: files[0],
       });
 
       // Create image preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result);
-      };
-      reader.readAsDataURL(files[0]);
+      if (files[0].type.includes("image")) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewImage(reader.result);
+        };
+        reader.readAsDataURL(files[0]);
+      } else {
+        // Reset preview jika file bukan gambar
+        setPreviewImage(DefaultPreview);
+      }
     } else {
-      setImage({
-        ...image,
+      setDataset({
+        ...dataset,
         [name]: value,
       });
     }
@@ -78,62 +220,136 @@ function AddNewImage() {
     e.preventDefault();
 
     try {
-      // Save image details to Firestore
-      const docRef = await addDoc(collection(db, "assetImages"), {
-        category: image.category,
+      // Konversi dataset.price menjadi number
+      const priceAsNumber = parseInt(dataset.price);
+
+      if (isNaN(priceAsNumber)) {
+        // Validasi jika harga yang diinput tidak valid
+        throw new Error("Invalid price: must be a number.");
+      }
+
+      // Save dataset details to Firestore
+      const docRef = await addDoc(collection(db, "assetDatasets"), {
+        category: dataset.category,
         createdAt: Timestamp.now(),
-        uploadUrlImage: "",
-        imageName: image.imageName,
-        description: image.description,
-        price: image.price,
+        datasetFile: "",
+        datasetThumbnail: "",
+        datasetName: dataset.datasetName,
+        description: dataset.description,
+        price: priceAsNumber,
         uploadedByEmail: user.email,
         userId: user.uid,
       });
 
       const docId = docRef.id;
 
-      // Upload profile image to Firebase Storage
-      let uploadUrlImageUrl = "";
-      if (image.uploadUrlImage) {
-        const imageRef = ref(
-          storage,
-          `image-asset/uploadUrlImage-${docId}.jpg`
-        );
-        await uploadBytes(imageRef, image.uploadUrlImage);
-        uploadUrlImageUrl = await getDownloadURL(imageRef);
+      // Upload dataset image/file to Firebase Storage
+      let datasetFileUrl = "";
+      if (dataset.datasetFile) {
+        // Ref untuk upload file ke Storage dengan ekstensi asli
+        const datasetRef = ref(storage, `images-dataset/dataset-${docId}.zip`);
+
+        // Upload file ke Storage
+        await uploadBytes(datasetRef, dataset.datasetFile);
+        datasetFileUrl = await getDownloadURL(datasetRef);
       }
 
-      await updateDoc(doc(db, "assetImages", docId), {
-        uploadUrlImage: uploadUrlImageUrl,
+      let datasetThumbnailUrl = "";
+      if (dataset.datasetThumbnail) {
+        // Ref untuk upload file ke Storage dengan ekstensi asli
+        const datasetRef = ref(storage, `images-dataset/dataset-${docId}.jpg`);
+
+        // Upload file ke Storage
+        await uploadBytes(datasetRef, dataset.datasetThumbnail);
+        datasetThumbnailUrl = await getDownloadURL(datasetRef);
+      }
+
+      // Update Firestore dengan URL gambar yang diupload
+      await updateDoc(doc(db, "assetDatasets", docId), {
+        datasetFile: datasetFileUrl,
+        datasetThumbnail: datasetThumbnailUrl,
       });
 
       // Reset the form
-      setImage({
-        imageName: "",
+      setDataset({
+        datasetName: "",
         category: "",
         description: "",
         price: "",
-        uploadUrlImage: null,
+        datasetFile: null,
+        datasetThumbnail: null,
       });
       setPreviewImage(null);
 
-      // Navigate back to /manage-asset-image
+      // Navigate back to /manage-asset-dataset
       setAlertSuccess(true);
       setTimeout(() => {
-        navigate("/manage-asset-image");
+        navigate("/manage-asset-dataset");
       }, 2000);
     } catch (error) {
-      // console.error("Error menambahkan image: ", error);
+      console.error("Error menambahkan dataset: ", error);
       setAlertError(true);
     }
   };
 
   const handleCancel = () => {
-    navigate("/manage-asset-image");
+    navigate("/manage-asset-dataset");
   };
 
   const closeAlert = () => {
     setAlertError(false);
+  };
+
+  const [fileSize, setFileSize] = useState(null);
+  const [error, setError] = useState(null);
+
+  const handleFileChange = (event) => {
+    const { name, value, files } = event.target;
+    const file = event.target.files[0];
+
+    if (name === "datasetFile" && files[0]) {
+      setDataset({
+        ...dataset,
+        datasetFile: files[0],
+      });
+    } else {
+      setDataset({
+        ...dataset,
+        [name]: value,
+      });
+    }
+
+    if (file) {
+      if (file.type !== "application/zip" && !file.name.endsWith(".zip")) {
+        setError("File yang diunggah harus berformat .zip");
+        setFileSize(null);
+        event.target.value = null;
+        return;
+      } else {
+        setError(null); // Reset error jika file sesuai
+      }
+
+      let size = file.size; // Ukuran file dalam bytes
+      let unit = "Bytes";
+
+      if (size >= 1073741824) {
+        // Lebih besar atau sama dengan 1 GB
+        size = (size / 1073741824).toFixed(2);
+        unit = "GB";
+      } else if (size >= 1048576) {
+        // Lebih besar atau sama dengan 1 MB
+        size = (size / 1048576).toFixed(2);
+        unit = "MB";
+      } else if (size >= 1024) {
+        // Lebih besar atau sama dengan 1 KB
+        size = (size / 1024).toFixed(2);
+        unit = "KB";
+      }
+
+      setFileSize(`${size} ${unit}`);
+    } else {
+      setFileSize(null);
+    }
   };
 
   return (
@@ -169,7 +385,7 @@ function AddNewImage() {
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>image baru berhasil ditambahkan dan tersimpan.</span>
+                <span>Dataset baru berhasil ditambahkan dan tersimpan.</span>
               </div>
             </div>
           )}
@@ -193,7 +409,7 @@ function AddNewImage() {
                     d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>Gagal menambahkan image baru silahkan coba lagi</span>
+                <span>Gagal menambahkan dataset baru silahkan coba lagi</span>
               </div>
             </div>
           )}
@@ -202,11 +418,11 @@ function AddNewImage() {
             onSubmit={handleSubmit}
             className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24   h-[1434px] gap-[50px]  overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0">
             <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-10 dark:text-primary-100 p-4">
-              Add New Image
+              Add New Dataset
             </h1>
             <div className="p-8 -mt-4  bg-primary-100  dark:bg-neutral-20 rounded-sm shadow-lg">
               <h2 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                Image Information
+                Dataset Information
               </h2>
 
               <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
@@ -222,8 +438,42 @@ function AddNewImage() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
-                    Format foto harus .jpg, jpeg,png dan ukuran minimal 300 x
-                    300 px.
+                    Format file harus .zip
+                  </p>
+                </div>
+
+                <div>
+                  <input
+                    className="block min-w-full sm:w-[150px] md:w-[450px] lg:w-[670px] xl:w-[850px] 2xl:w-[1200px] text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                    id="file_input"
+                    type="file"
+                    accept=".zip"
+                    onChange={handleFileChange}
+                    name="datasetFile"
+                  />
+                  {error && (
+                    <p className="text-red-500 mt-1 text-sm">{error}</p>
+                  )}
+                  {fileSize && (
+                    <p className="mt-1 text-sm">Ukuran file: {fileSize}</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+                <div className="w-full sm:w-[150px] md:w-[170px] lg:w-[200px] xl:w-[220px] 2xl:w-[170px]">
+                  <div className="flex items-center gap-1">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+                      Upload Thumbnail Dataset
+                    </h3>
+                    <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
+                    />
+                  </div>
+                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
+                    Format thumbnail harus .jpg, .jpeg, .png dan ukuran minimal
+                    300 x 300 px.
                   </p>
                 </div>
                 <div className="p-0">
@@ -240,7 +490,7 @@ function AddNewImage() {
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                              Upload Foto
+                              Upload Thumbnail
                             </span>
                           </>
                         )}
@@ -248,10 +498,9 @@ function AddNewImage() {
                         <input
                           type="file"
                           id="fileUpload"
-                          name="uploadUrlImage"
+                          name="datasetThumbnail"
                           onChange={handleChange}
-                          multiple
-                          accept="image/jpeg,image/png,image/jpg"
+                          accept=".jpg,.jpeg,.png"
                           className="hidden"
                         />
 
@@ -266,7 +515,10 @@ function AddNewImage() {
                               type="button"
                               onClick={() => {
                                 setPreviewImage(null);
-                                setImage({ ...image, uploadUrlImage: null });
+                                setDataset({
+                                  ...dataset,
+                                  datasetThumbnail: null,
+                                });
                               }}
                               className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded">
                               x
@@ -279,12 +531,12 @@ function AddNewImage() {
                 </div>
               </div>
 
-              {/* image Name */}
+              {/* Dataset Name */}
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-1">
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                      image Name
+                      Dataset Name
                     </h3>
                     <img
                       src={IconField}
@@ -293,7 +545,7 @@ function AddNewImage() {
                     />
                   </div>
                   <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Masukkan Nama Untuk image Maximal 40 Huruf
+                    Masukkan Nama Untuk Dataset Maximal 40 Huruf
                   </p>
                 </div>
 
@@ -302,8 +554,8 @@ function AddNewImage() {
                     <input
                       type="text"
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px]"
-                      name="imageName"
-                      value={image.imageName}
+                      name="datasetName"
+                      value={dataset.datasetName}
                       onChange={handleChange}
                       placeholder="Enter name...."
                       required
@@ -326,7 +578,8 @@ function AddNewImage() {
                     />
                   </div>
                   <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Silahkan Pilih Kategori Yang Sesuai Dengan image Anda.
+                    Silahkan Pilih Kategori yang Sesuai Dengan Dataset Anda atau
+                    Tambahkan Kategori Sendiri.
                   </p>
                 </div>
 
@@ -334,26 +587,29 @@ function AddNewImage() {
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <select
                       name="category"
-                      value={image.category}
+                      value={dataset.category}
                       onChange={(e) =>
-                        setImage((prevState) => ({
+                        setDataset((prevState) => ({
                           ...prevState,
-                          category: e.target.value, // Update category inside image state
+                          category: e.target.value,
                         }))
                       }
                       className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md">
                       <option value="" disabled>
                         Pick an option
                       </option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.name}>
-                          {cat.name}
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.name}>
+                          {category.name}
                         </option>
                       ))}
                     </select>
                   </label>
 
-                  <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
+                  <div
+                    type="button"
+                    onClick={handleOpenAddCategory}
+                    className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
                     +
                   </div>
                 </div>
@@ -373,7 +629,7 @@ function AddNewImage() {
                     />
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px]">
-                    Berikan Deskripsi Pada image Anda Maximal 200 Huruf
+                    Berikan Deskripsi Pada Dataset Anda Maximal 200 Huruf
                   </p>
                 </div>
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
@@ -381,7 +637,7 @@ function AddNewImage() {
                     <textarea
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px] h-[48px] sm:h-[60px] md:h-[80px] lg:h-[80px] xl:h-[100px] bg-transparent"
                       name="description"
-                      value={image.description}
+                      value={dataset.description}
                       onChange={handleChange}
                       placeholder="Deskripsi"
                       rows="4"
@@ -399,7 +655,7 @@ function AddNewImage() {
                     </h3>
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Silahkan Masukkan Harga Untuk image jika asset gratis
+                    Silahkan Masukkan Harga Untuk Dataset jika asset gratis
                     silahkan dikosongkan.
                   </p>
                 </div>
@@ -409,7 +665,7 @@ function AddNewImage() {
                       type="number"
                       className="input border-0 focus:outline-none focus:ring-0  w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
                       name="price"
-                      value={image.price}
+                      value={dataset.price}
                       onChange={handleChange}
                       placeholder="Rp"
                       required
@@ -433,10 +689,15 @@ function AddNewImage() {
               </button>
             </div>
           </form>
+          <AddCategory
+            isOpen={isAddCategoryOpen}
+            onClose={handleCloseAddCategory}
+            onAddCategory={handleAddCategory}
+          />
         </div>
       </div>
     </>
   );
 }
 
-export default AddNewImage;
+export default AddNewDataset;

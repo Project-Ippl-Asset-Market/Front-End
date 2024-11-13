@@ -21,6 +21,8 @@ import IconDollar from "../../../assets/assetWeb/iconDollarLight.svg";
 import IconCart from "../../../assets/assetWeb/iconCart.svg";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineInfoCircle } from "react-icons/ai";
+import daisyui from "daisyui";
+import Footer from "../../website/Footer/Footer";
 
 export function AssetDataset() {
   const navigate = useNavigate();
@@ -79,7 +81,7 @@ export function AssetDataset() {
 
       const purchasedQuery = query(
         collection(db, "buyAssets"),
-        where("uid", "==", currentUserId)
+        where("userId", "==", currentUserId)
       );
 
       try {
@@ -231,7 +233,8 @@ export function AssetDataset() {
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
-        datasetImage: selectedasset.datasetImage,
+        datasetFile: selectedasset.datasetFile,
+        datasetThumbnail: selectedasset.datasetThumbnail,
         name: selectedasset.datasetName,
         description: selectedasset.description,
         price: selectedasset.price,
@@ -274,14 +277,22 @@ export function AssetDataset() {
       return;
     }
 
-    const { id, datasetName, description, price, datasetImage, category } =
-      selectedasset;
+    const {
+      id,
+      datasetName,
+      description,
+      price,
+      datasetFile,
+      datasetThumbnail,
+      category,
+    } = selectedasset;
 
     const missingFields = [];
     if (!datasetName) missingFields.push("name");
     if (!description) missingFields.push("description");
     if (price === undefined) missingFields.push("price");
-    if (!datasetImage) missingFields.push("datasetImage");
+    if (!datasetFile) missingFields.push("datasetFile");
+    if (!datasetThumbnail) missingFields.push("datasetThumbnail");
     if (!category) missingFields.push("category");
 
     if (missingFields.length > 0) {
@@ -296,7 +307,8 @@ export function AssetDataset() {
         name: datasetName,
         description: description,
         price: price,
-        datasetImage: datasetImage,
+        datasetFile: datasetFile,
+        datasetThumbnail: datasetThumbnail,
         category: category,
         assetOwnerID: selectedasset.userId,
       });
@@ -315,14 +327,16 @@ export function AssetDataset() {
     datasetName,
     description,
     price,
-    datasetImage,
+    datasetFile,
+    datasetThumbnail,
     category,
   }) => {
     const missingFields = [];
     if (!datasetName) missingFields.push("name");
     if (!description) missingFields.push("description");
     if (price === undefined) missingFields.push("price");
-    if (!datasetImage) missingFields.push("datasetImage");
+    if (!datasetFile) missingFields.push("datasetFile");
+    if (!datasetThumbnail) missingFields.push("datasetThumbnail");
     if (!category) missingFields.push("category");
     return missingFields;
   };
@@ -451,16 +465,39 @@ export function AssetDataset() {
                 key={data.id}
                 className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
                 <div className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px] relative">
-                  <img
-                    src={data.datasetImage || CustomImage}
-                    alt="Image"
-                    className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
-                    onClick={() => openModal(data)}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = CustomImage;
-                    }}
-                  />
+                  {Array.isArray(data.datasetThumbnail) &&
+                  data.datasetThumbnail.length > 0 ? (
+                    <img
+                      src={
+                        data.datasetThumbnail[0] ||
+                        data.datasetFile ||
+                        CustomImage
+                      }
+                      alt={`Thumbnail 1`}
+                      className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                      onClick={() => openModal(data)}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CustomImage;
+                      }}
+                      onContextMenu={(e) => e.preventDefault()}
+                    />
+                  ) : (
+                    <img
+                      src={data.datasetThumbnail || CustomImage}
+                      alt="Default Image"
+                      className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                      onClick={() => openModal(data)}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CustomImage;
+                      }}
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                    />
+                  )}
+
                   {isPurchased && (
                     <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded z-10">
                       Sudah Dibeli
@@ -511,21 +548,32 @@ export function AssetDataset() {
       {modalIsOpen && selectedasset && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] sm:w-[700px] md:w-[700px] lg:w-[700px] xl:w-[700px] 2xl:w-[700px] mx-4 flex relative">
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] sm:w-[700px] md:w-[700px] lg:w-[800px] xl:w-[900px] 2xl:w-[900px] mx-4 flex relative">
             <button
               className="absolute top-1 sm:top-2 md:top-2 lg:top-3 xl:top-2 2xl:top-2 right-3 sm:right-2 md:right-2 lg:right-3 xl:right-2 2xl:right-2 text-gray-600 dark:text-gray-400 text-2xl sm:text-xl md:text-xl lg:text-[35px] xl:text-[40px] 2xl:text-2xl"
               onClick={closeModal}>
               &times;
             </button>
             <img
-              src={selectedasset.datasetImage || CustomImage}
-              alt="asset Image"
-              className="w-1/2 h-[260px] mb-4"
+              src={
+                Array.isArray(selectedasset.datasetThumbnail) &&
+                selectedasset.datasetThumbnail.length > 1
+                  ? selectedasset.datasetThumbnail[0]
+                  : selectedasset.datasetThumbnail ||
+                    selectedasset.datasetFile ||
+                    CustomImage
+              }
+              alt="Asset Image"
+              className="w-full md:w-1/2 h-[570px] object-cover rounded-lg"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = CustomImage;
               }}
+              onContextMenu={(e) => e.preventDefault()}
+              draggable={false}
+              onDragStart={(e) => e.preventDefault()}
             />
+
             <div className="w-1/2 pl-4 ">
               <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
                 {selectedasset.datasetName}
@@ -534,8 +582,10 @@ export function AssetDataset() {
                 Rp. {selectedasset.price.toLocaleString("id-ID")}
               </p>
               <div className="text-sm mb-2 dark:text-primary-100 mt-4">
-                <label className="flex-col mt-2">Deskripsi Video:</label>
-                <div className="mt-2">{selectedasset.description}</div>
+                <label className="flex-col mt-2">Deskripsi Dataset:</label>
+                <div className="mt-2 text-justify">
+                  {selectedasset.description}
+                </div>
               </div>
 
               <p className="text-sm mb-2 dark:text-primary-100 mt-4">
@@ -586,17 +636,7 @@ export function AssetDataset() {
         </div>
       </div>
 
-      <footer className="min-h-screen flex flex-col items-center justify-center">
-        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
-          <a href="#">Teams And Conditions</a>
-          <a href="#">File Licenses</a>
-          <a href="#">Refund Policy</a>
-          <a href="#">Privacy Policy</a>
-        </div>
-        <p className="text-[10px] md:text-[12px]">
-          Copyright © 2024 - All right reserved by ACME Industries Ltd
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 }

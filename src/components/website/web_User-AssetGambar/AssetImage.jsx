@@ -21,6 +21,7 @@ import IconDollar from "../../../assets/assetWeb/iconDollarLight.svg";
 import IconCart from "../../../assets/assetWeb/iconCart.svg";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineInfoCircle } from "react-icons/ai";
+import Footer from "../../website/Footer/Footer";
 
 export function AssetImage() {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ export function AssetImage() {
   const [searchResults, setSearchResults] = useState([]);
   const [purchasedAssets, setPurchasedAssets] = useState(new Set());
   const [validationMessage, setValidationMessage] = useState("");
+  const [selectedSize, setSelectedSize] = useState("Original");
 
   // Mengambil ID pengguna saat ini
   useEffect(() => {
@@ -79,7 +81,7 @@ export function AssetImage() {
 
       const purchasedQuery = query(
         collection(db, "buyAssets"),
-        where("uid", "==", currentUserId)
+        where("userId", "==", currentUserId)
       );
 
       try {
@@ -202,41 +204,42 @@ export function AssetImage() {
     return true;
   };
 
-  // Fungsi untuk menambahkan aset ke keranjang
-  const handleAddToCart = async (selectedasset) => {
-    if (!validateAddToCart(selectedasset.id)) return;
+  const sizeDimensions = {
+    Original: "6000x4000",
+    Large: "1920x1280",
+    Medium: "1280x1280",
+    Small: "640x427",
+  };
 
-    // Cek apakah userId penjual sama dengan currentUserId
-    if (selectedasset.userId === currentUserId) {
+  const handleAddToCart = async (selectedAsset) => {
+    if (!validateAddToCart(selectedAsset.id)) return;
+
+    if (selectedAsset.userId === currentUserId) {
       alert("Anda tidak dapat membeli aset yang Anda jual sendiri.");
       return;
     }
 
-    // Ambil userId dari selectedasset dan simpan dalam array
-    const userIdFromAsset = [selectedasset.userId];
-    console.log("User ID from Asset: ", userIdFromAsset);
+    const dimensions = sizeDimensions[selectedSize] || "Unknown Size";
+    const sizeWithDimensions = `${selectedSize} (${dimensions})`;
 
-    // Membuat referensi dokumen untuk keranjang menggunakan ID aset
-    const cartRef = doc(db, "cartAssets", `${selectedasset.id}`);
-
+    const cartRef = doc(db, "cartAssets", `${selectedAsset.id}`);
     try {
       const cartSnapshot = await getDoc(cartRef);
-
       if (cartSnapshot.exists()) {
         setValidationMessage("Anda sudah menambahkan asset ini ke keranjang.");
         return;
       }
 
-      // Menambahkan aset ke keranjang, termasuk userId dari selectedasset
       await setDoc(cartRef, {
         userId: currentUserId,
-        assetId: selectedasset.id,
-        Image_umum: selectedasset.uploadUrlImage,
-        name: selectedasset.imageName,
-        description: selectedasset.description,
-        price: selectedasset.price,
-        category: selectedasset.category,
-        assetOwnerID: userIdFromAsset[0],
+        assetId: selectedAsset.id,
+        Image_umum: selectedAsset.uploadUrlImage,
+        name: selectedAsset.imageName,
+        description: selectedAsset.description,
+        price: selectedAsset.price,
+        category: selectedAsset.category,
+        assetOwnerID: selectedAsset.userId,
+        size: sizeWithDimensions,
       });
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {
@@ -247,8 +250,9 @@ export function AssetImage() {
 
   // Fungsi untuk menangani pembelian aset
   const handleBuyNow = async (selectedasset) => {
+    // Cek apakah pengguna sudah login
     if (!currentUserId) {
-      alert("Anda perlu login untuk menambahkan asset ke keranjang");
+      alert("Anda perlu login untuk membeli aset");
       navigate("/login");
       return;
     }
@@ -259,33 +263,49 @@ export function AssetImage() {
       return;
     }
 
+    // Cek apakah aset sudah dibeli
     if (purchasedAssets.has(selectedasset.id)) {
-      alert(
-        "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
-      );
+      alert("Anda sudah membeli aset ini.");
       return;
     }
 
-    // Document ID sekarang mengikuti asset ID
-    const cartRef = doc(db, "buyNow", ` ${selectedasset.id}`);
+    // Mengambil referensi ke dokumen pembelian
+    const cartRef = doc(db, "buyNow", selectedasset.id);
     const cartSnapshot = await getDoc(cartRef);
     if (cartSnapshot.exists()) {
-      // alert("Anda sudah Membeli Asset ini.");
+      alert("Anda sudah membeli asset ini.");
       return;
     }
+
+    const sizeDimensions = {
+      Original: { dimensions: "6000x4000", width: 6000, height: 4000 },
+      Large: { dimensions: "1920x1280", width: 1920, height: 1280 },
+      Medium: { dimensions: "1280x1280", width: 1280, height: 1280 },
+      Small: { dimensions: "640x427", width: 640, height: 427 },
+    };
+
+    const selectedSizeDetails = sizeDimensions[selectedSize] || {
+      dimensions: "Unknown Size",
+    };
+    const sizeWithDimensions = `${selectedSize} (${selectedSizeDetails.dimensions})`;
 
     const { id, imageName, description, price, uploadUrlImage, category } =
       selectedasset;
 
-    const missingFields = [];
-    if (!imageName) missingFields.push("name");
-    if (!description) missingFields.push("description");
-    if (price === undefined) missingFields.push("price");
-    if (!uploadUrlImage) missingFields.push("Image_umum");
-    if (!category) missingFields.push("category");
+    // Validasi atribut yang diperlukan
+    const missingFields = validateAssetFields({
+      imageName,
+      description,
+      price,
+      uploadUrlImage,
+      category,
+      size: selectedSize, // Sertakan ukuran dalam validasi
+    });
 
     if (missingFields.length > 0) {
-      alert(`Missing fields: ${missingFields.join(", ")}. Please try again.`);
+      alert(
+        `Field yang hilang: ${missingFields.join(", ")}. Silakan coba lagi.`
+      );
       return;
     }
 
@@ -298,25 +318,29 @@ export function AssetImage() {
         price: price,
         Image_umum: uploadUrlImage,
         category: category,
+        size: sizeWithDimensions,
         assetOwnerID: selectedasset.userId,
+        // sizeWidth: selectedSizeDetails.width, // Menyimpan lebar ukuran
+        // sizeHeight: selectedSizeDetails.height, // Menyimpan tinggi ukuran
       });
 
       navigate("/buy-now-asset");
     } catch (error) {
       console.error("Error adding to cart: ", error);
       alert(
-        "Terjadi kesalahan saat menambahkan asset ke keranjang. Silakan coba lagi."
+        "Terjadi kesalahan saat menambahkan aset ke keranjang. Silakan coba lagi."
       );
     }
   };
 
-  // Function to validate asset fields
+  // Fungsi untuk memvalidasi atribut aset
   const validateAssetFields = ({
     imageName,
     description,
     price,
     uploadUrlImage,
     category,
+    size,
   }) => {
     const missingFields = [];
     if (!imageName) missingFields.push("name");
@@ -324,6 +348,7 @@ export function AssetImage() {
     if (price === undefined) missingFields.push("price");
     if (!uploadUrlImage) missingFields.push("Image_umum");
     if (!category) missingFields.push("category");
+    if (!size) missingFields.push("size");
     return missingFields;
   };
 
@@ -337,6 +362,7 @@ export function AssetImage() {
   const closeModal = () => {
     setModalIsOpen(false);
     setSelectedasset(null);
+    setSelectedSize("Original");
   };
 
   // Filter berdasarkan pencarian
@@ -470,6 +496,9 @@ export function AssetImage() {
                       e.target.onerror = null;
                       e.target.src = CustomImage;
                     }}
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
                   />
                 </div>
 
@@ -520,7 +549,7 @@ export function AssetImage() {
       {modalIsOpen && selectedasset && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] sm:w-[700px] md:w-[700px] lg:w-[700px] xl:w-[700px] 2xl:w-[700px] mx-4 flex relative">
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] sm:w-[700px] md:w-[700px] lg:w-[800px] xl:w-[900px] 2xl:w-[900px] mx-4 flex relative">
             <button
               className="absolute top-1 sm:top-2 md:top-2 lg:top-3 xl:top-2 2xl:top-2 right-3 sm:right-2 md:right-2 lg:right-3 xl:right-2 2xl:right-2 text-gray-600 dark:text-gray-400 text-2xl sm:text-xl md:text-xl lg:text-[35px] xl:text-[40px] 2xl:text-2xl"
               onClick={closeModal}>
@@ -529,11 +558,15 @@ export function AssetImage() {
             <img
               src={selectedasset.uploadUrlImage || CustomImage}
               alt="asset Image"
-              className="w-1/2 h-[285px]"
+              className="w-full md:w-1/2 h-[400px] object-cover rounded-lg"
+              onClick={() => openModal()}
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = CustomImage;
               }}
+              onContextMenu={(e) => e.preventDefault()}
+              draggable={false}
+              onDragStart={(e) => e.preventDefault()}
             />
             <div className="w-1/2 pl-4 ">
               <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
@@ -550,7 +583,20 @@ export function AssetImage() {
               <p className="text-sm mb-2 dark:text-primary-100 mt-4">
                 Kategori: {selectedasset.category}
               </p>
-              <div className="mt-28">
+
+              <div className="mt-10">
+                <div className="mb-4">
+                  <label className="flex-col mt-2">Pilih Ukuran:</label>
+                  <select
+                    value={selectedSize}
+                    onChange={(e) => setSelectedSize(e.target.value)}
+                    className="mt-2 p-2 border rounded-md w-full">
+                    <option value="Original">Original (6000x4000)</option>
+                    <option value="Large">Large (1920x1280)</option>
+                    <option value="Medium">Medium (1280x1280)</option>
+                    <option value="Small">Small (640x427)</option>
+                  </select>
+                </div>
                 <button
                   onClick={() => handleAddToCart(selectedasset)}
                   className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${
@@ -587,17 +633,7 @@ export function AssetImage() {
         </div>
       )}
 
-      <footer className=" min-h-screen flex flex-col items-center justify-center">
-        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
-          <a href="#">Terms And Conditions</a>
-          <a href="#">File Licenses</a>
-          <a href="#">Refund Policy</a>
-          <a href="#">Privacy Policy</a>
-        </div>
-        <p className="text-[10px] md:text-[12px]">
-          Copyright © 2024 - All rights reserved by ACME Industries Ltd
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 }

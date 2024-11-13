@@ -21,70 +21,74 @@ import IconDollar from "../../../assets/assetWeb/iconDollarLight.svg";
 import IconCart from "../../../assets/assetWeb/iconCart.svg";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineInfoCircle } from "react-icons/ai";
+import Footer from "../../website/Footer/Footer";
 
 export function AssetVideo() {
   const navigate = useNavigate();
-  const [AssetsData, setAssetsData] = useState([]);
+  const [assetsData, setAssetsData] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [likedAssets, setLikedAssets] = useState(new Set());
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [selectedasset, setSelectedasset] = useState(null);
+  const [selectedAsset, setSelectedAsset] = useState(null);
+  const [validationMessage, setValidationMessage] = useState("");
   const [alertLikes, setAlertLikes] = useState(false);
   const [isProcessingLike, setIsProcessingLike] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [purchasedAssets, setPurchasedAssets] = useState(new Set());
-  const [validationMessage, setValidationMessage] = useState("");
+  const [resolution, setResolution] = useState("SD_360x640");
 
-  // Mengambil ID pengguna saat ini (jika ada)
+  // Size options with unique values
+  const sizeOptions = [
+    { label: "SD (360x640)", value: "SD_360x640" },
+    { label: "SD (540x960)", value: "SD_540x960" },
+    { label: "HD (720x1280)", value: "HD" },
+    { label: "Full HD (1080x1920)", value: "FullHD" },
+    { label: "Quad HD (1440x2560)", value: "QuadHD" },
+    { label: "4K UHD (2160x3840)", value: "4K" },
+  ];
+
   useEffect(() => {
+    // Get current user ID
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setCurrentUserId(user.uid);
-      } else {
-        setCurrentUserId(null);
-      }
+      setCurrentUserId(user ? user.uid : null);
     });
     return () => unsubscribe();
   }, []);
 
-  // Mengambil data asset dari Firestore
   useEffect(() => {
+    // Fetch asset data from Firestore
     const unsubscribe = onSnapshot(
       collection(db, "assetVideos"),
       (snapshot) => {
-        const Assets = snapshot.docs.map((doc) => ({
+        const assets = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-        const filteredAssets = Assets.filter((asset) => asset.price > 0);
+        const filteredAssets = assets.filter((asset) => asset.price > 0);
         setAssetsData(filteredAssets);
       }
     );
     return () => unsubscribe();
   }, []);
 
-  // Menangani pengambilan aset yang telah dibeli
   useEffect(() => {
+    // Fetch purchased assets for the current user
     const fetchUserPurchasedAssets = async () => {
       if (!currentUserId) return;
 
       const purchasedQuery = query(
         collection(db, "buyAssets"),
-        where("uid", "==", currentUserId)
+        where("userId", "==", currentUserId)
       );
 
       try {
         const purchasedSnapshot = await getDocs(purchasedQuery);
         const purchasedIds = new Set();
-
         purchasedSnapshot.forEach((doc) => {
-          // Menambahkan assetId dari dokumen ke dalam Set
           purchasedIds.add(doc.data().assetId);
         });
-
-        // Mengupdate state dengan assetId yang dibeli
         setPurchasedAssets(purchasedIds);
       } catch (error) {
         console.error("Error fetching purchased assets: ", error);
@@ -94,8 +98,8 @@ export function AssetVideo() {
     fetchUserPurchasedAssets();
   }, [currentUserId]);
 
-  // Mengambil data likes
   useEffect(() => {
+    // Fetch likes for the current user
     const fetchUserLikes = async () => {
       if (!currentUserId) return;
 
@@ -106,29 +110,28 @@ export function AssetVideo() {
       try {
         const likesSnapshot = await getDocs(likesQuery);
         const userLikes = new Set();
-
         likesSnapshot.forEach((doc) => {
           userLikes.add(doc.data().assetId);
         });
         setLikedAssets(userLikes);
       } catch (error) {
-        // console.error("Error fetching likes: ", error);
+        console.error("Error fetching likes: ", error);
       }
     };
     fetchUserLikes();
   }, [currentUserId]);
 
-  // Mengfilter hasil pencarian
   useEffect(() => {
+    // Filter search results based on search term
     if (searchTerm) {
-      const results = AssetsData.filter((asset) =>
+      const results = assetsData.filter((asset) =>
         asset.videoName.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setSearchResults(results);
     } else {
-      setSearchResults(AssetsData);
+      setSearchResults(assetsData);
     }
-  }, [searchTerm, AssetsData]);
+  }, [searchTerm, assetsData]);
 
   const handleLikeClick = async (assetId, currentLikes) => {
     if (isProcessingLike) return;
@@ -140,7 +143,6 @@ export function AssetVideo() {
     }
 
     setIsProcessingLike(true);
-
     const assetRef = doc(db, "assetVideos", assetId);
     const likeRef = doc(db, "likes", `${currentUserId}_${assetId}`);
 
@@ -165,13 +167,12 @@ export function AssetVideo() {
         setLikedAssets(newLikedAssets);
       });
     } catch (error) {
-      // console.error("Error updating likes: ", error);
+      console.error("Error updating likes: ", error);
     } finally {
       setIsProcessingLike(false);
     }
   };
 
-  // Fungsi untuk memvalidasi apakah pengguna dapat menambahkan aset ke keranjang
   const validateAddToCart = (assetId) => {
     if (!currentUserId) {
       setValidationMessage(
@@ -188,41 +189,32 @@ export function AssetVideo() {
     return true;
   };
 
-  // Fungsi untuk menambahkan aset ke keranjang
-  const handleAddToCart = async (selectedasset) => {
-    if (!validateAddToCart(selectedasset.id)) return;
+  const handleAddToCart = async (selectedAsset) => {
+    if (!validateAddToCart(selectedAsset.id)) return;
 
-    // Cek apakah userId penjual sama dengan currentUserId
-    if (selectedasset.userId === currentUserId) {
+    if (selectedAsset.userId === currentUserId) {
       alert("Anda tidak dapat membeli aset yang Anda jual sendiri.");
       return;
     }
 
-    // Ambil userId dari selectedasset dan simpan dalam array
-    const userIdFromAsset = [selectedasset.userId];
-    console.log("User ID from Asset: ", userIdFromAsset);
-
-    // Membuat referensi dokumen untuk keranjang menggunakan ID aset
-    const cartRef = doc(db, "cartAssets", `${selectedasset.id}`);
-
+    const cartRef = doc(db, "cartAssets", `${selectedAsset.id}`);
     try {
       const cartSnapshot = await getDoc(cartRef);
-
       if (cartSnapshot.exists()) {
         setValidationMessage("Anda sudah menambahkan asset ini ke keranjang.");
         return;
       }
 
-      // Menambahkan aset ke keranjang, termasuk userId dari selectedasset
       await setDoc(cartRef, {
         userId: currentUserId,
-        assetId: selectedasset.id,
-        video: selectedasset.uploadUrlVideo,
-        name: selectedasset.videoName,
-        description: selectedasset.description,
-        price: selectedasset.price,
-        category: selectedasset.category,
-        assetOwnerID: userIdFromAsset[0],
+        assetId: selectedAsset.id,
+        video: selectedAsset.uploadUrlVideo,
+        name: selectedAsset.videoName,
+        description: selectedAsset.description,
+        price: selectedAsset.price,
+        category: selectedAsset.category,
+        assetOwnerID: selectedAsset.userId,
+        resolution: resolution,
       });
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {
@@ -231,96 +223,59 @@ export function AssetVideo() {
     }
   };
 
-  // Fungsi untuk menangani pembelian aset
-  const handleBuyNow = async (selectedasset) => {
+  const handleBuyNow = async (selectedAsset) => {
     if (!currentUserId) {
       alert("Anda perlu login untuk menambahkan asset ke keranjang");
       navigate("/login");
       return;
     }
 
-    // Cek apakah userId penjual sama dengan currentUserId
-    if (selectedasset.userId === currentUserId) {
+    if (selectedAsset.userId === currentUserId) {
       alert("Anda tidak dapat membeli aset yang Anda jual sendiri.");
       return;
     }
 
-    if (purchasedAssets.has(selectedasset.id)) {
+    if (purchasedAssets.has(selectedAsset.id)) {
       alert(
         "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
       );
       return;
     }
 
-    // Document ID sekarang mengikuti asset ID
-    const cartRef = doc(db, "buyNow", ` ${selectedasset.id}`);
+    const cartRef = doc(db, "buyNow", `${selectedAsset.id}`);
     const cartSnapshot = await getDoc(cartRef);
     if (cartSnapshot.exists()) {
-      // alert("Anda sudah Membeli Asset ini.");
-      return;
-    }
-
-    const { id, videoName, description, price, uploadUrlVideo, category } =
-      selectedasset;
-
-    const missingFields = [];
-    if (!videoName) missingFields.push("name");
-    if (!description) missingFields.push("description");
-    if (price === undefined) missingFields.push("price");
-    if (!uploadUrlVideo) missingFields.push("video");
-    if (!category) missingFields.push("category");
-
-    if (missingFields.length > 0) {
-      alert(`Missing fields: ${missingFields.join(", ")}. Please try again.`);
       return;
     }
 
     try {
       await setDoc(cartRef, {
         userId: currentUserId,
-        assetId: id,
-        name: videoName,
-        description: description,
-        price: price,
-        video: uploadUrlVideo,
-        category: category,
-        assetOwnerID: selectedasset.userId,
+        assetId: selectedAsset.id,
+        name: selectedAsset.videoName,
+        description: selectedAsset.description,
+        price: selectedAsset.price,
+        video: selectedAsset.uploadUrlVideo,
+        category: selectedAsset.category,
+        assetOwnerID: selectedAsset.userId,
+        resolution: resolution, // Store selected size
       });
 
       navigate("/buy-now-asset");
     } catch (error) {
-      console.error("Error adding to cart: ", error);
-      alert(
-        "Terjadi kesalahan saat menambahkan asset ke keranjang. Silakan coba lagi."
-      );
+      console.error("Error processing purchase: ", error);
+      alert("Terjadi kesalahan saat melakukan pembelian.");
     }
   };
 
-  // Function to validate asset fields
-  const validateAssetFields = ({
-    videoName,
-    description,
-    price,
-    uploadUrlVideo,
-    category,
-  }) => {
-    const missingFields = [];
-    if (!videoName) missingFields.push("name");
-    if (!description) missingFields.push("description");
-    if (price === undefined) missingFields.push("price");
-    if (!uploadUrlVideo) missingFields.push("video");
-    if (!category) missingFields.push("category");
-    return missingFields;
-  };
-
   const openModal = (asset) => {
-    setSelectedasset(asset);
+    setSelectedAsset(asset);
     setModalIsOpen(true);
   };
 
   const closeModal = () => {
     setModalIsOpen(false);
-    setSelectedasset(null);
+    setSelectedAsset(null);
   };
 
   return (
@@ -338,46 +293,44 @@ export function AssetVideo() {
         <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[47%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[193px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[850px] 2xl:w-[1200px]"
+              className="mx-auto px-20 w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[850px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}>
               <div className="relative">
-                <div className="relative">
-                  <input
-                    type="search"
-                    id="location-search"
-                    className="block w-full p-4 pl-24 placeholder:pr-10 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
-                    placeholder="Search assets..."
-                    required
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <span className="absolute inset-y-0 left-8 flex items-center text-gray-500 dark:text-gray-400">
-                    <svg
-                      className="w-6 h-6 mx-auto"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 18 18">
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                      />
-                    </svg>
-                  </span>
-                  <span className="absolute inset-y-0 left-20 flex items-center text-neutral-20 dark:text-neutral-20 text-[20px]">
-                    |
-                  </span>
-                </div>
+                <input
+                  type="search"
+                  id="location-search"
+                  className="block w-full p-4 pl-24 placeholder:pr-10 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                  placeholder="Search assets..."
+                  required
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <span className="absolute inset-y-0 left-8 flex items-center text-gray-500 dark:text-gray-400">
+                  <svg
+                    className="w-6 h-6 mx-auto"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 18 18">
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+                    />
+                  </svg>
+                </span>
+                <span className="absolute inset-y-0 left-20 flex items-center text-neutral-20 dark:text-neutral-20 text-[20px]">
+                  |
+                </span>
               </div>
             </form>
           </div>
         </div>
       </div>
 
-      {/* Menampilkan pesan validasi */}
+      {/* Validation message display */}
       {validationMessage && (
         <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
           <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
@@ -491,8 +444,7 @@ export function AssetVideo() {
         </div>
       </div>
 
-      {/* Modal untuk detail asset */}
-      {modalIsOpen && selectedasset && (
+      {modalIsOpen && selectedAsset && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
           <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] mx-4 flex relative">
@@ -503,7 +455,7 @@ export function AssetVideo() {
             </button>
             <div className="flex-1 flex items-center justify-center mb-4">
               <video
-                src={selectedasset.uploadUrlVideo || CustomImage}
+                src={selectedAsset.uploadUrlVideo || CustomImage}
                 alt="Asset Image"
                 controls
                 controlsList="nodownload"
@@ -517,27 +469,40 @@ export function AssetVideo() {
             </div>
             <div className="flex-1 pl-4">
               <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
-                {selectedasset.videoName}
+                {selectedAsset.videoName}
               </h2>
               <p className="text-sm mb-2 dark:text-primary-100">
-                Rp. {selectedasset.price.toLocaleString("id-ID")}
+                Rp. {selectedAsset.price.toLocaleString("id-ID")}
               </p>
               <label className="flex-col mt-2">Deskripsi Video:</label>
               <div className="mt-2 text-sm mb-2 dark:text-primary-100">
-                {selectedasset.description}
+                {selectedAsset.description}
               </div>
               <p className="text-sm mb-2 dark:text-primary-100">
-                Kategori: {selectedasset.category}
+                Kategori: {selectedAsset.category}
               </p>
-              <div className="mt-28">
+
+              <div className="mt-14">
+                {/* Size selection */}
+                <label className="flex-col mt-2">Pilih Resolusi Video:</label>
+                <select
+                  value={resolution}
+                  onChange={(e) => setResolution(e.target.value)}
+                  className="bg-white border border-gray-300 rounded-md p-2 mb-4 w-full">
+                  {sizeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
                 <button
-                  onClick={() => handleAddToCart(selectedasset)}
+                  onClick={() => handleAddToCart(selectedAsset)}
                   className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${
-                    purchasedAssets.has(selectedasset.id)
+                    purchasedAssets.has(selectedAsset.id)
                       ? "bg-gray-400 pointer-events-none"
                       : "bg-neutral-60"
                   }`}
-                  disabled={purchasedAssets.has(selectedasset.id)}>
+                  disabled={purchasedAssets.has(selectedAsset.id)}>
                   <img
                     src={IconCart}
                     alt="Cart Icon"
@@ -546,16 +511,16 @@ export function AssetVideo() {
                   <p>Tambahkan Ke Keranjang</p>
                 </button>
                 <button
-                  onClick={() => handleBuyNow(selectedasset)}
+                  onClick={() => handleBuyNow(selectedAsset)}
                   className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 mt-2 rounded-md ${
-                    purchasedAssets.has(selectedasset.id)
+                    purchasedAssets.has(selectedAsset.id)
                       ? "bg-gray-400 pointer-events-none"
                       : "bg-secondary-40"
                   }`}
-                  disabled={purchasedAssets.has(selectedasset.id)}>
+                  disabled={purchasedAssets.has(selectedAsset.id)}>
                   <img
                     src={IconDollar}
-                    alt="Cart Icon"
+                    alt="Dollar Icon"
                     className="w-6 h-6 mr-2 -ml-24"
                   />
                   <p>Beli Sekarang</p>
@@ -565,18 +530,7 @@ export function AssetVideo() {
           </div>
         </div>
       )}
-
-      <footer className="min-h-[181px] flex flex-col items-center justify-center">
-        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
-          <a href="#">Teams And Conditions</a>
-          <a href="#">File Licenses</a>
-          <a href="#">Refund Policy</a>
-          <a href="#">Privacy Policy</a>
-        </div>
-        <p className="text-[10px] md:text-[12px]">
-          Copyright © 2024 - All rights reserved by ACME Industries Ltd
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 }

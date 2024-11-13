@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { db } from "../../../firebase/firebaseConfig";
+import { db } from "../../firebase/firebaseConfig";
 import { useState, useEffect } from "react";
 import {
   collection,
@@ -12,8 +12,8 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import HeaderNav from "../../headerNavBreadcrumbs/HeaderWebUser";
-import NavbarSection from "../web_User-LandingPage/NavbarSection";
+import HeaderNav from "../headerNavBreadcrumbs/HeaderWebUser";
+import NavbarSection from "../website/web_User-LandingPage/NavbarSection";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import CustomImage from "../../../assets/assetmanage/Iconrarzip.svg";
 import IconDownload from "../../../assets/icon/iconDownload/iconDownload.svg";

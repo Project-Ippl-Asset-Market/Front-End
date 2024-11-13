@@ -32,10 +32,12 @@
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.3.1",
     "react-firebase-hooks": "^5.1.1",
+    "react-medium-image-zoom": "^5.2.11",
     "react-modal": "^3.16.1",
     "react-router-dom": "^6.26.2",
     "react-toastify": "^10.0.5",
-    "recharts": "^2.13.0"
+    "recharts": "^2.13.0",
+    "swiper": "^11.1.14"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",

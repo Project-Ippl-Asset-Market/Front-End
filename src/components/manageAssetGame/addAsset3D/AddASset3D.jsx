@@ -1,13 +1,15 @@
 //
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   collection,
   addDoc,
+  getDocs,
+  updateDoc,
   Timestamp,
   doc,
-  updateDoc,
+  query,
+  where,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { onAuthStateChanged } from "firebase/auth";
@@ -19,11 +21,12 @@ import HeaderNav from "../../HeaderNav/HeaderNav";
 function AddAsset3D() {
   const [user, setUser] = useState(null);
   const [asset3D, setAsset3D] = useState({
-    name: "",
+    asset3DName: "",
     category: "",
     description: "",
     price: "",
-    file: null, // State to hold file information
+    asset3DFile: null,
+    asset3DThumbnail : null ,  // State to hold file information
   });
 
   const navigate = useNavigate();
@@ -31,12 +34,13 @@ function AddAsset3D() {
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const categories = [
-    { id: 1, name: "Nature" },
-    { id: 2, name: "Architecture" },
-    { id: 3, name: "Animals" },
-    { id: 4, name: "People" },
-    { id: 5, name: "Technology" },
-    { id: 6, name: "Food" },
+    { id: 1, name: "Animations" },
+    { id: 2, name: " 3D Character" },
+    { id: 3, name: " 3D Environtment" },
+    { id: 4, name: " 3D GUI" },
+    { id: 5, name: "Props" },
+    { id: 6, name: "Vegetation" },
+    { id: 7, name: "Vehicle" },
   ];
 
   useEffect(() => {
@@ -56,19 +60,25 @@ function AddAsset3D() {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    if (name === "asset3DImage" && files[0]) {
+    if (name === "asset3DThumbnail" && files[0]) {
       setAsset3D({
         ...asset3D,
-        asset3DImage: files[0],
+        asset3DThumbnail: files[0],
       });
 
       // Create image preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result);
-      };
-      reader.readAsDataURL(files[0]);
+      if (files[0].type.includes("image")) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewImage(reader.result);
+        };
+        reader.readAsDataURL(files[0]);
+      } else {
+        // Reset preview jika file bukan gambar
+        setPreviewImage(DefaultPreview);
+      }
     } else {
+      // Jika tidak berhubungan dengan upload file, hanya update state yang lain
       setAsset3D({
         ...asset3D,
         [name]: value,
@@ -80,30 +90,54 @@ function AddAsset3D() {
     e.preventDefault();
 
     try {
-      // Save asset 3D details to Firestore
+      // Konversi asset2D.price menjadi number
+      const priceAsNumber = parseInt(asset3D.price);
+
+      if (isNaN(priceAsNumber)) {
+        // Validasi jika harga yang diinput tidak valid
+        throw new Error("Invalid price: must be a number.");
+      }
+
+      // Save asset2D details to Firestore
       const docRef = await addDoc(collection(db, "assetImage3D"), {
         category: asset3D.category,
         createdAt: Timestamp.now(),
-        asset3DImage: "",
+        asset3DFile: "",
+        asset3DThumbnail: "",
         asset3DName: asset3D.asset3DName,
         description: asset3D.description,
-        price: asset3D.price,
+        price: priceAsNumber, // Simpan sebagai number(angka)
         uploadedByEmail: user.email,
         userId: user.uid,
       });
 
       const docId = docRef.id;
 
-      // Upload profile image to Firebase Storage
-      let asset3DImageUrl = "";
-      if (asset3D.asset3DImage) {
-        const imageRef = ref(storage, `images-asset-3D/asset3D-${docId}.jpg`);
-        await uploadBytes(imageRef, asset3D.asset3DImage);
-        asset3DImageUrl = await getDownloadURL(imageRef);
+      // Upload ASSET3D image/file to Firebase Storage
+      let asset3DFileUrl = "";
+      if (asset3D.asset3DFile) {
+        // Ref untuk upload file ke Storage dengan ekstensi asli
+        const asset3DRef = ref(storage, `images-asset-3d/asset3D-${docId}.zip`);
+
+        // Upload file ke Storage
+        await uploadBytes(asset3DRef, asset3D.asset3DFile);
+        asset3DFileUrl = await getDownloadURL(asset3DRef);
       }
 
+      let asset3DThumbnailUrl = "";
+      if (asset3D.asset3DThumbnail) {
+        // Ref untuk upload file ke Storage dengan ekstensi asli
+        const asset3DRef = ref(storage,`images-asset-3d/asset3D-${docId}.jpg`        );
+
+        // Upload file ke Storage
+        await uploadBytes(asset3DRef, asset3D.asset3DThumbnail);
+        asset3DThumbnailUrl = await getDownloadURL(asset3DRef);
+      }
+
+      // Update Firestore dengan URL gambar yang diupload
       await updateDoc(doc(db, "assetImage3D", docId), {
-        asset3DImage: asset3DImageUrl,
+        asset3DFile: asset3DFileUrl,
+        asset3DThumbnail : asset3DThumbnailUrl
       });
 
       // Reset the form
@@ -112,7 +146,8 @@ function AddAsset3D() {
         category: "",
         description: "",
         price: "",
-        asset3DImage: null,
+        asset3DFile: null,
+        asset3DThumbnail: null,
       });
       setPreviewImage(null);
 
@@ -122,7 +157,7 @@ function AddAsset3D() {
         navigate("/manage-asset-3D");
       }, 2000);
     } catch (error) {
-      console.error("Error menambahkan asset3D: ", error);
+      console.error("Error menambahkan Asset 3D: ", error);
       setAlertError(true);
     }
   };
@@ -133,6 +168,58 @@ function AddAsset3D() {
 
   const closeAlert = () => {
     setAlertError(false);
+  };
+
+  const [fileSize, setFileSize] = useState(null);
+  const [error, setError] = useState(null);
+
+  const handleFileChange = (event) => {
+    const { name, value, files } = event.target;
+    const file = event.target.files[0];
+
+    if (name === "asset3DFile" && files[0]) {
+      setAsset3D({
+        ...asset3D,
+        asset3DFile: files[0],
+      });
+    } else {
+      setAsset3D({
+        ...asset3D,
+        [name]: value,
+      });
+    }
+
+    if (file) {
+      if (file.type !== "application/zip" && !file.name.endsWith(".zip")) {
+        setError("File yang diunggah harus berformat .zip");
+        setFileSize(null);
+        event.target.value = null;
+        return;
+      } else {
+        setError(null); // Reset error jika file sesuai
+      }
+
+      let size = file.size; // Ukuran file dalam bytes
+      let unit = "Bytes";
+
+      if (size >= 1073741824) {
+        // Lebih besar atau sama dengan 1 GB
+        size = (size / 1073741824).toFixed(2);
+        unit = "GB";
+      } else if (size >= 1048576) {
+        // Lebih besar atau sama dengan 1 MB
+        size = (size / 1048576).toFixed(2);
+        unit = "MB";
+      } else if (size >= 1024) {
+        // Lebih besar atau sama dengan 1 KB
+        size = (size / 1024).toFixed(2);
+        unit = "KB";
+      }
+
+      setFileSize(`${size} ${unit}`);
+    } else {
+      setFileSize(null);
+    }
   };
 
   return (
@@ -154,13 +241,15 @@ function AddAsset3D() {
             <div
               role="alert"
               className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[10px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4  bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-              onClick={closeAlert}>
+              onClick={closeAlert}
+            >
               <div className="flex items-center justify-center space-x-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6 shrink-0 stroke-current"
                   fill="none"
-                  viewBox="0 0 24 24">
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -178,13 +267,15 @@ function AddAsset3D() {
             <div
               role="alert"
               className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[340px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[8px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4  bg-primary-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-              onClick={closeAlert}>
+              onClick={closeAlert}
+            >
               <div className="flex items-center justify-center space-x-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6 shrink-0 stroke-current"
                   fill="none"
-                  viewBox="0 0 24 24">
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -192,14 +283,15 @@ function AddAsset3D() {
                     d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>Gagal menambahkan asset 3D baru silahkan coba lagi</span>
+                <span>Gagal menambahkan Asset 3D baru silahkan coba lagi</span>
               </div>
             </div>
           )}
 
           <form
             onSubmit={handleSubmit}
-            className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24   h-[1434px] gap-[50px]  overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0">
+            className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24   h-[1434px] gap-[50px]  overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0"
+          >
             <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-10 dark:text-primary-100 p-4">
               Add New Asset 3D
             </h1>
@@ -221,8 +313,42 @@ function AddAsset3D() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
-                    Format foto harus .jpg, jpeg,png dan ukuran minimal 300 x
-                    300 px.
+                    Format file harus .zip
+                  </p>
+                </div>
+
+                <div>
+                  <input
+                    className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                    id="file_input"
+                    type="file"
+                    accept=".zip"
+                    onChange={handleFileChange}
+                    name="asset3DFile"
+                  />
+                  {error && (
+                    <p className="text-red-500 mt-1 text-sm">{error}</p>
+                  )}
+                  {fileSize && (
+                    <p className="mt-1 text-sm">Ukuran file: {fileSize}</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+                <div className="w-full sm:w-[150px] md:w-[170px] lg:w-[200px] xl:w-[220px] 2xl:w-[170px]">
+                  <div className="flex items-center gap-1">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+                      Upload Thumbnail Asset 3D
+                    </h3>
+                    <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
+                    />
+                  </div>
+                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
+                    Format thumbnail harus .jpg, .jpeg, .png dan ukuran minimal
+                    300 x 300 px.
                   </p>
                 </div>
                 <div className="p-0">
@@ -239,7 +365,7 @@ function AddAsset3D() {
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                              Upload Foto
+                              Upload Thumbnail
                             </span>
                           </>
                         )}
@@ -247,10 +373,10 @@ function AddAsset3D() {
                         <input
                           type="file"
                           id="fileUpload"
-                          name="asset3DImage"
+                          name="asset3DThumbnail"
                           onChange={handleChange}
-                          multiple
-                          accept="image/jpeg,image/png,image/jpg, application/zip"
+                          
+                          accept=".jpg,.jpeg,.png"
                           className="hidden"
                         />
 
@@ -265,9 +391,13 @@ function AddAsset3D() {
                               type="button"
                               onClick={() => {
                                 setPreviewImage(null);
-                                setAsset3D({ ...asset3D, asset3DImage: null });
+                                setAsset3D({
+                                  ...asset3D,
+                                  asset3DThumbnail: null,
+                                });
                               }}
-                              className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded">
+                              className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded"
+                            >
                               x
                             </button>
                           </div>
@@ -340,21 +470,18 @@ function AddAsset3D() {
                           category: e.target.value, // Update category inside dasset 3D state
                         }))
                       }
-                      className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md">
+                      className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md"
+                    >
                       <option value="" disabled>
                         Pick an option
                       </option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.name}>
-                          {cat.name}
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.name}>
+                          {category.name}
                         </option>
                       ))}
                     </select>
                   </label>
-
-                  <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
-                    +
-                  </div>
                 </div>
               </div>
 
@@ -422,12 +549,14 @@ function AddAsset3D() {
             <div className="w-full inline-flex sm:gap-6 xl:gap-[21px] justify-center sm:justify-center md:justify-end  gap-6 mt-12 sm:mt-12 md:mt-14 lg:mt-14 xl:mt-12  ">
               <button
                 onClick={handleCancel}
-                className="btn bg-neutral-60 border-neutral-60 hover:bg-neutral-60 hover:border-neutral-60 rounded-lg  font-semibold   text-primary-100 text-center text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
+                className="btn bg-neutral-60 border-neutral-60 hover:bg-neutral-60 hover:border-neutral-60 rounded-lg  font-semibold   text-primary-100 text-center text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]"
+              >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="btn  bg-secondary-40 border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg  font-semibold leading-[24px]  text-primary-100 text-center  text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
+                className="btn  bg-secondary-40 border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg  font-semibold leading-[24px]  text-primary-100 text-center  text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]"
+              >
                 Save
               </button>
             </div>
@@ -439,3 +568,4 @@ function AddAsset3D() {
 }
 
 export default AddAsset3D;
+//11/4/24

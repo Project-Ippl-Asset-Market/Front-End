@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from "react";
 import { FaTrashAlt } from "react-icons/fa";
 import { getAuth } from "firebase/auth";
@@ -12,8 +11,8 @@ import {
   doc,
   getDocs,
 } from "firebase/firestore";
-import Header from "../../components/headerNavBreadcrumbs/HeaderWebUser";
-import NavbarSection from "../../components/website/web_User-LandingPage/NavbarSection";
+import Header from "../headerNavBreadcrumbs/HeaderWebUser";
+import NavbarSection from "../website/web_User-LandingPage/NavbarSection";
 import CustomImage from "../../assets/assetmanage/Iconrarzip.svg";
 
 const Cart = () => {
@@ -154,7 +153,7 @@ const Cart = () => {
       // Call Midtrans snap payment here
       window.snap.pay(transactionData.token, {
         onSuccess: async function (result) {
-          console.log(result);
+          console.log(result); // Log the payment success result
           setSuccessMessage("Pembayaran berhasil!");
 
           // Setelah pembayaran berhasil, pindahkan aset ke buyAssets dan hapus dari cartAssets
@@ -170,8 +169,8 @@ const Cart = () => {
                   uid: user.uid,
                   assets: assetId.map((asset) => ({
                     assetId: asset.assetId,
-                    price: 0,
-                    name: asset.name,
+                    price: 0, // Set price to 0 while moving
+                    name: asset.name, // Include the name of the asset
                   })),
                 }),
               }
@@ -187,10 +186,10 @@ const Cart = () => {
             // Setelah aset berhasil dipindahkan, hapus dari cartAssets
             const deletePromises = selectedItems.map((item) => {
               const itemDoc = doc(db, "cartAssets", item.id);
-              return deleteDoc(itemDoc);
+              return deleteDoc(itemDoc); // Hapus item berdasarkan ID
             });
 
-            await Promise.all(deletePromises);
+            await Promise.all(deletePromises); // Tunggu semua penghapusan selesai
 
             // Clear selected items from cart only after deletion
             setCartItems((prevItems) =>
@@ -209,7 +208,7 @@ const Cart = () => {
           );
         },
         onError: function (result) {
-          console.error(result);
+          console.error(result); // Handle error
           setErrorMessage("Pembayaran gagal, silakan coba lagi.");
         },
         onClose: function () {

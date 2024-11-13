@@ -1,5 +1,3 @@
-//
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -16,27 +14,25 @@ import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
 
-function AddAssetAudios() {
+function AddNewAudio() {
   const [user, setUser] = useState(null);
-  const [assetAudios, setAssetAudios] = useState({
-    name: "",
+  const [audio, setAudio] = useState({
+    audioName: "",
     category: "",
     description: "",
     price: "",
-    file: null, // State to hold file information
+    uploadUrlAudio: null,
   });
-
   const navigate = useNavigate();
-  const [previewImage, setPreviewImage] = useState(null);
+  const [previewAudio, setPreviewAudio] = useState(null);
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const categories = [
-    { id: 1, name: "Nature" },
-    { id: 2, name: "Architecture" },
-    { id: 3, name: "Animals" },
-    { id: 4, name: "People" },
-    { id: 5, name: "Technology" },
-    { id: 6, name: "Food" },
+    { id: 1, name: "Audio Effects" },
+    { id: 2, name: "Background Music" },
+    { id: 3, name: "Voice Overs" },
+    { id: 4, name: "Sound Design" },
+
   ];
 
   useEffect(() => {
@@ -56,21 +52,21 @@ function AddAssetAudios() {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    if (name === "assetAudiosImage" && files[0]) {
-      setAssetAudios({
-        ...assetAudios,
-        assetAudiosImage: files[0],
+    if (name === "uploadUrlAudio" && files[0]) {
+      setAudio({
+        ...audio,
+        uploadUrlAudio: files[0],
       });
 
       // Create image preview
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPreviewImage(reader.result);
+        setPreviewAudio(reader.result);
       };
       reader.readAsDataURL(files[0]);
     } else {
-      setAssetAudios({
-        ...assetAudios,
+      setAudio({
+        ...audio,
         [name]: value,
       });
     }
@@ -80,14 +76,14 @@ function AddAssetAudios() {
     e.preventDefault();
 
     try {
-      // Save asset Audios details to Firestore
+      // Save image details to Firestore
       const docRef = await addDoc(collection(db, "assetAudios"), {
-        category: assetAudios.category,
+        category: audio.category,
         createdAt: Timestamp.now(),
-        assetAudiosImage: "",
-        assetAudiosName: assetAudios.assetAudiosName,
-        description: assetAudios.description,
-        price: assetAudios.price,
+        uploadUrlAudio: "",
+        audioName: audio.audioName,
+        description: audio.description,
+        price: audio.price,
         uploadedByEmail: user.email,
         userId: user.uid,
       });
@@ -95,37 +91,37 @@ function AddAssetAudios() {
       const docId = docRef.id;
 
       // Upload profile image to Firebase Storage
-      let assetAudiosImageUrl = "";
-      if (assetAudios.assetAudiosImage) {
-        const imageRef = ref(
+      let uploadUrlAudioUrl = "";
+      if (audio.uploadUrlAudio) {
+        const audioRef = ref(
           storage,
-          `images-asset-audio/assetAudios-${docId}.jpg`
+          `images-asset-audio/uploadUrlAudio-${docId}.mp3`
         );
-        await uploadBytes(imageRef, assetAudios.assetAudiosImage);
-        assetAudiosImageUrl = await getDownloadURL(imageRef);
+        await uploadBytes(audioRef, audio.uploadUrlAudio);
+        uploadUrlAudioUrl = await getDownloadURL(audioRef);
       }
 
       await updateDoc(doc(db, "assetAudios", docId), {
-        assetAudiosImage: assetAudiosImageUrl,
+        uploadUrlAudio: uploadUrlAudioUrl,
       });
 
       // Reset the form
-      setAssetAudios({
-        assetAudiosName: "",
+      setAudio({
+        audioNameName: "",
         category: "",
         description: "",
         price: "",
-        assetAudiosImage: null,
+        uploadUrlAudio: null,
       });
-      setPreviewImage(null);
+      setPreviewAudio(null);
 
-      // Navigate back to /manage-asset-audio
+      // Navigate back to /manage-asset-image
       setAlertSuccess(true);
       setTimeout(() => {
         navigate("/manage-asset-audio");
       }, 2000);
     } catch (error) {
-      console.error("Error menambahkan assetAudios: ", error);
+      console.error("Error menambahkan audio: ", error);
       setAlertError(true);
     }
   };
@@ -171,9 +167,7 @@ function AddAssetAudios() {
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>
-                  Asset Audios baru berhasil ditambahkan dan tersimpan.
-                </span>
+                <span>audio baru berhasil ditambahkan dan tersimpan.</span>
               </div>
             </div>
           )}
@@ -197,9 +191,7 @@ function AddAssetAudios() {
                     d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>
-                  Gagal menambahkan asset Audios baru silahkan coba lagi
-                </span>
+                <span>Gagal menambahkan audio baru silahkan coba lagi</span>
               </div>
             </div>
           )}
@@ -208,11 +200,11 @@ function AddAssetAudios() {
             onSubmit={handleSubmit}
             className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24   h-[1434px] gap-[50px]  overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0">
             <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-10 dark:text-primary-100 p-4">
-              Add New Asset Audios
+              Add New Audio
             </h1>
             <div className="p-8 -mt-4  bg-primary-100  dark:bg-neutral-20 rounded-sm shadow-lg">
               <h2 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                Asset Audios Information
+                Audio Information
               </h2>
 
               <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
@@ -228,8 +220,7 @@ function AddAssetAudios() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
-                    Format foto harus .jpg, jpeg,png dan ukuran minimal 300 x
-                    300 px.
+                    Format video harus mp3
                   </p>
                 </div>
                 <div className="p-0">
@@ -238,15 +229,15 @@ function AddAssetAudios() {
                       <label
                         htmlFor="fileUpload"
                         className="flex flex-col justify-center items-center cursor-pointer text-center">
-                        {!previewImage && (
+                        {!previewAudio && (
                           <>
-                            <img
+                            <audio
                               alt=""
                               className="w-6 h-6"
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                              Upload Foto
+                              Upload Audio
                             </span>
                           </>
                         )}
@@ -254,28 +245,25 @@ function AddAssetAudios() {
                         <input
                           type="file"
                           id="fileUpload"
-                          name="assetAudiosImage"
+                          name="uploadUrlAudio"
                           onChange={handleChange}
                           multiple
-                          accept="audio/*, application/zip"
+                          accept="audio/mp3"
                           className="hidden"
                         />
 
-                        {previewImage && (
+                        {previewAudio && (
                           <div className="mt-2 relative">
-                            <img
-                              src={previewImage}
+                            <audio controls
+                              src={previewAudio}
                               alt="Preview"
                               className="w-40 sm:w-40 md:w-40 lg:w-[150px] xl:w-[150px] 2xl:w-[150px] h-40 sm:h-40 md:h-40 lg:h-[156px] xl:h-[156px] 2xl:h-[157px] -mt-2.5 object-cover rounded"
                             />
                             <button
                               type="button"
                               onClick={() => {
-                                setPreviewImage(null);
-                                setAssetAudios({
-                                  ...assetAudios,
-                                  assetAudiosImage: null,
-                                });
+                                setPreviewAudio(null);
+                                setAudio({ ...audio, uploadUrlAudio: null });
                               }}
                               className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded">
                               x
@@ -288,12 +276,12 @@ function AddAssetAudios() {
                 </div>
               </div>
 
-              {/* asset Audios Name */}
+              {/* image Name */}
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-1">
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                      Asset Audios Name
+                      audio Name
                     </h3>
                     <img
                       src={IconField}
@@ -302,7 +290,7 @@ function AddAssetAudios() {
                     />
                   </div>
                   <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Masukkan Nama Untuk Asset Audios Maximal 40 Huruf
+                    Masukkan Nama Untuk audio Maximal 40 Huruf
                   </p>
                 </div>
 
@@ -311,8 +299,8 @@ function AddAssetAudios() {
                     <input
                       type="text"
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px]"
-                      name="assetAudiosName"
-                      value={assetAudios.assetAudiosName}
+                      name="audioName"
+                      value={audio.audioNameName}
                       onChange={handleChange}
                       placeholder="Enter name...."
                       required
@@ -335,8 +323,7 @@ function AddAssetAudios() {
                     />
                   </div>
                   <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Silahkan Pilih Kategori Yang Sesuai Dengan Asset Audios
-                    Anda.
+                    Silahkan Pilih Kategori Yang Sesuai Dengan audio Anda.
                   </p>
                 </div>
 
@@ -344,11 +331,11 @@ function AddAssetAudios() {
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <select
                       name="category"
-                      value={assetAudios.category}
+                      value={audio.category}
                       onChange={(e) =>
-                        setAssetAudios((prevState) => ({
+                        setAudio((prevState) => ({
                           ...prevState,
-                          category: e.target.value, // Update category inside dasset Audios state
+                          category: e.target.value, // Update category inside audio state
                         }))
                       }
                       className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md">
@@ -363,9 +350,6 @@ function AddAssetAudios() {
                     </select>
                   </label>
 
-                  <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
-                    +
-                  </div>
                 </div>
               </div>
 
@@ -383,7 +367,7 @@ function AddAssetAudios() {
                     />
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px]">
-                    Berikan Deskripsi Pada Asset Audios Anda Maximal 200 Huruf
+                    Berikan Deskripsi Pada audio Anda Maximal 200 Huruf
                   </p>
                 </div>
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
@@ -391,7 +375,7 @@ function AddAssetAudios() {
                     <textarea
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px] h-[48px] sm:h-[60px] md:h-[80px] lg:h-[80px] xl:h-[100px] bg-transparent"
                       name="description"
-                      value={assetAudios.description}
+                      value={audio.description}
                       onChange={handleChange}
                       placeholder="Deskripsi"
                       rows="4"
@@ -409,17 +393,17 @@ function AddAssetAudios() {
                     </h3>
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Silahkan Masukkan Harga Untuk Asset Audios jika asset gratis
+                    Silahkan Masukkan Harga Untuk audio jika asset gratis
                     silahkan dikosongkan.
                   </p>
                 </div>
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <input
-                      type="Rp"
+                      type="number"
                       className="input border-0 focus:outline-none focus:ring-0  w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px]  xl:text-[14px]"
                       name="price"
-                      value={assetAudios.price}
+                      value={audio.price}
                       onChange={handleChange}
                       placeholder="Rp"
                       required
@@ -449,4 +433,4 @@ function AddAssetAudios() {
   );
 }
 
-export default AddAssetAudios;
+export default AddNewAudio;

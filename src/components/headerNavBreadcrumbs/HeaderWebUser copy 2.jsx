@@ -21,7 +21,8 @@ function HeaderSidebar() {
   const [cartCount, setCartCount] = useState(0);
   const navigate = useNavigate();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const displayUsername = windowWidth < 420 ? username.slice(0, 4) : username;
+  const displayUsername = windowWidth < 1282 ? username.slice(0, 4) : username;
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
@@ -78,28 +79,48 @@ function HeaderSidebar() {
       return firstInitial + secondInitial;
     }
   };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
   return (
     <div className="h-20 sm:h-0 md:h-0 lg:h-0 xl:h-0 2xl:h-0">
       <section className="navbar h-28 fixed z-40 top-0 left-0 pt-0 text-neutral-10  font-poppins font-semibold dark:text-primary-100 bg-primary-100 dark:bg-neutral-20 gap-2">
-        <div className="flex-1 gap-2 w-full">
-          <img src={logoWeb} alt="logo" className="w-20 h-20" />
-          <h2 className="text-[10px] sm:text-2xl md:text-2xl lg:text-2xl xl:text-2xl 2xl:text-2xl">
+        <div className="flex gap-2 items-center">
+          <img
+            src={logoWeb}
+            alt="logo"
+            className="w-52 lg:w-20 xl:w-20 2xl:w-20 h-20"
+          />
+          <h2 className="text-[10px] hidden sm:hidden md:block sm:text-2xl md:text-2xl lg:text-2xl xl:text-2xl 2xl:text-2xl">
             PixelStore
           </h2>
         </div>
 
         <div className=" md:flex justify-center w-full ">
           {/* Form Search di Layar Besar */}
-          <div className="hidden md:flex justify-center w-full ">
-            <form className="w-full  mx-auto px-20">
+          <div className="hidden md:flex justify-center w-full  ml-10">
+            <form
+              className="w-full  mx-auto px-20 "
+              onSubmit={handleSearchSubmit}>
               <div className="relative">
                 <div className="relative">
                   <input
                     type="search"
                     id="location-search"
                     className="block w-full p-4 pl-24 placeholder:pr-10 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
-                    placeholder=""
+                    placeholder="Search assets..."
                     required
+                    value={searchQuery}
+                    onChange={handleSearchChange}
                   />
                   <span className="absolute inset-y-0 left-2 flex items-center text-gray-500 dark:text-gray-400">
                     Search
@@ -162,13 +183,17 @@ function HeaderSidebar() {
 
         {/* Form Search untuk layar kecil */}
         <div className="md:hidden fixed top-16 w-full bg-primary-100 dark:bg-neutral-20 p-4 mt-12 -ml-2">
-          <form className="flex items-center w-full">
+          <form
+            className="flex items-center w-full"
+            onSubmit={handleSearchSubmit}>
             <input
               type="search"
               id="mobile-search"
               className="block w-full p-3 text-sm text-gray-900 bg-gray-50 rounded-l-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
-              placeholder="type..."
+              placeholder="Search assets..."
               required
+              value={searchQuery}
+              onChange={handleSearchChange}
             />
             <button
               type="submit"

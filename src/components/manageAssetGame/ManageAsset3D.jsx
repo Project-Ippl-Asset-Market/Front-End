@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* eslint-disable no-unused-vars */
+=======
+//10/19/24
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
 import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
@@ -24,7 +28,8 @@ function ManageAsset3D() {
   //
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
-  const [assets, setAssets] = useState([]);
+  const [assets, setAssets] = useState([]); // Mengelola data asset 2D
+
   const [user, setUser] = useState(null);
   const [role, setRole] = useState("");
   const [alertSuccess, setAlertSuccess] = useState(false);
@@ -36,6 +41,7 @@ function ManageAsset3D() {
 
   // Pagination state untuk tabelnya
   const [currentPage, setCurrentPage] = useState(1);
+<<<<<<< HEAD
   const asset3DPerPage = 5;
 
   useEffect(() => {
@@ -56,6 +62,27 @@ function ManageAsset3D() {
     setCurrentPage(1);
   }, [searchTerm, assets]);
 
+=======
+  const asset3DPerPage = 5; // Ganti datasetPerPage menjadi asset2DPerPage
+
+  useEffect(() => {
+    // Filter admins whenever search term changes
+    if (searchTerm) {
+      setFilteredAssets(
+        assets.filter((asset) =>
+          asset.asset3DName &&
+          asset.asset3DName.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setAssets(assets);
+    }
+  
+    // Reset current page to 1 when search term changes
+    setCurrentPage(1);
+  }, [searchTerm, assets]);
+  
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
   // Menghitung jumlah halaman
   const totalPages = Math.ceil(filteredAssets.length / asset3DPerPage);
   const startIndex = (currentPage - 1) * asset3DPerPage;
@@ -127,13 +154,18 @@ function ManageAsset3D() {
     const fetchData = async () => {
       setIsLoading(true);
       if (!user || !role) {
+<<<<<<< HEAD
         // console.log("No user or role detected");
+=======
+        console.log("No user or role detected");
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
         return;
       }
 
       try {
         let q;
         if (role === "superadmin") {
+<<<<<<< HEAD
           // Superadmin dapat melihat semua aset 3D
           q = query(collection(db, "assetImage3D")); // Ubah ke "assetImage3D"
         } else if (role === "admin") {
@@ -143,6 +175,17 @@ function ManageAsset3D() {
           // User hanya bisa melihat aset 3D yang dia unggah sendiri
           q = query(
             collection(db, "assetImage3D"), // Ubah ke "assetImage3D"
+=======
+          // Superadmin dapat melihat semua aset
+          q = query(collection(db, "assetImage3D"));
+        } else if (role === "admin") {
+          // Ambil semua aset yang diupload oleh user dan admin
+          q = query(collection(db, "assetImage3D"));
+        } else if (role === "user") {
+          // User hanya bisa melihat aset yang dia unggah sendiri
+          q = query(
+            collection(db, "assetImage3D"),
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
             where("userId", "==", user.uid)
           );
         }
@@ -158,16 +201,26 @@ function ManageAsset3D() {
             data.createdAt?.toDate().toLocaleString("id-ID", {
               year: "numeric",
               month: "long",
+<<<<<<< HEAD
               day: "numeric",
+=======
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
             }) || "N/A";
 
           items.push({
             id: docSnap.id,
+<<<<<<< HEAD
             asset3DName: data.asset3DName, // Ubah datasetName menjadi asset3DName
             description: data.description,
             price: `Rp. ${data.price}`,
             asset3DFile: data.asset3DFile,
             asset3DThumbnail: data.asset3DThumbnail,
+=======
+            asset3DName: data.asset3DName,
+            description: data.description,
+            price: `Rp. ${data.price}`,
+            asset3DImage: data.asset3DImage,
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
             category: data.category,
             createdAt,
             userId: data.userId,
@@ -197,7 +250,11 @@ function ManageAsset3D() {
           setFilteredAssets(items);
         }
       } catch (error) {
+<<<<<<< HEAD
         // console.error("Error fetching data: ", error);
+=======
+        console.error("Error fetching data: ", error);
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
         setAlertError(true);
       } finally {
         setIsLoading(false);
@@ -212,17 +269,28 @@ function ManageAsset3D() {
   // Fungsi hapus gambar
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
+<<<<<<< HEAD
       "Are you sure you want to delete this asset 3D?"
+=======
+      "Are you sure you want to delete this dataset?"
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
     );
     if (confirmDelete) {
       try {
         // Update the storage path based on assetDatasets structure
+<<<<<<< HEAD
         const FileRef = ref(storage, `images-asset-3d/asset3D-${id}.zip`);
         await deleteObject(FileRef);
         const ImageRef = ref(storage, `images-asset-3d/asset3D-${id}.jpg`);
         await deleteObject(ImageRef);
         await deleteDoc(doc(db, "assetImage3D", id));
         setAssets(assets.filter((assets) => assets.id !== id));
+=======
+        const ImageRef = ref(storage, `images-asset-3d/asset3D-${id}.zip`);
+        await deleteObject(ImageRef);
+        await deleteDoc(doc(db, "assetImage3D", id));
+        setAssets(assets.filter((asset) => asset.id !== id));
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
         setAlertSuccess(true);
       } catch (error) {
         console.error("Error deleting dataset: ", error);
@@ -264,15 +332,23 @@ function ManageAsset3D() {
           <div
             role="alert"
             className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] text-[10px] sm:text-[10px] p-4 bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
+<<<<<<< HEAD
             onClick={closeAlert}
           >
+=======
+            onClick={closeAlert}>
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
             <div className="flex items-center justify-center space-x-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 shrink-0 stroke-current"
                 fill="none"
+<<<<<<< HEAD
                 viewBox="0 0 24 24"
               >
+=======
+                viewBox="0 0 24 24">
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -290,15 +366,23 @@ function ManageAsset3D() {
           <div
             role="alert"
             className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[340px] text-[10px] sm:text-[10px] p-4 bg-primary-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
+<<<<<<< HEAD
             onClick={closeAlert}
           >
+=======
+            onClick={closeAlert}>
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
             <div className="flex items-center justify-center space-x-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 shrink-0 stroke-current"
                 fill="none"
+<<<<<<< HEAD
                 viewBox="0 0 24 24"
               >
+=======
+                viewBox="0 0 24 24">
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -306,7 +390,11 @@ function ManageAsset3D() {
                   d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
+<<<<<<< HEAD
               <span>Gagal menghapus asset 3D, silakan coba lagi</span>
+=======
+              <span>Gagal menghapus  asset 3D, silakan coba lagi</span>
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
             </div>
           </div>
         )}
@@ -320,11 +408,18 @@ function ManageAsset3D() {
           <div className="flex flex-col gap-4 md:flex-row">
             {/* Button Container */}
             <div className="flex items-center justify-center md:justify-start">
+<<<<<<< HEAD
               <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-40">
                 <Link
                   to="/manage-asset-3D/add"
                   className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]"
                   >
+=======
+              <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
+                <Link
+                  to="/manage-asset-3D/add"
+                  className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                   + Add Asset 3D
                 </Link>
               </div>
@@ -339,11 +434,19 @@ function ManageAsset3D() {
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 w-6 h-6"
                 />
                 <input
+<<<<<<< HEAD
                   type="text"
                   placeholder="Search"
                   value={searchTerm} // Menghubungkan searchTerm
                   onChange={(e) => setSearchTerm(e.target.value)} // Memperbarui searchTerm
                   className="input border-none bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10 h-[40px] w-full focus:outline-none"
+=======
+                type="text"
+                placeholder="Search"
+                value={searchTerm} // Menghubungkan searchTerm
+                onChange={(e) => setSearchTerm(e.target.value)} // Memperbarui searchTerm
+                className="input border-none bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10 h-[40px] w-full focus:outline-none"
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                 />
               </div>
             </div>
@@ -381,6 +484,7 @@ function ManageAsset3D() {
                   </tr>
                 </thead>
                 <tbody>
+<<<<<<< HEAD
                   {currentDatasets.map((assets) => (
                     <tr
                       key={assets.id}
@@ -389,6 +493,16 @@ function ManageAsset3D() {
                         {assets.asset3DThumbnail ? (
                           <img
                             src={assets.asset3DThumbnail || CustomImage}
+=======
+                  {currentDatasets.map((asset) => (
+                    <tr
+                      key={asset.id}
+                      className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
+                      <td className="px-6 py-4">
+                        {asset.datasetImage ? (
+                          <img
+                            src={asset.datasetImage || CustomImage}
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                             alt="Image"
                             className="h-14 w-14 overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
                             onError={(e) => {
@@ -411,6 +525,7 @@ function ManageAsset3D() {
                       <th
                         scope="row"
                         className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap">
+<<<<<<< HEAD
                         {assets.asset3DName}
                       </th>
                       <td className="px-6 py-4">{assets.category}</td>
@@ -418,13 +533,26 @@ function ManageAsset3D() {
                       <td className="px-6 py-4">{assets.createdAt || "N/A"}</td>
                       <td className="mx-auto flex gap-4 mt-8">
                         <Link to={`/manage-asset-3D/edit/${assets.id}`}>
+=======
+                        {asset.asset3DName}
+                      </th>
+                      <td className="px-6 py-4">{asset.category}</td>
+                      <td className="px-6 py-4">{asset.price}</td>
+                      <td className="px-6 py-4">{asset.createdAt || "N/A"}</td>
+                      <td className="mx-auto flex gap-4 mt-8">
+                        <Link to={`/manage-asset-3D/edit/${asset.id}`}>
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                           <img
                             src={IconEdit}
                             alt="icon edit"
                             className="w-5 h-5 cursor-pointer"
                           />
                         </Link>
+<<<<<<< HEAD
                         <button onClick={() => handleDelete(assets.id)}>
+=======
+                        <button onClick={() => handleDelete(asset.id)}>
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                           <img
                             src={IconHapus}
                             alt="icon hapus"
@@ -440,11 +568,18 @@ function ManageAsset3D() {
           )}
 
           <div className="flex join pt-72 justify-end ">
+<<<<<<< HEAD
             <button
               className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
             >
+=======
+          <button
+              className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}>
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
               «
             </button>
             <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
@@ -455,8 +590,12 @@ function ManageAsset3D() {
               onClick={() =>
                 setCurrentPage((prev) => Math.min(prev + 1, totalPages))
               }
+<<<<<<< HEAD
               disabled={currentPage === totalPages}
             >
+=======
+              disabled={currentPage === totalPages}>
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
               »
             </button>
           </div>
@@ -467,4 +606,7 @@ function ManageAsset3D() {
 }
 
 export default ManageAsset3D;
+<<<<<<< HEAD
 //11/4/24
+=======
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c

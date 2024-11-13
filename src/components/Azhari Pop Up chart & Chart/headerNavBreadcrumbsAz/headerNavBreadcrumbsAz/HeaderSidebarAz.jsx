@@ -2,22 +2,28 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { collection, getDocs, doc, deleteDoc, query, where } from 'firebase/firestore';
-import { db, auth } from "../../firebase/firebaseConfig";
-import { useTheme } from "../../contexts/ThemeContext";
-import IconLightMode from "../../assets/icon/iconDarkMode&LigthMode/ligth_mode.svg";
-import IconDarkMode from "../../assets/icon/iconDarkMode&LigthMode/dark_mode.svg";
-import IconUserDark from "../../assets/icon/iconDarkMode&LigthMode/iconUserDark.svg";
-import IconUserLight from "../../assets/icon/iconDarkMode&LigthMode/iconUserLight.svg";
-import IconLogoutDark from "../../assets/icon/iconDarkMode&LigthMode/logOutDark.svg";
-import IconLogoutLight from "../../assets/icon/iconDarkMode&LigthMode/logOutLight.svg";
-import IconCart from "../../assets/icon/iconHeader/iconCart.svg";
-import IconMyAsset from "../../assets/icon/iconHeader/iconMyasset.svg";
-import logoWeb from "../../assets/logo/logoWeb.png";
-import DefaultPreview from "../../assets/icon/iconSidebar/datasetzip.png"
+import {
+  collection,
+  getDocs,
+  doc,
+  deleteDoc,
+  query,
+  where,
+} from "firebase/firestore";
+import { db, auth } from "../../../../firebase/firebaseConfig";
+import { useTheme } from "../../../../contexts/ThemeContext";
+import IconLightMode from "../../../../assets/icon/iconDarkMode&LigthMode/ligth_mode.svg";
+import IconDarkMode from "../../../../assets/icon/iconDarkMode&LigthMode/dark_mode.svg";
+import IconUserDark from "../../../../assets/icon/iconDarkMode&LigthMode/iconUserDark.svg";
+import IconUserLight from "../../../../assets/icon/iconDarkMode&LigthMode/iconUserLight.svg";
+import IconLogoutDark from "../../../../assets/icon/iconDarkMode&LigthMode/logOutDark.svg";
+import IconLogoutLight from "../../../../assets/icon/iconDarkMode&LigthMode/logOutLight.svg";
+import IconCart from "../../../../assets/icon/iconHeader/iconCart.svg";
+import IconMyAsset from "../../../../assets/icon/iconHeader/iconMyasset.svg";
+import logoWeb from "../../../../assets/logo/logoWeb.png";
+import DefaultPreview from "../../../../assets/icon/iconSidebar/datasetzip.png";
 
 function HeaderSidebar() {
-
   const [items, setItems] = useState([]);
   const [itemCount, setItemCount] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
@@ -28,7 +34,6 @@ function HeaderSidebar() {
   const navigate = useNavigate();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const displayUsername = windowWidth < 420 ? username.slice(0, 4) : username;
-  
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -55,28 +60,33 @@ function HeaderSidebar() {
   useEffect(() => {
     const fetchData = async () => {
       if (!user) {
-        console.log('No user logged in');
+        console.log("No user logged in");
         return; // Jika tidak ada pengguna yang login, tidak perlu mengambil data
       }
-      
+
       try {
-        console.log('Logged in user UID:', user.uid);
-        const q = query(collection(db, 'cartPopUp'), where('userId', '==', user.uid));
+        console.log("Logged in user UID:", user.uid);
+        const q = query(
+          collection(db, "cartPopUp"),
+          where("userId", "==", user.uid)
+        );
         const querySnapshot = await getDocs(q);
-        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  
+        const data = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
         setItems(data); // Simpan item ke state
         setItemCount(querySnapshot.size); // Simpan jumlah dokumen/item
 
         const totalPrice = data.reduce((sum, item) => {
-            return sum + (item.price || 0); // Pastikan field price ada, jika tidak, gunakan 0
-          }, 0);
-        const formattedTotalPrice = totalPrice.toLocaleString('id-ID');
-  
-        setTotalPrice(formattedTotalPrice);
+          return sum + (item.price || 0); // Pastikan field price ada, jika tidak, gunakan 0
+        }, 0);
+        const formattedTotalPrice = totalPrice.toLocaleString("id-ID");
 
+        setTotalPrice(formattedTotalPrice);
       } catch (error) {
-        console.error('Error fetching data: ', error);
+        console.error("Error fetching data: ", error);
       }
     };
 
@@ -85,17 +95,15 @@ function HeaderSidebar() {
     }
   }, [user]);
 
-
-
   // Handle klik di luar popup
   useEffect(() => {
     const handleClickOutside = (event) => {
-        const popup = document.querySelector("#popup-cart"); // Sesuaikan selector popup
-        if (popup && !popup.contains(event.target)) {
-          setIsPopupVisible(false); // Tutup popup
-        }
-      };
-    
+      const popup = document.querySelector("#popup-cart"); // Sesuaikan selector popup
+      if (popup && !popup.contains(event.target)) {
+        setIsPopupVisible(false); // Tutup popup
+      }
+    };
+
     if (isPopupVisible) {
       document.addEventListener("mousedown", handleClickOutside);
     }
@@ -109,7 +117,6 @@ function HeaderSidebar() {
   const togglePopup = () => {
     setIsPopupVisible(!isPopupVisible);
   };
-
 
   // Fungsi handleLogout
   const handleLogout = async () => {
@@ -125,8 +132,8 @@ function HeaderSidebar() {
 
   const handleRemove = async (id) => {
     try {
-      const docRef = doc(db, 'cartPopUp', id);
-      
+      const docRef = doc(db, "cartPopUp", id);
+
       await deleteDoc(docRef);
       console.log(`Successfully deleted document with ID: ${id}`);
       setItems(items.filter((item) => item.id !== id)); // Perbarui state untuk menghapus item yang dihapus
@@ -134,7 +141,6 @@ function HeaderSidebar() {
       console.error("Error deleting item: ", error);
     }
   };
-  
 
   return (
     <div className="h-20 sm:h-0 md:h-0 lg:h-0 xl:h-0 2xl:h-0">
@@ -204,84 +210,107 @@ function HeaderSidebar() {
             />
             <label className="-ml-4 ">My asset</label>
           </Link>
-          <div id="popup-cart" className="gap-14 sm:gap-1 md:gap-8 lg:gap-8 xl:gap-2 2xl:gap-10 flex justify-center items-center">
+          <div
+            id="popup-cart"
+            className="gap-14 sm:gap-1 md:gap-8 lg:gap-8 xl:gap-2 2xl:gap-10 flex justify-center items-center">
             <Link
               onClick={togglePopup}
               to=""
               className="dropdown dropdown-end w-[20px] sm:w-[45px] md:w-[28px] lg:w-[28px] xl:w-[28px] 2xl:w-[28px] h-[20px]  sm:h-[28px] md:h-[28px] lg:h-[28px] xl:h-[28px] 2xl:h[28px] -ml-[30px]  sm:ml-1 md:ml-1 lg:ml-0 xl:ml-0 2xl:ml-2 gap-2  text-[8px] sm:text-[10px] md:text-[10px] lg:text-[10px] xl:text-[10px 2xl:text-[10px]">
-              <img src={IconCart} alt="icon cart" className="w-[24px] h-[24px]" />
+              <img
+                src={IconCart}
+                alt="icon cart"
+                className="w-[24px] h-[24px]"
+              />
               <label className="">Cart</label>
             </Link>
             {isPopupVisible && (
-                <div className="space-y-4 rounded-lg overflow-y-auto absolute flex-col top-20 right-8 w-[350px] h-[500px] bg-white shadow-lg rounded-lg pr-4 pl-4 z-10">
-                  <p className="mb-30 text-[#000000] font-semibold">Isi Keranjang</p>
-                  {/* Video YouTube */}
-                  <div className="relative h-0">
-                    <iframe
-                      className="absolute top-0 left-0 w-full h-full"
-                      src="https://www.youtube.com/embed/MOZOtdeiaF0?autoplay=1"
-                      title="YouTube Video"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
+              <div className="space-y-4 rounded-lg overflow-y-auto absolute flex-col top-20 right-8 w-[350px] h-[500px] bg-white shadow-lg rounded-lg pr-4 pl-4 z-10">
+                <p className="mb-30 text-[#000000] font-semibold">
+                  Isi Keranjang
+                </p>
+                {/* Video YouTube */}
+                <div className="relative h-0">
+                  <iframe
+                    className="absolute top-0 left-0 w-full h-full"
+                    src="https://www.youtube.com/embed/MOZOtdeiaF0?autoplay=1"
+                    title="YouTube Video"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
                 {items.length === 0 ? (
-                      <p>Lu punya kelanjang Kosong lo..</p>
-                    ) : (  
-                    items.map((item, index) => (
-                      <div key={index}>
-                        {/* Content for each item */}
-                        <div className="flex bg-blue-100 h-20 rounded-[10px]">
-                          <button className="mt-0 w-20 h-20 bg-[#F2F2F2] bg-contain rounded-[10px]">
-                            <img src={item.datasetImage || item.uploadUrlImage|| DefaultPreview || item.uploadUrlVideo } alt="Datasetzip" className='w-full h-full object-cover rounded-[10px]' />
-                          </button>
-                          <div className="ml-5 content-center text-left">
-                            <p className="text-xs text-[#141414]">Glics Photograpy</p>
-                            <p className="text-base font-bold text-[#141414] truncate overflow-hidden whitespace-nowrap w-[150px]">{item.datasetName || item.imageName} - {item.description}</p>
-                            <div className='flex'>
-                              <div>
+                  <p>Lu punya kelanjang Kosong lo..</p>
+                ) : (
+                  items.map((item, index) => (
+                    <div key={index}>
+                      {/* Content for each item */}
+                      <div className="flex bg-blue-100 h-20 rounded-[10px]">
+                        <button className="mt-0 w-20 h-20 bg-[#F2F2F2] bg-contain rounded-[10px]">
+                          <img
+                            src={
+                              item.datasetImage ||
+                              item.uploadUrlImage ||
+                              DefaultPreview ||
+                              item.uploadUrlVideo
+                            }
+                            alt="Datasetzip"
+                            className="w-full h-full object-cover rounded-[10px]"
+                          />
+                        </button>
+                        <div className="ml-5 content-center text-left">
+                          <p className="text-xs text-[#141414]">
+                            Glics Photograpy
+                          </p>
+                          <p className="text-base font-bold text-[#141414] truncate overflow-hidden whitespace-nowrap w-[150px]">
+                            {item.datasetName || item.imageName} -{" "}
+                            {item.description}
+                          </p>
+                          <div className="flex">
+                            <div>
                               <button
                                 onClick={() => handleRemove(item.id)} // Tambahkan event handler untuk remove
-                                className='text-sm font-medium text-[#141414] hover:underline hover:text-red-600'>
+                                className="text-sm font-medium text-[#141414] hover:underline hover:text-red-600">
                                 Remove
                               </button>
-                              </div>
-                              <div>
-                              <p className='ml-3 mt-1 text-[#141414] justify-self-end text-sm'>
-                                {item.price?.toLocaleString('id-ID', {
-                                    style: 'currency',
-                                    currency: 'IDR'
+                            </div>
+                            <div>
+                              <p className="ml-3 mt-1 text-[#141414] justify-self-end text-sm">
+                                {item.price?.toLocaleString("id-ID", {
+                                  style: "currency",
+                                  currency: "IDR",
                                 })}
-                                </p>
-
-                              </div>
+                              </p>
                             </div>
                           </div>
                         </div>
-                        <div className="w-full h-0.5 bg-[#000000] opacity-50"></div>
                       </div>
-                    ))
-                  )}
+                      <div className="w-full h-0.5 bg-[#000000] opacity-50"></div>
+                    </div>
+                  ))
+                )}
 
-                  {/* Checkout */}
-                  <div className='sticky bottom-0 bg-white py-2'>
-                    <div className='grid'>
-                      <p className="justify-self-end text-sm text-[#000000] font-semibold mt-2">Subtotal ( {itemCount} Item ): Rp.{totalPrice},00 </p>
-                    </div>
-                    <div className='flex items-center justify-center mt-5'>
-                      <button className="text-center mt-1 bg-[#5487F8] text-white px-4 py-2 rounded hover:bg-[#2563EB]">
-                        Checkout
-                      </button>
-                    </div>
-                    <div className='flex items-center justify-center mt-2 mb-2'>
-                      <button className="mt-0 text-[#2563EB] px-0 py-0 hover:underline">
-                        Lihat Keranjang
-                      </button>
-                    </div>
+                {/* Checkout */}
+                <div className="sticky bottom-0 bg-white py-2">
+                  <div className="grid">
+                    <p className="justify-self-end text-sm text-[#000000] font-semibold mt-2">
+                      Subtotal ( {itemCount} Item ): Rp.{totalPrice},00{" "}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center mt-5">
+                    <button className="text-center mt-1 bg-[#5487F8] text-white px-4 py-2 rounded hover:bg-[#2563EB]">
+                      Checkout
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-center mt-2 mb-2">
+                    <button className="mt-0 text-[#2563EB] px-0 py-0 hover:underline">
+                      Lihat Keranjang
+                    </button>
                   </div>
                 </div>
-              )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -357,8 +386,7 @@ function HeaderSidebar() {
                           <li className="flex mb-1 w-full h-8 transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none">
                             <div
                               className="flex items-center"
-                              onClick={handleLogout}
-                            >
+                              onClick={handleLogout}>
                               <img
                                 src={
                                   darkMode ? IconLogoutDark : IconLogoutLight
@@ -387,9 +415,7 @@ function HeaderSidebar() {
                           className="w-full h-full object-cover rounded-full"
                         />
                       ) : (
-                        <span className="text-[22px] text-center mx-auto -ml-1">
-                    
-                        </span>
+                        <span className="text-[22px] text-center mx-auto -ml-1"></span>
                       )
                     ) : (
                       <img

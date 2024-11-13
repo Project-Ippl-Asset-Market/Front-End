@@ -33,13 +33,17 @@ import EditFormAdmin from "../components/mySuperAdmin/EditAdmin";
 import ManageUsers from "../components/myAdmin/ManageUsers";
 import AddUsers from "../components/myAdmin/AddUser";
 import EditUsers from "../components/myAdmin/EditUser";
+<<<<<<< HEAD
 //import ManageAsset2D from "../components/daff 2d 3d/ManageAsset2D";
+=======
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
 import SaleAssets from "../components/myUserDashboard/SaleAssets";
 import Revenue from "../components/myUserDashboard/Revenue";
 // Import Halaman Dashboard End
 
 // Import Halaman Website start
 import Cart from "../components/payment/Cart";
+import Payment from "../components/payment/Cart";
 import HomePage from "../components/website/web_User-LandingPage/HomePage";
 import { AssetGratis } from "../components/website/Web_User-Gratis/AssetGratis";
 import { AssetVideo } from "../components/website/web_user-AssetVideo/AssetVideo";
@@ -93,6 +97,15 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
+            path="/payment"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <Payment onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
             path="/manage-asset-video"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
@@ -111,7 +124,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manage-asset-video/edit/:assetId"
+            path="/manage-asset-video/edit/:id"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <EditFormAssetVideo onLogout={handleLogout} />
@@ -138,7 +151,7 @@ const AppRoutes = ({ handleLogout }) => {
           />
 
           <Route
-            path="/manage-asset-image/edit/:assetId"
+            path="/manage-asset-image/edit/:id"
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <EditFormAssetImage onLogout={handleLogout} />

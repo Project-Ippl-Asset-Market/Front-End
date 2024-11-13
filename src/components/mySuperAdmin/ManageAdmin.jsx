@@ -16,12 +16,18 @@ function ManageAdmin() {
     "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp";
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [admins, setAdmins] = useState([]);
+  const [filteredAdmins, setFilteredAdmins] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [adminToDelete, setAdminToDelete] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const sidebarRef = useRef(null);
   const navigate = useNavigate();
+
+  // Pagination state untuk tabelnya
+  const [currentPage, setCurrentPage] = useState(1);
+  const adminsPerPage = 5;
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -40,6 +46,7 @@ function ManageAdmin() {
       try {
         const response = await axios.get("http://localhost:3000/api/admins");
         setAdmins(response.data);
+        setFilteredAdmins(response.data);
       } catch (error) {
         console.error("Error fetching admin data: ", error);
         setError("Failed to fetch admins. Please try again later.");
@@ -60,6 +67,22 @@ function ManageAdmin() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isSidebarOpen]);
+
+  useEffect(() => {
+    // Filter admins whenever search term changes
+    if (searchTerm) {
+      setFilteredAdmins(
+        admins.filter((admin) =>
+          admin.username.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredAdmins(admins);
+    }
+
+    // Reset current page to 1 when search term changes
+    setCurrentPage(1);
+  }, [searchTerm, admins]);
 
   const handleDeleteAdmin = async (id) => {
     setIsLoading(true);
@@ -92,6 +115,7 @@ function ManageAdmin() {
 
         // Perbarui state Admin
         setAdmins((prev) => prev.filter((admin) => admin.id !== id));
+        setFilteredAdmins((prev) => prev.filter((admin) => admin.id !== id));
         navigate("/manage-admin");
       } else {
         setError("Failed to delete admin. Please try again.");
@@ -117,6 +141,14 @@ function ManageAdmin() {
       handleDeleteAdmin(adminToDelete.id);
     }
   };
+
+  // Menghitung jumlah halaman
+  const totalPages = Math.ceil(filteredAdmins.length / adminsPerPage);
+  const startIndex = (currentPage - 1) * adminsPerPage;
+  const currentAdmins = filteredAdmins.slice(
+    startIndex,
+    startIndex + adminsPerPage
+  );
 
   return (
     <div className="dark:bg-neutral-90 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
@@ -163,15 +195,19 @@ function ManageAdmin() {
               <input
                 type="text"
                 placeholder="Search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="input border-none bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 pl-10 h-[40px] w-full focus:outline-none"
               />
             </div>
           </div>
         </div>
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+          <div className="flex justify-center items-center h-64 mt-20">
+            <div className="animate-spin rounded-full h-60 w-60 border-b-2 border-gray-900"></div>
           </div>
+        ) : error ? (
+          <div className="text-red-500 text-center mt-4">{error}</div>
         ) : (
           <div className="relative overflow-x-auto shadow-md sm:rounded-lg p-8 dark:bg-neutral-25 mt-4">
             <table className="w-full text-sm text-left rtl:text-right text-gray-500 bg-primary-100 dark:text-neutral-90 ">
@@ -181,10 +217,10 @@ function ManageAdmin() {
                     Photo
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    UserName
+                    Username
                   </th>
                   <th scope="col" className="px-6 py-3">
-                    Roles
+                    Role
                   </th>
                   <th scope="col" className="px-6 py-3">
                     Email
@@ -198,7 +234,7 @@ function ManageAdmin() {
                 </tr>
               </thead>
               <tbody>
-                {admins.map((admin) => (
+                {currentAdmins.map((admin) => (
                   <tr
                     key={admin.id}
                     className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
@@ -284,13 +320,21 @@ function ManageAdmin() {
 
         {/* Pagination Section */}
         <div className="flex join pt-72 justify-end">
-          <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
+          <button
+            className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}>
             «
           </button>
           <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
-            Page 1
+            Page {currentPage} of {totalPages}
           </button>
-          <button className="join-item btn bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-70">
+          <button
+            className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+            }
+            disabled={currentPage === totalPages}>
             »
           </button>
         </div>

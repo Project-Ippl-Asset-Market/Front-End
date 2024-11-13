@@ -3,8 +3,8 @@ import IconField from "../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../HeaderNav/HeaderNav";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { doc, getDoc, updateDoc } from "firebase/firestore";  
-import { db, storage } from "../../firebase/firebaseConfig"; 
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { db, storage } from "../../firebase/firebaseConfig";
 import {
   deleteObject,
   ref,
@@ -13,7 +13,7 @@ import {
 } from "firebase/storage";
 
 function EditNewImage() {
-  const { assetId } = useParams();
+  const { id } = useParams();
   const navigate = useNavigate();
   const [imagePreview, setImagePreview] = useState("");
   const [alertSuccess, setAlertSuccess] = useState(false);
@@ -36,11 +36,11 @@ function EditNewImage() {
     uploadUrlImage: null,
   });
 
-  // Fetch existing data based on assetId
+  // Fetch existing data based on id
   useEffect(() => {
     const fetchImage = async () => {
       try {
-        const docRef = doc(db, "assetImages", assetId);
+        const docRef = doc(db, "assetImages", id);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
@@ -60,7 +60,7 @@ function EditNewImage() {
     };
 
     fetchImage();
-  }, [assetId, navigate]);
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -94,15 +94,12 @@ function EditNewImage() {
         // Delete the old image if a new image is being uploaded
         const oldImageRef = ref(
           storage,
-          `image-asset/uploadUrlImage-${assetId}.jpg`
+          `image-asset/uploadUrlImage-${id}.jpg`
         );
         await deleteObject(oldImageRef); // Delete the old image
 
         // Upload the new image
-        const imageRef = ref(
-          storage,
-          `image-asset/uploadUrlImage-${assetId}.jpg`
-        );
+        const imageRef = ref(storage, `image-asset/uploadUrlImage-${id}.jpg`);
         await uploadBytes(imageRef, image.uploadUrlImage);
         uploadUrlImage = await getDownloadURL(imageRef);
       } else {
@@ -110,7 +107,7 @@ function EditNewImage() {
         uploadUrlImage = imagePreview;
       }
 
-      const imageRef = doc(db, "assetImages", assetId);
+      const imageRef = doc(db, "assetImages", id);
       await updateDoc(imageRef, {
         imageName: image.imageName,
         category: image.category,

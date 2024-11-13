@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+=======
+// eslint-disable-next-line no-unused-vars
+//10/18/24
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -24,8 +29,12 @@ function AddNewAsset2D() {
     category: "",
     description: "",
     price: "",
+<<<<<<< HEAD
     asset2DFile: null,
     asset2DThumbnail: null,
+=======
+    asset2DImage: null,
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
   });
   const navigate = useNavigate();
   const [previewImage, setPreviewImage] = useState(null);
@@ -109,6 +118,7 @@ function AddNewAsset2D() {
 
       const docId = docRef.id;
 
+<<<<<<< HEAD
       // Upload ASSET2D image/file to Firebase Storage
       let asset2DFileUrl = "";
       if (asset2D.asset2DFile) {
@@ -130,6 +140,26 @@ function AddNewAsset2D() {
         asset2DThumbnailUrl = await getDownloadURL(asset2DRef);
       }
 
+=======
+      // Upload asset2D image/file to Firebase Storage
+      let asset2DImageUrl = "";
+      if (asset2D.asset2DImage) {
+        // Ambil nama asli file dan ekstrak ekstensi
+        const originalFileName = asset2D.asset2DImage.name;
+        const fileExtension = originalFileName.split(".").pop(); // Mengambil ekstensi file
+
+        // Ref untuk upload file ke Storage dengan ekstensi asli
+        const imageRef = ref(
+          storage,
+          `images-asset-2d/asset2D-${docId}.${fileExtension}`
+        );
+
+        // Upload file ke Storage
+        await uploadBytes(imageRef, asset2D.asset2DImage);
+        asset2DImageUrl = await getDownloadURL(imageRef);
+      }
+
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
       // Update Firestore dengan URL gambar yang diupload
       await updateDoc(doc(db, "assetImage2D", docId), {
         asset2DFile: asset2DFileUrl,
@@ -253,7 +283,7 @@ function AddNewAsset2D() {
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>Asset 2D baru berhasil ditambahkan dan tersimpan.</span>
+                <span>asset2D baru berhasil ditambahkan dan tersimpan.</span>
               </div>
             </div>
           )}
@@ -309,6 +339,7 @@ function AddNewAsset2D() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
+<<<<<<< HEAD
                     Format file harus .zip
                   </p>
                 </div>
@@ -345,6 +376,9 @@ function AddNewAsset2D() {
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
                     Format thumbnail harus .jpg, .jpeg, .png dan ukuran minimal
                     300 x 300 px.
+=======
+                    Format File harus jpg, jpeg, png dan zip 
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                   </p>
                 </div>
                 <div className="p-0">
@@ -361,7 +395,11 @@ function AddNewAsset2D() {
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
+<<<<<<< HEAD
                               Upload Thumbnail
+=======
+                              Upload File
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                             </span>
                           </>
                         )}
@@ -371,8 +409,13 @@ function AddNewAsset2D() {
                           id="fileUpload"
                           name="asset2DThumbnail"
                           onChange={handleChange}
+<<<<<<< HEAD
                           
                           accept=".jpg,.jpeg,.png"
+=======
+                          multiple
+                          accept=".jpg,.jpeg,.png,.zip,.rar,.csv,.xls,.xlsx,.pdf"
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                           className="hidden"
                         />
 
@@ -568,4 +611,7 @@ function AddNewAsset2D() {
 }
 
 export default AddNewAsset2D;
+<<<<<<< HEAD
 //11/4/24
+=======
+>>>>>>> fb09a340469d176aaa44804cb2426094d33f614c

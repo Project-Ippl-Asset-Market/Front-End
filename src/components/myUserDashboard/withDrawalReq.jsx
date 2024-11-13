@@ -2,74 +2,68 @@ import { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
   getFirestore,
-  doc,
-  getDoc,
-  setDoc,
   collection,
-  getDocs,
+  onSnapshot,
+  doc,
+  setDoc,
+  getDoc,
 } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Impor untuk Firebase Storage
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
 
 function WithdrawRequest() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
-  const [totalRevenue, setTotalRevenue] = useState(0); // Total pendapatan
+  const [totalRevenue, setTotalRevenue] = useState(0);
   const [amount, setAmount] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [bankName, setBankName] = useState("");
-  const [withdrawalStatus, setWithdrawalStatus] = useState(""); // Status pengajuan
-  const [file, setFile] = useState(null); // State untuk file yang diupload
+  const [accountOwnerName, setAccountOwnerName] = useState(""); // State for account owner name
+  const [withdrawalStatus, setWithdrawalStatus] = useState("");
+  const [file, setFile] = useState(null);
 
   const auth = getAuth();
   const db = getFirestore();
-  const storage = getStorage(); // Inisialisasi Storage
+  const storage = getStorage();
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setCurrentUserId(user.uid);
+        console.log("Authenticated User ID:", user.uid);
 
-        const fetchTotalRevenue = async () => {
-          let total = 0;
-          const transactionsSnapshot = await getDocs(
-            collection(db, "transactions")
-          );
+        // Menggunakan onSnapshot untuk mendapatkan totalRevenue secara real-time
+        const unsubscribeTransactions = onSnapshot(
+          collection(db, "transactions"),
+          (snapshot) => {
+            let total = 0;
 
-          transactionsSnapshot.forEach((doc) => {
-            const data = doc.data();
-            if (
-              data.grossAmount &&
-              data.assetOwnerID === user.uid &&
-              data.status === "Success"
-            ) {
-              total += data.grossAmount; // Hitung total grossAmount
-            }
-          });
+            snapshot.forEach((doc) => {
+              const data = doc.data();
+              console.log("Transaction Data:", data); // Log Data Transaksi
+              console.log("grossAmount:", data.grossAmount); // Log grossAmount untuk memastikan ini ada
+              // Cek apakah grossAmount, assetOwnerID dan status sesuai
+              if (
+                typeof data.grossAmount === "number" &&
+                // data.assetOwnerID === user.uid &&
+                data.status.toLowerCase() === "success"
+              ) {
+                total += data.grossAmount; // Hitung total pendapatan
+              }
+            });
+            console.log("Total Revenue:", total); // Log total yang dihitung
+            setTotalRevenue(total); // Update totalRevenue
+          }
+        );
 
-          setTotalRevenue(total); // Set total pendapatan
+        return () => {
+          unsubscribeTransactions();
         };
-
-        fetchTotalRevenue();
-
-        // Ambil data pengguna dari koleksi accountSettings
-        const userDocRef = doc(db, "accountSettings", user.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists()) {
-          const data = userDoc.data();
-          setAccountNumber(data.nomorRekening || "");
-          setBankName(data.namaBank || "");
-        } else {
-          console.error("Dokumen pengguna tidak ditemukan.");
-        }
-      } else {
-        console.error("Pengguna tidak terautentikasi");
       }
     });
 
@@ -80,7 +74,7 @@ function WithdrawRequest() {
     e.preventDefault();
 
     // Validasi input
-    if (!amount || !accountNumber || !bankName) {
+    if (!amount || !accountNumber || !bankName || !accountOwnerName) {
       setWithdrawalStatus("Semua field harus diisi!");
       return;
     }
@@ -96,10 +90,10 @@ function WithdrawRequest() {
       if (file) {
         const storageRef = ref(
           storage,
-          `withdraws/${currentUserId}/${file.name}`
-        ); // Path upload
-        await uploadBytes(storageRef, file); // Upload file ke Firebase Storage
-        fileUrl = await getDownloadURL(storageRef); // Dapatkan URL setelah upload
+          `withdrawRequests/${currentUserId}/${file.name}`
+        );
+        await uploadBytes(storageRef, file);
+        fileUrl = await getDownloadURL(storageRef);
       }
 
       // Simpan permintaan pencairan ke Firestore
@@ -107,14 +101,19 @@ function WithdrawRequest() {
         amount,
         accountNumber,
         bankName,
+        accountOwnerName, // Simpan nama pemilik rekening juga
+        userId: currentUserId, // Menyimpan ID pengguna
         status: "Pending",
-        timestamp: new Date(), // Menyimpan timestamp
-        fileUrl, // Simpan URL file jika ada
+        timestamp: new Date(),
+        fileUrl,
       });
 
       setWithdrawalStatus("Pengajuan pencairan dana berhasil diajukan.");
-      setAmount(""); // Reset input
-      setFile(null); // Reset file input
+      setAmount("");
+      setAccountNumber(""); // Reset nomor rekening
+      setBankName(""); // Reset nama bank
+      setAccountOwnerName(""); // Reset nama pemilik rekening
+      setFile(null);
     } catch (error) {
       console.error("Error saat mengajukan pencairan dana:", error);
       setWithdrawalStatus("Gagal mengajukan pencairan dana.");
@@ -123,7 +122,6 @@ function WithdrawRequest() {
 
   return (
     <div className="min-h-screen font-poppins dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-20">
-      {/* Sidebar Header */}
       <HeaderSidebar
         isSidebarOpen={isSidebarOpen}
         toggleSidebar={toggleSidebar}
@@ -141,9 +139,8 @@ function WithdrawRequest() {
         </div>
       </aside>
 
-      {/* Konten Utama */}
       <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 min-h-screen">
-        <h1 className="text-2xl font-semibold mb-6">
+        <h1 className="text-2xl font-semibold mb-6 mt-20">
           Pengajuan Pencairan Dana
         </h1>
 
@@ -186,7 +183,6 @@ function WithdrawRequest() {
             required
             className="mb-4 w-full p-2 border rounded"
             placeholder="Nomor rekening"
-            readOnly // Field ini tidak bisa diubah
           />
 
           <label className="block mb-2 font-medium" htmlFor="bank-name">
@@ -200,17 +196,33 @@ function WithdrawRequest() {
             required
             className="mb-4 w-full p-2 border rounded"
             placeholder="Nama bank"
-            readOnly // Field ini tidak bisa diubah
+          />
+
+          {/* Tambahkan Input untuk Nama Pemilik Rekening */}
+          <label
+            className="block mb-2 font-medium"
+            htmlFor="account-owner-name"
+          >
+            Nama Pemilik Rekening
+          </label>
+          <input
+            type="text"
+            id="account-owner-name"
+            value={accountOwnerName}
+            onChange={(e) => setAccountOwnerName(e.target.value)}
+            required
+            className="mb-4 w-full p-2 border rounded"
+            placeholder="Nama pemilik rekening"
           />
 
           <label className="block mb-2 font-medium" htmlFor="file-upload">
-            Upload Bukti Pencairan (Screenshot)
+            Upload Bukti Pendapatan (Screenshot)
           </label>
           <input
             type="file"
             id="file-upload"
-            accept="image/*" // Hanya menerima file gambar
-            onChange={(e) => setFile(e.target.files[0])} // Mengambil file pertama
+            accept="image/*"
+            onChange={(e) => setFile(e.target.files[0])}
             className="mb-4 w-full text-gray-600 border rounded p-2"
           />
 

@@ -12,10 +12,6 @@ import {
   uploadBytes,
   getDownloadURL,
 } from "firebase/storage";
-<<<<<<< HEAD
-=======
-import DefaultPreview from "../../../assets/assetmanage/Iconrarzip.svg";
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
 
 function EditNewAsset2D() {
   const { id } = useParams();
@@ -39,11 +35,7 @@ function EditNewAsset2D() {
     category: "",
     description: "",
     price: "",
-<<<<<<< HEAD
     asset2DThumbnail: null,
-=======
-    asset2DImage: null,
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
   });
 
   // Fetch existing data based on id
@@ -61,7 +53,6 @@ function EditNewAsset2D() {
             setImagePreview(data.asset2DThumbnail);
           }
         } else {
-<<<<<<< HEAD
           // console.log("No such document!");
           navigate("/manage-asset-2D");
         }
@@ -70,14 +61,6 @@ function EditNewAsset2D() {
       } finally {
         setIsLoading(false);
       }
-=======
-          console.log("No such document!");
-          navigate("/manage-asset-asset2D");
-        }
-      } catch (error) {
-        console.error("Error fetching asset2D:", error);
-      }  
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
     };
 
     fetchasset2D();
@@ -86,20 +69,14 @@ function EditNewAsset2D() {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-<<<<<<< HEAD
     if (name === "asset2DThumbnail" && files[0]) {
       setAsset2D({
-=======
-    if (name === "asset2DImage" && files[0]) {
-      setasset2D({
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
         ...asset2D,
         asset2DThumbnail: files[0],
       });
 
       // Create image preview
       if (files[0].type.includes("image")) {
-<<<<<<< HEAD
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -111,19 +88,6 @@ function EditNewAsset2D() {
       }
     } else {
       setAsset2D({
-=======
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImagePreview(reader.result);
-        };
-        reader.readAsDataURL(files[0]);
-      } else {
-        // Reset preview jika file bukan gambar
-        setImagePreview(files.asset2DImage);
-      }
-    } else {
-      setasset2D({
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
         ...asset2D,
         [name]: value,
       });
@@ -135,7 +99,6 @@ function EditNewAsset2D() {
 
     try {
       const priceAsNumber = parseInt(asset2D.price);
-<<<<<<< HEAD
 
       if (isNaN(priceAsNumber)) {
         // Validasi jika harga yang diinput tidak valid
@@ -145,23 +108,6 @@ function EditNewAsset2D() {
       let asset2DThumbnail = asset2D.asset2DThumbnail;
       if (imagePreview !== asset2D.asset2DThumbnail) {
         const storageFileName = `images-asset-2d/asset2D-${id}.jpg`;
-=======
-
-      if (isNaN(priceAsNumber)) {
-        // Validasi jika harga yang diinput tidak valid
-        throw new Error("Invalid price: must be a number.");
-      }
-
-      let asset2DImage = asset2D.asset2DImage;
-
-      if (imagePreview !== asset2D.asset2DImage) {
-        const fileName = imagePreview.split("/").pop().split("?")[0];
-        const fileExtension = fileName.split(".").pop(); // Ekstensi file
-        // console.log(fileExtension);
-
-        const storageFileName = `images-asset-2d/asset2D-${id}.${fileExtension}`;
-
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
         // Delete the old image if a new image is being uploaded
         const oldImageRef = ref(storage, storageFileName);
         await deleteObject(oldImageRef); // Delete the old image
@@ -170,7 +116,6 @@ function EditNewAsset2D() {
         const newFileExtension = originalFileName.split(".").pop();
         // console.log(newFileExtension);
         // Upload the new image
-<<<<<<< HEAD
         const imageRef = ref(storage, `images-asset-2d/asset2d-${id}.jpg`);
         await uploadBytes(imageRef, asset2D.asset2DThumbnail);
         asset2DThumbnail = await getDownloadURL(imageRef);
@@ -178,17 +123,6 @@ function EditNewAsset2D() {
         // If no new image is uploaded, keep the old image URL
         // eslint-disable-next-line no-unused-vars
         asset2DThumbnail = imagePreview;
-=======
-        const imageRef = ref(
-          storage,
-          `images-asset-2d/asset2D-${id}.${newFileExtension}`
-        );
-        await uploadBytes(imageRef, asset2D.asset2DImage);
-        asset2DImage = await getDownloadURL(imageRef);
-      } else {
-        // If no new image is uploaded, keep the old image URL
-        asset2DImage = imagePreview;
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
       }
 
       const asset2DRef = doc(db, "assetImage2D", id);
@@ -196,13 +130,8 @@ function EditNewAsset2D() {
         asset2DName: asset2D.asset2DName,
         category: asset2D.category,
         description: asset2D.description,
-<<<<<<< HEAD
         price: asset2D.price,
         asset2DThumbnail: asset2DThumbnail,
-=======
-        price: priceAsNumber,
-        asset2DImage: asset2DImage,
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
       });
 
       setAlertSuccess(true);
@@ -210,11 +139,7 @@ function EditNewAsset2D() {
         navigate("/manage-asset-2D");
       }, 2000);
     } catch (error) {
-<<<<<<< HEAD
       // console.error("Error updating asset 2D: ", error);
-=======
-      console.error("Error updating asset2D: ", error);
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
       setAlertError(true);
     }
   };
@@ -288,11 +213,7 @@ function EditNewAsset2D() {
                     d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-<<<<<<< HEAD
                 <span>Gagal memperbarui Asset 2D silahkan coba lagi</span>
-=======
-                <span>Gagal memperbarui asset2D silahkan coba lagi</span>
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
               </div>
             </div>
           )}
@@ -321,13 +242,8 @@ function EditNewAsset2D() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px] mb-2">
-<<<<<<< HEAD
                     Format thumbnail harus .jpg, jpeg, png dan ukuran minimal
                     300 x 300 px.
-=======
-                    Format Asset harus .jpg, jpeg, png dan ukuran minimal 300 x
-                    300 px.
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                   </p>
                 </div>
                 <div className="p-0">
@@ -335,12 +251,8 @@ function EditNewAsset2D() {
                     <div className="mt-2 md:ml-2 lg:ml-4 xl:ml-6 2xl:ml-4 flex justify-center items-center border border-dashed border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px] relative">
                       <label
                         htmlFor="fileUpload"
-<<<<<<< HEAD
                         className="flex flex-col justify-center items-center cursor-pointer text-center"
                       >
-=======
-                        className="flex flex-col justify-center items-center cursor-pointer text-center">
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                         {!imagePreview && (
                           <>
                             <img
@@ -349,11 +261,7 @@ function EditNewAsset2D() {
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-<<<<<<< HEAD
                               Upload Thumbnail
-=======
-                              Upload asset 2D
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                             </span>
                           </>
                         )}
@@ -364,11 +272,7 @@ function EditNewAsset2D() {
                           name="asset2DThumbnail"
                           onChange={handleChange}
                           multiple
-<<<<<<< HEAD
                           accept=".jpg,.jpeg,.png"
-=======
-                          accept=".jpg,.jpeg,.png,.zip,.rar,.csv,.xls,.xlsx,"
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                           className="hidden"
                         />
 
@@ -386,14 +290,10 @@ function EditNewAsset2D() {
                               type="button"
                               onClick={() => {
                                 setImagePreview(null);
-<<<<<<< HEAD
                                 setAsset2D({
                                   ...asset2D,
                                   asset2DThumbnail: null,
                                 });
-=======
-                                setasset2D({ ...asset2D, asset2DImage: null });
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                               }}
                               className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded"
                             >
@@ -480,13 +380,6 @@ function EditNewAsset2D() {
                       ))}
                     </select>
                   </label>
-<<<<<<< HEAD
-=======
-
-                  {/* <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
-                    +
-                  </div> */}
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                 </div>
               </div>
 

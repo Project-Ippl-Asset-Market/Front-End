@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 /* eslint-disable no-unused-vars */
 //11/4/24
-=======
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
 import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
@@ -16,10 +13,6 @@ import {
   uploadBytes,
   getDownloadURL,
 } from "firebase/storage";
-<<<<<<< HEAD
-=======
-import DefaultPreview from "../../../assets/assetmanage/Iconrarzip.svg";
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
 
 function EditNewAsset3D() {
   const { id } = useParams();
@@ -27,16 +20,12 @@ function EditNewAsset3D() {
   const [imagePreview, setImagePreview] = useState("");
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
-<<<<<<< HEAD
   // eslint-disable-next-line no-unused-vars
   const [isLoading, setIsLoading] = useState(true);
-=======
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
 
   const categories = [
     { id: 1, name: "Animations" },
     { id: 2, name: "Characters" },
-<<<<<<< HEAD
     { id: 3, name: "Environment" },
     { id: 4, name: "GUI" },
     { id: 5, name: "Props" },
@@ -50,21 +39,6 @@ function EditNewAsset3D() {
     description: "",
     price: "",
     asset3DThumbnail: null,
-=======
-    { id: 3, name: "Environtment" },
-    { id: 4, name: "GUI" },
-    { id: 5, name: "Props" },
-    { id: 6, name: "Vegetation"},
-    { id: 7, name: "Vehicle" },
-  ];
-
-  const [asset3D, setAsset3D] = useState({
-    asset3DName: "",
-    category: "",
-    description: "",
-    price: "",
-    asset3DImage: null,
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
   });
 
   // Fetch existing data based on id
@@ -78,7 +52,6 @@ function EditNewAsset3D() {
           const data = docSnap.data();
           setAsset3D(data);
 
-<<<<<<< HEAD
           if (data.asset3DThumbnail) {
             setImagePreview(data.asset3DThumbnail);
           }
@@ -94,42 +67,19 @@ function EditNewAsset3D() {
     };
 
     fetchDataset();
-=======
-          if (data.asset3DImage) {
-            setImagePreview(data.asset3DImage);
-          }
-        } else {
-          console.log("No such document!");
-          navigate("/manage-asset-asset3D");
-        }
-      } catch (error) {
-        console.error("Error fetching asset3D:", error);
-      }  
-    };
-
-    fetchasset3D();
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
   }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-<<<<<<< HEAD
     if (name === "asset3DThumbnail" && files[0]) {
       setAsset3D({
         ...asset3D,
         asset3DThumbnail: files[0],
-=======
-    if (name === "asset3DImage" && files[0]) {
-      setAsset3D({
-        ...asset3D,
-        asset3DImage: files[0],
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
       });
 
       // Create image preview
       if (files[0].type.includes("image")) {
-<<<<<<< HEAD
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -138,16 +88,6 @@ function EditNewAsset3D() {
     } else {
         // Reset preview jika file bukan gambar
         setImagePreview(files.asset3DThumbnail);
-=======
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setImagePreview(reader.result);
-        };
-        reader.readAsDataURL(files[0]);
-      } else {
-        // Reset preview jika file bukan gambar
-        setImagePreview(files.asset3DImage);
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
       }
     } else {
       setAsset3D({
@@ -166,7 +106,6 @@ function EditNewAsset3D() {
       if (isNaN(priceAsNumber)) {
         // Validasi jika harga yang diinput tidak valid
         throw new Error("Invalid price: must be a number.");
-<<<<<<< HEAD
       }
 
       let asset3DThumbnail = asset3D.asset3DThumbnail;
@@ -186,50 +125,13 @@ function EditNewAsset3D() {
         asset3DThumbnail = imagePreview;
       }
 
-=======
-      }
-
-      let asset3DImage = asset3D.asset3DImage;
-
-      if (imagePreview !== asset3D.asset3DImage) {
-        const fileName = imagePreview.split("/").pop().split("?")[0];
-        const fileExtension = fileName.split(".").pop(); // Ekstensi file
-        // console.log(fileExtension);
-
-        const storageFileName = `images-asset-3D/asset3D-${id}.${fileExtension}`;
-
-        // Delete the old image if a new image is being uploaded
-        const oldImageRef = ref(storage, storageFileName);
-        await deleteObject(oldImageRef); // Delete the old image
-
-        const originalFileName = asset3D.asset3DImage.name;
-        const newFileExtension = originalFileName.split(".").pop();
-        // console.log(newFileExtension);
-        // Upload the new image
-        const imageRef = ref(
-          storage,
-          `images-asset-3D/asset3D-${id}.${newFileExtension}`
-        );
-        await uploadBytes(imageRef, asset3D.asset3DImage);
-        asset3DImage = await getDownloadURL(imageRef);
-      } else {
-        // If no new image is uploaded, keep the old image URL
-        asset3DImage = imagePreview;
-      }
-
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
       const asset3DRef = doc(db, "assetImage3D", id);
       await updateDoc(asset3DRef, {
         asset3DName: asset3D.asset3DName,
         category: asset3D.category,
         description: asset3D.description,
-<<<<<<< HEAD
         price: asset3D.price,
         asset3DThumbnail: asset3DThumbnail,
-=======
-        price: priceAsNumber,
-        asset3DImage: asset3DImage,
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
       });
 
       setAlertSuccess(true);
@@ -237,11 +139,7 @@ function EditNewAsset3D() {
         navigate("/manage-asset-3D");
       }, 2000);
     } catch (error) {
-<<<<<<< HEAD
       // console.error("Error updating asset 2D: ", error);
-=======
-      console.error("Error updating asset3D: ", error);
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
       setAlertError(true);
     }
   };
@@ -344,12 +242,8 @@ function EditNewAsset3D() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px] mb-2">
-<<<<<<< HEAD
                     Format thumbnail harus .jpg, jpeg, png dan ukuran minimal
                     300 x 300 px.
-=======
-                    Format Asset harus jpg, jpeg, png dan zip
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                   </p>
                 </div>
                 <div className="p-0">
@@ -367,11 +261,7 @@ function EditNewAsset3D() {
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-<<<<<<< HEAD
                               Upload Thumbnail
-=======
-                              Upload asset 3D
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                             </span>
                           </>
                         )}
@@ -382,11 +272,7 @@ function EditNewAsset3D() {
                           name="asset3DThumbnail"
                           onChange={handleChange}
                           multiple
-<<<<<<< HEAD
                           accept=".jpg,.jpeg,.png"
-=======
-                          accept=".jpg,.jpeg,.png,.zip,.rar,.csv,.xls,.xlsx,"
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                           className="hidden"
                         />
 
@@ -475,7 +361,6 @@ function EditNewAsset3D() {
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <select
                       name="category"
-<<<<<<< HEAD
                       value={asset3D.category} // Bind value to dataset.category
                       onChange={(e) =>
                         setAsset3D((prevState) => ({
@@ -485,16 +370,6 @@ function EditNewAsset3D() {
                       }
                       className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md"
                     >
-=======
-                      value={asset3D.category} // Bind value to asset3D.category
-                      onChange={(e) =>
-                        setAsset3D((prevState) => ({
-                          ...prevState,
-                          category: e.target.value, // Update category inside asset3D state
-                        }))
-                      }
-                      className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md">
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                       <option value="" disabled>
                         Pick an option
                       </option>
@@ -505,13 +380,6 @@ function EditNewAsset3D() {
                       ))}
                     </select>
                   </label>
-<<<<<<< HEAD
-=======
-
-                  {/* <div className="h-[48px] w-[48px] bg-blue-700 text-white flex items-center justify-center rounded-md shadow-md hover:bg-secondary-50 transition-colors duration-300 cursor-pointer ml-2 text-4xl">
-                    +
-                  </div> */}
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                 </div>
               </div>
 
@@ -562,11 +430,7 @@ function EditNewAsset3D() {
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <input
-<<<<<<< HEAD
                       type="Rp"
-=======
-                      type="number"
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                       name="price"
                       value={asset3D.price}
                       onChange={handleChange}
@@ -583,22 +447,14 @@ function EditNewAsset3D() {
               <button
                 type="button"
                 onClick={handleCancel}
-<<<<<<< HEAD
                 className="btn bg-neutral-60 border-neutral-60 hover:bg-neutral-60 hover:border-neutral-60 rounded-lg  font-semibold   text-primary-100 text-center text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]"
               >
-=======
-                className="btn bg-neutral-60 border-neutral-60 hover:bg-neutral-60 hover:border-neutral-60 rounded-lg  font-semibold   text-primary-100 text-center text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                 Cancel
               </button>
               <button
                 type="submit"
-<<<<<<< HEAD
                 className="btn  bg-secondary-40 border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg  font-semibold leading-[24px]  text-primary-100 text-center  text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]"
               >
-=======
-                className="btn  bg-secondary-40 border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg  font-semibold leading-[24px]  text-primary-100 text-center  text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c
                 Save
               </button>
             </div>
@@ -610,7 +466,4 @@ function EditNewAsset3D() {
 }
 
 export default EditNewAsset3D;
-<<<<<<< HEAD
 //11/4/24
-=======
->>>>>>> fb09a340469d176aaa44804cb2426094d33f614c

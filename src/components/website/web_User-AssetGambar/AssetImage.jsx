@@ -461,7 +461,7 @@ export function AssetImage() {
             </button>
           </div>
         )}
-        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
+        <h1 className="text-2xl -ml-10 font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
           All Category
         </h1>
       </div>
@@ -485,12 +485,12 @@ export function AssetImage() {
             return (
               <div
                 key={data.id}
-                className="w-full max-w-[280px] h-[220px] sm:w-[150px] sm:h-[215px] md:w-[180px] md:h-[230px] lg:h-[280px] xl:w-[240px] xl:h-[320px] 2xl:w-[280px] 2xl:h-[400px]  bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between relative rounded-lg shadow-lg">
-                <div className="w-full flex-shrink-0 h-[100px] sm:h-[100px] md:h-[110px] lg:h-[150px] xl:h-[200px] relative ">
+                className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                <div className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]">
                   <img
                     src={data.uploadUrlImage || CustomImage}
                     alt="Image"
-                    className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                    className="h-full w-full object-cover rounded-t-[10px] border-none"
                     onClick={() => openModal(data)}
                     onError={(e) => {
                       e.target.onerror = null;
@@ -508,31 +508,32 @@ export function AssetImage() {
                   </div>
                 )}
 
-                <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-4">
-                  <div>
-                    <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
-                      {data.imageName}
+                <div className="flex flex-col justify-between h-full p-2 sm:p-4">
+                  <div onClick={() => openModal(data)}>
+                    <p className="text-xs text-neutral-10 font-semibold dark:text-primary-100">
+                      {data.imageName.length > 14
+                        ? `${data.imageName.substring(0, 14)}...`
+                        : data.imageName}
                     </p>
-                    <h4 className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px] dark:text-primary-100">
+
+                    <h4 className="text-neutral-20 text-xs sm:text-sm lg:text-base dark:text-primary-100">
                       {data.description.length > 24
                         ? `${data.description.substring(0, 24)}......`
                         : data.description}
                     </h4>
                   </div>
-                  <div className="flex justify-between items-center mt-auto gap-2">
+                  <div className="flex justify-between items-center mt-2 sm:mt-4">
                     <button
                       onClick={() => handleLikeClick(data.id, likesAsset)}
-                      className="flex justify-start items-center mr-2">
+                      className="flex items-center">
                       {likedByCurrentUser ? (
                         <FaHeart className="text-red-600" />
                       ) : (
-                        <FaRegHeart className="text-neutral-10 text-[11px] sm:text-[14px] dark:text-primary-100 " />
+                        <FaRegHeart className="text-neutral-10 text-xs sm:text-sm" />
                       )}
-                      <p className="ml-2 text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
-                        ({likesAsset})
-                      </p>
+                      <p className="ml-1 text-xs sm:text-sm">({likesAsset})</p>
                     </button>
-                    <p className="text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
+                    <p className="text-xs sm:text-sm lg:text-base">
                       {data.price % 1000 === 0 && data.price >= 1000
                         ? `Rp. ${(data.price / 1000).toLocaleString("id-ID")}k`
                         : `Rp. ${data.price.toLocaleString("id-ID")}`}
@@ -549,44 +550,49 @@ export function AssetImage() {
       {modalIsOpen && selectedasset && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] sm:w-[700px] md:w-[700px] lg:w-[800px] xl:w-[900px] 2xl:w-[900px] mx-4 flex relative">
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-full sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] mx-4 flex flex-col relative">
             <button
-              className="absolute top-1 sm:top-2 md:top-2 lg:top-3 xl:top-2 2xl:top-2 right-3 sm:right-2 md:right-2 lg:right-3 xl:right-2 2xl:right-2 text-gray-600 dark:text-gray-400 text-2xl sm:text-xl md:text-xl lg:text-[35px] xl:text-[40px] 2xl:text-2xl"
+              className="absolute top-1 right-4 text-gray-600 dark:text-gray-400 text-4xl"
               onClick={closeModal}>
               &times;
             </button>
-            <img
-              src={selectedasset.uploadUrlImage || CustomImage}
-              alt="asset Image"
-              className="w-full md:w-1/2 h-[400px] object-cover rounded-lg"
-              onClick={() => openModal()}
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = CustomImage;
-              }}
-              onContextMenu={(e) => e.preventDefault()}
-              draggable={false}
-              onDragStart={(e) => e.preventDefault()}
-            />
-            <div className="w-1/2 pl-4 ">
-              <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
+            <div className="flex flex-col items-center justify-center w-full">
+              <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
+                <img
+                  src={selectedasset.uploadUrlImage || CustomImage}
+                  alt="asset Image"
+                  className="w-full h-full object-cover"
+                  onClick={() => openModal()}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = CustomImage;
+                  }}
+                  onContextMenu={(e) => e.preventDefault()}
+                  draggable={false}
+                  onDragStart={(e) => e.preventDefault()}
+                />
+              </div>
+            </div>
+            <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+              <h2 className="text-md mb-2 dark:text-primary-100 mt-4 text-start font-semibold">
                 {selectedasset.imageName}
               </h2>
-              <p className="text-sm mb-2 dark:text-primary-100 mt-4">
-                Rp. {selectedasset.price.toLocaleString("id-ID")}
-              </p>
-              <div className="text-sm mb-2 dark:text-primary-100 mt-4">
-                <label className="flex-col mt-2">Deskripsi gambar:</label>
-                <div className="mt-2">{selectedasset.description}</div>
-              </div>
-
-              <p className="text-sm mb-2 dark:text-primary-100 mt-4">
+              <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
                 Kategori: {selectedasset.category}
               </p>
+              <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
+                Rp. {selectedasset.price.toLocaleString("id-ID")}
+              </p>
+              <div className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
+                <label className="flex-col mt-2 ">Deskripsi gambar:</label>
+                <div className="mt-2 text-justify">
+                  {selectedasset.description}
+                </div>
+              </div>
 
               <div className="mt-10">
-                <div className="mb-4">
-                  <label className="flex-col mt-2">Pilih Ukuran:</label>
+                <div className="mb-4 text-start">
+                  <label className="flex-col mt-2 ">Pilih Ukuran:</label>
                   <select
                     value={selectedSize}
                     onChange={(e) => setSelectedSize(e.target.value)}

@@ -449,12 +449,12 @@ export function AssetDataset() {
             </button>
           </div>
         )}
-        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
+        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] -ml-10">
           All Category
         </h1>
       </div>
-      <div className=" pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
-        <div className=" mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]  ">
+      <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen -mt-6">
+        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
@@ -463,8 +463,8 @@ export function AssetDataset() {
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
-                <div className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px] relative">
+                className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                <div className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]">
                   {Array.isArray(data.datasetThumbnail) &&
                   data.datasetThumbnail.length > 0 ? (
                     <img
@@ -474,7 +474,7 @@ export function AssetDataset() {
                         CustomImage
                       }
                       alt={`Thumbnail 1`}
-                      className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                      className="h-full w-full object-cover rounded-t-[10px] border-none"
                       onClick={() => openModal(data)}
                       onError={(e) => {
                         e.target.onerror = null;
@@ -486,7 +486,7 @@ export function AssetDataset() {
                     <img
                       src={data.datasetThumbnail || CustomImage}
                       alt="Default Image"
-                      className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                      className="h-full w-full object-cover rounded-t-[10px] border-none"
                       onClick={() => openModal(data)}
                       onError={(e) => {
                         e.target.onerror = null;
@@ -506,12 +506,15 @@ export function AssetDataset() {
                 </div>
 
                 {/* details section */}
-                <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-10">
+                <div className="flex flex-col justify-between h-full p-2 sm:p-4">
                   <div>
-                    <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
-                      {data.datasetName}
+                    <p className="text-xs text-neutral-10 font-semibold dark:text-primary-100">
+                      {data.datasetName.length > 14
+                        ? `${data.datasetName.substring(0, 14)}...`
+                        : data.datasetName}
                     </p>
-                    <h4 className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100">
+
+                    <h4 className="text-neutral-20 text-xs sm:text-sm lg:text-base dark:text-primary-100">
                       {data.description.length > 24
                         ? `${data.description.substring(0, 24)}......`
                         : data.description}
@@ -548,49 +551,53 @@ export function AssetDataset() {
       {modalIsOpen && selectedasset && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] sm:w-[700px] md:w-[700px] lg:w-[800px] xl:w-[900px] 2xl:w-[900px] mx-4 flex relative">
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-full sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] mx-4 flex flex-col relative">
             <button
-              className="absolute top-1 sm:top-2 md:top-2 lg:top-3 xl:top-2 2xl:top-2 right-3 sm:right-2 md:right-2 lg:right-3 xl:right-2 2xl:right-2 text-gray-600 dark:text-gray-400 text-2xl sm:text-xl md:text-xl lg:text-[35px] xl:text-[40px] 2xl:text-2xl"
+              className="absolute top-1 right-4 text-gray-600 dark:text-gray-400 text-4xl"
               onClick={closeModal}>
               &times;
             </button>
-            <img
-              src={
-                Array.isArray(selectedasset.datasetThumbnail) &&
-                selectedasset.datasetThumbnail.length > 1
-                  ? selectedasset.datasetThumbnail[0]
-                  : selectedasset.datasetThumbnail ||
-                    selectedasset.datasetFile ||
-                    CustomImage
-              }
-              alt="Asset Image"
-              className="w-full md:w-1/2 h-[570px] object-cover rounded-lg"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = CustomImage;
-              }}
-              onContextMenu={(e) => e.preventDefault()}
-              draggable={false}
-              onDragStart={(e) => e.preventDefault()}
-            />
 
-            <div className="w-1/2 pl-4 ">
-              <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
+            <div className="flex flex-col items-center justify-center w-full">
+              <div className="w-full h-[50px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4"></div>
+              <img
+                src={
+                  Array.isArray(selectedasset.datasetThumbnail) &&
+                  selectedasset.datasetThumbnail.length > 1
+                    ? selectedasset.datasetThumbnail[0]
+                    : selectedasset.datasetThumbnail ||
+                      selectedasset.datasetFile ||
+                      CustomImage
+                }
+                alt="Asset Image"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = CustomImage;
+                }}
+                onContextMenu={(e) => e.preventDefault()}
+                draggable={false}
+                onDragStart={(e) => e.preventDefault()}
+              />
+            </div>
+
+            <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+              <h2 className="text-lg font-semibold mb-2 dark:text-primary-100 text-start">
                 {selectedasset.datasetName}
               </h2>
-              <p className="text-sm mb-2 dark:text-primary-100 mt-4">
+              <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
+                Kategori: {selectedasset.category}
+              </p>
+              <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
                 Rp. {selectedasset.price.toLocaleString("id-ID")}
               </p>
-              <div className="text-sm mb-2 dark:text-primary-100 mt-4">
-                <label className="flex-col mt-2">Deskripsi Dataset:</label>
+              <div className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
+                <label className="flex-col mt-2 ">Deskripsi gambar:</label>
                 <div className="mt-2 text-justify">
                   {selectedasset.description}
                 </div>
               </div>
 
-              <p className="text-sm mb-2 dark:text-primary-100 mt-4">
-                Kategori: {selectedasset.category}
-              </p>
               <div className="mt-28">
                 <button
                   onClick={() => handleAddToCart(selectedasset)}

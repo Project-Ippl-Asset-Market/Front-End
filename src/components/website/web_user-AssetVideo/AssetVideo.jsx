@@ -258,7 +258,7 @@ export function AssetVideo() {
         video: selectedAsset.uploadUrlVideo,
         category: selectedAsset.category,
         assetOwnerID: selectedAsset.userId,
-        resolution: resolution, // Store selected size
+        resolution: resolution,
       });
 
       navigate("/buy-now-asset");
@@ -367,7 +367,7 @@ export function AssetVideo() {
             </button>
           </div>
         )}
-        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100 pt-[100px]">
+        <h1 className="text-2xl -ml-10 font-semibold text-neutral-10 dark:text-primary-100 pt-[100px]">
           All Category
         </h1>
 
@@ -387,11 +387,11 @@ export function AssetVideo() {
               <div
                 key={data.id}
                 className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
-                <div className="w-full h-[300px] relative overflow-hidden aspect-video">
+                <div className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]">
                   <video
                     src={data.uploadUrlVideo}
                     alt="Video Preview"
-                    className="h-full w-full object-cover rounded-t-[10px] border-none cursor-pointer"
+                    className="h-full w-full object-cover rounded-t-[10px] border-none"
                     onClick={() => openModal(data)}
                     controls
                     controlsList="nodownload"
@@ -410,7 +410,7 @@ export function AssetVideo() {
                 </div>
 
                 <div className="flex flex-col justify-between h-full p-2 sm:p-4">
-                  <div>
+                  <div onClick={() => openModal(data)}>
                     <p className="text-xs text-neutral-10 font-semibold dark:text-primary-100">
                       {data.videoName}
                     </p>
@@ -447,48 +447,57 @@ export function AssetVideo() {
       {modalIsOpen && selectedAsset && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] mx-4 flex relative">
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-full sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] mx-4 flex flex-col relative">
             <button
-              className="absolute top-1 right-3 text-gray-600 dark:text-gray-400 text-2xl"
+              className="absolute top-1 right-4 text-gray-600 dark:text-gray-400 text-4xl"
               onClick={closeModal}>
               &times;
             </button>
-            <div className="flex-1 flex items-center justify-center mb-4">
-              <video
-                src={selectedAsset.uploadUrlVideo || CustomImage}
-                alt="Asset Image"
-                controls
-                controlsList="nodownload"
-                onContextMenu={(e) => e.preventDefault()}
-                className="w-full h-[300px] object-cover"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = CustomImage;
-                }}
-              />
-            </div>
-            <div className="flex-1 pl-4">
-              <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
-                {selectedAsset.videoName}
-              </h2>
-              <p className="text-sm mb-2 dark:text-primary-100">
-                Rp. {selectedAsset.price.toLocaleString("id-ID")}
-              </p>
-              <label className="flex-col mt-2">Deskripsi Video:</label>
-              <div className="mt-2 text-sm mb-2 dark:text-primary-100">
-                {selectedAsset.description}
+
+            {/* Bagian Gambar */}
+            <div
+              onClick={() => openModal(selectedAsset)}
+              className="flex flex-col items-center justify-center w-full">
+              <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
+                <video
+                  src={selectedAsset.uploadUrlVideo || CustomImage}
+                  alt="Asset Image"
+                  controls
+                  controlsList="nodownload"
+                  onContextMenu={(e) => e.preventDefault()}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = CustomImage;
+                  }}
+                />
               </div>
-              <p className="text-sm mb-2 dark:text-primary-100">
+            </div>
+            <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+              <p className="text-md mb-2 dark:text-primary-100 mt-4 text-start font-semibold">
                 Kategori: {selectedAsset.category}
               </p>
+              <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
+                {selectedAsset.price > 0
+                  ? `Rp ${selectedAsset.price.toLocaleString("id-ID")}`
+                  : "Free"}
+              </p>
+              <div className="text-sm mb-2 dark:text-primary-100 mt-4">
+                <label className="block mt-2 text-start">Deskripsi:</label>
+                <div className="mt-2 text-justify">
+                  {selectedAsset.description}
+                </div>
+              </div>
 
-              <div className="mt-14">
+              <div className="mt-14 text-start">
                 {/* Size selection */}
-                <label className="flex-col mt-2">Pilih Resolusi Video:</label>
+                <label className="flex-col mt-2  text-start">
+                  Pilih Resolusi Video:
+                </label>
                 <select
                   value={resolution}
                   onChange={(e) => setResolution(e.target.value)}
-                  className="bg-white border border-gray-300 rounded-md p-2 mb-4 w-full">
+                  className=" bg-white border border-gray-300 rounded-md p-2 mb-4 w-full">
                   {sizeOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}

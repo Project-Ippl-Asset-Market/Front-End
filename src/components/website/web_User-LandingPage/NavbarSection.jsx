@@ -268,7 +268,7 @@ const NavbarSection = () => {
           </div>
 
           {/* Jual Asset */}
-          <div className="flex flex-col space-y-4 sm:flex-row mb-6 text-right mx-2 sm:ml-6 md:ml-0 lg:ml-auto mt-0 sm:mt-1 md:mt-6 lg:mt-8">
+          <div className="flex flex-col space-y-4 sm:flex-row mb-6 text-left sm:text-right mx-2 -ml-1 sm:ml-6 md:ml-0 lg:ml-auto mt-0 sm:mt-1 md:mt-6 lg:mt-8">
             <span className="hidden sm:flex items-center text-[24px] mt-4 ml-4">
               |
             </span>
@@ -297,7 +297,7 @@ const NavbarSection = () => {
                 </div>
                 <div
                   tabIndex={0}
-                  className="dropdown-content bg-neutral-90 dark:bg-neutral-20 card card-compact text-start text-primary-content z-[1] w-full sm:w-[200px] p-2 shadow rounded-none">
+                  className="dropdown-content bg-neutral-90 dark:bg-neutral-20 card card-compact text-start text-primary-content z-[1] w-[200px] sm:w-[200px] p-2 shadow rounded-none absolute left-0 sm:left-auto sm:right-0 max-h-60 overflow-y-auto sm:max-h-[300px]">
                   <div className="card-body">
                     <Link
                       to={isLoggedIn ? "/dashboard" : "/login"}

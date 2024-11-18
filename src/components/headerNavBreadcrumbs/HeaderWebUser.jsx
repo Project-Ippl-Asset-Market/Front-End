@@ -101,7 +101,7 @@ function HeaderWebUser() {
           </h2>
         </div>
 
-        <div className="fixed top-0 right-0 p-4 z-10">
+        <div className="fixed top-0 right-0 p-4 z-50">
           {/* cart an my asset */}
           <div className="z-50  gap-14 sm:gap-1 md:gap-1 lg:gap-1 xl:gap-1 2xl:gap-2 flex justify-center items-center">
             <Link
@@ -110,9 +110,11 @@ function HeaderWebUser() {
               <img
                 src={IconMyAsset}
                 alt="icon my asset"
-                className="w-[24px] h-[24px]"
+                className="w-[24px] h-[24px] ml-4 sm:-ml-1 md:-ml-1 lg:-ml-1 xl:-ml-1 2xl:-ml-1"
               />
-              <label className="-ml-3">My asset</label>
+              <label className="ml-2  sm:-ml-4 md:-ml-4 lg:-ml-4 xl:-ml-4 2xl:-ml-4">
+                My asset
+              </label>
             </Link>
 
             <Link

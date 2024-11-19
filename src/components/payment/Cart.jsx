@@ -135,14 +135,14 @@ const Cart = () => {
           item.video ||
           item.assetImageGame ||
           item.datasetThumbnail ||
-          "url not found",
-        datasetFile: item.datasetFile || "not found",
+          "url tidak ada",
+        datasetFile: item.datasetFile || "tidak ada",
         docId: item.id,
         userId: item.userId,
         description: item.description || "No Description",
         category: item.category || "Uncategorized",
         assetOwnerID: item.assetOwnerID || "Asset Owner ID Not Available",
-        size: item.size || item.resolution || "size & Resolution not found",
+        size: item.size || item.resolution || "size & Resolution tidak ada",
       }));
 
       const response = await axios.post(
@@ -238,10 +238,10 @@ const Cart = () => {
             asset.video ||
             asset.assetImageGame ||
             asset.datasetThumbnail ||
-            "url not found",
-          datasetFile: asset.datasetFile || "not found",
+            "url tidak ada",
+          datasetFile: asset.datasetFile || "tidak ada",
           assetOwnerID: asset.assetOwnerID,
-          size: asset.size || asset.resolution || "size & Resolution not found",
+          size: asset.size || asset.resolution || "size & Resolution tidak ada",
         })),
         customerDetails: {
           fullName: customerInfo.fullName,
@@ -265,20 +265,20 @@ const Cart = () => {
           price: 0,
           name: asset.name,
           image:
-            asset.image ||
             asset.Image_umum ||
+            asset.image ||
             asset.video ||
             asset.assetImageGame ||
             asset.datasetThumbnail ||
-            "url not found",
+            "url tidak ada",
           datasetFile:
-            asset.datasetFile || asset.datasetThumbnail || "not found",
+            asset.datasetFile || asset.datasetThumbnail || "tidak ada",
           docId: asset.docId,
           userId: asset.userId,
           description: asset.description,
           category: asset.category,
           assetOwnerID: asset.assetOwnerID,
-          size: asset.size || asset.resolution || "size & Resolution not found",
+          size: asset.size || asset.resolution || "size & Resolution tidak ada",
         };
         return setDoc(doc(collection(db, "buyAssets"), asset.docId), newAsset);
       });
@@ -388,56 +388,53 @@ const Cart = () => {
       </div>
 
       <div className="container mx-auto py-20">
-        <h2 className="text-2xl font-semibold mb-4">Keranjang Belanja</h2>
+        <h2 className="text-2xl font-semibold mb-4 mt-8">Keranjang Belanja</h2>
         <p className="mb-4">
           Anda mempunyai {cartItems.length} item dalam keranjang
         </p>
-        <div className="flex flex-col md:flex-row md:justify-center p-4">
+        <div className="flex flex-col md:flex-row md:justify-center p-4 max-w-screen mx-auto">
           <div className="md:w-2/3 space-y-4">
-            {/* Reduced spacing */}
             {filteredAssetsData.map((item) => (
               <div
                 key={item.id}
-                className="flex flex-col md:flex-row items-center justify-between bg-gray-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-20 p-3 rounded-lg shadow-md mb-4 mx-2">
-                <div className="flex flex-col md:flex-row items-center w-full">
+                className="flex flex-col sm:flex-row items-center sm:items-start justify-between bg-gray-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-20 p-3 rounded-lg shadow-md mb-4">
+                <div className="flex flex-row items-center sm:w-full">
                   <input
                     type="checkbox"
-                    className="mr-2"
+                    className="mr-2 sm:mr-4"
                     checked={item.selected}
                     onChange={() => handleCheckboxChange(item.id)}
                   />
                   {item.video ? (
                     <video
                       src={item.video}
-                      alt="Asset Video"
-                      className="h-20 sm:h-40 md:h-20 lg:h-20 xl:h-20 2xl:h-20 w-full md:w-48 overflow-hidden relative mx-auto border-none cursor-pointer"
+                      className="h-20 w-20 sm:h-24 sm:w-24 lg:h-20 lg:w-20 rounded overflow-hidden border-none cursor-pointer"
                       controls
                     />
                   ) : (
                     <img
                       src={
                         item.Image ||
+                        item.Image_umum ||
                         item.uploadUrlImage ||
                         item.datasetImage ||
                         item.assetAudiosImage ||
                         item.asset2DImage ||
                         item.asset3DImage ||
-                        item.Image_umum ||
                         item.datasetThumbnail ||
                         item.datasetFile ||
                         CustomImage
                       }
-                      alt="Asset Image"
+                      alt="Asset"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = CustomImage;
                       }}
-                      className="h-full w-full md:w-48 overflow-hidden relative mx-auto border-none cursor-pointer"
+                      className="h-20 w-20 sm:h-24 sm:w-24 lg:h-20 lg:w-20 rounded overflow-hidden"
                     />
                   )}
-                  <div className="ml-2 md:ml-4 mt-2 md:mt-0 w-full">
-                    {/* Reduced margin and padding */}
-                    <h3 className="font-semibold text-sm md:text-base">
+                  <div className="ml-2 sm:ml-4 w-full">
+                    <h3 className="font-semibold text-sm sm:text-base truncate">
                       {item.name ||
                         item.datasetName ||
                         item.videoName ||
@@ -445,21 +442,21 @@ const Cart = () => {
                         item.imageName ||
                         item.asset2DName ||
                         item.asset3DName ||
-                        "Item Name Not Available"}
+                        "Tidak ada nama"}
                     </h3>
-                    <p className="text-sm md:text-base">
+                    <p className="text-sm sm:text-base">
                       Category: {item.category || "Unknown Category"}
                     </p>
-                    <p className="text-gray-700 mt-1 text-sm md:text-base">
+                    <p className="text-gray-700 mt-1 text-sm sm:text-base">
                       Rp. {(item.price || 0).toLocaleString("id-ID")}
                     </p>
-                    <p className="text-sm md:text-base">
-                      Size: {item.size || item.resolution || "Unknown size"}
+                    <p className="text-sm sm:text-base">
+                      Size: {item.size || item.resolution || "Tidak ada size"}
                     </p>
                   </div>
                 </div>
                 <button
-                  className="text-red-500 mt-2 md:mt-0"
+                  className="text-red-500 mt-2 sm:mt-0 sm:ml-auto"
                   onClick={() => handleDeleteItem(item.id)}>
                   <FaTrashAlt />
                 </button>

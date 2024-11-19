@@ -75,7 +75,7 @@ export function HomePage() {
 
       const purchasedQuery = query(
         collection(db, "buyAssets"),
-        where("uid", "==", currentUserId)
+        where("userId", "==", currentUserId)
       );
 
       try {
@@ -613,7 +613,7 @@ export function HomePage() {
             return (
               <div
                 key={data.id}
-                className=" w-[140px] h-[240px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[190px] md:h-[280px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                className=" w-[140px] h-[240px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[190px] md:h-[280px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg">
                 <div
                   onClick={() => openModal(data)}
                   className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[120px] lg:w-full lg:h-[183px] xl:h-full 2xl:h-full ">

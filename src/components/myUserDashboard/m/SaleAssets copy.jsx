@@ -1,11 +1,11 @@
 /* eslint-disable no-unused-vars */
 import { useState, useRef, useEffect } from "react";
 import { collection, onSnapshot } from "firebase/firestore";
-import { db } from "../../firebase/firebaseConfig";
+import { db } from "../../../firebase/firebaseConfig";
 import { getAuth } from "firebase/auth";
-import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
-import Breadcrumb from "../breadcrumbs/Breadcrumbs";
-import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
+import NavigationItem from "../../sidebarDashboardAdmin/navigationItemsAdmin";
+import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
+import HeaderSidebar from "../../headerNavBreadcrumbs/HeaderSidebar";
 
 function SaleAssets() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

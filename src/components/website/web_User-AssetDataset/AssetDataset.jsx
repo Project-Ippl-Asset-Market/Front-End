@@ -453,7 +453,7 @@ export function AssetDataset() {
           All Category
         </h1>
       </div>
-      <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen -mt-6">
+      <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen -mt-6 ">
         <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
@@ -463,8 +463,8 @@ export function AssetDataset() {
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
-                <div className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]">
+                className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg">
+                <div className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10] ">
                   {Array.isArray(data.datasetThumbnail) &&
                   data.datasetThumbnail.length > 0 ? (
                     <img
@@ -558,27 +558,30 @@ export function AssetDataset() {
               &times;
             </button>
 
-            <div className="flex flex-col items-center justify-center w-full">
-              <div className="w-full h-[50px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4"></div>
-              <img
-                src={
-                  Array.isArray(selectedasset.datasetThumbnail) &&
-                  selectedasset.datasetThumbnail.length > 1
-                    ? selectedasset.datasetThumbnail[0]
-                    : selectedasset.datasetThumbnail ||
-                      selectedasset.datasetFile ||
-                      CustomImage
-                }
-                alt="Asset Image"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = CustomImage;
-                }}
-                onContextMenu={(e) => e.preventDefault()}
-                draggable={false}
-                onDragStart={(e) => e.preventDefault()}
-              />
+            <div
+              onClick={() => openModal(selectedasset)}
+              className="flex flex-col items-center justify-center w-full">
+              <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
+                <img
+                  src={
+                    Array.isArray(selectedasset.datasetThumbnail) &&
+                    selectedasset.datasetThumbnail.length > 1
+                      ? selectedasset.datasetThumbnail[0]
+                      : selectedasset.datasetThumbnail ||
+                        selectedasset.datasetFile ||
+                        CustomImage
+                  }
+                  alt="Asset Image"
+                  onContextMenu={(e) => e.preventDefault()}
+                  draggable={false}
+                  onDragStart={(e) => e.preventDefault()}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = CustomImage;
+                  }}
+                />
+              </div>
             </div>
 
             <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">

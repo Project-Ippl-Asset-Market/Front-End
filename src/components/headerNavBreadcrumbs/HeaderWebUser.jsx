@@ -162,7 +162,7 @@ function HeaderWebUser() {
                               <div className="flex items-center justify-center p-2 bg-neutral-90 hover:border-none dark:bg-neutral-20   rounded-lg hover:text-primary-100 hover:bg-secondary-40 dark:hover:bg-secondary-40 ">
                                 <div
                                   onClick={toggleDarkMode}
-                                  className="flex w-full h-8 transition-colors duration-100 focus:outline-none gap-4 p-1  ">
+                                  className="flex w-full h-6 transition-colors duration-100 focus:outline-none gap-4 ml-1  ">
                                   {darkMode ? (
                                     <img
                                       src={IconDarkMode}

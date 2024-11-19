@@ -76,6 +76,7 @@ export function AssetImage() {
 
   // Menangani pengambilan aset yang telah dibeli
   useEffect(() => {
+    // Fetch purchased assets for the current user
     const fetchUserPurchasedAssets = async () => {
       if (!currentUserId) return;
 
@@ -87,13 +88,9 @@ export function AssetImage() {
       try {
         const purchasedSnapshot = await getDocs(purchasedQuery);
         const purchasedIds = new Set();
-
         purchasedSnapshot.forEach((doc) => {
-          // Menambahkan assetId dari dokumen ke dalam Set
           purchasedIds.add(doc.data().assetId);
         });
-
-        // Mengupdate state dengan assetId yang dibeli
         setPurchasedAssets(purchasedIds);
       } catch (error) {
         console.error("Error fetching purchased assets: ", error);
@@ -485,7 +482,7 @@ export function AssetImage() {
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg">
                 <div className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]">
                   <img
                     src={data.uploadUrlImage || CustomImage}
@@ -500,13 +497,12 @@ export function AssetImage() {
                     draggable={false}
                     onDragStart={(e) => e.preventDefault()}
                   />
+                  {isPurchased && (
+                    <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                      Sudah Dibeli
+                    </div>
+                  )}
                 </div>
-
-                {isPurchased && (
-                  <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
-                    Sudah Dibeli
-                  </div>
-                )}
 
                 <div className="flex flex-col justify-between h-full p-2 sm:p-4">
                   <div onClick={() => openModal(data)}>

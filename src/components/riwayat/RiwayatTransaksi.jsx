@@ -6,7 +6,6 @@ import HeaderNav from "../HeaderNav/HeaderNav";
 import NavbarSection from "../../components/website/web_User-LandingPage/NavbarSection";
 import { useNavigate } from "react-router-dom";
 
-
 const transactionsCollectionRef = collection(db, "transactions");
 
 export function RiwayatTransaksi() {
@@ -15,9 +14,8 @@ export function RiwayatTransaksi() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const navigate = useNavigate();
-  const auth = getAuth(); 
+  const auth = getAuth();
 
-  
   const formatDate = (timestamp) => {
     if (!timestamp || !timestamp.seconds) {
       return "Tanggal Tidak Diketahui";
@@ -38,7 +36,7 @@ export function RiwayatTransaksi() {
   // Mengambil semua transaksi
   useEffect(() => {
     const fetchTransactions = async () => {
-      const user = auth.currentUser; 
+      const user = auth.currentUser;
       if (!user) {
         setErrorMessage("Anda harus login untuk melihat transaksi.");
         setLoading(false);
@@ -48,7 +46,7 @@ export function RiwayatTransaksi() {
       const transactionsQuery = query(
         transactionsCollectionRef,
         where("status", "==", "Success"),
-        where("uid", "==", user.uid) 
+        where("uid", "==", user.uid)
       );
 
       try {
@@ -59,10 +57,9 @@ export function RiwayatTransaksi() {
           return;
         }
 
-        
         const transactionsList = transactionsSnapshot.docs.map((doc) => {
           const transactionData = { id: doc.id, ...doc.data() };
-          
+
           transactionData.assetNames = getAssetNames(transactionData.assets);
           return transactionData;
         });
@@ -79,17 +76,15 @@ export function RiwayatTransaksi() {
     fetchTransactions();
   }, []);
 
-  
   const getAssetNames = (assets) => {
     if (!Array.isArray(assets) || assets.length === 0) {
-      return "Nama Aset Tidak Diketahui"; 
+      return "Nama Aset Tidak Diketahui";
     }
 
-    
     const names = assets.map(
       (asset) => asset.name || "Nama Aset Tidak Diketahui"
-    ); 
-    return names.join(", "); 
+    );
+    return names.join(", ");
   };
 
   const viewTransactionDetails = (orderId) => {
@@ -98,8 +93,12 @@ export function RiwayatTransaksi() {
 
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
-      <HeaderNav />
-      <NavbarSection />
+      <div className="mt-14 pt-[2px] sm:pt-[60px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
+        <HeaderNav />
+      </div>
+      <div className="mt-0 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+        <NavbarSection />
+      </div>
       <div className="w-full p-12 mt-20">
         <h2 className="text-2xl font-semibold mb-4 mt-20">Riwayat Transaksi</h2>
 

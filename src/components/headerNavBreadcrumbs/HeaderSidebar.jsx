@@ -100,7 +100,7 @@ function HeaderSidebar({ toggleSidebar }) {
                     <details className="relative">
                       <summary className="cursor-pointer">{username}</summary>
                       <ul className="bg-neutral-90 dark:bg-neutral-20 rounded-lg w-48 shadow-lg">
-                        <li className="flex  mb-1 w-full h-8  transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none">
+                        <li className="flex  mb-1 w-full h-10  transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none">
                           <div className="flex items-center">
                             <img
                               src={darkMode ? IconUserDark : IconUserLight}
@@ -113,7 +113,7 @@ function HeaderSidebar({ toggleSidebar }) {
                           </div>
                         </li>
 
-                        <li className="flex  mb-1 w-full h-8  transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none">
+                        <li className="flex  mb-1 w-full h-10 -p-2 transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none">
                           <div className="flex items-center">
                             <img
                               src={darkMode ? IconStoreLight : IconStoreDark}
@@ -127,25 +127,25 @@ function HeaderSidebar({ toggleSidebar }) {
                         </li>
 
                         <li>
-                          <div className="flex items-center justify-center p-2 bg-neutral-90 dark:bg-neutral-20 transition-all duration-300 rounded-lg">
+                          <div className="flex items-center justify-center bg-neutral-90 hover:border-none dark:bg-neutral-20 hover:text-primary-100 hover:bg-secondary-40 dark:hover:bg-secondary-40  rounded-none">
                             <div
                               onClick={toggleDarkMode}
-                              className="flex gap-4 -ml-4 sm:ml-0 md:ml-0 lg:-ml-4 xl:-ml-8 2x:-ml-10 items-center justify-center w-full h-8  transition-colors duration-300 hover:bg-secondary-40  focus:outline-none">
+                              className="flex w-full h-6 transition-colors duration-100 focus:outline-none gap-4 -p-1  ">
                               {darkMode ? (
                                 <img
                                   src={IconDarkMode}
                                   alt="icon dark mode"
-                                  className="w-5 h-5 transition-transform duration-300"
+                                  className="w-5 h-5 transition-transform duration-100"
                                 />
                               ) : (
                                 <img
                                   src={IconLightMode}
                                   alt="icon light mode"
-                                  className="w-6 h-6 transition-transform duration-300 "
+                                  className="w-6 h-6 transition-transform duration-100"
                                 />
                               )}
                               <span
-                                className={`text-[12px] font-semibold transition-colors duration-300 hover:text-primary-100 ${
+                                className={`text-[13px] font-semibold transition-colors duration-100${
                                   darkMode
                                     ? "text-neutral-100"
                                     : "text-neutral-800"
@@ -155,7 +155,7 @@ function HeaderSidebar({ toggleSidebar }) {
                             </div>
                           </div>
                         </li>
-                        <li className="flex  mb-1 w-full h-8  ml-2 transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none">
+                        <li className="flex w-full h-10 transition-colors duration-300 hover:bg-secondary-40 hover:text-primary-100 focus:outline-none">
                           <div className="flex items-center">
                             <img
                               src={darkMode ? IconLogoutDark : IconLogoutLight}

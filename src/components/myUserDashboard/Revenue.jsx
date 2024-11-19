@@ -137,7 +137,6 @@ function Revenue() {
     }
   }, []);
 
-
   const chartData = {
     labels: ["Aset Terjual", "Pendapatan"],
     datasets: [
@@ -194,7 +193,7 @@ function Revenue() {
             <Breadcrumb />
           </div>
 
-          <div className="grid grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
               <FaDollarSign className="text-4xl text-green-500 mr-4" />
               <div>

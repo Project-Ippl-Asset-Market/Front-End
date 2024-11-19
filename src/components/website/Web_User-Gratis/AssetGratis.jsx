@@ -356,10 +356,10 @@ export function AssetGratis() {
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[230px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                className="w-[140px] h-[230px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg">
                 <div
                   onClick={() => openModal(data)}
-                  className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                  className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between ">
                   <div className="w-full h-[130px] relative">
                     {data.uploadUrlVideo ? (
                       <video
@@ -426,7 +426,7 @@ export function AssetGratis() {
                         : data.description || "Deskripsi Tidak Tersedia"}
                     </p>
                   </div>
-                  <div className="flex items-center justify-between px-2 py-2   dark:bg-neutral-80">
+                  <div className="flex items-center justify-between px-2 py-2">
                     <button
                       onClick={() =>
                         handleLikeClick(data.id, likesAsset, collectionsToFetch)
@@ -528,7 +528,7 @@ export function AssetGratis() {
               </div>
 
               <button
-                className="text-primary-100 flex p-2 text-center items-center justify-center bg-neutral-60 h-10 mt-14 rounded-md w-full"
+                className="text-primary-100 flex p-2 text-center items-center justify-center bg-neutral-60 dark:bg-neutral-40 h-10 mt-14 rounded-md w-full"
                 onClick={handleSaveToMyAssets}>
                 <img
                   src={IconDownload}

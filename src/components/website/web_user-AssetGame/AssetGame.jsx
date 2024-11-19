@@ -161,54 +161,53 @@ export function AssetGame() {
 
   const fetchAssets = async (selectedSubCategory) => {
     const collectionsFetch = ["assetAudios", "assetImage2D", "assetImage3D"];
-
+  
     try {
+      // Membuat array promise untuk mengambil data dari semua koleksi
       const promises = collectionsFetch.map((collectionName) => {
         let q;
-
-        if (selectedSubCategory && selectedSubCategory != "See all") {
+  
+        // Jika kategori dipilih "All Category", ambil semua data tanpa filter
+        if (selectedSubCategory === "All Category" || selectedSubCategory === "See all") {
+          q = collection(db, collectionName);
+        } else {
+          // Jika kategori spesifik dipilih, filter berdasarkan kategori
           q = query(
             collection(db, collectionName),
             where("category", "==", selectedSubCategory)
           );
-        } else {
-          q = collection(db, collectionName);
         }
         return getDocs(q);
       });
-
-      const results = await Promise.allSettled(promises);
-
-      const successfulSnapshots = results
-        .filter((result) => result.status === "fulfilled")
-        .map((result) => result.value);
-
-      const allAssets = successfulSnapshots.reduce((accumulator, snapshot) => {
-        const docsData = snapshot.docs.map((doc) => ({
+  
+      // Menjalankan semua promise secara paralel
+      const results = await Promise.all(promises);
+  
+      // Menggabungkan hasil dari semua koleksi
+      const allAssets = results.flatMap((snapshot) =>
+        snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }));
-        return [...accumulator, ...docsData];
-      }, []);
-
-      const filteredAssets = allAssets
-        .flat()
-        .filter((asset) => asset.price > 0);
-
-      filteredAssets.sort((a, b) => (b.likeAsset || 0) - (a.likeAsset || 0));
-
-      if (filteredAssets.length === 0) {
+        }))
+      );
+  
+      // Mengurutkan hasil berdasarkan jumlah likes secara menurun
+      allAssets.sort((a, b) => (b.likeAsset || 0) - (a.likeAsset || 0));
+  
+      // Menampilkan pesan jika tidak ada data yang ditemukan
+      if (allAssets.length === 0) {
         setFetchMessage("No assets found.");
       } else {
         setFetchMessage("");
       }
-
-      setAssetsData(filteredAssets);
+  
+      setAssetsData(allAssets); // Update state dengan hasil yang sudah diurutkan
     } catch (error) {
       console.error("Error fetching assets: ", error);
+      setFetchMessage("Error fetching assets.");
     }
   };
-
+  
   useEffect(() => {
     fetchAssets(selectedSubCategory);
   }, [selectedSubCategory]);
@@ -334,7 +333,8 @@ export function AssetGame() {
     console.log("User ID from Asset: ", userIdFromAsset);
 
     // Membuat referensi dokumen untuk keranjang menggunakan ID aset
-    const cartRef = doc(db, "cartAssets", `${selectedasset.id}`);
+    const cartRef = doc(db, "cartAssets", `${currentUserId}_${selectedAsset.id}`);
+
 
     try {
       const cartSnapshot = await getDoc(cartRef);
@@ -347,21 +347,21 @@ export function AssetGame() {
       // Menambahkan aset ke keranjang, termasuk userId dari selectedasset
       await setDoc(cartRef, {
         userId: currentUserId,
-        assetId: selectedasset.id,
+        assetId: selectedAsset.id,
         image:
-          selectedasset.asset2DImage ||
-          selectedasset.asset3DImage ||
-          selectedasset.uploadUrlAudio ||
+          selectedAsset.audioThumbnail ||
+          selectedAsset.asset2DThumbnail ||
+          selectedAsset.asset3DThumbnail ||
           "No Image Asset",
         name:
-          selectedasset.audioName ||
-          selectedasset.asset2DName ||
-          selectedasset.asset3DName ||
+          selectedAsset.audioName ||
+          selectedAsset.asset2DName ||
+          selectedAsset.asset3DName ||
           "No Name Asset",
-        description: selectedasset.description,
-        price: selectedasset.price,
-        category: selectedasset.category,
-        assetOwnerID: userIdFromAsset[0],
+        description: selectedAsset.description || "No Description",
+        price: selectedAsset.price || 0,
+        category: selectedAsset.category || "Uncategorized",
+        assetOwnerID: selectedAsset.userId,
       });
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {
@@ -449,7 +449,7 @@ export function AssetGame() {
     } catch (error) {
       console.error("Error adding to cart: ", error);
       alert(
-        "Terjadi kesalahan saat menambahkan asset ke keranjang. Silakan coba lagi."
+        "Terjadi kesalahan saat menambahkan asset ke keranjang. Silahkan coba lagi."
       );
     }
   };
@@ -617,6 +617,8 @@ export function AssetGame() {
             const likedByCurrentUser = likedAssets.has(data.id);
             const isPurchased = purchasedAssets.has(data.id);
             let collectionsToFetch = "";
+
+            // Tentukan koleksi berdasarkan nama aset
             if (data.audioName) {
               collectionsToFetch = "assetAudios";
             } else if (data.asset2DName) {
@@ -641,13 +643,12 @@ export function AssetGame() {
                     ) : (
                       <img
                         src={
-                          data.assetAudiosImage ||
-                          data.asset2DImage ||
-                          data.asset3DImage ||
-                          (data.assetAudiosImage ? CustomImage : null) ||
-                          CustomImage
+                          data.audioThumbnail || // Untuk assetAudios
+                          data.asset2DThumbnail || // Untuk assetImage2D
+                          data.asset3DThumbnail || // Untuk assetImage3D
+                          CustomImage // Gambar default
                         }
-                        alt="Asset Image"
+                        alt="Asset Thumbnail"
                         onError={(e) => {
                           e.target.onerror = null;
                           e.target.src = CustomImage;

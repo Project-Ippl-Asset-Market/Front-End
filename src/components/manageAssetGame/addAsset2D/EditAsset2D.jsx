@@ -4,8 +4,14 @@ import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db, storage } from "../../../firebase/firebaseConfig";
+import {
+  addDoc,
+  doc,
+  Timestamp,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
+import { db,auth, storage } from "../../../firebase/firebaseConfig";
 import {
   deleteObject,
   ref,
@@ -16,9 +22,14 @@ import {
 function EditNewAsset2D() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [imagePreview, setImagePreview] = useState("");
+  // const [imagePreview, setImagePreview] = useState("");
+  const [previewImages, setPreviewImages] = useState([]);
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  //const [categories, setCategories] = useState([]);
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState("");
   // eslint-disable-next-line no-unused-vars
   const [isLoading, setIsLoading] = useState(true);
 
@@ -30,67 +41,147 @@ function EditNewAsset2D() {
     { id: 5, name: "Textures & Materials" },
   ];
 
-  const [asset2D, setasset2D] = useState({
+  const [asset2D, setAsset2D] = useState({
     asset2DName: "",
     category: "",
     description: "",
     price: "",
+    asset2DFile: null,
     asset2DThumbnail: null,
   });
 
   // Fetch existing data based on id
   useEffect(() => {
-    const fetchasset2D = async () => {
+    const fetchDataset = async () => {
       try {
         const docRef = doc(db, "assetImage2D", id);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           const data = docSnap.data();
-          setasset2D(data);
+          setAsset2D(data);
 
           if (data.asset2DThumbnail) {
-            setImagePreview(data.asset2DThumbnail);
+            setPreviewImages(data.asset2DThumbnail);
           }
         } else {
           // console.log("No such document!");
           navigate("/manage-asset-2D");
         }
       } catch (error) {
-        // console.error("Error fetching Asset 2D:", error);
-      } finally {
-        setIsLoading(false);
+        console.error("Error fetching asset2D:", error);
       }
     };
 
-    fetchasset2D();
+    fetchDataset();
   }, [id, navigate]);
+
+  const [error, setError] = useState(null);
+  const [fileSize, setFileSize] = useState(null);
+
+  const handleFileChange = (event) => {
+    const { name, files } = event.target;
+    const file = files[0]; // Mengambil file pertama yang diunggah
+
+    if (name === "asset2DFile" && file) {
+      // Cek apakah file adalah file ZIP berdasarkan tipe dan nama file
+      if (file.type !== "application/zip" && !file.name.endsWith(".zip")) {
+        setError("File yang diunggah harus berformat .zip");
+        setAsset2D({
+          ...asset2D,
+          asset2DFile: null,
+        });
+        setFileSize(null);
+        event.target.value = null; // Reset input file
+        return;
+      } else {
+        setError(null); // Reset error jika file sesuai
+        setAsset2D({
+          ...asset2D,
+          asset2DFile: file,
+        });
+      }
+
+      // Konversi ukuran file ke dalam format yang lebih mudah dibaca
+      let size = file.size; // Ukuran file dalam bytes
+      let unit = "Bytes";
+
+      if (size >= 1073741824) {
+        size = (size / 1073741824).toFixed(2); // Konversi ke GB
+        unit = "GB";
+      } else if (size >= 1048576) {
+        size = (size / 1048576).toFixed(2); // Konversi ke MB
+        unit = "MB";
+      } else if (size >= 1024) {
+        size = (size / 1024).toFixed(2); // Konversi ke KB
+        unit = "KB";
+      }
+
+      setFileSize(`${size} ${unit}`);
+    } else {
+      setAsset2D({
+        ...asset2D,
+        [name]: event.target.value,
+      });
+    }
+  };
+
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    if (name === "asset2DThumbnail" && files[0]) {
-      setAsset2D({
-        ...asset2D,
-        asset2DThumbnail: files[0],
-      });
+    if (name === "asset2DThumbnail" && files.length > 0) {
+      const newFiles = Array.from(files);
+      const newPreviews = [];
 
-      // Create image preview
-      if (files[0].type.includes("image")) {
+      newFiles.forEach((file) => {
+        if (file.type.includes("image")) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result);
+            newPreviews.push(reader.result);
+            if (newPreviews.length === newFiles.length) {
+              setPreviewImages((prevImages) => [...prevImages, ...newPreviews]);
+            }
       };
-      reader.readAsDataURL(files[0]);
+          reader.readAsDataURL(file);
     } else {
-        // Reset preview jika file bukan gambar
-        setImagePreview(files.asset2DThumbnail);
-      }
+      setPreviewImages([]);
+    }
+      });
+
+      setAsset2D({
+        ...asset2D,
+        asset2DThumbnail: Array.from(files),
+      });
     } else {
       setAsset2D({
         ...asset2D,
         [name]: value,
       });
+    }
+  };
+
+  const removeImage = (index) => {
+    setPreviewImages((prevImages) => prevImages.filter((_, i) => i !== index));
+    setAsset2D((prevDataset) => ({
+      ...prevDataset,
+      asset2DThumbnail: Array.isArray(prevDataset.asset2DThumbnail)
+        ? prevDataset.asset2DThumbnail.filter((_, i) => i !== index)
+        : [],
+    }));
+  };
+
+  // Fungsi untuk upload file dan mendapatkan URL download
+  const uploadFile = async (file, path) => {
+    try {
+      const fileRef = ref(storage, path);
+      await uploadBytes(fileRef, file);
+      const downloadURL = await getDownloadURL(fileRef);
+      console.log("File uploaded successfully, URL:", downloadURL);
+      return downloadURL;
+    } catch (error) {
+      console.error("Error uploading file:", error.message || error);
+      throw new Error("Gagal mengunggah file. Silakan coba lagi.");
     }
   };
 
@@ -101,51 +192,64 @@ function EditNewAsset2D() {
       const priceAsNumber = parseInt(asset2D.price);
 
       if (isNaN(priceAsNumber)) {
-        // Validasi jika harga yang diinput tidak valid
-        throw new Error("Invalid price: must be a number.");
+        throw new Error("Harga tidak valid: harus berupa angka.");
       }
 
-      let asset2DThumbnail = asset2D.asset2DThumbnail;
-      if (imagePreview !== asset2D.asset2DThumbnail) {
-        const storageFileName = `images-asset-2d/asset2D-${id}.jpg`;
-        // Delete the old image if a new image is being uploaded
-        const oldImageRef = ref(storage, storageFileName);
-        await deleteObject(oldImageRef); // Delete the old image
+      const updatedData = {
+        category: asset2D.category,
+        createdAt: Timestamp.now(),
+        //asset2DFile : "",
+        asset2DThumbnail: [],
+        asset2DName: asset2D.asset2DName,
+        description: asset2D.description,
+        price: asset2D.price,
+        //uploadedByEmail: user.email,
+        //userId: user.uid,
+      };
 
-        const originalFileName = asset2D.asset2DImage.name;
-        const newFileExtension = originalFileName.split(".").pop();
-        // console.log(newFileExtension);
-        // Upload the new image
-        const imageRef = ref(storage, `images-asset-2d/asset2d-${id}.jpg`);
-        await uploadBytes(imageRef, asset2D.asset2DThumbnail);
-        asset2DThumbnail = await getDownloadURL(imageRef);
-      } else {
-        // If no new image is uploaded, keep the old image URL
-        // eslint-disable-next-line no-unused-vars
-        asset2DThumbnail = imagePreview;
+      // Upload file ZIP ke folder /images-dataset jika ada
+      //if (asset2DFile.asset2DFile) {
+        //const filePath = `images-asset-2d/asset2D-${id}.zip`; // Path folder baru
+        //const asset2DFileUrl = await uploadFile(asset2D.asset2DFile, filePath);
+        //updatedData.asset2DFile = asset2DFileUrl;
+      //}
+
+      // Upload thumbnails jika ada
+      if (asset2D.asset2DThumbnail && asset2D.asset2DThumbnail.length > 0) {
+        const thumbnailUrls = await Promise.all(
+          asset2D.asset2DThumbnail.map((thumbnail, index) => {
+            const thumbnailPath = `images-asset-2d/asset2D-${id}-${index}.jpg`;
+            return uploadFile(thumbnail, thumbnailPath);
+          })
+        );
+        updatedData.asset2DThumbnail = thumbnailUrls; // Menyimpan semua URL thumbnail
       }
 
       const asset2DRef = doc(db, "assetImage2D", id);
-      await updateDoc(asset2DRef, {
-        asset2DName: asset2D.asset2DName,
-        category: asset2D.category,
-        description: asset2D.description,
-        price: asset2D.price,
-        asset2DThumbnail: asset2DThumbnail,
-      });
+      await updateDoc(asset2DRef, updatedData);
 
       setAlertSuccess(true);
       setTimeout(() => {
         navigate("/manage-asset-2D");
       }, 2000);
     } catch (error) {
-      // console.error("Error updating asset 2D: ", error);
+      console.error("Error updating asset 2D: ", error);
       setAlertError(true);
     }
   };
 
+  const deleteFile = async (path) => {
+    const fileRef = ref(storage, path);
+    try {
+      await deleteObject(fileRef);
+      console.log("File deleted successfully:", path);
+    } catch (error) {
+      console.error("Error deleting file:", error);
+    }
+  };
+
   const handleCancel = () => {
-    navigate(-1);
+    navigate(-1); // Navigate to the previous page or you can set a specific route like navigate("/dataset-list");
   };
 
   const closeAlert = () => {
@@ -187,7 +291,7 @@ function EditNewAsset2D() {
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>asset 2D berhasil diperbarui.</span>
+                <span>Asset 2D berhasil diperbarui.</span>
               </div>
             </div>
           )}
@@ -222,11 +326,11 @@ function EditNewAsset2D() {
             onSubmit={handleSubmit}
             className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24   h-[1434px] gap-[50px]  overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0">
             <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-10 dark:text-primary-100 p-4">
-              Edit asset2D
+              Edit Asset 2D
             </h1>
             <div className="p-8 -mt-4  bg-primary-100  dark:bg-neutral-20 rounded-sm shadow-lg">
               <h2 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                asset 2D Information
+                Asset 2D Information
               </h2>
 
               <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
@@ -246,68 +350,53 @@ function EditNewAsset2D() {
                     300 x 300 px.
                   </p>
                 </div>
-                <div className="p-0">
-                  <div className="grid grid-cols-1 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-2 md:gap-2 lg:gap-6 xl:gap-6 2xl:gap-10">
-                    <div className="mt-2 md:ml-2 lg:ml-4 xl:ml-6 2xl:ml-4 flex justify-center items-center border border-dashed border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px] relative">
+                <div className="flex flex-col md:flex-row items-start gap-4">
+                  <div className="p-0 flex flex-col items-center">
+                    <div className="mt-2 relative flex flex-row items-center gap-4">
+                      {previewImages.map((image, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={image}
+                            alt={`Preview ${index + 1}`}
+                            className="w-40 h-40 object-cover rounded"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-0 right-0 bg-red-500 text-white px-2 py-1 text-xs rounded">
+                            X
+                          </button>
+                        </div>
+                      ))}
+
+                      <div className="flex flex-col justify-center items-center text-center border border-dashed border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px]">
                       <label
                         htmlFor="fileUpload"
-                        className="flex flex-col justify-center items-center cursor-pointer text-center"
-                      >
-                        {!imagePreview && (
-                          <>
+                          className="cursor-pointer flex flex-col justify-center items-center">
                             <img
                               alt=""
                               className="w-6 h-6"
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                              Upload Thumbnail
+                            Upload Thumbnails
                             </span>
-                          </>
-                        )}
-
                         <input
                           type="file"
                           id="fileUpload"
                           name="asset2DThumbnail"
                           onChange={handleChange}
-                          multiple
                           accept=".jpg,.jpeg,.png"
+                          multiple
                           className="hidden"
                         />
-
-                        {imagePreview && (
-                          <div className="mt-2 relative">
-                            <img
-                              src={imagePreview || DefaultPreview}
-                              alt="Preview"
-                              onError={(e) => {
-                                e.target.src = DefaultPreview;
-                              }}
-                              className="w-40 sm:w-40 md:w-40 lg:w-[150px] xl:w-[150px] 2xl:w-[150px] h-40 sm:h-40 md:h-40 lg:h-[156px] xl:h-[156px] 2xl:h-[157px] -mt-2.5 object-cover rounded"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setImagePreview(null);
-                                setAsset2D({
-                                  ...asset2D,
-                                  asset2DThumbnail: null,
-                                });
-                              }}
-                              className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded"
-                            >
-                              x
-                            </button>
-                          </div>
-                        )}
                       </label>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* asset2D Name */}
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-1">
@@ -339,7 +428,6 @@ function EditNewAsset2D() {
                 </div>
               </div>
 
-              {/* Category */}
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-1">
@@ -361,11 +449,11 @@ function EditNewAsset2D() {
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <select
                       name="category"
-                      value={asset2D.category} // Bind value to asset2D.category
+                      value={asset2D.category} // Bind value to dataset.category
                       onChange={(e) =>
-                        setasset2D((prevState) => ({
+                        setAsset2D((prevState) => ({
                           ...prevState,
-                          category: e.target.value, // Update category inside asset2D state
+                          category: e.target.value, // Update category inside dataset state
                         }))
                       }
                       className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md"
@@ -373,9 +461,9 @@ function EditNewAsset2D() {
                       <option value="" disabled>
                         Pick an option
                       </option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.name}>
-                          {cat.name}
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.name}>
+                          {category.name}
                         </option>
                       ))}
                     </select>
@@ -397,7 +485,7 @@ function EditNewAsset2D() {
                     />
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px]">
-                    Berikan Deskripsi Pada asset2D Anda Maximal 200 Huruf
+                    Berikan Deskripsi Pada Asset 2D Anda Maximal 200 Huruf
                   </p>
                 </div>
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
@@ -423,7 +511,7 @@ function EditNewAsset2D() {
                     </h3>
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Silahkan Masukkan Harga Untuk asset2D jika asset gratis
+                    Silahkan Masukkan Harga Untuk Asset 2D jika asset gratis
                     silahkan dikosongkan.
                   </p>
                 </div>
@@ -466,4 +554,3 @@ function EditNewAsset2D() {
 }
 
 export default EditNewAsset2D;
-//11/4/24

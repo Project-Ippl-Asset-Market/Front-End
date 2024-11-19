@@ -118,8 +118,7 @@ function AddCategory({ isOpen, onClose, onAddCategory }) {
 function EditNewDataset() {
   const { id } = useParams();
   const navigate = useNavigate();
-  // const [imagePreview, setImagePreview] = useState("");
-  const [previewImages, setPreviewImages] = useState([]);
+  const [imagePreview, setImagePreview] = useState("");
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
@@ -246,7 +245,7 @@ function EditNewDataset() {
           const data = docSnap.data();
           setDataset(data);
           if (data.datasetThumbnail) {
-            setPreviewImages(data.datasetThumbnail);
+            setImagePreview(data.datasetThumbnail);
           }
         } else {
           navigate("/manage-asset-dataset");
@@ -309,73 +308,29 @@ function EditNewDataset() {
     }
   };
 
-  // // Fungsi untuk menangani perubahan input
-  // const handleChange = (e) => {
-  //   const { name, value, files } = e.target;
-
-  //   if (name === "datasetThumbnail" && files[0]) {
-  //     setDataset({
-  //       ...dataset,
-  //       datasetThumbnail: files[0],
-  //     });
-
-  //     // Menampilkan pratinjau gambar
-  //     const reader = new FileReader();
-  //     reader.onloadend = () => {
-  //       setPreviewImages(reader.result);
-  //     };
-  //     reader.readAsDataURL(files[0]);
-  //   } else {
-  //     // Menangani input teks lainnya
-  //     setDataset({
-  //       ...dataset,
-  //       [name]: value,
-  //     });
-  //   }
-  // };
-
+  // Fungsi untuk menangani perubahan input
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    if (name === "datasetThumbnail" && files.length > 0) {
-      const newFiles = Array.from(files);
-      const newPreviews = [];
-
-      newFiles.forEach((file) => {
-        if (file.type.includes("image")) {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            newPreviews.push(reader.result);
-            if (newPreviews.length === newFiles.length) {
-              setPreviewImages((prevImages) => [...prevImages, ...newPreviews]);
-            }
-          };
-          reader.readAsDataURL(file);
-        } else {
-          setPreviewImages([]);
-        }
-      });
-
+    if (name === "datasetThumbnail" && files[0]) {
       setDataset({
         ...dataset,
-        datasetThumbnail: Array.from(files),
+        datasetThumbnail: files[0],
       });
+
+      // Menampilkan pratinjau gambar
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(files[0]);
     } else {
+      // Menangani input teks lainnya
       setDataset({
         ...dataset,
         [name]: value,
       });
     }
-  };
-
-  const removeImage = (index) => {
-    setPreviewImages((prevImages) => prevImages.filter((_, i) => i !== index));
-    setDataset((prevDataset) => ({
-      ...prevDataset,
-      datasetThumbnail: Array.isArray(prevDataset.datasetThumbnail)
-        ? prevDataset.datasetThumbnail.filter((_, i) => i !== index)
-        : [],
-    }));
   };
 
   // Fungsi untuk upload file dan mendapatkan URL download
@@ -405,7 +360,7 @@ function EditNewDataset() {
         category: dataset.category,
         createdAt: Timestamp.now(),
         datasetFile: "",
-        datasetThumbnail: [],
+        datasetThumbnail: "",
         datasetName: dataset.datasetName,
         description: dataset.description,
         price: priceAsNumber,
@@ -420,15 +375,14 @@ function EditNewDataset() {
         updatedData.datasetFile = datasetFileUrl;
       }
 
-      // Upload thumbnails jika ada
-      if (dataset.datasetThumbnail && dataset.datasetThumbnail.length > 0) {
-        const thumbnailUrls = await Promise.all(
-          dataset.datasetThumbnail.map((thumbnail, index) => {
-            const thumbnailPath = `images-dataset/dataset-${id}-${index}.jpg`;
-            return uploadFile(thumbnail, thumbnailPath);
-          })
+      // Upload thumbnail jika ada
+      if (dataset.datasetThumbnail) {
+        const thumbnailPath = `images-dataset/dataset-${id}.jpg`;
+        const thumbnailUrl = await uploadFile(
+          dataset.datasetThumbnail,
+          thumbnailPath
         );
-        updatedData.datasetThumbnail = thumbnailUrls; // Menyimpan semua URL thumbnail
+        updatedData.datasetThumbnail = thumbnailUrl;
       }
 
       const datasetRef = doc(db, "assetDatasets", id);
@@ -607,48 +561,59 @@ function EditNewDataset() {
                     300 x 300 px.
                   </p>
                 </div>
-                <div className="flex flex-col md:flex-row items-start gap-4">
-                  <div className="p-0 flex flex-col items-center">
-                    <div className="mt-2 relative flex flex-row items-center gap-4">
-                      {previewImages.map((image, index) => (
-                        <div key={index} className="relative">
-                          <img
-                            src={image}
-                            alt={`Preview ${index + 1}`}
-                            className="w-40 h-40 object-cover rounded"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(index)}
-                            className="absolute top-0 right-0 bg-red-500 text-white px-2 py-1 text-xs rounded">
-                            X
-                          </button>
-                        </div>
-                      ))}
+                <div className="p-0">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-2 md:gap-2 lg:gap-6 xl:gap-6 2xl:gap-10">
+                    <div className="mt-2 md:ml-2 lg:ml-4 xl:ml-6 2xl:ml-4 flex justify-center items-center border border-dashed border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px] relative">
+                      <label
+                        htmlFor="fileUpload"
+                        className="flex flex-col justify-center items-center cursor-pointer text-center">
+                        {!imagePreview && (
+                          <>
+                            <img
+                              alt=""
+                              className="w-6 h-6"
+                              src="path_to_your_icon"
+                            />
+                            <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
+                              Upload Thumbnail
+                            </span>
+                          </>
+                        )}
 
-                      <div className="flex flex-col justify-center items-center text-center border border-dashed border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px]">
-                        <label
-                          htmlFor="fileUpload"
-                          className="cursor-pointer flex flex-col justify-center items-center">
-                          <img
-                            alt=""
-                            className="w-6 h-6"
-                            src="path_to_your_icon"
-                          />
-                          <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                            Upload Thumbnails
-                          </span>
-                          <input
-                            type="file"
-                            id="fileUpload"
-                            name="datasetThumbnail"
-                            onChange={handleChange}
-                            accept=".jpg,.jpeg,.png"
-                            multiple
-                            className="hidden"
-                          />
-                        </label>
-                      </div>
+                        <input
+                          type="file"
+                          id="fileUpload"
+                          name="datasetThumbnail"
+                          onChange={handleChange}
+                          accept=".jpg,.jpeg,.png"
+                          className="hidden"
+                        />
+
+                        {imagePreview && (
+                          <div className="mt-2 relative">
+                            <img
+                              src={imagePreview || DefaultPreview}
+                              alt="Preview"
+                              onError={(e) => {
+                                e.target.src = DefaultPreview;
+                              }}
+                              className="w-40 sm:w-40 md:w-40 lg:w-[150px] xl:w-[150px] 2xl:w-[150px] h-40 sm:h-40 md:h-40 lg:h-[156px] xl:h-[156px] 2xl:h-[157px] -mt-2.5 object-cover rounded"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setImagePreview(null);
+                                setDataset({
+                                  ...dataset,
+                                  datasetThumbnail: null,
+                                });
+                              }}
+                              className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded">
+                              x
+                            </button>
+                          </div>
+                        )}
+                      </label>
                     </div>
                   </div>
                 </div>

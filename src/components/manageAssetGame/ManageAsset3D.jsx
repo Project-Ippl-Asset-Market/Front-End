@@ -127,19 +127,12 @@ function ManageAsset3D() {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      if (!user || !role) {
-        // console.log("No user or role detected");
-        return;
-      }
+      if (!user || !role) return;
 
       try {
         let q;
-        if (role === "superadmin") {
-          // Superadmin dapat melihat semua aset 3D
-          q = query(collection(db, "assetImage3D")); // Ubah ke "assetImage3D"
-        } else if (role === "admin") {
-          // Ambil semua aset yang diupload oleh user dan admin
-          q = query(collection(db, "assetImage3D")); // Ubah ke "assetImage3D"
+        if (role === "superadmin" || role === "admin") {
+          q = query(collection(db, "assetImage3D"));
         } else if (role === "user") {
           // User hanya bisa melihat aset 3D yang dia unggah sendiri
           q = query(
@@ -223,7 +216,7 @@ function ManageAsset3D() {
         const ImageRef = ref(storage, `images-asset-3d/asset3D-${id}.jpg`);
         await deleteObject(ImageRef);
         await deleteDoc(doc(db, "assetImage3D", id));
-        setAssets(assets.filter((assets) => assets.id !== id));
+        setAssets(assets.filter((asset) => asset.id !== id));
         setAlertSuccess(true);
       } catch (error) {
         console.error("Error deleting dataset: ", error);
@@ -321,7 +314,7 @@ function ManageAsset3D() {
           <div className="flex flex-col gap-4 md:flex-row">
             {/* Button Container */}
             <div className="flex items-center justify-center md:justify-start">
-              <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-40">
+              <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
                 <Link
                   to="/manage-asset-3D/add"
                   className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]"
@@ -382,16 +375,16 @@ function ManageAsset3D() {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentDatasets.map((assets) => (
+                  {currentDatasets.map((asset) => (
                     <tr
-                      key={assets.id}
+                      key={asset.id}
                       className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
                       <td className="px-6 py-4">
-                        {assets.asset3DThumbnail ? (
+                        {asset.asset3DThumbnail ? (
                           <img
-                            src={assets.asset3DThumbnail || CustomImage}
+                            src={asset.asset3DThumbnail || CustomImage}
                             alt="Image"
-                            className="h-14 w-14 overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                            className="h-14 w-14 overflow-hidden relative rounded-t-[0px] mx-auto border-none max-h-full cursor-pointer"
                             onError={(e) => {
                               e.target.onerror = null;
                               e.target.src = CustomImage;
@@ -412,20 +405,20 @@ function ManageAsset3D() {
                       <th
                         scope="row"
                         className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap">
-                        {assets.asset3DName}
+                        {asset.asset3DName}
                       </th>
-                      <td className="px-6 py-4">{assets.category}</td>
-                      <td className="px-6 py-4">{assets.price}</td>
-                      <td className="px-6 py-4">{assets.createdAt || "N/A"}</td>
+                      <td className="px-6 py-4">{asset.category}</td>
+                      <td className="px-6 py-4">{asset.price}</td>
+                      <td className="px-6 py-4">{asset.createdAt || "N/A"}</td>
                       <td className="mx-auto flex gap-4 mt-8">
-                        <Link to={`/manage-asset-3D/edit/${assets.id}`}>
+                        <Link to={`/manage-asset-3D/edit/${asset.id}`}>
                           <img
                             src={IconEdit}
                             alt="icon edit"
                             className="w-5 h-5 cursor-pointer"
                           />
                         </Link>
-                        <button onClick={() => handleDelete(assets.id)}>
+                        <button onClick={() => handleDelete(asset.id)}>
                           <img
                             src={IconHapus}
                             alt="icon hapus"
@@ -468,4 +461,4 @@ function ManageAsset3D() {
 }
 
 export default ManageAsset3D;
-//11/4/24
+//11/18/24

@@ -26,10 +26,11 @@ function AddAsset3D() {
     description: "",
     price: "",
     asset3DFile: null,
-    asset3DThumbnail : null ,  // State to hold file information
+    asset3DThumbnail : [] ,  // State to hold file information
   });
   const navigate = useNavigate();
-  const [previewImage, setPreviewImage] = useState(null);
+  //const [previewImage, setPreviewImage] = useState(null);
+  const [previewImages, setPreviewImages] = useState([]);
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const categories = [
@@ -59,23 +60,29 @@ function AddAsset3D() {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    if (name === "asset3DThumbnail" && files[0]) {
-      setAsset3D({
-        ...asset3D,
-        asset3DThumbnail: files[0],
-      });
+    if (name === "asset3DThumbnail" && files.length > 0) {
+      const newFiles = Array.from(files);
+      const newPreviews = [];
 
-      // Create image preview
-      if (files[0].type.includes("image")) {
+      newFiles.forEach((file) => {
+        if (file.type.includes("image")) {
         const reader = new FileReader();
         reader.onloadend = () => {
-          setPreviewImage(reader.result);
+            newPreviews.push(reader.result);
+            if (newPreviews.length === newFiles.length) {
+              setPreviewImages((prevImages) => [...prevImages, ...newPreviews]);
+            }
         };
-        reader.readAsDataURL(files[0]);
+          reader.readAsDataURL(file);
       } else {
-        // Reset preview jika file bukan gambar
-        setPreviewImage(DefaultPreview);
+          setPreviewImages([]);
       }
+      });
+
+      setAsset3D({
+        ...asset3D,
+        asset3DThumbnail: Array.from(files),
+      });
     } else {
       // Jika tidak berhubungan dengan upload file, hanya update state yang lain
       setAsset3D({
@@ -83,6 +90,16 @@ function AddAsset3D() {
         [name]: value,
       });
     }
+  };
+
+  const removeImage = (index) => {
+    setPreviewImages((prevImages) => prevImages.filter((_, i) => i !== index));
+    setAsset3D((prevDataset) => ({
+      ...prevDataset,
+      asset3DThumbnail: Array.isArray(prevDataset.asset3DThumbnail)
+        ? prevDataset.asset3DThumbnail.filter((_, i) => i !== index)
+        : [],
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -102,7 +119,7 @@ function AddAsset3D() {
         category: asset3D.category,
         createdAt: Timestamp.now(),
         asset3DFile: "",
-        asset3DThumbnail: "",
+        asset3DThumbnail: [],
         asset3DName: asset3D.asset3DName,
         description: asset3D.description,
         price: priceAsNumber, // Simpan sebagai number(angka)
@@ -123,14 +140,20 @@ function AddAsset3D() {
         asset3DFileUrl = await getDownloadURL(asset3DRef);
       }
 
-      let asset3DThumbnailUrl = "";
-      if (asset3D.asset3DThumbnail) {
-        // Ref untuk upload file ke Storage dengan ekstensi asli
-        const asset3DRef = ref(storage,`images-asset-3d/asset3D-${docId}.jpg`        );
-
-        // Upload file ke Storage
-        await uploadBytes(asset3DRef, asset3D.asset3DThumbnail);
-        asset3DThumbnailUrl = await getDownloadURL(asset3DRef);
+      let asset3DThumbnailUrl = [];
+      if (asset3D.asset3DThumbnail && asset3D.asset3DThumbnail.length > 0) {
+        const thumbnailPromises = asset3D.asset3DThumbnail.map(
+          async (thumbnailFile, index) => {
+            const thumbnailRef = ref(
+              storage,
+              `images-asset-3d/asset3D-${docId}-thumbnail-${index}.jpg`
+            );
+            await uploadBytes(thumbnailRef, thumbnailFile);
+            const downloadUrl = await getDownloadURL(thumbnailRef);
+            return downloadUrl;
+          }
+        );
+        asset3DThumbnailUrl = await Promise.all(thumbnailPromises);
       }
 
       // Update Firestore dengan URL gambar yang diupload
@@ -146,9 +169,9 @@ function AddAsset3D() {
         description: "",
         price: "",
         asset3DFile: null,
-        asset3DThumbnail: null,
+        asset3DThumbnail: [],
       });
-      setPreviewImage(null);
+      setPreviewImages([]); // clear previews
 
       // Navigate back to /manage-asset-asset3D
       setAlertSuccess(true);
@@ -350,14 +373,30 @@ function AddAsset3D() {
                     300 x 300 px.
                   </p>
                 </div>
-                <div className="p-0">
-                  <div className="grid grid-cols-1 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-2 md:gap-2 lg:gap-6 xl:gap-6 2xl:gap-10">
-                    <div className="mt-2 md:ml-2 lg:ml-4 xl:ml-6 2xl:ml-4 flex justify-center items-center border border-dashed border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px] xl:h-[150px] 2xl:h-[160px]">
+
+                <div className="flex flex-col md:flex-row items-start gap-4">
+                  <div className="p-0 flex flex-col items-center">
+                    <div className="mt-2 relative flex flex-row items-center gap-4">
+                      {previewImages.map((image, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={image}
+                            alt={`Preview ${index + 1}`}
+                            className="w-40 h-40 object-cover rounded"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-0 right-0 bg-red-500 text-white px-2 py-1 text-xs rounded">
+                            X
+                          </button>
+                        </div>
+                      ))}
+
+                      <div className="flex flex-col justify-center items-center text-center border border-dashed border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px]">
                       <label
                         htmlFor="fileUpload"
-                        className="flex flex-col justify-center items-center cursor-pointer text-center">
-                        {!previewImage && (
-                          <>
+                          className="cursor-pointer flex flex-col justify-center items-center">
                             <img
                               alt=""
                               className="w-6 h-6"
@@ -366,42 +405,17 @@ function AddAsset3D() {
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
                               Upload Thumbnail
                             </span>
-                          </>
-                        )}
-
                         <input
                           type="file"
                           id="fileUpload"
                           name="asset3DThumbnail"
                           onChange={handleChange}
-                          
                           accept=".jpg,.jpeg,.png"
+                            multiple
                           className="hidden"
                         />
-
-                        {previewImage && (
-                          <div className="mt-2 relative">
-                            <img
-                              src={previewImage}
-                              alt="Preview"
-                              className="w-40 sm:w-40 md:w-40 lg:w-[150px] xl:w-[150px] 2xl:w-[150px] h-40 sm:h-40 md:h-40 lg:h-[156px] xl:h-[156px] 2xl:h-[157px] -mt-2.5 object-cover rounded"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setPreviewImage(null);
-                                setAsset3D({
-                                  ...asset3D,
-                                  asset3DThumbnail: null,
-                                });
-                              }}
-                              className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded"
-                            >
-                              x
-                            </button>
-                          </div>
-                        )}
                       </label>
+                      </div>
                     </div>
                   </div>
                 </div>

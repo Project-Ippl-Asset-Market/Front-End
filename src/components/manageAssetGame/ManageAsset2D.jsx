@@ -24,8 +24,7 @@ function ManageAsset2D() {
   //
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
-  const [assets, setAssets] = useState([]); // Mengelola data asset 2D
-
+  const [assets, setAssets] = useState([]);
   const [user, setUser] = useState(null);
   const [role, setRole] = useState("");
   const [alertSuccess, setAlertSuccess] = useState(false);
@@ -127,19 +126,12 @@ function ManageAsset2D() {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      if (!user || !role) {
-        // console.log("No user or role detected");
-        return;
-      }
+      if (!user || !role) return;
 
       try {
         let q;
-        if (role === "superadmin") {
-          // Superadmin dapat melihat semua aset 2D
-          q = query(collection(db, "assetImage2D")); // Ubah ke "assetImage2D"
-        } else if (role === "admin") {
-          // Ambil semua aset yang diupload oleh user dan admin
-          q = query(collection(db, "assetImage2D")); // Ubah ke "assetImage2D"
+        if (role === "superadmin" || role === "admin") {
+          q = query(collection(db, "assetImage2D"));
         } else if (role === "user") {
           // User hanya bisa melihat aset 2D yang dia unggah sendiri
           q = query(
@@ -164,7 +156,7 @@ function ManageAsset2D() {
 
           items.push({
             id: docSnap.id,
-            asset2DName: data.asset2DName, // Ubah datasetName menjadi asset2DName
+            asset2DName: data.asset2DName, // asset2DName
             description: data.description,
             price: `Rp. ${data.price}`,
             asset2DFile: data.asset2DFile,
@@ -217,13 +209,13 @@ function ManageAsset2D() {
     );
     if (confirmDelete) {
       try {
-        // Update the storage path based on assetDatasets structure
+        // Update the storage path based on structure
         const FileRef = ref(storage, `images-asset-2d/asset2D-${id}.zip`);
         await deleteObject(FileRef);
         const ImageRef = ref(storage, `images-asset-2d/asset2D-${id}.jpg`);
         await deleteObject(ImageRef);
         await deleteDoc(doc(db, "assetImage2D", id));
-        setAssets(assets.filter((assets) => assets.id !== id));
+        setAssets(assets.filter((asset) => asset.id !== id));
         setAlertSuccess(true);
       } catch (error) {
         console.error("Error deleting dataset: ", error);
@@ -321,7 +313,7 @@ function ManageAsset2D() {
           <div className="flex flex-col gap-4 md:flex-row">
             {/* Button Container */}
             <div className="flex items-center justify-center md:justify-start">
-              <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-40">
+              <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
                 <Link
                   to="/manage-asset-2D/add"
                   className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]"
@@ -382,16 +374,16 @@ function ManageAsset2D() {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentDatasets.map((assets) => (
+                  {currentDatasets.map((asset) => (
                     <tr
-                      key={assets.id}
+                      key={asset.id}
                       className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
                       <td className="px-6 py-4">
-                        {assets.asset2DThumbnail ? (
+                        {asset.asset2DThumbnail ? (
                           <img
-                            src={assets.asset2DThumbnail || CustomImage}
+                            src={asset.asset2DThumbnail || CustomImage}
                             alt="Image"
-                            className="h-14 w-14 overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                            className="h-14 w-14 overflow-hidden relative rounded-t-[0px] mx-auto border-none max-h-full cursor-pointer"
                             onError={(e) => {
                               e.target.onerror = null;
                               e.target.src = CustomImage;
@@ -412,20 +404,20 @@ function ManageAsset2D() {
                       <th
                         scope="row"
                         className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap">
-                        {assets.asset2DName}
+                        {asset.asset2DName}
                       </th>
-                      <td className="px-6 py-4">{assets.category}</td>
-                      <td className="px-6 py-4">{assets.price}</td>
-                      <td className="px-6 py-4">{assets.createdAt || "N/A"}</td>
+                      <td className="px-6 py-4">{asset.category}</td>
+                      <td className="px-6 py-4">{asset.price}</td>
+                      <td className="px-6 py-4">{asset.createdAt || "N/A"}</td>
                       <td className="mx-auto flex gap-4 mt-8">
-                        <Link to={`/manage-asset-2D/edit/${assets.id}`}>
+                        <Link to={`/manage-asset-2D/edit/${asset.id}`}>
                           <img
                             src={IconEdit}
                             alt="icon edit"
                             className="w-5 h-5 cursor-pointer"
                           />
                         </Link>
-                        <button onClick={() => handleDelete(assets.id)}>
+                        <button onClick={() => handleDelete(asset.id)}>
                           <img
                             src={IconHapus}
                             alt="icon hapus"
@@ -468,4 +460,4 @@ function ManageAsset2D() {
 }
 
 export default ManageAsset2D;
-//11/4/24
+//11/18/24

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
@@ -23,45 +24,22 @@ function ManageAssetImage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
   const [assets, setAssets] = useState([]);
-
   const [user, setUser] = useState(null);
   const [role, setRole] = useState("");
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredAssets, setFilteredAssets] = useState([]);
-
-  // Pagination state untuk tabelnya
   const [currentPage, setCurrentPage] = useState(1);
   const datasetPerPage = 5;
 
-  useEffect(() => {
-    // Filter admins whenever search term changes
-    if (searchTerm) {
-      setFilteredAssets(
-        assets.filter((asset) =>
-          asset.datasetName &&
-          asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-    } else {
-      setAssets(assets);
-    }
-
-    // Reset current page to 1 when search term changes
-    setCurrentPage(1);
-  }, [searchTerm, assets]);
-
-    // Menghitung jumlah halaman
-    const totalPages = Math.ceil(filteredAssets.length / datasetPerPage);
-    const startIndex = (currentPage - 1) * datasetPerPage;
-    const currentDatasets = filteredAssets.slice(
-      startIndex,
-      startIndex + datasetPerPage
-    );
-
+  const totalPages = Math.ceil(filteredAssets.length / datasetPerPage);
+  const startIndex = (currentPage - 1) * datasetPerPage;
+  const currentDatasets = filteredAssets.slice(
+    startIndex,
+    startIndex + datasetPerPage
+  );
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -85,13 +63,10 @@ function ManageAssetImage() {
     };
   }, [isSidebarOpen]);
 
-  // Mengamati status autentikasi pengguna
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-
-        // Periksa apakah pengguna adalah admin atau superadmin
         const adminQuery = query(
           collection(db, "admins"),
           where("uid", "==", currentUser.uid)
@@ -102,7 +77,6 @@ function ManageAssetImage() {
           const adminData = adminSnapshot.docs[0].data();
           setRole(adminData.role);
         } else {
-          // Jika bukan admin atau superadmin, cek apakah pengguna adalah user biasa
           const userQuery = query(
             collection(db, "users"),
             where("uid", "==", currentUser.uid)
@@ -121,25 +95,16 @@ function ManageAssetImage() {
     return () => unsubscribe();
   }, []);
 
-  // Fungsi untuk mengambil data sesuai role pengguna
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      if (!user || !role) {
-        console.log("No user or role detected");
-        return;
-      }
+      if (!user || !role) return;
 
       try {
         let q;
-        if (role === "superadmin") {
-          // Superadmin dapat melihat semua aset
-          q = query(collection(db, "assetDatasets"));
-        } else if (role === "admin") {
-          // Ambil semua aset yang diupload oleh user dan admin
+        if (role === "superadmin" || role === "admin") {
           q = query(collection(db, "assetDatasets"));
         } else if (role === "user") {
-          // User hanya bisa melihat aset yang dia unggah sendiri
           q = query(
             collection(db, "assetDatasets"),
             where("userId", "==", user.uid)
@@ -151,8 +116,6 @@ function ManageAssetImage() {
 
         for (const docSnap of querySnapshot.docs) {
           const data = docSnap.data();
-
-          // Mengonversi timestamp ke format yang diinginkan
           const createdAt =
             data.createdAt?.toDate().toLocaleString("id-ID", {
               year: "numeric",
@@ -172,7 +135,6 @@ function ManageAssetImage() {
           });
         }
 
-        // Jika role admin, filter hasil untuk menghapus yang diupload oleh superadmin
         if (role === "admin") {
           const superadminQuery = query(
             collection(db, "admins"),
@@ -181,21 +143,17 @@ function ManageAssetImage() {
           const superadminSnapshot = await getDocs(superadminQuery);
           const superadminIds = superadminSnapshot.docs.map(
             (doc) => doc.data().uid
-          ); // Dapatkan ID superadmin
+          );
 
-          // Filter items untuk mengeluarkan yang diupload oleh superadmin
           const filteredItems = items.filter(
             (item) => !superadminIds.includes(item.userId)
           );
           setAssets(filteredItems);
-          
         } else {
-          // Jika bukan admin, set assets langsung
-          setAssets(items)
+          setAssets(items);
           setFilteredAssets(items);
         }
       } catch (error) {
-        console.error("Error fetching data: ", error);
         setAlertError(true);
       } finally {
         setIsLoading(false);
@@ -207,21 +165,33 @@ function ManageAssetImage() {
     }
   }, [user, role]);
 
-  // Fungsi hapus gambar
+  useEffect(() => {
+    if (searchTerm) {
+      setFilteredAssets(
+        assets.filter(
+          (asset) =>
+            asset.datasetName &&
+            asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredAssets(assets);
+    }
+    setCurrentPage(1);
+  }, [searchTerm, assets]);
+
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this dataset?"
     );
     if (confirmDelete) {
       try {
-        // Update the storage path based on assetDatasets structure
         const ImageRef = ref(storage, `images-dataset/dataset-${id}.zip`);
         await deleteObject(ImageRef);
         await deleteDoc(doc(db, "assetDatasets", id));
         setAssets(assets.filter((asset) => asset.id !== id));
         setAlertSuccess(true);
       } catch (error) {
-        console.error("Error deleting dataset: ", error);
         setAlertError(true);
       }
     } else {

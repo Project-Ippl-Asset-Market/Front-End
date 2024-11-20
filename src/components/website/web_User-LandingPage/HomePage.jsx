@@ -667,7 +667,7 @@ export function HomePage() {
                       />
                     )}
                     {isPurchased && (
-                      <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                      <div className="absolute top-2 right-2 bg-green-500 text-white text-[8px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] font-bold px-2 py-1 rounded">
                         Sudah Dibeli
                       </div>
                     )}
@@ -865,7 +865,7 @@ export function HomePage() {
         </div>
       )}
 
-      <div className="mt-96">
+      <div className="mt-[700px]">
         <Footer />
       </div>
     </div>

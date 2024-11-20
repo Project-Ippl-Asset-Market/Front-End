@@ -358,6 +358,24 @@ export function AssetDataset() {
     asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndexModal, setCurrentIndexModal] = useState(0);
+
+  const handlePrevious = () => {
+    if (currentIndexModal > 0) {
+      setCurrentIndexModal(currentIndexModal - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (
+      selectedasset.datasetThumbnail &&
+      currentIndexModal < selectedasset.datasetThumbnail.length - 1
+    ) {
+      setCurrentIndexModal(currentIndexModal + 1);
+    }
+  };
+
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
       <div className="w-full shadow-lg bg-primary-100 dark:text-primary-100 relative z-40 ">
@@ -460,20 +478,34 @@ export function AssetDataset() {
             const likedByCurrentUser = likedAssets.has(data.id);
             const isPurchased = purchasedAssets.has(data.id);
 
+            const handlePrevious = () => {
+              setCurrentIndex((prevIndex) =>
+                prevIndex > 0 ? prevIndex - 1 : prevIndex
+              );
+            };
+
+            const handleNext = () => {
+              setCurrentIndex((prevIndex) =>
+                prevIndex < data.datasetThumbnail.length - 1
+                  ? prevIndex + 1
+                  : prevIndex
+              );
+            };
+
+            {
+              /* console.log(data.datasetThumbnail); */
+            }
+
             return (
               <div
                 key={data.id}
                 className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg">
-                <div className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10] ">
+                <div className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]">
                   {Array.isArray(data.datasetThumbnail) &&
                   data.datasetThumbnail.length > 0 ? (
                     <img
-                      src={
-                        data.datasetThumbnail[0] ||
-                        data.datasetFile ||
-                        CustomImage
-                      }
-                      alt={`Thumbnail 1`}
+                      src={data.datasetThumbnail[currentIndex] || CustomImage}
+                      alt={`Thumbnail ${currentIndex + 1}`}
                       className="h-full w-full object-cover rounded-t-[10px] border-none"
                       onClick={() => openModal(data)}
                       onError={(e) => {
@@ -503,6 +535,23 @@ export function AssetDataset() {
                       Sudah Dibeli
                     </div>
                   )}
+
+                  {/* Navigasi Carousel */}
+                  {Array.isArray(data.datasetThumbnail) &&
+                    data.datasetThumbnail.length > 1 && (
+                      <>
+                        <button
+                          onClick={handlePrevious}
+                          className="absolute left-1 top-1/2 transform -translate-y-1/2 bg-transparent text-[25px]  text-white rounded-full p-2">
+                          &#8592;
+                        </button>
+                        <button
+                          onClick={handleNext}
+                          className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-transparent text-[25px] text-white rounded-full p-2">
+                          &#8594;
+                        </button>
+                      </>
+                    )}
                 </div>
 
                 {/* details section */}
@@ -565,13 +614,13 @@ export function AssetDataset() {
                 <img
                   src={
                     Array.isArray(selectedasset.datasetThumbnail) &&
-                    selectedasset.datasetThumbnail.length > 1
-                      ? selectedasset.datasetThumbnail[0]
+                    selectedasset.datasetThumbnail.length > 0
+                      ? selectedasset.datasetThumbnail[currentIndexModal]
                       : selectedasset.datasetThumbnail ||
                         selectedasset.datasetFile ||
                         CustomImage
                   }
-                  alt="Asset Image"
+                  alt="Asset Dataset"
                   onContextMenu={(e) => e.preventDefault()}
                   draggable={false}
                   onDragStart={(e) => e.preventDefault()}
@@ -581,6 +630,23 @@ export function AssetDataset() {
                     e.target.src = CustomImage;
                   }}
                 />
+
+                {/* Carousel Navigation */}
+                {Array.isArray(selectedasset.datasetThumbnail) &&
+                  selectedasset.datasetThumbnail.length > 1 && (
+                    <>
+                      <button
+                        onClick={handlePrevious}
+                        className="absolute left-1 top-1/2 transform -translate-y-1/2 bg-transparent text-white text-[40px] rounded-full p-2">
+                        &#8592;
+                      </button>
+                      <button
+                        onClick={handleNext}
+                        className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-transparent text-white text-[40px] rounded-full p-2">
+                        &#8594;
+                      </button>
+                    </>
+                  )}
               </div>
             </div>
 

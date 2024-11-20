@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 import { db } from "../../../firebase/firebaseConfig";
 import { useState, useEffect } from "react";
@@ -665,6 +666,8 @@ export function AssetGame() {
               collectionsToFetch = "assetImage3D";
             }
 
+            const thumbnails = data.thumbnails || [];
+
             return (
               <div
                 key={data.id}
@@ -673,21 +676,32 @@ export function AssetGame() {
                   onClick={() => openModal(data)}
                   className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]">
                   <div className="w-full h-[150px] relative">
-                    {data.uploadUrlAudio ? (
-                      <audio controls className="w-full">
-                        <source src={data.uploadUrlAudio} type="audio/mpeg" />
-                        Your browser does not support the audio element.
-                      </audio>
+                    {Array.isArray(data.audioThumbnails) &&
+                    data.audioThumbnails.length > 0 ? (
+                      <div className="flex space-x-2 overflow-x-auto">
+                        {data.audioThumbnails.map((thumbnailUrl, index) => (
+                          <img
+                            key={index}
+                            src={thumbnailUrl}
+                            alt={`Audio Thumbnail ${index + 1}`}
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = CustomImage;
+                            }}
+                            className="h-full w-auto object-cover rounded-t-[10px] border-none"
+                          />
+                        ))}
+                      </div>
                     ) : (
                       <img
                         src={
+                          data.audioThumbnail ||
                           data.assetAudiosImage ||
                           data.asset2DImage ||
                           data.asset3DImage ||
                           (data.assetAudiosImage ? CustomImage : null) ||
                           data.asset2DThumbnail ||
                           data.asset3DThumbnail ||
-                          data.audioThumbnail ||
                           CustomImage
                         }
                         alt="Asset Image"
@@ -699,7 +713,7 @@ export function AssetGame() {
                       />
                     )}
                     {isPurchased && (
-                      <div className="absolute  top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                      <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
                         Sudah Dibeli
                       </div>
                     )}
@@ -770,24 +784,34 @@ export function AssetGame() {
               onClick={() => openModal(selectedasset)}
               className="flex flex-col items-center justify-center w-full">
               <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
-                {selectedasset.uploadUrlAudio ? (
-                  <audio controls className="w-full">
-                    <source
-                      src={selectedasset.uploadUrlAudio}
-                      type="audio/mpeg"
-                    />
-                    Your browser does not support the audio element.
-                  </audio>
+                {Array.isArray(selectedasset.audioThumbnails) &&
+                selectedasset.audioThumbnails.length > 0 ? (
+                  <div className="flex space-x-2 overflow-x-auto">
+                    {selectedasset.audioThumbnails.map(
+                      (thumbnailUrl, index) => (
+                        <img
+                          key={index}
+                          src={thumbnailUrl}
+                          alt={`Audio Thumbnail ${index + 1}`}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = CustomImage;
+                          }}
+                          className="h-full w-auto object-cover rounded-t-[10px] border-none"
+                        />
+                      )
+                    )}
+                  </div>
                 ) : (
                   <img
                     src={
+                      selectedasset.audioThumbnail ||
+                      selectedasset.assetAudiosImage ||
                       selectedasset.asset2DImage ||
                       selectedasset.asset3DImage ||
-                      selectedasset.uploadUrlAudio ||
                       (selectedasset.assetAudiosImage ? CustomImage : null) ||
                       selectedasset.asset2DThumbnail ||
                       selectedasset.asset3DThumbnail ||
-                      selectedasset.audioThumbnail ||
                       CustomImage
                     }
                     alt="Asset Image"
@@ -795,7 +819,7 @@ export function AssetGame() {
                       e.target.onerror = null;
                       e.target.src = CustomImage;
                     }}
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover rounded-t-[10px] border-none"
                   />
                 )}
               </div>

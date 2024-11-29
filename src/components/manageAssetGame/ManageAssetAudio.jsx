@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Link } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
@@ -17,8 +18,9 @@ import {
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { deleteObject, ref } from "firebase/storage";
+import CustomImage from "../../assets/assetmanage/Iconrarzip.svg";
 
-function ManageAssetAudio() {
+function ManageAudio() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
   const [assets, setAssets] = useState([]);
@@ -27,11 +29,17 @@ function ManageAssetAudio() {
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState(""); // State untuk menyimpan istilah pencarian
-
-  // Pagination
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredAssets, setFilteredAssets] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const assetsPerPage = 1; // Set jumlah aset per halaman
+  const audioPerPage = 5;
+
+  const totalPages = Math.ceil(filteredAssets.length / audioPerPage);
+  const startIndex = (currentPage - 1) * audioPerPage;
+  const currentAudios = filteredAssets.slice(
+    startIndex,
+    startIndex + audioPerPage
+  );
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -55,13 +63,10 @@ function ManageAssetAudio() {
     };
   }, [isSidebarOpen]);
 
-  // Mengamati status autentikasi pengguna
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-
-        // Periksa apakah pengguna adalah admin atau superadmin
         const adminQuery = query(
           collection(db, "admins"),
           where("uid", "==", currentUser.uid)
@@ -70,9 +75,8 @@ function ManageAssetAudio() {
 
         if (!adminSnapshot.empty) {
           const adminData = adminSnapshot.docs[0].data();
-          setRole(adminData.role); // Role bisa 'admin' atau 'superadmin'
+          setRole(adminData.role);
         } else {
-          // Jika bukan admin atau superadmin, cek apakah pengguna adalah user biasa
           const userQuery = query(
             collection(db, "users"),
             where("uid", "==", currentUser.uid)
@@ -84,31 +88,23 @@ function ManageAssetAudio() {
         }
       } else {
         setUser(null);
+        setRole("");
       }
     });
 
     return () => unsubscribe();
   }, []);
 
-  // Fungsi untuk mengambil data sesuai role pengguna
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      if (!user || !role) {
-        console.log("No user or role detected");
-        return;
-      }
+      if (!user || !role) return;
 
       try {
         let q;
-        if (role === "superadmin") {
-          // Superadmin dapat melihat semua aset
-          q = query(collection(db, "assetAudios"));
-        } else if (role === "admin") {
-          // Ambil semua aset yang diupload oleh user dan admin
+        if (role === "superadmin" || role === "admin") {
           q = query(collection(db, "assetAudios"));
         } else if (role === "user") {
-          // User hanya bisa melihat aset yang dia unggah sendiri
           q = query(
             collection(db, "assetAudios"),
             where("userId", "==", user.uid)
@@ -118,28 +114,27 @@ function ManageAssetAudio() {
         const querySnapshot = await getDocs(q);
         const items = [];
 
-        for (const doc of querySnapshot.docs) {
-          const data = doc.data();
+        for (const docSnap of querySnapshot.docs) {
+          const data = docSnap.data();
           const createdAt =
-            data.createdAt?.toDate().toLocaleDateString("id-ID", {
+            data.createdAt?.toDate().toLocaleString("id-ID", {
               year: "numeric",
               month: "long",
-              day: "numeric",
             }) || "N/A";
 
           items.push({
-            id: doc.id,
+            id: docSnap.id,
             audioName: data.audioName,
             description: data.description,
             price: `Rp. ${data.price}`,
-            audio: data.uploadUrlAudio,
+            audioImage: data.audioImage,
             category: data.category,
             createdAt,
             userId: data.userId,
+            uploadedByEmail: data.uploadedByEmail,
           });
         }
 
-        // Jika role admin, filter hasil untuk menghapus yang diupload oleh superadmin
         if (role === "admin") {
           const superadminQuery = query(
             collection(db, "admins"),
@@ -150,16 +145,16 @@ function ManageAssetAudio() {
             (doc) => doc.data().uid
           );
 
-          // Filter items untuk mengeluarkan yang diupload oleh superadmin
           const filteredItems = items.filter(
             (item) => !superadminIds.includes(item.userId)
           );
           setAssets(filteredItems);
         } else {
           setAssets(items);
+          setFilteredAssets(items);
         }
       } catch (error) {
-        console.error("Error fetching data: ", error);
+        setAlertError(true);
       } finally {
         setIsLoading(false);
       }
@@ -170,20 +165,33 @@ function ManageAssetAudio() {
     }
   }, [user, role]);
 
-  // Fungsi hapus audio
+  useEffect(() => {
+    if (searchTerm) {
+      setFilteredAssets(
+        assets.filter(
+          (asset) =>
+            asset.audioName &&
+            asset.audioName.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredAssets(assets);
+    }
+    setCurrentPage(1);
+  }, [searchTerm, assets]);
+
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this audio?"
     );
     if (confirmDelete) {
       try {
-        const audioRef = ref(storage, `images-asset-audio/uploadUrlAudio-${id}.mp3`);
-        await deleteObject(audioRef);
+        const ImageRef = ref(storage, `images-audio/audio-${id}.mp3`);
+        await deleteObject(ImageRef);
         await deleteDoc(doc(db, "assetAudios", id));
         setAssets(assets.filter((asset) => asset.id !== id));
         setAlertSuccess(true);
       } catch (error) {
-        console.error("Error deleting audio: ", error);
         setAlertError(true);
       }
     } else {
@@ -193,20 +201,9 @@ function ManageAssetAudio() {
 
   const closeAlert = () => {
     setAlertError(false);
+    setAlertSuccess(false);
   };
 
-  // Filter aset berdasarkan istilah pencarian
-  const filteredAssets = assets.filter(asset =>
-    asset.audioName && asset.audioName.toLowerCase().startsWith(searchTerm.toLowerCase())
-  );
-
-  // Pagination logic
-  const totalPages = Math.ceil(filteredAssets.length / assetsPerPage);
-  const startIndex = (currentPage - 1) * assetsPerPage;
-  const currentAssets = filteredAssets.slice(startIndex, startIndex + assetsPerPage);
-
-  // Fungsi untuk berpindah halaman
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
   return (
     <>
       <div className="dark:bg-neutral-90 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
@@ -344,13 +341,33 @@ function ManageAssetAudio() {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentAssets.map((asset) => (
+                  {currentAudios.map((asset) => (
                     <tr
                       key={asset.id}
                       className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
                       <td className="px-6 py-4">
-                        <audio controls src={asset.audio} className="w-full h-12 " />
+                        {asset.audioImage ? (
+                          <img
+                            src={asset.audioImage || CustomImage}
+                            alt="Image"
+                            className="h-14 w-14 overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = CustomImage;
+                            }}
+                          />
+                        ) : (
+                          <img
+                            src={CustomImage}
+                            className="w-12 h-12"
+                            alt="Default Icon"
+                            onError={(e) => {
+                              e.target.src = "https://via.placeholder.com/150";
+                            }}
+                          />
+                        )}
                       </td>
+
                       <th
                         scope="row"
                         className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap">
@@ -364,14 +381,14 @@ function ManageAssetAudio() {
                           <img
                             src={IconEdit}
                             alt="icon edit"
-                            className="w-5 h-5"
+                            className="w-5 h-5 cursor-pointer"
                           />
                         </Link>
                         <button onClick={() => handleDelete(asset.id)}>
                           <img
                             src={IconHapus}
                             alt="icon hapus"
-                            className="w-5 h-5"
+                            className="w-5 h-5 cursor-pointer"
                           />
                         </button>
                       </td>
@@ -381,24 +398,25 @@ function ManageAssetAudio() {
               </table>
             </div>
           )}
+
           <div className="flex join pt-72 justify-end ">
-          <button
-            className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}>
-            «
-          </button>
-          <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
-            Page {currentPage} of {totalPages}
-          </button>
             <button
-            className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            disabled={currentPage === totalPages}>
-            »
-          </button>
+              className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}>
+              «
+            </button>
+            <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
+              Page {currentPage} of {totalPages}
+            </button>
+            <button
+              className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+              disabled={currentPage === totalPages}>
+              »
+            </button>
           </div>
         </div>
       </div>
@@ -406,4 +424,4 @@ function ManageAssetAudio() {
   );
 }
 
-export default ManageAssetAudio;
+export default ManageAudio;

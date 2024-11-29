@@ -3,9 +3,12 @@ import { useNavigate } from "react-router-dom";
 import {
   collection,
   addDoc,
+  getDocs,
+  updateDoc,
   Timestamp,
   doc,
-  updateDoc,
+  query,
+  where,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { onAuthStateChanged } from "firebase/auth";
@@ -13,6 +16,7 @@ import { db, storage, auth } from "../../../firebase/firebaseConfig";
 import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
+import DefaultPreview from "../../../assets/icon/iconSidebar/datasetzip.png";
 
 
 function AddNewAudio() {
@@ -35,6 +39,20 @@ function AddNewAudio() {
     uploadUrlAudio: null,
   });
   const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    // Listen for authentication state changes
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser); // Set the logged-in user
+      } else {
+        setUser(null); // No user is logged in
+      }
+    });
+  
+    
+    return () => unsubscribe();
+  }, []);
 
 
   const handleChange = (e) => {
@@ -180,8 +198,8 @@ function AddNewAudio() {
     }
 
     if (file) {
-      if (file.type !== "application/zip" && !file.name.endsWith(".zip")) {
-        setError("File yang diunggah harus berformat .zip");
+      if (file.type !== "application/zip" && !file.name.endsWith(".mp3")) {
+        setError("File yang diunggah harus berformat .mp3");
         setFileSize(null);
         event.target.value = null;
         return;
@@ -298,7 +316,7 @@ function AddNewAudio() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
-                    Format file harus .zip
+                    Format file harus .mp3
                   </p>
                 </div>
 

@@ -3,6 +3,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   collection,
   addDoc,
+  getDoc,
+  getDocs,
   Timestamp,
   doc,
   updateDoc,
@@ -36,9 +38,23 @@ function EditNewAudio() {
   });
 
   useEffect(() => {
+    // Listen for authentication state changes
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser); // Set the logged-in user
+      } else {
+        setUser(null); // No user is logged in
+      }
+    });
+  
+    
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
     const fetchAudio = async () => {
       try {
-        const docRef = doc(db, "assetAudio", id);
+        const docRef = doc(db, "assetAudios", id);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {

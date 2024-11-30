@@ -262,7 +262,7 @@ export function MyAsset() {
         return;
       }
 
-      const proxyUrl = `http://localhost:5000/proxy/download?fileUrl=${encodeURIComponent(
+      const proxyUrl = `http://localhost:3000/proxy/download?fileUrl=${encodeURIComponent(
         fileUrl
       )}&size=${encodeURIComponent(size)}&type=${encodeURIComponent(type)}`;
 

@@ -1,9 +1,9 @@
+/* eslint-disable no-unused-vars */
 import { db } from "../../../firebase/firebaseConfig";
 import { useState, useEffect } from "react";
 import {
   collection,
   doc,
-  setDoc,
   query,
   where,
   runTransaction,
@@ -15,6 +15,8 @@ import NavbarSection from "../web_User-LandingPage/NavbarSection";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import CustomImage from "../../../assets/assetmanage/Iconrarzip.svg";
 import { AiOutlineInfoCircle } from "react-icons/ai";
+import Footer from "../../website/Footer/Footer";
+import IconDownload from "../../../assets/icon/iconHeader/iconMyasset.svg";
 
 export function MyAsset() {
   const [AssetsData, setAssetsData] = useState([]);
@@ -42,82 +44,52 @@ export function MyAsset() {
   }, []);
 
   const fetchAssets = async () => {
-    const collectionsToFetch = [
-      "assetImages",
-      "assetVideos",
-      "assetAudios",
-      "assetImage3D",
-      "assetImage2D",
-      "assetDatasets",
-    ];
     const buyAssetsCollection = "buyAssets";
     const myAssetsCollection = "myAssets";
 
     try {
       const buyAssetsSnapshot = await getDocs(
-        collection(db, buyAssetsCollection)
+        query(
+          collection(db, buyAssetsCollection),
+          where("userId", "==", currentUserId)
+        )
       );
+
       const buyAssetsData = buyAssetsSnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        assetId: doc.data().assetId,
-        userId: doc.data().uid,
-        price: doc.data().price,
       }));
-      console.log("buyAssetsData:", buyAssetsData);
 
-      const allAssets = await Promise.all(
-        collectionsToFetch.map(async (collectionName) => {
-          const snapshot = await getDocs(collection(db, collectionName));
-          return snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-        })
-      );
-      const combinedAssets = allAssets.flat();
-      console.log("combinedAssets:", combinedAssets);
+      console.log("Data buyAssets:", buyAssetsData); // Debugging
 
       const myAssetsSnapshot = await getDocs(
-        collection(db, myAssetsCollection)
-      );
-      const myAssetsData = myAssetsSnapshot.docs
-        .map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-        .filter((asset) => asset.userId === currentUserId);
-      console.log("myAssetsData (filtered by currentUserId):", myAssetsData);
-
-      const matchedAssets = combinedAssets.filter((asset) =>
-        buyAssetsData.some(
-          (buyAsset) =>
-            buyAsset.assetId === asset.id && buyAsset.userId === currentUserId
+        query(
+          collection(db, myAssetsCollection),
+          where("userId", "==", currentUserId)
         )
       );
-      console.log("matchedAssets:", matchedAssets);
 
-      const allFilteredAssets = [...matchedAssets, ...myAssetsData];
-      console.log("allFilteredAssets:", allFilteredAssets);
+      const myAssetsData = myAssetsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
-      const finalAssetsData = allFilteredAssets.map((asset) => {
-        const buyAsset = buyAssetsData.find(
-          (buyAsset) => buyAsset.assetId === asset.id
-        );
-        return buyAsset
-          ? { ...asset, userId: buyAsset.userId, price: buyAsset.price }
-          : asset;
-      });
-      console.log("finalAssetsData:", finalAssetsData);
+      console.log("Data myAssets:", myAssetsData); // Debugging
 
-      setAssetsData(finalAssetsData);
+      // Gabungkan data dari kedua koleksi
+      const allFilteredAssets = [...buyAssetsData, ...myAssetsData];
+      console.log("Gabungan data assets:", allFilteredAssets); // Debugging
+
+      setAssetsData(allFilteredAssets);
     } catch (error) {
       console.error("Error fetching assets:", error);
     }
   };
 
   useEffect(() => {
-    fetchAssets();
+    if (currentUserId) {
+      fetchAssets();
+    }
   }, [currentUserId]);
 
   // Filter pencarian
@@ -170,7 +142,6 @@ export function MyAsset() {
       return;
     }
 
-    // Tandai bahwa kita sedang memproses
     setIsProcessingLike(true);
 
     const assetRef = doc(db, collectionsToFetch, id);
@@ -229,12 +200,97 @@ export function MyAsset() {
       asset.asset2DName ||
       asset.asset3DName ||
       asset.videoName ||
-      "";
+      asset.name;
+    ("");
     return (
       datasetName &&
       datasetName.toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
+
+  // Function to validate asset fields
+  const downloadAsset = async (asset) => {
+    try {
+      const fileUrl =
+        asset.uploadUrlAudio ||
+        asset.uploadUrlVideo ||
+        asset.uploadUrlImage ||
+        asset.datasetImage ||
+        asset.asset2DFile ||
+        asset.asset3DFile ||
+        asset.image;
+
+      const fileName =
+        asset.audioName ||
+        asset.videoName ||
+        asset.imageName ||
+        asset.asset2DName ||
+        asset.asset3DName ||
+        asset.datasetName ||
+        asset.name ||
+        "asset";
+
+      const type = asset.uploadUrlVideo
+        ? "video"
+        : asset.uploadUrlImage || asset.image
+        ? "image"
+        : "other";
+
+      if (!fileUrl || !type) {
+        alert("File atau tipe tidak tersedia untuk diunduh.");
+        return;
+      }
+
+      const size = asset.size || "No Size";
+
+      const allowedSizes = [
+        "Large (1920x1280)",
+        "Medium (1280x1280)",
+        "Small (640x427)",
+        "Original (6000x4000)",
+        "No Size",
+        "SD (360x640)",
+        "SD (540x960)",
+        "HD (720x1280)",
+        "Full HD (1080x1920)",
+        "Quad HD (1440x2560)",
+        "4K UHD (2160x3840)",
+      ];
+
+      if (!allowedSizes.includes(size)) {
+        alert("Ukuran tidak valid.");
+        return;
+      }
+
+      const proxyUrl = `http://localhost:5000/proxy/download?fileUrl=${encodeURIComponent(
+        fileUrl
+      )}&size=${encodeURIComponent(size)}&type=${encodeURIComponent(type)}`;
+
+      const response = await fetch(proxyUrl);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Gagal mengunduh file. Kode status: ${response.status}. ${errorText}`
+        );
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading the file:", error);
+      alert("Terjadi kesalahan saat mengunduh file. Silakan coba lagi.");
+    }
+  };
 
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
@@ -248,10 +304,10 @@ export function MyAsset() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[47%] xl:left-[45%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[145px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[300px] lg:w-[500px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[47%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[193px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[570px] sm:w-[400px] md:w-[450px] lg:w-[700px] xl:w-[800px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[850px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}
             >
               <div className="relative">
@@ -312,16 +368,16 @@ export function MyAsset() {
             </button>
           </div>
         )}
-        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
+        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] -ml-10">
           My Asset
         </h1>
       </div>
-      <div className="pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] min-h-screen">
-        <div className=" mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]  ">
+      <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen ">
+        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-2 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
-            let collectionsToFetch = "";
+            let collectionsToFetch = "myAssets";
             if (data.audioName) {
               collectionsToFetch = "myAssets";
             } else if (data.imageName) {
@@ -334,61 +390,80 @@ export function MyAsset() {
               collectionsToFetch = "myAssets";
             } else if (data.videoName) {
               collectionsToFetch = "myAssets";
+            } else if (data.name) {
+              collectionsToFetch = "buyAssets";
             }
 
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[320px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between"
+                className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between"
               >
                 <div
                   onClick={() => openModal(data)}
-                  className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px]"
+                  className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]"
                 >
                   <div className="w-full h-[150px] relative">
                     {data.uploadUrlVideo ? (
                       <video
-                        src={data.uploadUrlVideo}
+                        src={data.uploadUrlVideo || data.image}
                         alt="Asset Video"
-                        className="h-full w-full rounded-t-[10px] mx-auto border-none"
-                        controls
+                        className="h-full w-full object-cover rounded-t-[10px] border-none"
                         controlsList="nodownload"
                         onContextMenu={(e) => e.preventDefault()}
                       />
                     ) : (
                       <img
                         src={
+                          data.uploadUrlAudio ||
                           data.uploadUrlImage ||
                           data.datasetImage ||
-                          data.uploadUrlAudio ||
                           data.asset2DImage ||
                           data.asset3DImage ||
-                          (data.videoName ? CustomImage : null) ||
-                          CustomImage
+                          // (data.video ? CustomImage : null) ||
+                          data.datasetThumbnail ||
+                          data.asset2DThumbnail ||
+                          data.asset3DThumbnail ||
+                          data.audioThumbnail ||
+                          data.image
                         }
                         alt="Asset Image"
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src = CustomImage;
+                          e.target.src = data.image;
                         }}
-                        className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                        className="h-full w-full object-cover rounded-t-[10px] border-none"
                       />
                     )}
                   </div>
                 </div>
-                <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-10">
-                  <div className="px-2 py-2">
-                    <p className="text-neutral-10 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100 font-semibold">
-                      {data.audioName ||
+                <div className="flex flex-col justify-between h-full p-2 sm:p-4">
+                  <div onClick={() => openModal(data)} className="px-2 py-2">
+                    <p className="text-xs text-neutral-10 font-semibold dark:text-primary-100 ">
+                      {(
+                        data.audioName ||
                         data.datasetName ||
                         data.asset2DName ||
                         data.imageName ||
                         data.videoName ||
-                        "Nama Tidak Tersedia"}
+                        data.name ||
+                        "Nama Tidak Tersedia"
+                      ).slice(0, 14) +
+                        ((
+                          data.audioName ||
+                          data.datasetName ||
+                          data.asset2DName ||
+                          data.imageName ||
+                          data.videoName ||
+                          "Nama Tidak Tersedia"
+                        ).length > 14
+                          ? "..."
+                          : "")}
                     </p>
-                    <p className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100">
-                      {data.description.length > 24
-                        ? `${data.description.substring(0, 24)}......`
+
+                    <p className="text-neutral-20 text-xs sm:text-sm lg:text-base dark:text-primary-100">
+                      {data.description.length > 14
+                        ? `${data.description.substring(0, 14)}......`
                         : data.description || "Deskripsi Tidak Tersedia"}
                     </p>
                   </div>
@@ -423,71 +498,79 @@ export function MyAsset() {
 
       {/* Modal untuk detail asset */}
       {modalIsOpen && selectedasset && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 ">
-          <div className="fixed inset-0 bg-neutral-10 bg-opacity-50 "></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[500px] mx-4 flex relative">
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-full sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] mx-4 flex flex-col relative">
             <button
-              className="absolute right-3 text-gray-600 dark:text-gray-400 text-2xl"
+              className="absolute top-1 right-4 text-gray-600 dark:text-gray-400 text-4xl"
               onClick={closeModal}
             >
               &times;
             </button>
-            <div className="w-full h-[250px] relative">
-              {selectedasset.uploadUrlVideo ? (
-                <video
-                  src={selectedasset.uploadUrlVideo}
-                  alt="Asset Video"
-                  className="h-full w-full rounded-t-[10px]"
-                  controls
-                  controlsList="nodownload"
-                  onContextMenu={(e) => e.preventDefault()}
-                />
-              ) : (
-                <img
-                  src={selectedasset.uploadUrlImage || CustomImage}
-                  alt="Asset Image"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = CustomImage;
-                  }}
-                  className="h-full w-full mx-auto border-none"
-                />
-              )}
+
+            <div className="flex flex-col items-center justify-center w-full">
+              <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
+                {selectedasset.uploadUrlVideo ? (
+                  <video
+                    src={selectedasset.uploadUrlVideo || selectedasset.image}
+                    alt="Asset Video"
+                    className="w-full h-full object-cover"
+                    controls
+                    controlsList="nodownload"
+                    onContextMenu={(e) => e.preventDefault()}
+                  />
+                ) : (
+                  <img
+                    src={
+                      selectedasset.image ||
+                      selectedasset.video ||
+                      selectedasset.uploadUrlAudio ||
+                      selectedasset.uploadUrlImage ||
+                      selectedasset.datasetThumbnail ||
+                      selectedasset.asset2DThumbnail ||
+                      selectedasset.asset3DThumbnail ||
+                      selectedasset.audioThumbnail
+                    }
+                    alt="Asset Image"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = CustomImage;
+                    }}
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
             </div>
-            <div className="w-[500px] pl-4 ">
-              <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
+            <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+              <h2 className="text-lg sm:text-xl text-neutral-10 font-semibold dark:text-primary-100 text-start">
                 {selectedasset.datasetName}
               </h2>
-              <p className="text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
-                {selectedasset.price % 1000 === 0 && selectedasset.price >= 1000
-                  ? `Rp. ${(selectedasset.price / 1000).toLocaleString(
-                      "id-ID"
-                    )}k`
-                  : "My Asset"}
-              </p>
-              <div className="text-sm mb-2 dark:text-primary-100">
-                <label className="flex-col mt-2">Deskripsi Video:</label>
-                <div className="mt-2">{selectedasset.description}</div>
-              </div>
-              <p className="text-sm mb-2 dark:text-primary-100">
+              <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
                 Kategori: {selectedasset.category}
               </p>
+              <div className="text-sm mb-2 dark:text-primary-100  text-start">
+                <label className="flex-col mt-2">Deskripsi Asset:</label>
+                <div className="mt-2 text-justify">
+                  {selectedasset.description}
+                </div>
+              </div>
             </div>
+            <button
+              onClick={() => downloadAsset(selectedasset)}
+              className="flex p-2 text-center items-center justify-center bg-neutral-60 text-primary-100 w-full h-10 mt-6 rounded-md"
+            >
+              <img
+                src={IconDownload}
+                alt="Download Icon"
+                className="w-6 h-6 mr-2"
+              />
+              <p>Download</p>
+            </button>
           </div>
         </div>
       )}
 
-      <footer className=" min-h-[181px] flex flex-col items-center justify-center">
-        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
-          <a href="#">Teams And Conditions</a>
-          <a href="#">File Licenses</a>
-          <a href="#">Refund Policy</a>
-          <a href="#">Privacy Policy</a>
-        </div>
-        <p className="text-[10px] md:text-[12px]">
-          Copyright © 2024 - All right reserved by ACME Industries Ltd
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  collection,
   addDoc,
+  doc,
+  Timestamp,
   getDoc,
   getDocs,
-  Timestamp,
-  doc,
   updateDoc,
+  collection,
+  query,
+  where,
 } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { onAuthStateChanged } from "firebase/auth";
@@ -24,7 +26,12 @@ function EditNewAudio() {
   const [previewImages, setPreviewImages] = useState([]);
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
-  const [categories, setCategories] = useState([]);
+  const categories = [
+    { id: 1, name: "Audio Effects" },
+    { id: 2, name: "Background Music" },
+    { id: 3, name: "Voice Overs" },
+    { id: 4, name: "Sound Design" },
+  ];
   const [user, setUser] = useState(null);
   const [role, setRole] = useState("");
 
@@ -38,19 +45,37 @@ function EditNewAudio() {
   });
 
   useEffect(() => {
-    // Listen for authentication state changes
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        setUser(currentUser); // Set the logged-in user
+        setUser(currentUser);
+
+        const adminQuery = query(
+          collection(db, "admins"),
+          where("uid", "==", currentUser.uid)
+        );
+        const adminSnapshot = await getDocs(adminQuery);
+
+        if (!adminSnapshot.empty) {
+          const adminData = adminSnapshot.docs[0].data();
+          setRole(adminData.role);
+        } else {
+          const userQuery = query(
+            collection(db, "users"),
+            where("uid", "==", currentUser.uid)
+          );
+          const userSnapshot = await getDocs(userQuery);
+          if (!userSnapshot.empty) {
+            setRole("user");
+          }
+        }
       } else {
-        setUser(null); // No user is logged in
+        setUser(null);
+        setRole("");
       }
     });
-  
-    
+
     return () => unsubscribe();
   }, []);
-
   useEffect(() => {
     const fetchAudio = async () => {
       try {

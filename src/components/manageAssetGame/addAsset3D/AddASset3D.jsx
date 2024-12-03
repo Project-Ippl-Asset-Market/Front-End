@@ -1,4 +1,3 @@
-//
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -28,6 +27,7 @@ function AddAsset3D() {
     asset3DFile: null,
     asset3DThumbnail : [] ,  // State to hold file information
   });
+
   const navigate = useNavigate();
   //const [previewImage, setPreviewImage] = useState(null);
   const [previewImages, setPreviewImages] = useState([]);
@@ -84,7 +84,6 @@ function AddAsset3D() {
         asset3DThumbnail: Array.from(files),
       });
     } else {
-      // Jika tidak berhubungan dengan upload file, hanya update state yang lain
       setAsset3D({
         ...asset3D,
         [name]: value,
@@ -140,7 +139,7 @@ function AddAsset3D() {
         asset3DFileUrl = await getDownloadURL(asset3DRef);
       }
 
-      let asset3DThumbnailUrl = [];
+      let asset3DThumbnailUrls = [];
       if (asset3D.asset3DThumbnail && asset3D.asset3DThumbnail.length > 0) {
         const thumbnailPromises = asset3D.asset3DThumbnail.map(
           async (thumbnailFile, index) => {
@@ -153,13 +152,13 @@ function AddAsset3D() {
             return downloadUrl;
           }
         );
-        asset3DThumbnailUrl = await Promise.all(thumbnailPromises);
+        asset3DThumbnailUrls = await Promise.all(thumbnailPromises);
       }
 
       // Update Firestore dengan URL gambar yang diupload
       await updateDoc(doc(db, "assetImage3D", docId), {
         asset3DFile: asset3DFileUrl,
-        asset3DThumbnail : asset3DThumbnailUrl
+        asset3DThumbnail : asset3DThumbnailUrls
       });
 
       // Reset the form
@@ -171,9 +170,9 @@ function AddAsset3D() {
         asset3DFile: null,
         asset3DThumbnail: [],
       });
-      setPreviewImages([]); // clear previews
+      setPreviewImages([]);
 
-      // Navigate back to /manage-asset-asset3D
+      // Navigate back to /manage-asset-3D
       setAlertSuccess(true);
       setTimeout(() => {
         navigate("/manage-asset-3D");
@@ -279,7 +278,7 @@ function AddAsset3D() {
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>asset3D baru berhasil ditambahkan dan tersimpan.</span>
+                <span>Asset 3D baru berhasil ditambahkan dan tersimpan.</span>
               </div>
             </div>
           )}
@@ -403,13 +402,14 @@ function AddAsset3D() {
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                              Upload Thumbnail
+                              Upload Thumbnails
                             </span>
                         <input
                           type="file"
                           id="fileUpload"
                           name="asset3DThumbnail"
                           onChange={handleChange}
+                          
                           accept=".jpg,.jpeg,.png"
                             multiple
                           className="hidden"
@@ -421,7 +421,7 @@ function AddAsset3D() {
                 </div>
               </div>
 
-              {/* asset3D Name */}
+              {/* asset 3D Name */}
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-1">
@@ -480,7 +480,7 @@ function AddAsset3D() {
                       onChange={(e) =>
                         setAsset3D((prevState) => ({
                           ...prevState,
-                          category: e.target.value,
+                          category: e.target.value, // Update category inside dasset 3D state
                         }))
                       }
                       className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md"
@@ -581,4 +581,4 @@ function AddAsset3D() {
 }
 
 export default AddAsset3D;
-//11/4/24
+//11/30/24

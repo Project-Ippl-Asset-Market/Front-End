@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-//11/4/24
+//11/30/24
 import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
@@ -10,16 +10,20 @@ import {
   doc,
   Timestamp,
   getDoc,
+  getDocs,
   updateDoc,
+  collection,
+  query,
+  where,
 } from "firebase/firestore";
-import { db,auth, storage } from "../../../firebase/firebaseConfig";
+import { db, storage, auth } from "../../../firebase/firebaseConfig";
 import {
   deleteObject,
   ref,
   uploadBytes,
   getDownloadURL,
 } from "firebase/storage";
-
+import { onAuthStateChanged } from "firebase/auth";
 function EditNewAsset3D() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -27,12 +31,10 @@ function EditNewAsset3D() {
   const [previewImages, setPreviewImages] = useState([]);
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
-  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  //const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   //const [categories, setCategories] = useState([]);
   const [user, setUser] = useState(null);
   const [role, setRole] = useState("");
-  // eslint-disable-next-line no-unused-vars
-  const [isLoading, setIsLoading] = useState(true);
 
   const categories = [
     { id: 1, name: "Animations" },
@@ -43,9 +45,55 @@ function EditNewAsset3D() {
     { id: 6, name: "Vegetation" },
     { id: 7, name: "Vehicles" },
   ];
+  
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+
+        const adminQuery = query(
+          collection(db, "admins"),
+          where("uid", "==", currentUser.uid)
+        );
+        const adminSnapshot = await getDocs(adminQuery);
+
+        if (!adminSnapshot.empty) {
+          const adminData = adminSnapshot.docs[0].data();
+          setRole(adminData.role);
+        } else {
+          const userQuery = query(
+            collection(db, "users"),
+            where("uid", "==", currentUser.uid)
+          );
+          const userSnapshot = await getDocs(userQuery);
+          if (!userSnapshot.empty) {
+            setRole("user");
+          }
+        }
+      } else {
+        setUser(null);
+        setRole("");
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const [asset3D, setAsset3D] = useState({
-    asset3DName: "",
+    datasetName: "",
     category: "",
     description: "",
     price: "",
@@ -72,7 +120,7 @@ function EditNewAsset3D() {
           navigate("/manage-asset-3D");
         }
       } catch (error) {
-        console.error("Error fetching asset 3D:", error);
+        console.error("Error fetching asset 2D:", error);
       }
     };
 
@@ -148,13 +196,13 @@ function EditNewAsset3D() {
       };
           reader.readAsDataURL(file);
     } else {
-      setPreviewImages([]);
-    }
+          setPreviewImages([]);
+        }
       });
 
       setAsset3D({
         ...asset3D,
-        asset2DThumbnail: Array.from(files),
+        asset3DThumbnail: Array.from(files),
       });
     } else {
       setAsset3D({
@@ -168,7 +216,7 @@ function EditNewAsset3D() {
     setPreviewImages((prevImages) => prevImages.filter((_, i) => i !== index));
     setAsset3D((prevDataset) => ({
       ...prevDataset,
-      asset3DThumbnail: Array.isArray(prevDataset.asset3DThumbnail)
+      asset2DThumbnail: Array.isArray(prevDataset.asset3DThumbnail)
         ? prevDataset.asset3DThumbnail.filter((_, i) => i !== index)
         : [],
     }));
@@ -201,16 +249,21 @@ function EditNewAsset3D() {
       const updatedData = {
         category: asset3D.category,
         createdAt: Timestamp.now(),
-        
+        asset3DFile : "",
         asset3DThumbnail: [],
         asset3DName: asset3D.asset3DName,
         description: asset3D.description,
-        price: asset3D.price,
-        //uploadedByEmail: user.email,
-        //userId: user.uid,
+        price: priceAsNumber,
+        uploadedByEmail: user.email,
+        userId: user.uid,
       };
 
-
+      // Upload file ZIP ke folder /images-dataset jika ada
+      if (asset3DFile.asset3DFile) {
+        const filePath = `images-asset-3d/asset3D-${id}.zip`; // Path folder baru
+        const asset3DFileUrl = await uploadFile(asset3D.asset3DFile, filePath);
+        updatedData.asset3DFile = asset3DFileUrl;
+      }
 
       // Upload thumbnails jika ada
       if (asset3D.asset3DThumbnail && asset3D.asset3DThumbnail.length > 0) {
@@ -223,15 +276,15 @@ function EditNewAsset3D() {
         updatedData.asset3DThumbnail = thumbnailUrls; // Menyimpan semua URL thumbnail
       }
 
-      const asset2DRef = doc(db, "assetImage3D", id);
-      await updateDoc(asset2DRef, updatedData);
+      const datasetRef = doc(db, "assetImage3D", id);
+      await updateDoc(datasetRef, updatedData);
 
       setAlertSuccess(true);
       setTimeout(() => {
         navigate("/manage-asset-3D");
       }, 2000);
     } catch (error) {
-      console.error("Error updating asset 2D: ", error);
+      // console.error("Error updating asset 2D: ", error);
       setAlertError(true);
     }
   };
@@ -247,7 +300,7 @@ function EditNewAsset3D() {
   };
 
   const handleCancel = () => {
-    navigate(-1);
+    navigate(-1); // Navigate to the previous page or you can set a specific route like navigate("/dataset-list");
   };
 
   const closeAlert = () => {
@@ -272,16 +325,14 @@ function EditNewAsset3D() {
           {alertSuccess && (
             <div
               role="alert"
-              className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[10px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4  bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-              onClick={closeAlert}
-            >
+              className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[10px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4 bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
+              onClick={closeAlert}>
               <div className="flex items-center justify-center space-x-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6 shrink-0 stroke-current"
                   fill="none"
-                  viewBox="0 0 24 24"
-                >
+                  viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -289,7 +340,7 @@ function EditNewAsset3D() {
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>asset 3D berhasil diperbarui.</span>
+                <span>Asset 3D berhasil diperbarui.</span>
               </div>
             </div>
           )}
@@ -324,12 +375,69 @@ function EditNewAsset3D() {
             onSubmit={handleSubmit}
             className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24   h-[1434px] gap-[50px]  overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0">
             <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-10 dark:text-primary-100 p-4">
-              Edit asset3D
+              Edit Asset 3D
             </h1>
             <div className="p-8 -mt-4  bg-primary-100  dark:bg-neutral-20 rounded-sm shadow-lg">
               <h2 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                asset 3D Information
+                Asset 3D Information
               </h2>
+
+              <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+                <div className="w-full sm:w-[150px] md:w-[170px] lg:w-[200px] xl:w-[220px] 2xl:w-[170px]">
+                  <div className="flex items-center gap-1">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+                      Upload File
+                    </h3>
+                    <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
+                    />
+                  </div>
+                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
+                    Format file harus .zip
+                  </p>
+                </div>
+
+                {/* <div>
+                  <input
+                    className="block min-w-full sm:w-[150px] md:w-[450px] lg:w-[670px] xl:w-[670px] 2xl:w-[1200px] text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                    id="file_input"
+                    type="file"
+                    accept=".zip"
+                    onChange={handleChange}
+                    name="datasetFile"
+                  />
+                  {error && (
+                    <p className="text-red-500 mt-1 text-sm">{error}</p>
+                  )}
+                  {dataset.datasetFile && (
+                    <div className="mt-2">
+                      <p className="text-sm">File yang diunggah:</p>
+                      <span className="text-blue-500 hover:underline">
+                        {dataset.datasetFile.name}
+                      </span>
+                    </div>
+                  )}
+                </div> */}
+
+                <div>
+                  <input
+                    className="block min-w-full sm:w-[150px] md:w-[450px] lg:w-[670px] xl:w-[850px] 2xl:w-[1200px] text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                    id="file_input"
+                    type="file"
+                    accept=".zip"
+                    onChange={handleFileChange}
+                    name="asset3DFile"
+                  />
+                  {error && (
+                    <p className="text-red-500 mt-1 text-sm">{error}</p>
+                  )}
+                  {fileSize && (
+                    <p className="mt-1 text-sm">Ukuran file: {fileSize}</p>
+                  )}
+                </div>
+              </div>
 
               <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-[150px] md:w-[170px] lg:w-[200px] xl:w-[220px] 2xl:w-[170px]">
@@ -377,15 +485,16 @@ function EditNewAsset3D() {
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                            Upload Thumbnail
+                              Upload Thumbnail
                             </span>
                         <input
                           type="file"
                           id="fileUpload"
                           name="asset3DThumbnail"
                           onChange={handleChange}
-                          accept=".jpg,.jpeg,.png"
                           multiple
+                          accept=".jpg,.jpeg,.png"
+                          
                           className="hidden"
                         />
                       </label>
@@ -395,6 +504,7 @@ function EditNewAsset3D() {
                 </div>
               </div>
 
+              {/* Dataset Name */}
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-1">
@@ -553,4 +663,4 @@ function EditNewAsset3D() {
 }
 
 export default EditNewAsset3D;
-//11/4/24
+//11/30/24

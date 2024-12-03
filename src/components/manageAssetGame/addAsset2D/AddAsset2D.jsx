@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";//11/20/24
 import { useNavigate } from "react-router-dom";
 import {
   collection,
@@ -137,7 +137,7 @@ function AddNewAsset2D() {
         asset2DFileUrl = await getDownloadURL(asset2DRef);
       }
 
-      let asset2DThumbnailUrl = [];
+      let asset2DThumbnailUrls = [];
       if (asset2D.asset2DThumbnail && asset2D.asset2DThumbnail.length > 0) {
         const thumbnailPromises = asset2D.asset2DThumbnail.map(
           async (thumbnailFile, index) => {
@@ -150,13 +150,13 @@ function AddNewAsset2D() {
             return downloadUrl;
           }
         );
-        asset2DThumbnailUrl = await Promise.all(thumbnailPromises);
+        asset2DThumbnailUrls = await Promise.all(thumbnailPromises);
       }
 
       // Update Firestore dengan URL gambar yang diupload
       await updateDoc(doc(db, "assetImage2D", docId), {
         asset2DFile: asset2DFileUrl,
-        asset2DThumbnail : asset2DThumbnailUrl,
+        asset2DThumbnail : asset2DThumbnailUrls,
       });
 
       // Reset the form
@@ -276,7 +276,7 @@ function AddNewAsset2D() {
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>asset2D baru berhasil ditambahkan dan tersimpan.</span>
+                <span>Asset 2D baru berhasil ditambahkan dan tersimpan.</span>
               </div>
             </div>
           )}
@@ -407,6 +407,7 @@ function AddNewAsset2D() {
                           id="fileUpload"
                           name="asset2DThumbnail"
                           onChange={handleChange}
+                          //value={asset2D.asset2DThumbnail}
                           accept=".jpg,.jpeg,.png"
                             multiple
                           className="hidden"

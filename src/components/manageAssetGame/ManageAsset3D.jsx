@@ -24,8 +24,7 @@ function ManageAsset3D() {
   //
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
-  const [assets, setAssets] = useState([]); // Mengelola data asset 2D
-
+  const [assets, setAssets] = useState([]);
   const [user, setUser] = useState(null);
   const [role, setRole] = useState("");
   const [alertSuccess, setAlertSuccess] = useState(false);
@@ -134,9 +133,9 @@ function ManageAsset3D() {
         if (role === "superadmin" || role === "admin") {
           q = query(collection(db, "assetImage3D"));
         } else if (role === "user") {
-          // User hanya bisa melihat aset 3D yang dia unggah sendiri
+          // User hanya bisa melihat aset 2D yang dia unggah sendiri
           q = query(
-            collection(db, "assetImage3D"), // Ubah ke "assetImage3D"
+            collection(db, "assetImage3D"), // Ubah ke "assetImage2D"
             where("userId", "==", user.uid)
           );
         }
@@ -157,7 +156,7 @@ function ManageAsset3D() {
 
           items.push({
             id: docSnap.id,
-            asset3DName: data.asset3DName, // Ubah datasetName menjadi asset3DName
+            asset3DName: data.asset3DName, //
             description: data.description,
             price: `Rp. ${data.price}`,
             asset3DFile: data.asset3DFile,
@@ -206,7 +205,7 @@ function ManageAsset3D() {
   // Fungsi hapus gambar
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this asset 3D?"
+      "Are you sure you want to delete this asset 2D?"
     );
     if (confirmDelete) {
       try {
@@ -314,7 +313,7 @@ function ManageAsset3D() {
           <div className="flex flex-col gap-4 md:flex-row">
             {/* Button Container */}
             <div className="flex items-center justify-center md:justify-start">
-              <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
+              <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-40">
                 <Link
                   to="/manage-asset-3D/add"
                   className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]"
@@ -461,4 +460,4 @@ function ManageAsset3D() {
 }
 
 export default ManageAsset3D;
-//11/18/24
+//11/30/24

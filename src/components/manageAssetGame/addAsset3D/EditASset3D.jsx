@@ -93,7 +93,7 @@ function EditNewAsset3D() {
   }, []);
 
   const [asset3D, setAsset3D] = useState({
-    datasetName: "",
+    asset3DName: "",
     category: "",
     description: "",
     price: "",

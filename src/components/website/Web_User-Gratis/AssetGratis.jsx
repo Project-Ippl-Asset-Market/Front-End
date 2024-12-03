@@ -17,6 +17,7 @@ import { FaRegHeart, FaHeart } from "react-icons/fa";
 import CustomImage from "../../../assets/assetmanage/Iconrarzip.svg";
 import IconDownload from "../../../assets/icon/iconDownload/iconDownload.svg";
 import { AiOutlineInfoCircle } from "react-icons/ai";
+import Footer from "../../website/Footer/Footer";
 
 export function AssetGratis() {
   const [AssetsData, setAssetsData] = useState([]);
@@ -319,12 +320,18 @@ export function AssetGratis() {
           </div>
         )}
 
-        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[90px] -mb-20">
+        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100 pt-[100px] -ml-10">
           All Category
         </h1>
+
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+          {searchResults.length === 0 && searchTerm && (
+            <p className="text-black text-[20px]">No assets found</p>
+          )}
+        </div>
       </div>
-      <div className="pt-[10px] w-full p-[20px] sm:p-[20px] md:p-[30px] lg:p-[40px] xl:p-[50px] 2xl:p-[60px] ">
-        <div className=" mb-4 mx-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 place-items-center gap-[40px] sm:gap-[30px] md:gap-[120px] lg:gap-[130px] xl:gap-[25px] 2xl:gap-[30px] -space-x-0   sm:-space-x-[30px] md:space-x-[20px] lg:space-x-[40px] xl:-space-x-[0px] 2xl:-space-x-[30px]  ">
+      <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen ">
+        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
@@ -349,16 +356,16 @@ export function AssetGratis() {
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[215px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[260px] lg:h-[360px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                className="w-[140px] h-[230px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg">
                 <div
                   onClick={() => openModal(data)}
-                  className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[95px] lg:w-full lg:h-[183px]">
-                  <div className="w-full h-[150px] relative">
+                  className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between ">
+                  <div className="w-full h-[130px] relative">
                     {data.uploadUrlVideo ? (
                       <video
                         src={data.uploadUrlVideo}
                         alt="Asset Video"
-                        className="h-full w-full rounded-t-[10px] mx-auto border-none"
+                        className="h-full w-full object-cover rounded-t-[10px] border-none"
                         onContextMenu={(e) => e.preventDefault()}
                         controls
                         controlsList="nodownload"
@@ -372,6 +379,10 @@ export function AssetGratis() {
                           data.asset2DImage ||
                           data.asset3DImage ||
                           (data.videoName ? CustomImage : null) ||
+                          data.datasetThumbnail ||
+                          data.asset2DThumbnail ||
+                          data.asset3DThumbnail ||
+                          data.audioThumbnail ||
                           CustomImage
                         }
                         alt="Asset Image"
@@ -379,24 +390,14 @@ export function AssetGratis() {
                           e.target.onerror = null;
                           e.target.src = CustomImage;
                         }}
-                        className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                        className="h-full w-full object-cover rounded-t-[10px] border-none"
                       />
                     )}
                   </div>
                 </div>
-                <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-10">
-                  <div className="px-2 py-2">
-                    {/* <p className="text-neutral-10 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100 font-semibold">
-                      {data.assetAudiosName ||
-                        data.audioName ||
-                        data.datasetName ||
-                        data.asset2DName ||
-                        data.imageName ||
-                        data.videoName ||
-                        "Nama Tidak Tersedia"}
-                    </p> */}
-
-                    <p className="text-neutral-10 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px] dark:text-primary-100 font-semibold">
+                <div className="flex flex-col justify-between h-full p-2 sm:p-4">
+                  <div onClick={() => openModal(data)} className="px-2 py-2">
+                    <p className="text-xs text-neutral-10 font-semibold dark:text-primary-100">
                       {(
                         data.assetAudiosName ||
                         data.audioName ||
@@ -405,7 +406,7 @@ export function AssetGratis() {
                         data.imageName ||
                         data.videoName ||
                         "Nama Tidak Tersedia"
-                      ).substring(0, 20)}
+                      ).substring(0, 14)}
                       {(
                         data.assetAudiosName ||
                         data.audioName ||
@@ -414,18 +415,18 @@ export function AssetGratis() {
                         data.imageName ||
                         data.videoName ||
                         "Nama Tidak Tersedia"
-                      ).length > 20
+                      ).length > 14
                         ? "..."
                         : ""}
                     </p>
 
                     <p className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px]  dark:text-primary-100">
-                      {data.description.length > 24
-                        ? `${data.description.substring(0, 24)}......`
+                      {data.description.length > 32
+                        ? `${data.description.substring(0, 32)}......`
                         : data.description || "Deskripsi Tidak Tersedia"}
                     </p>
                   </div>
-                  <div className="flex items-center justify-between px-2 py-2   dark:bg-neutral-80">
+                  <div className="flex items-center justify-between px-2 py-2">
                     <button
                       onClick={() =>
                         handleLikeClick(data.id, likesAsset, collectionsToFetch)
@@ -458,52 +459,76 @@ export function AssetGratis() {
       {modalIsOpen && selectedasset && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] mx-4 flex relative">
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-full sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] mx-4 flex flex-col relative">
             <button
-              className="absolute right-3 text-gray-600 dark:text-gray-400 text-2xl"
+              className="absolute top-1 right-4 text-gray-600 dark:text-gray-400 text-4xl"
               onClick={closeModal}>
               &times;
             </button>
-            <div className=" h-[240px] relative">
-              {selectedasset.uploadUrlVideo ? (
-                <video
-                  src={selectedasset.uploadUrlVideo}
-                  alt="Asset Video"
-                  className="h-full w-full rounded-t-[10px]"
-                  onContextMenu={(e) => e.preventDefault()}
-                  controls
-                  controlsList="nodownload"
-                />
-              ) : (
-                <img
-                  src={selectedasset.uploadUrlImage || CustomImage}
-                  alt="Asset Image"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = CustomImage;
-                  }}
-                  className="h-full w-full mx-auto border-none"
-                />
-              )}
+            <div className="flex flex-col items-center justify-center w-full">
+              <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
+                {selectedasset.uploadUrlVideo ? (
+                  <video
+                    src={selectedasset.uploadUrlVideo}
+                    alt="Asset Video"
+                    className="w-full h-full object-cover"
+                    onContextMenu={(e) => e.preventDefault()}
+                    controls
+                    controlsList="nodownload"
+                  />
+                ) : (
+                  <img
+                    src={
+                      selectedasset.image ||
+                      selectedasset.uploadUrlImage ||
+                      selectedasset.datasetImage ||
+                      selectedasset.assetAudiosImage ||
+                      selectedasset.asset2DImage ||
+                      selectedasset.asset3DImage ||
+                      (selectedasset.video ? CustomImage : null) ||
+                      selectedasset.datasetThumbnail ||
+                      selectedasset.asset2DThumbnail ||
+                      selectedasset.asset3DThumbnail ||
+                      selectedasset.audioThumbnail ||
+                      CustomImage
+                    }
+                    alt="Asset Image"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = CustomImage;
+                    }}
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
             </div>
-            <div className="w-1/2 pl-4 ">
-              <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
-                {selectedasset.datasetName}
+            <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+              <h2 className="text-md mb-2 dark:text-primary-100 mt-4 text-start font-semibold">
+                {selectedasset.datasetName ||
+                  selectedasset.assetAudiosName ||
+                  selectedasset.audioName ||
+                  selectedasset.datasetName ||
+                  selectedasset.asset2DName ||
+                  selectedasset.imageName ||
+                  selectedasset.videoName ||
+                  "No Name"}
               </h2>
-              <p className="text-sm mb-2 dark:text-primary-100">
+
+              <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start ">
+                Kategori: {selectedasset.category}
+              </p>
+              <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start ">
                 {selectedasset.price > 0
                   ? `Rp ${selectedasset.price.toLocaleString("id-ID")}`
                   : "Free"}
               </p>
-              <div className="text-sm mb-2 dark:text-primary-100">
+              <div className="text-sm mb-2 dark:text-primary-100 mt-4 text-justify ">
                 <label className="flex-col mt-2">Deskripsi Video:</label>
                 <div className="mt-2">{selectedasset.description}</div>
               </div>
-              <p className="text-sm mb-2 dark:text-primary-100">
-                Kategori: {selectedasset.category}
-              </p>
+
               <button
-                className="text-primary-100 flex p-2 text-center items-center justify-center bg-neutral-60 h-10 mt-36 rounded-md w-full"
+                className="text-primary-100 flex p-2 text-center items-center justify-center bg-neutral-60 dark:bg-neutral-40 h-10 mt-14 rounded-md w-full"
                 onClick={handleSaveToMyAssets}>
                 <img
                   src={IconDownload}
@@ -524,17 +549,9 @@ export function AssetGratis() {
         </div>
       </div>
 
-      <footer className="mt-[1000px] flex flex-col items-center justify-center">
-        <div className=" flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
-          <a href="#">Teams And Conditions</a>
-          <a href="#">File Licenses</a>
-          <a href="#">Refund Policy</a>
-          <a href="#">Privacy Policy</a>
-        </div>
-        <p className="text-[10px] md:text-[12px]">
-          Copyright © 2024 - All right reserved by ACME Industries Ltd
-        </p>
-      </footer>
+      <div className="mt-96">
+        <Footer />
+      </div>
     </div>
   );
 }

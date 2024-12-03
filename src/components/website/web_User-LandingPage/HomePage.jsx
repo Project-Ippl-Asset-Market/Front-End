@@ -24,6 +24,7 @@ import IconCart from "../../../assets/assetWeb/iconCart.svg";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 const myAssetsCollectionRef = collection(db, "myAssets");
+import Footer from "../../website/Footer/Footer";
 
 export function HomePage() {
   const [AssetsData, setAssetsData] = useState([]);
@@ -74,7 +75,7 @@ export function HomePage() {
 
       const purchasedQuery = query(
         collection(db, "buyAssets"),
-        where("uid", "==", currentUserId)
+        where("userId", "==", currentUserId)
       );
 
       try {
@@ -492,7 +493,7 @@ export function HomePage() {
       </div>
       <div className="bg-primary-100 dark:bg-neutral-20">
         <img
-          className="w-[300vh] mt-[145px] sm:mt-[170px] md:mt-[140px] lg:mt-[150px] xl:mt-[150px] 2xl:mt-[130px]"
+          className="w-[300vh] mt-[142px] sm:mt-[170px] md:mt-[140px] lg:mt-[150px] xl:mt-[150px] 2xl:mt-[130px]"
           src={BannerBG}
           alt="Banner"
         />
@@ -612,7 +613,7 @@ export function HomePage() {
             return (
               <div
                 key={data.id}
-                className=" w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                className=" w-[140px] h-[240px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[190px] md:h-[280px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg">
                 <div
                   onClick={() => openModal(data)}
                   className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[120px] lg:w-full lg:h-[183px] xl:h-full 2xl:h-full ">
@@ -621,20 +622,37 @@ export function HomePage() {
                       <video
                         src={data.uploadUrlVideo}
                         alt="Asset Video"
-                        className="h-28 sm:h-28 md:h-36 lg:h-40 xl:h-full 2xl:h-full w-full rounded-t-[10px] mx-auto border-none"
+                        className="h-28 sm:h-28 md:h-36 lg:h-40 xl:h-full 2xl:h-full w-full rounded-t-[10px] mx-auto border-none object-cover"
                         controls
                         controlsList="nodownload"
+                        onContextMenu={(e) => e.preventDefault()}
+                      />
+                    ) : Array.isArray(data.datasetThumbnail) &&
+                      data.datasetThumbnail.length > 0 ? (
+                      <img
+                        src={data.datasetThumbnail[0] || CustomImage}
+                        alt="Thumbnail 1"
+                        className="h-28 sm:h-28 md:h-36 lg:h-40 xl:h-full 2xl:h-full w-full rounded-t-[10px] mx-auto border-none object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = CustomImage;
+                        }}
                         onContextMenu={(e) => e.preventDefault()}
                       />
                     ) : (
                       <img
                         src={
+                          data.image ||
                           data.uploadUrlImage ||
                           data.datasetImage ||
                           data.assetAudiosImage ||
                           data.asset2DImage ||
                           data.asset3DImage ||
-                          (data.videoName ? CustomImage : null) ||
+                          (data.video ? CustomImage : null) ||
+                          data.datasetThumbnail ||
+                          data.asset2DThumbnail ||
+                          data.asset3DThumbnail ||
+                          data.audioThumbnail ||
                           CustomImage
                         }
                         alt="Asset Image"
@@ -642,19 +660,22 @@ export function HomePage() {
                           e.target.onerror = null;
                           e.target.src = CustomImage;
                         }}
+                        onContextMenu={(e) => e.preventDefault()}
+                        draggable={false}
+                        onDragStart={(e) => e.preventDefault()}
                         className="h-28 sm:h-28 md:h-36 lg:h-40 xl:h-full 2xl:h-full w-full rounded-t-[10px] mx-auto border-none"
                       />
                     )}
                     {isPurchased && (
-                      <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                      <div className="absolute top-2 right-2 bg-green-500 text-white text-[8px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] font-bold px-2 py-1 rounded">
                         Sudah Dibeli
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="flex flex-col justify-between h-full p-2 sm:p-4">
-                  <div className="px-2 py-2">
+                <div className="flex flex-col justify-between h-full p-2 sm:p-4 mt-[30px] sm:mt-0 md:mt-0 lg:mt-0">
+                  <div onClick={() => openModal(data)} className="px-2 py-2">
                     <p className="text-md text-neutral-10 font-semibold dark:text-primary-100 truncate max-w-xs">
                       {data.assetAudiosName ||
                         data.audioName ||
@@ -699,37 +720,57 @@ export function HomePage() {
           })}
         </div>
       </div>
+
       {modalIsOpen && selectedasset && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] mx-4 flex relative ">
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-full sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] mx-4 flex flex-col relative">
             <button
-              className=" absolute top-1 right-4 text-gray-600 dark:text-gray-400 text-4xl"
+              className="absolute top-1 right-4 text-gray-600 dark:text-gray-400 text-4xl"
               onClick={closeModal}>
               &times;
             </button>
+
+            {/* Bagian Gambar */}
             <div
               onClick={() => openModal(selectedasset)}
-              className="flex-1 flex   items-center justify-center mb-4">
-              <div className="w-full h-[290px] relative">
+              className="flex flex-col items-center justify-center w-full">
+              <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
                 {selectedasset.uploadUrlVideo ? (
                   <video
                     src={selectedasset.uploadUrlVideo}
                     alt="Asset Video"
-                    className="w-full h-[300px] object-cover"
+                    className="w-full h-full object-cover"
                     controls
                     controlsList="nodownload"
+                    onContextMenu={(e) => e.preventDefault()}
+                  />
+                ) : Array.isArray(selectedasset.datasetThumbnail) &&
+                  selectedasset.datasetThumbnail.length > 0 ? (
+                  <img
+                    src={selectedasset.datasetThumbnail[0] || CustomImage}
+                    alt="Thumbnail 1"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = CustomImage;
+                    }}
                     onContextMenu={(e) => e.preventDefault()}
                   />
                 ) : (
                   <img
                     src={
+                      selectedasset.image ||
                       selectedasset.uploadUrlImage ||
                       selectedasset.datasetImage ||
                       selectedasset.assetAudiosImage ||
                       selectedasset.asset2DImage ||
                       selectedasset.asset3DImage ||
-                      (selectedasset.videoName ? CustomImage : null) ||
+                      (selectedasset.video ? CustomImage : null) ||
+                      selectedasset.datasetThumbnail ||
+                      selectedasset.asset2DThumbnail ||
+                      selectedasset.asset3DThumbnail ||
+                      selectedasset.audioThumbnail ||
                       CustomImage
                     }
                     alt="Asset Image"
@@ -737,14 +778,17 @@ export function HomePage() {
                       e.target.onerror = null;
                       e.target.src = CustomImage;
                     }}
-                    className="w-full h-[300px] object-cover"
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
+                    className="w-full h-full object-cover"
                   />
                 )}
               </div>
             </div>
 
-            <div className="w-1/2 pl-4 mt-10">
-              <p className="text-xl text-neutral-10 font-bold dark:text-primary-100">
+            <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+              <p className="text-lg sm:text-xl text-neutral-10 font-bold dark:text-primary-100 text-start">
                 {selectedasset.assetAudiosName ||
                   selectedasset.audioName ||
                   selectedasset.datasetName ||
@@ -754,24 +798,27 @@ export function HomePage() {
                   selectedasset.videoName ||
                   "Nama Tidak Tersedia"}
               </p>
-              <p className="text-sm mb-2 dark:text-primary-100 mt-4">
+              <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
+                Kategori: {selectedasset.category}
+              </p>
+              <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
                 {selectedasset.price > 0
                   ? `Rp ${selectedasset.price.toLocaleString("id-ID")}`
                   : "Free"}
               </p>
               <div className="text-sm mb-2 dark:text-primary-100 mt-4">
-                <label className="flex-col mt-2">Deskripsi:</label>
-                <div className="mt-2">{selectedasset.description}</div>
+                <label className="block mt-2 text-start">Deskripsi:</label>
+                <div className="mt-2 text-justify">
+                  {selectedasset.description}
+                </div>
               </div>
-              <p className="text-sm mb-2 dark:text-primary-100 mt-4">
-                Kategori: {selectedasset.category}
-              </p>
+
               <div className="mt-4">
                 {selectedasset.price > 0 ? (
                   <>
                     <button
                       onClick={() => handleAddToCart(selectedasset)}
-                      className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${
+                      className={`flex p-2 text-center justify-center  w-full h-10 mt-2 rounded-md ${
                         purchasedAssets.has(selectedasset.id)
                           ? "bg-gray-400 pointer-events-none"
                           : "bg-neutral-60"
@@ -780,13 +827,13 @@ export function HomePage() {
                       <img
                         src={IconCart}
                         alt="Cart Icon"
-                        className="w-6 h-6 mr-2"
+                        className="w-10 h-6 mr-2"
                       />
                       <p>Tambahkan Ke Keranjang</p>
                     </button>
                     <button
                       onClick={() => handleBuyNow(selectedasset)}
-                      className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 mt-2 rounded-md ${
+                      className={`flex p-2 text-center justify-center  w-full h-10 mt-2 rounded-md ${
                         purchasedAssets.has(selectedasset.id)
                           ? "bg-gray-400 pointer-events-none"
                           : "bg-secondary-40"
@@ -795,7 +842,7 @@ export function HomePage() {
                       <img
                         src={IconDollar}
                         alt="Cart Icon"
-                        className="w-6 h-6 mr-2 -ml-24"
+                        className="w-10 h-6 mr-2 -ml-24"
                       />
                       <p>Beli Sekarang</p>
                     </button>
@@ -803,7 +850,7 @@ export function HomePage() {
                 ) : (
                   <button
                     onClick={() => handleSaveToMyAssets(selectedasset)}
-                    className="flex p-2 text-center items-center justify-center bg-neutral-60 text-primary-100 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-32 rounded-md">
+                    className="flex p-2 text-center items-center justify-center bg-neutral-60 text-primary-100 w-full h-10 mt-6 rounded-md">
                     <img
                       src={IconDownload}
                       alt="Download Icon"
@@ -817,17 +864,10 @@ export function HomePage() {
           </div>
         </div>
       )}
-      <footer className="h-full mt-[1000px] flex flex-col items-center justify-center">
-        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
-          <a href="#">Teams And Conditions</a>
-          <a href="#">File Licenses</a>
-          <a href="#">Refund Policy</a>
-          <a href="#">Privacy Policy</a>
-        </div>
-        <p className="text-[10px] md:text-[12px]">
-          Copyright © 2024 - All right reserved by ACME Industries Ltd
-        </p>
-      </footer>
+
+      <div className="mt-[700px]">
+        <Footer />
+      </div>
     </div>
   );
 }

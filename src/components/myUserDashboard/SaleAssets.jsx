@@ -134,7 +134,7 @@ function SalesAsset() {
             <Breadcrumb />
           </div>
 
-          <div className="grid grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
               <FaDollarSign className="text-4xl text-green-500 mr-4" />
               <div>
@@ -147,20 +147,14 @@ function SalesAsset() {
             <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center text-neutral-10">
               <FaChartLine className="text-4xl text-blue-500 mr-4" />
               <div>
-                <h3 className="text-lg font-semibold text-neutral-10">
-                  Aset Terjual
-                </h3>
-                <p className="text-2xl font-bold text-neutral-10">
-                  {userAssets.length}
-                </p>
+                <h3 className="text-lg font-semibold">Aset Terjual</h3>
+                <p className="text-2xl font-bold">{userAssets.length}</p>
               </div>
             </div>
             <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
               <FaThumbsUp className="text-4xl text-yellow-500 mr-4" />
               <div>
-                <h3 className="text-lg font-semibold text-neutral-10">
-                  Jumlah Disukai
-                </h3>
+                <h3 className="text-lg font-semibold">Jumlah Disukai</h3>
                 <p className="text-2xl font-bold">+{totalLikes}</p>
               </div>
             </div>
@@ -170,55 +164,59 @@ function SalesAsset() {
             <h3 className="text-lg font-semibold mb-4 text-neutral-10">
               Daftar Aset
             </h3>
-            <table className="min-w-full bg-white border border-gray-200">
-              <thead>
-                <tr>
-                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Preview
-                  </th>
-                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Nama Dataset
-                  </th>
-                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Kategori
-                  </th>
-                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Harga
-                  </th>
-                  <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Dibuat Pada
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {userAssets.map((asset) => (
-                  <tr key={asset.docId}>
-                    <td className="px-6 py-4 border-b border-gray-200">
-                      <img
-                        src={
-                          asset.previewUrl || "https://via.placeholder.com/50"
-                        }
-                        alt="Preview"
-                        className="w-10 h-10 object-cover"
-                      />
-                    </td>
-                    <td className="px-6 py-4 border-b border-gray-200">
-                      {asset.datasetName || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 border-b border-gray-200">
-                      {asset.category || "N/A"}
-                    </td>
-                    <td className="px-6 py-4 border-b border-gray-200">
-                      Rp.{" "}
-                      {asset.price ? Number(asset.price).toLocaleString() : "0"}
-                    </td>
-                    <td className="px-6 py-4 border-b border-gray-200">
-                      {asset.createdAt || "N/A"}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white border border-gray-200">
+                <thead>
+                  <tr>
+                    <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Preview
+                    </th>
+                    <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Nama Dataset
+                    </th>
+                    <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Kategori
+                    </th>
+                    <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Harga
+                    </th>
+                    <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Dibuat Pada
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {userAssets.map((asset) => (
+                    <tr key={asset.docId}>
+                      <td className="px-6 py-4 border-b border-gray-200">
+                        <img
+                          src={
+                            asset.previewUrl || "https://via.placeholder.com/50"
+                          }
+                          alt="Preview"
+                          className="w-10 h-10 object-cover"
+                        />
+                      </td>
+                      <td className="px-6 py-4 border-b border-gray-200">
+                        {asset.datasetName || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 border-b border-gray-200">
+                        {asset.category || "N/A"}
+                      </td>
+                      <td className="px-6 py-4 border-b border-gray-200">
+                        Rp.{" "}
+                        {asset.price
+                          ? Number(asset.price).toLocaleString()
+                          : "0"}
+                      </td>
+                      <td className="px-6 py-4 border-b border-gray-200">
+                        {asset.createdAt || "N/A"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

@@ -21,6 +21,7 @@ import IconDollar from "../../../assets/assetWeb/iconDollarLight.svg";
 import IconCart from "../../../assets/assetWeb/iconCart.svg";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineInfoCircle } from "react-icons/ai";
+import Footer from "../../website/Footer/Footer";
 
 export function AssetImage() {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ export function AssetImage() {
   const [searchResults, setSearchResults] = useState([]);
   const [purchasedAssets, setPurchasedAssets] = useState(new Set());
   const [validationMessage, setValidationMessage] = useState("");
+  const [selectedSize, setSelectedSize] = useState("Original");
 
   // Mengambil ID pengguna saat ini
   useEffect(() => {
@@ -74,24 +76,21 @@ export function AssetImage() {
 
   // Menangani pengambilan aset yang telah dibeli
   useEffect(() => {
+    // Fetch purchased assets for the current user
     const fetchUserPurchasedAssets = async () => {
       if (!currentUserId) return;
 
       const purchasedQuery = query(
         collection(db, "buyAssets"),
-        where("uid", "==", currentUserId)
+        where("userId", "==", currentUserId)
       );
 
       try {
         const purchasedSnapshot = await getDocs(purchasedQuery);
         const purchasedIds = new Set();
-
         purchasedSnapshot.forEach((doc) => {
-          // Menambahkan assetId dari dokumen ke dalam Set
           purchasedIds.add(doc.data().assetId);
         });
-
-        // Mengupdate state dengan assetId yang dibeli
         setPurchasedAssets(purchasedIds);
       } catch (error) {
         console.error("Error fetching purchased assets: ", error);
@@ -202,41 +201,42 @@ export function AssetImage() {
     return true;
   };
 
-  // Fungsi untuk menambahkan aset ke keranjang
-  const handleAddToCart = async (selectedasset) => {
-    if (!validateAddToCart(selectedasset.id)) return;
+  const sizeDimensions = {
+    Original: "6000x4000",
+    Large: "1920x1280",
+    Medium: "1280x1280",
+    Small: "640x427",
+  };
 
-    // Cek apakah userId penjual sama dengan currentUserId
-    if (selectedasset.userId === currentUserId) {
+  const handleAddToCart = async (selectedAsset) => {
+    if (!validateAddToCart(selectedAsset.id)) return;
+
+    if (selectedAsset.userId === currentUserId) {
       alert("Anda tidak dapat membeli aset yang Anda jual sendiri.");
       return;
     }
 
-    // Ambil userId dari selectedasset dan simpan dalam array
-    const userIdFromAsset = [selectedasset.userId];
-    console.log("User ID from Asset: ", userIdFromAsset);
+    const dimensions = sizeDimensions[selectedSize] || "Unknown Size";
+    const sizeWithDimensions = `${selectedSize} (${dimensions})`;
 
-    // Membuat referensi dokumen untuk keranjang menggunakan ID aset
-    const cartRef = doc(db, "cartAssets", `${selectedasset.id}`);
-
+    const cartRef = doc(db, "cartAssets", `${selectedAsset.id}`);
     try {
       const cartSnapshot = await getDoc(cartRef);
-
       if (cartSnapshot.exists()) {
         setValidationMessage("Anda sudah menambahkan asset ini ke keranjang.");
         return;
       }
 
-      // Menambahkan aset ke keranjang, termasuk userId dari selectedasset
       await setDoc(cartRef, {
         userId: currentUserId,
-        assetId: selectedasset.id,
-        Image_umum: selectedasset.uploadUrlImage,
-        name: selectedasset.imageName,
-        description: selectedasset.description,
-        price: selectedasset.price,
-        category: selectedasset.category,
-        assetOwnerID: userIdFromAsset[0],
+        assetId: selectedAsset.id,
+        Image_umum: selectedAsset.uploadUrlImage,
+        name: selectedAsset.imageName,
+        description: selectedAsset.description,
+        price: selectedAsset.price,
+        category: selectedAsset.category,
+        assetOwnerID: selectedAsset.userId,
+        size: sizeWithDimensions,
       });
       alert("Asset berhasil ditambahkan ke keranjang!");
     } catch (error) {
@@ -247,8 +247,9 @@ export function AssetImage() {
 
   // Fungsi untuk menangani pembelian aset
   const handleBuyNow = async (selectedasset) => {
+    // Cek apakah pengguna sudah login
     if (!currentUserId) {
-      alert("Anda perlu login untuk menambahkan asset ke keranjang");
+      alert("Anda perlu login untuk membeli aset");
       navigate("/login");
       return;
     }
@@ -259,33 +260,49 @@ export function AssetImage() {
       return;
     }
 
+    // Cek apakah aset sudah dibeli
     if (purchasedAssets.has(selectedasset.id)) {
-      alert(
-        "Anda sudah membeli asset ini dan tidak bisa menambahkannya ke keranjang."
-      );
+      alert("Anda sudah membeli aset ini.");
       return;
     }
 
-    // Document ID sekarang mengikuti asset ID
-    const cartRef = doc(db, "buyNow", ` ${selectedasset.id}`);
+    // Mengambil referensi ke dokumen pembelian
+    const cartRef = doc(db, "buyNow", selectedasset.id);
     const cartSnapshot = await getDoc(cartRef);
     if (cartSnapshot.exists()) {
-      // alert("Anda sudah Membeli Asset ini.");
+      alert("Anda sudah membeli asset ini.");
       return;
     }
+
+    const sizeDimensions = {
+      Original: { dimensions: "6000x4000", width: 6000, height: 4000 },
+      Large: { dimensions: "1920x1280", width: 1920, height: 1280 },
+      Medium: { dimensions: "1280x1280", width: 1280, height: 1280 },
+      Small: { dimensions: "640x427", width: 640, height: 427 },
+    };
+
+    const selectedSizeDetails = sizeDimensions[selectedSize] || {
+      dimensions: "Unknown Size",
+    };
+    const sizeWithDimensions = `${selectedSize} (${selectedSizeDetails.dimensions})`;
 
     const { id, imageName, description, price, uploadUrlImage, category } =
       selectedasset;
 
-    const missingFields = [];
-    if (!imageName) missingFields.push("name");
-    if (!description) missingFields.push("description");
-    if (price === undefined) missingFields.push("price");
-    if (!uploadUrlImage) missingFields.push("Image_umum");
-    if (!category) missingFields.push("category");
+    // Validasi atribut yang diperlukan
+    const missingFields = validateAssetFields({
+      imageName,
+      description,
+      price,
+      uploadUrlImage,
+      category,
+      size: selectedSize, // Sertakan ukuran dalam validasi
+    });
 
     if (missingFields.length > 0) {
-      alert(`Missing fields: ${missingFields.join(", ")}. Please try again.`);
+      alert(
+        `Field yang hilang: ${missingFields.join(", ")}. Silakan coba lagi.`
+      );
       return;
     }
 
@@ -298,25 +315,29 @@ export function AssetImage() {
         price: price,
         Image_umum: uploadUrlImage,
         category: category,
+        size: sizeWithDimensions,
         assetOwnerID: selectedasset.userId,
+        // sizeWidth: selectedSizeDetails.width, // Menyimpan lebar ukuran
+        // sizeHeight: selectedSizeDetails.height, // Menyimpan tinggi ukuran
       });
 
       navigate("/buy-now-asset");
     } catch (error) {
       console.error("Error adding to cart: ", error);
       alert(
-        "Terjadi kesalahan saat menambahkan asset ke keranjang. Silakan coba lagi."
+        "Terjadi kesalahan saat menambahkan aset ke keranjang. Silakan coba lagi."
       );
     }
   };
 
-  // Function to validate asset fields
+  // Fungsi untuk memvalidasi atribut aset
   const validateAssetFields = ({
     imageName,
     description,
     price,
     uploadUrlImage,
     category,
+    size,
   }) => {
     const missingFields = [];
     if (!imageName) missingFields.push("name");
@@ -324,6 +345,7 @@ export function AssetImage() {
     if (price === undefined) missingFields.push("price");
     if (!uploadUrlImage) missingFields.push("Image_umum");
     if (!category) missingFields.push("category");
+    if (!size) missingFields.push("size");
     return missingFields;
   };
 
@@ -337,6 +359,7 @@ export function AssetImage() {
   const closeModal = () => {
     setModalIsOpen(false);
     setSelectedasset(null);
+    setSelectedSize("Original");
   };
 
   // Filter berdasarkan pencarian
@@ -435,7 +458,7 @@ export function AssetImage() {
             </button>
           </div>
         )}
-        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
+        <h1 className="text-2xl -ml-10 font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
           All Category
         </h1>
       </div>
@@ -459,51 +482,54 @@ export function AssetImage() {
             return (
               <div
                 key={data.id}
-                className="w-full max-w-[280px] h-[220px] sm:w-[150px] sm:h-[215px] md:w-[180px] md:h-[230px] lg:h-[280px] xl:w-[240px] xl:h-[320px] 2xl:w-[280px] 2xl:h-[400px]  bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between relative rounded-lg shadow-lg">
-                <div className="w-full flex-shrink-0 h-[100px] sm:h-[100px] md:h-[110px] lg:h-[150px] xl:h-[200px] relative ">
+                className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg">
+                <div className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]">
                   <img
                     src={data.uploadUrlImage || CustomImage}
                     alt="Image"
-                    className="h-full w-full overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
+                    className="h-full w-full object-cover rounded-t-[10px] border-none"
                     onClick={() => openModal(data)}
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = CustomImage;
                     }}
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
                   />
+                  {isPurchased && (
+                    <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                      Sudah Dibeli
+                    </div>
+                  )}
                 </div>
 
-                {isPurchased && (
-                  <div className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
-                    Sudah Dibeli
-                  </div>
-                )}
-
-                <div className="flex flex-col justify-between h-full px-4 py-2 sm:p-4">
-                  <div>
-                    <p className="text-[9px] text-neutral-10 font-semibold dark:text-primary-100">
-                      {data.imageName}
+                <div className="flex flex-col justify-between h-full p-2 sm:p-4">
+                  <div onClick={() => openModal(data)}>
+                    <p className="text-xs text-neutral-10 font-semibold dark:text-primary-100">
+                      {data.imageName.length > 14
+                        ? `${data.imageName.substring(0, 14)}...`
+                        : data.imageName}
                     </p>
-                    <h4 className="text-neutral-20 text-[8px] sm:text-[11px] md:text-[10px] lg:text-[12px] xl:text-[14px] dark:text-primary-100">
+
+                    <h4 className="text-neutral-20 text-xs sm:text-sm lg:text-base dark:text-primary-100">
                       {data.description.length > 24
                         ? `${data.description.substring(0, 24)}......`
                         : data.description}
                     </h4>
                   </div>
-                  <div className="flex justify-between items-center mt-auto gap-2">
+                  <div className="flex justify-between items-center mt-2 sm:mt-4">
                     <button
                       onClick={() => handleLikeClick(data.id, likesAsset)}
-                      className="flex justify-start items-center mr-2">
+                      className="flex items-center">
                       {likedByCurrentUser ? (
                         <FaHeart className="text-red-600" />
                       ) : (
-                        <FaRegHeart className="text-neutral-10 text-[11px] sm:text-[14px] dark:text-primary-100 " />
+                        <FaRegHeart className="text-neutral-10 text-xs sm:text-sm" />
                       )}
-                      <p className="ml-2 text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
-                        ({likesAsset})
-                      </p>
+                      <p className="ml-1 text-xs sm:text-sm">({likesAsset})</p>
                     </button>
-                    <p className="text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
+                    <p className="text-xs sm:text-sm lg:text-base">
                       {data.price % 1000 === 0 && data.price >= 1000
                         ? `Rp. ${(data.price / 1000).toLocaleString("id-ID")}k`
                         : `Rp. ${data.price.toLocaleString("id-ID")}`}
@@ -520,37 +546,59 @@ export function AssetImage() {
       {modalIsOpen && selectedasset && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[700px] sm:w-[700px] md:w-[700px] lg:w-[700px] xl:w-[700px] 2xl:w-[700px] mx-4 flex relative">
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-full sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] mx-4 flex flex-col relative">
             <button
-              className="absolute top-1 sm:top-2 md:top-2 lg:top-3 xl:top-2 2xl:top-2 right-3 sm:right-2 md:right-2 lg:right-3 xl:right-2 2xl:right-2 text-gray-600 dark:text-gray-400 text-2xl sm:text-xl md:text-xl lg:text-[35px] xl:text-[40px] 2xl:text-2xl"
+              className="absolute top-1 right-4 text-gray-600 dark:text-gray-400 text-4xl"
               onClick={closeModal}>
               &times;
             </button>
-            <img
-              src={selectedasset.uploadUrlImage || CustomImage}
-              alt="asset Image"
-              className="w-1/2 h-[285px]"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = CustomImage;
-              }}
-            />
-            <div className="w-1/2 pl-4 ">
-              <h2 className="text-lg font-semibold mb-2 dark:text-primary-100">
+            <div className="flex flex-col items-center justify-center w-full">
+              <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
+                <img
+                  src={selectedasset.uploadUrlImage || CustomImage}
+                  alt="asset Image"
+                  className="w-full h-full object-cover"
+                  onClick={() => openModal()}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = CustomImage;
+                  }}
+                  onContextMenu={(e) => e.preventDefault()}
+                  draggable={false}
+                  onDragStart={(e) => e.preventDefault()}
+                />
+              </div>
+            </div>
+            <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+              <h2 className="text-md mb-2 dark:text-primary-100 mt-4 text-start font-semibold">
                 {selectedasset.imageName}
               </h2>
-              <p className="text-sm mb-2 dark:text-primary-100 mt-4">
-                Rp. {selectedasset.price.toLocaleString("id-ID")}
-              </p>
-              <div className="text-sm mb-2 dark:text-primary-100 mt-4">
-                <label className="flex-col mt-2">Deskripsi gambar:</label>
-                <div className="mt-2">{selectedasset.description}</div>
-              </div>
-
-              <p className="text-sm mb-2 dark:text-primary-100 mt-4">
+              <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
                 Kategori: {selectedasset.category}
               </p>
-              <div className="mt-28">
+              <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
+                Rp. {selectedasset.price.toLocaleString("id-ID")}
+              </p>
+              <div className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
+                <label className="flex-col mt-2 ">Deskripsi gambar:</label>
+                <div className="mt-2 text-justify">
+                  {selectedasset.description}
+                </div>
+              </div>
+
+              <div className="mt-10">
+                <div className="mb-4 text-start">
+                  <label className="flex-col mt-2 ">Pilih Ukuran:</label>
+                  <select
+                    value={selectedSize}
+                    onChange={(e) => setSelectedSize(e.target.value)}
+                    className="mt-2 p-2 border rounded-md w-full">
+                    <option value="Original">Original (6000x4000)</option>
+                    <option value="Large">Large (1920x1280)</option>
+                    <option value="Medium">Medium (1280x1280)</option>
+                    <option value="Small">Small (640x427)</option>
+                  </select>
+                </div>
                 <button
                   onClick={() => handleAddToCart(selectedasset)}
                   className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${
@@ -587,17 +635,7 @@ export function AssetImage() {
         </div>
       )}
 
-      <footer className=" min-h-screen flex flex-col items-center justify-center">
-        <div className="flex justify-center gap-4 text-[10px] sm:text-[12px] lg:text-[16px] font-semibold mb-8">
-          <a href="#">Terms And Conditions</a>
-          <a href="#">File Licenses</a>
-          <a href="#">Refund Policy</a>
-          <a href="#">Privacy Policy</a>
-        </div>
-        <p className="text-[10px] md:text-[12px]">
-          Copyright © 2024 - All rights reserved by ACME Industries Ltd
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 }

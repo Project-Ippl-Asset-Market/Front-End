@@ -94,14 +94,14 @@ function HeaderWebUser() {
           <img
             src={logoWeb}
             alt="logo"
-            className="w-12 sm:w-16 md:w-20 lg:w-24 xl:w-28 2xl:w-32 h-auto"
+            className="w-12 sm:w-16 md:w-18 lg:w-20 xl:w-20 2xl:w-24 h-auto"
           />
           <h2 className="text-[8px] sm:text-sm md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl hidden sm:block">
             PixelStore
           </h2>
         </div>
 
-        <div className="fixed top-0 right-0 p-4 z-10">
+        <div className="fixed top-0 right-0 p-4 z-50">
           {/* cart an my asset */}
           <div className="z-50  gap-14 sm:gap-1 md:gap-1 lg:gap-1 xl:gap-1 2xl:gap-2 flex justify-center items-center">
             <Link
@@ -110,9 +110,11 @@ function HeaderWebUser() {
               <img
                 src={IconMyAsset}
                 alt="icon my asset"
-                className="w-[24px] h-[24px]"
+                className="w-[24px] h-[24px] ml-4 sm:-ml-1 md:-ml-1 lg:-ml-1 xl:-ml-1 2xl:-ml-1"
               />
-              <label className="-ml-3">My asset</label>
+              <label className="ml-2  sm:-ml-4 md:-ml-4 lg:-ml-4 xl:-ml-4 2xl:-ml-4">
+                My asset
+              </label>
             </Link>
 
             <Link
@@ -160,7 +162,7 @@ function HeaderWebUser() {
                               <div className="flex items-center justify-center p-2 bg-neutral-90 hover:border-none dark:bg-neutral-20   rounded-lg hover:text-primary-100 hover:bg-secondary-40 dark:hover:bg-secondary-40 ">
                                 <div
                                   onClick={toggleDarkMode}
-                                  className="flex w-full h-8 transition-colors duration-100 focus:outline-none gap-4 p-1  ">
+                                  className="flex w-full h-6 transition-colors duration-100 focus:outline-none gap-4 ml-1  ">
                                   {darkMode ? (
                                     <img
                                       src={IconDarkMode}

@@ -247,11 +247,11 @@ function AdminDashboard() {
       </aside>
 
       <div className="p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 h-full bg-primary-100 text-neutral-10 dark:bg-neutral-20 dark:text-neutral-10 min-h-screen pt-24 sm:ml-64 md:ml-72 lg:ml-80">
-        <div className="breadcrumbs text-sm md:text-base mb-4 mt-12 justify-start -ml-14">
+        <div className="breadcrumbs text-sm mt-1 mb-10">
           <Breadcrumb />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
           {Object.keys(assetCounts).map((key) => (
             <div
               key={key}
@@ -268,31 +268,6 @@ function AdminDashboard() {
             </div>
           ))}
         </div>
-
-        <div className="mt-10 md:mt-14 w-full">
-          <h2 className="text-2xl mb-4 text-neutral-20 dark:text-primary-100">
-            Grafik Asset
-          </h2>
-          <div className="w-full" style={{ height: 350 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart
-                data={chartData}
-                margin={{ top: 5, right: 100, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="createdAt"
-                  tick={CustomXAxisTick}
-                  interval={0}
-                  height={100}
-                />
-                <YAxis />
-                <Tooltip content={<CustomTooltip />} /> <Legend />
-                <Line type="monotone" dataKey="count" stroke="#3F83F8" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
         {/* Pie Chart for Total Asset and Transaction Counts */}
         <div className="mt-10 md:mt-14 w-full">
           <h2 className="text-2xl mb-4 text-neutral-20 dark:text-primary-100">
@@ -318,6 +293,31 @@ function AdminDashboard() {
                 </Pie>
                 <Tooltip />
               </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="mt-10 md:mt-14 w-full -pl-2">
+          <h2 className="text-2xl mb-4 text-neutral-20 dark:text-primary-100">
+            Grafik Asset
+          </h2>
+          <div className="w-full" style={{ height: 400 }}>
+            <ResponsiveContainer width="110%" height="100%">
+              <LineChart
+                data={chartData}
+                margin={{ top: 5, right: 40, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="createdAt"
+                  tick={CustomXAxisTick}
+                  interval={0}
+                  height={80}
+                />
+                <YAxis />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                <Line type="monotone" dataKey="count" stroke="#3F83F8" />
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </div>

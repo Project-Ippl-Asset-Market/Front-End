@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -25,7 +24,7 @@ function AddNewAudio() {
     uploadUrlAudio: null,
   });
   const navigate = useNavigate();
-  const [previewAudio, setPreviewAudio] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const categories = [
@@ -52,18 +51,23 @@ function AddNewAudio() {
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    if (name === "uploadUrlAudio" && files[0]) {
+    if (name === "audioThumbnail" && files[0]) {
       setAudio({
         ...audio,
-        uploadUrlAudio: files[0],
+        audioThumbnail: files[0],
       });
 
       // Create image preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewAudio(reader.result);
-      };
-      reader.readAsDataURL(files[0]);
+      if (files[0].type.includes("image")) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewImage(reader.result);
+        };
+        reader.readAsDataURL(files[0]);
+      } else {
+        // Reset preview jika file bukan gambar
+        setPreviewImage(DefaultPreview);
+      }
     } else {
       setAudio({
         ...audio,
@@ -76,52 +80,80 @@ function AddNewAudio() {
     e.preventDefault();
 
     try {
-      // Save image details to Firestore
+      // Konversi audio.price menjadi number
+      const priceAsNumber = parseInt(audio.price);
+
+      if (isNaN(priceAsNumber)) {
+        // Validasi jika harga yang diinput tidak valid
+        throw new Error("Invalid price: must be a number.");
+      }
+
+      // Save audio details to Firestore
       const docRef = await addDoc(collection(db, "assetAudios"), {
         category: audio.category,
         createdAt: Timestamp.now(),
         uploadUrlAudio: "",
+        audioThumbnail: "",
         audioName: audio.audioName,
         description: audio.description,
-        price: audio.price,
+        price: priceAsNumber, // Simpan sebagai number
         uploadedByEmail: user.email,
         userId: user.uid,
       });
 
       const docId = docRef.id;
 
-      // Upload profile image to Firebase Storage
+      // Upload audio image/file to Firebase Storage
       let uploadUrlAudioUrl = "";
       if (audio.uploadUrlAudio) {
+        // Ref untuk upload file ke Storage dengan ekstensi asli
         const audioRef = ref(
           storage,
           `images-asset-audio/uploadUrlAudio-${docId}.mp3`
         );
+
+        // Upload file ke Storage
         await uploadBytes(audioRef, audio.uploadUrlAudio);
         uploadUrlAudioUrl = await getDownloadURL(audioRef);
       }
 
+      let audioThumbnailUrl = "";
+      if (audio.audioThumbnail) {
+        // Ref untuk upload file ke Storage dengan ekstensi asli
+        const audioRef = ref(
+          storage,
+          `images-asset-audio/uploadUrlAudio-${docId}.mp3`
+        );
+
+        // Upload file ke Storage
+        await uploadBytes(audioRef, audio.audioThumbnail);
+        audioThumbnailUrl = await getDownloadURL(audioRef);
+      }
+
+      // Update Firestore dengan URL gambar yang diupload
       await updateDoc(doc(db, "assetAudios", docId), {
         uploadUrlAudio: uploadUrlAudioUrl,
+        audioThumbnail: audioThumbnailUrl,
       });
 
       // Reset the form
       setAudio({
-        audioNameName: "",
+        audioName: "",
         category: "",
         description: "",
         price: "",
         uploadUrlAudio: null,
+        audioThumbnail: null,
       });
-      setPreviewAudio(null);
+      setPreviewImage(null);
 
-      // Navigate back to /manage-asset-image
+      // Navigate back to /manage-asset-audio
       setAlertSuccess(true);
       setTimeout(() => {
         navigate("/manage-asset-audio");
       }, 2000);
     } catch (error) {
-      // console.error("Error menambahkan audio: ", error);
+      console.error("Error menambahkan audio: ", error);
       setAlertError(true);
     }
   };
@@ -132,6 +164,58 @@ function AddNewAudio() {
 
   const closeAlert = () => {
     setAlertError(false);
+  };
+
+  const [fileSize, setFileSize] = useState(null);
+  const [error, setError] = useState(null);
+
+  const handleFileChange = (event) => {
+    const { name, value, files } = event.target;
+    const file = event.target.files[0];
+
+    if (name === "uploadUrlAudio" && files[0]) {
+      setAudio({
+        ...audio,
+        uploadUrlAudio: files[0],
+      });
+    } else {
+      setAudio({
+        ...audio,
+        [name]: value,
+      });
+    }
+
+    if (file) {
+      if (file.type !== "mp3" && !file.name.endsWith("mp3")) {
+        setError("File yang diunggah harus berformat .zip");
+        setFileSize(null);
+        event.target.value = null;
+        return;
+      } else {
+        setError(null); // Reset error jika file sesuai
+      }
+
+      let size = file.size; // Ukuran file dalam bytes
+      let unit = "Bytes";
+
+      if (size >= 1073741824) {
+        // Lebih besar atau sama dengan 1 GB
+        size = (size / 1073741824).toFixed(2);
+        unit = "GB";
+      } else if (size >= 1048576) {
+        // Lebih besar atau sama dengan 1 MB
+        size = (size / 1048576).toFixed(2);
+        unit = "MB";
+      } else if (size >= 1024) {
+        // Lebih besar atau sama dengan 1 KB
+        size = (size / 1024).toFixed(2);
+        unit = "KB";
+      }
+
+      setFileSize(`${size} ${unit}`);
+    } else {
+      setFileSize(null);
+    }
   };
 
   return (
@@ -167,7 +251,7 @@ function AddNewAudio() {
                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <span>audio baru berhasil ditambahkan dan tersimpan.</span>
+                <span>Audio baru berhasil ditambahkan dan tersimpan.</span>
               </div>
             </div>
           )}
@@ -220,7 +304,42 @@ function AddNewAudio() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
-                    Format video harus mp3
+                    Format file harus .zip
+                  </p>
+                </div>
+
+                <div>
+                  <input
+                    className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                    id="file_input"
+                    type="file"
+                    accept="mp3"
+                    onChange={handleFileChange}
+                    name="uploadUrlAudio"
+                  />
+                  {error && (
+                    <p className="text-red-500 mt-1 text-sm">{error}</p>
+                  )}
+                  {fileSize && (
+                    <p className="mt-1 text-sm">Ukuran file: {fileSize}</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+                <div className="w-full sm:w-[150px] md:w-[170px] lg:w-[200px] xl:w-[220px] 2xl:w-[170px]">
+                  <div className="flex items-center gap-1">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+                      Upload Thumbnail Audio
+                    </h3>
+                    <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
+                    />
+                  </div>
+                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
+                    Format thumbnail harus .jpg, .jpeg, .png dan ukuran minimal
+                    300 x 300 px.
                   </p>
                 </div>
                 <div className="p-0">
@@ -229,15 +348,15 @@ function AddNewAudio() {
                       <label
                         htmlFor="fileUpload"
                         className="flex flex-col justify-center items-center cursor-pointer text-center">
-                        {!previewAudio && (
+                        {!previewImage && (
                           <>
-                            <audio
+                            <img
                               alt=""
                               className="w-6 h-6"
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                              Upload Audio
+                              Upload Thumbnail
                             </span>
                           </>
                         )}
@@ -245,26 +364,27 @@ function AddNewAudio() {
                         <input
                           type="file"
                           id="fileUpload"
-                          name="uploadUrlAudio"
+                          name="audioThumbnail"
                           onChange={handleChange}
-                          multiple
-                          accept="audio/mp3"
+                          accept=".jpg,.jpeg,.png"
                           className="hidden"
                         />
 
-                        {previewAudio && (
+                        {previewImage && (
                           <div className="mt-2 relative">
-                            <audio
-                              controls
-                              src={previewAudio}
+                            <img
+                              src={previewImage}
                               alt="Preview"
                               className="w-40 sm:w-40 md:w-40 lg:w-[150px] xl:w-[150px] 2xl:w-[150px] h-40 sm:h-40 md:h-40 lg:h-[156px] xl:h-[156px] 2xl:h-[157px] -mt-2.5 object-cover rounded"
                             />
                             <button
                               type="button"
                               onClick={() => {
-                                setPreviewAudio(null);
-                                setAudio({ ...audio, uploadUrlAudio: null });
+                                setPreviewImage(null);
+                                setAudio({
+                                  ...audio,
+                                  audioThumbnail: null,
+                                });
                               }}
                               className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded">
                               x
@@ -277,12 +397,12 @@ function AddNewAudio() {
                 </div>
               </div>
 
-              {/* image Name */}
+              {/* Audio Name */}
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-1">
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                      audio Name
+                      Audio Name
                     </h3>
                     <img
                       src={IconField}
@@ -291,7 +411,7 @@ function AddNewAudio() {
                     />
                   </div>
                   <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Masukkan Nama Untuk audio Maximal 40 Huruf
+                    Masukkan Nama Untuk Audio Maximal 40 Huruf
                   </p>
                 </div>
 
@@ -301,7 +421,7 @@ function AddNewAudio() {
                       type="text"
                       className="input border-0 focus:outline-none focus:ring-0 w-full text-neutral-20 text-[10px] sm:text-[12px] md:text-[14px] lg:text-[14px] xl:text-[14px]"
                       name="audioName"
-                      value={audio.audioNameName}
+                      value={audio.audioName}
                       onChange={handleChange}
                       placeholder="Enter name...."
                       required
@@ -324,7 +444,7 @@ function AddNewAudio() {
                     />
                   </div>
                   <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Silahkan Pilih Kategori Yang Sesuai Dengan audio Anda.
+                    Silahkan Pilih Kategori yang Sesuai Dengan Audio Anda atau
                   </p>
                 </div>
 
@@ -336,16 +456,16 @@ function AddNewAudio() {
                       onChange={(e) =>
                         setAudio((prevState) => ({
                           ...prevState,
-                          category: e.target.value, // Update category inside audio state
+                          category: e.target.value,
                         }))
                       }
                       className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md">
                       <option value="" disabled>
                         Pick an option
                       </option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.name}>
-                          {cat.name}
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.name}>
+                          {category.name}
                         </option>
                       ))}
                     </select>
@@ -367,7 +487,7 @@ function AddNewAudio() {
                     />
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px]">
-                    Berikan Deskripsi Pada audio Anda Maximal 200 Huruf
+                    Berikan Deskripsi Pada Audio Anda Maximal 200 Huruf
                   </p>
                 </div>
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
@@ -393,7 +513,7 @@ function AddNewAudio() {
                     </h3>
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Silahkan Masukkan Harga Untuk audio jika asset gratis
+                    Silahkan Masukkan Harga Untuk Audio jika asset gratis
                     silahkan dikosongkan.
                   </p>
                 </div>

@@ -1,33 +1,22 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  collection,
+  addDoc,
+  Timestamp,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { onAuthStateChanged } from "firebase/auth";
+import { db, storage, auth } from "../../../firebase/firebaseConfig";
 import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
-import { useParams, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db, storage } from "../../../firebase/firebaseConfig";
-import {
-  deleteObject,
-  ref,
-  uploadBytes,
-  getDownloadURL,
-} from "firebase/storage";
 
 function EditNewAudio() {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const [audioPreview, setAudioPreview] = useState("");
-  const [alertSuccess, setAlertSuccess] = useState(false);
-  const [alertError, setAlertError] = useState(false);
-
-  const categories = [
-    { id: 1, name: "Audio Effects" },
-    { id: 2, name: "Background Music" },
-    { id: 3, name: "Voice Overs" },
-    { id: 4, name: "Sound Design" },
-  ];
-
+  const [user, setUser] = useState(null);
   const [audio, setAudio] = useState({
     audioName: "",
     category: "",
@@ -35,10 +24,20 @@ function EditNewAudio() {
     price: "",
     uploadUrlAudio: null,
   });
+  const navigate = useNavigate();
+  const [imagePreview, setImagePreview] = useState("");
+  const [alertSuccess, setAlertSuccess] = useState(false);
+  const [alertError, setAlertError] = useState(false);
+  const categories = [
+    { id: 1, name: "Audio Effects" },
+    { id: 2, name: "Background Music" },
+    { id: 3, name: "Voice Overs" },
+    { id: 4, name: "Sound Design" },
+  ];
 
   // Fetch existing data based on id
   useEffect(() => {
-    const fetchaAudio = async () => {
+    const fetchAudio = async () => {
       try {
         const docRef = doc(db, "assetAudios", id);
         const docSnap = await getDoc(docRef);
@@ -47,8 +46,8 @@ function EditNewAudio() {
           const data = docSnap.data();
           setAudio(data);
 
-          if (data.uploadUrlAudio) {
-            setAudioPreview(data.uploadUrlAudio);
+          if (data.audioThumbnail) {
+            setImagePreview(data.audioThumbnail);
           }
         } else {
           // console.log("No such document!");
@@ -59,23 +58,29 @@ function EditNewAudio() {
       }
     };
 
-    fetchaAudio();
+    fetchAudio();
   }, [id, navigate]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
 
-    if (name === "uploadUrlAudio" && files[0]) {
+    if (name === "audioThumbnail" && files[0]) {
       setAudio({
         ...audio,
-        uploadUrlAudio: files[0],
+        audioThumbnail: files[0],
       });
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAudioPreview(reader.result);
-      };
-      reader.readAsDataURL(files[0]);
+      // Create image preview
+      if (files[0].type.includes("image")) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setImagePreview(reader.result);
+        };
+        reader.readAsDataURL(files[0]);
+      } else {
+        // Reset preview jika file bukan gambar
+        setImagePreview(files.audioThumbnail);
+      }
     } else {
       setAudio({
         ...audio,
@@ -88,26 +93,30 @@ function EditNewAudio() {
     e.preventDefault();
 
     try {
-      let uploadUrlAudio = audio.uploadUrlAudio;
+      const priceAsNumber = parseInt(audio.price);
 
-      if (typeof uploadUrlAudio === "object" && uploadUrlAudio) {
+      if (isNaN(priceAsNumber)) {
+        // Validasi jika harga yang diinput tidak valid
+        throw new Error("Invalid price: must be a number.");
+      }
+
+      let audioThumbnail = audio.audioThumbnail;
+      if (imagePreview !== audio.audioThumbnail) {
+        const storageFileName = `images-asset-audio/audioThumbnail-${id}.jpg`;
         // Delete the old image if a new image is being uploaded
-        const oldAudioRef = ref(
-          storage,
-          `image-asset-audio/uploadUrlAudio-${id}.mp3`
-        );
-        await deleteObject(oldAudioRef); // Delete the old image
+        const oldImageRef = ref(storage, storageFileName);
+        await deleteObject(oldImageRef); // Delete the old image
 
         // Upload the new image
-        const audioRef = ref(
+        const imageRef = ref(
           storage,
-          `image-asset-audio/uploadUrlAudio-${id}.mp3`
+          `images-asset-audio/audioThumbnail-${id}.jpg`
         );
-        await uploadBytes(audioRef, audio.uploadUrlaudio);
-        uploadUrlAudio = await getDownloadURL(audioRefRef);
+        await uploadBytes(imageRef, audio.audioThumbnail);
+        audioThumbnail = await getDownloadURL(imageRef);
       } else {
         // If no new image is uploaded, keep the old image URL
-        uploadUrlAudio = audioPreview;
+        audioThumbnail = imagePreview;
       }
 
       const audioRef = doc(db, "assetAudios", id);
@@ -115,8 +124,8 @@ function EditNewAudio() {
         audioName: audio.audioName,
         category: audio.category,
         description: audio.description,
-        price: audio.price,
-        uploadUrlAudio: uploadUrlAudio,
+        price: priceAsNumber,
+        audioThumbnail: audioThumbnail,
       });
 
       setAlertSuccess(true);
@@ -124,13 +133,13 @@ function EditNewAudio() {
         navigate("/manage-asset-audio");
       }, 2000);
     } catch (error) {
-      console.error("Error updating audio: ", error);
+      // console.error("Error updating audio: ", error);
       setAlertError(true);
     }
   };
 
   const handleCancel = () => {
-    navigate(-1); // Navigate to the previous page or you can set a specific route like navigate("/dimage-list");
+    navigate(-1);
   };
 
   const closeAlert = () => {
@@ -203,7 +212,7 @@ function EditNewAudio() {
             onSubmit={handleSubmit}
             className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24   h-[1434px] gap-[50px]  overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0">
             <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-10 dark:text-primary-100 p-4">
-              Edit audio
+              Edit Audio
             </h1>
             <div className="p-8 -mt-4  bg-primary-100  dark:bg-neutral-20 rounded-sm shadow-lg">
               <h2 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
@@ -214,7 +223,7 @@ function EditNewAudio() {
                 <div className="w-full sm:w-[150px] md:w-[170px] lg:w-[200px] xl:w-[220px] 2xl:w-[170px]">
                   <div className="flex items-center gap-1">
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
-                      Upload File
+                      Edit Thumbnail Audio
                     </h3>
                     <img
                       src={IconField}
@@ -223,7 +232,8 @@ function EditNewAudio() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px] mb-2">
-                    Format audio harus mp3
+                    Format thumbnail harus .jpg, jpeg, png dan ukuran minimal
+                    300 x 300 px.
                   </p>
                 </div>
                 <div className="p-0">
@@ -232,7 +242,7 @@ function EditNewAudio() {
                       <label
                         htmlFor="fileUpload"
                         className="flex flex-col justify-center items-center cursor-pointer text-center">
-                        {!audioPreview && (
+                        {!imagePreview && (
                           <>
                             <img
                               alt=""
@@ -240,7 +250,7 @@ function EditNewAudio() {
                               src="path_to_your_icon"
                             />
                             <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                              Upload Audio
+                              Upload Thumbnail
                             </span>
                           </>
                         )}
@@ -248,26 +258,31 @@ function EditNewAudio() {
                         <input
                           type="file"
                           id="fileUpload"
-                          name="uploadUrlAudio"
+                          name="audioThumbnail"
                           onChange={handleChange}
                           multiple
-                          accept="mp3"
+                          accept=".jpg,.jpeg,.png"
                           className="hidden"
                         />
 
-                        {audioPreview && (
-                          <div className="mt-2 relative w-40 h-40 sm:w-40 sm:h-40 md:w-40 md:h-40 lg:w-[150px] lg:h-[156px] xl:w-[150px] xl:h-[156px] 2xl:w-[150px] 2xl:h-[157px] flex justify-center items-center bg-gray-200 rounded">
-                            <audio
-                              controls
-                              src={audioPreview}
+                        {imagePreview && (
+                          <div className="mt-2 relative">
+                            <img
+                              src={imagePreview || DefaultPreview}
                               alt="Preview"
-                              className="object-cover rounded"
+                              onError={(e) => {
+                                e.target.src = DefaultPreview;
+                              }}
+                              className="w-40 sm:w-40 md:w-40 lg:w-[150px] xl:w-[150px] 2xl:w-[150px] h-40 sm:h-40 md:h-40 lg:h-[156px] xl:h-[156px] 2xl:h-[157px] -mt-2.5 object-cover rounded"
                             />
                             <button
                               type="button"
                               onClick={() => {
-                                setAudioPreview(null);
-                                setAudio({ ...audio, uploadUrlAudio: null });
+                                setImagePreview(null);
+                                setAudio({
+                                  ...audio,
+                                  audioThumbnail: null,
+                                });
                               }}
                               className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded">
                               x
@@ -280,7 +295,7 @@ function EditNewAudio() {
                 </div>
               </div>
 
-              {/* image Name */}
+              {/* Audio Name */}
               <div className="flex flex-col md:flex-row sm:gap-[140px] md:gap-[149px] lg:gap-[150px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-full md:w-[280px] lg:w-[290px] xl:w-[350px] 2xl:w-[220px]">
                   <div className="flex items-center gap-1">
@@ -294,7 +309,7 @@ function EditNewAudio() {
                     />
                   </div>
                   <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Masukkan Nama Untuk audio Maximal 40 Huruf
+                    Masukkan Nama Untuk Audio Maximal 40 Huruf
                   </p>
                 </div>
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
@@ -326,7 +341,7 @@ function EditNewAudio() {
                     />
                   </div>
                   <p className="w-full text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px]">
-                    Silahkan Pilih Kategori Yang Sesuai Dengan audio Anda.
+                    Silahkan Pilih Kategori Yang Sesuai Dengan Audio Anda.
                   </p>
                 </div>
 
@@ -334,20 +349,20 @@ function EditNewAudio() {
                   <label className="input input-bordered flex items-center gap-2 w-full h-auto border border-neutral-60 rounded-md p-2 bg-primary-100 dark:bg-neutral-20 dark:text-primary-100">
                     <select
                       name="category"
-                      value={audio.category} // Bind value to dimage.category
+                      value={audio.category} // Bind value to audio.category
                       onChange={(e) =>
                         setAudio((prevState) => ({
                           ...prevState,
-                          category: e.target.value, // Update category inside image state
+                          category: e.target.value, // Update category inside audio state
                         }))
                       }
                       className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md">
                       <option value="" disabled>
                         Pick an option
                       </option>
-                      {categories.map((cat) => (
-                        <option key={cat.id} value={cat.name}>
-                          {cat.name}
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.name}>
+                          {category.name}
                         </option>
                       ))}
                     </select>
@@ -369,7 +384,7 @@ function EditNewAudio() {
                     />
                   </div>
                   <p className="w-2/2 mb-2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px]">
-                    Berikan Deskripsi Pada audio Anda Maximal 200 Huruf
+                    Berikan Deskripsi Pada Audio Anda Maximal 200 Huruf
                   </p>
                 </div>
                 <div className="flex justify-start items-start w-full sm:-mt-40 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">

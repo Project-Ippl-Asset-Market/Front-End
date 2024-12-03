@@ -34,7 +34,7 @@ function AddNewImage() {
     { id: 3, name: "Animals" },
     { id: 4, name: "People" },
     { id: 5, name: "Technology" },
-    { id: 6, name: "Food" },
+    { id: 6, name: "Fotografi Urban" },
   ];
 
   useEffect(() => {

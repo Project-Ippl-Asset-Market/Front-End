@@ -1,124 +1,114 @@
 import React from "react";
+import Zoom from "react-medium-image-zoom";
+import "react-medium-image-zoom/dist/styles.css";
+import AddImageSudah from "../../assets/Asset_Panduan/assets/AddImageSudah.png";
 import edit from "../../assets/Asset_Panduan/assets/edit.png";
-import hapus from "../../assets/Asset_Panduan/assets/hapus.png";
-import Dataset from "../../assets/Asset_Panduan/assets/Dataset.png";
-import AddNewDataset from "../../assets/Asset_Panduan/assets/AddNewDataset.png";
+import hapus from "../../assets/Asset_Panduan/assets/Hapus.png";
+import AddAssetImg from "../../assets/Asset_Panduan/assets/AddAssetImg.png";
+import AddImage from "../../assets/Asset_Panduan/assets/AddImage.png";
 import PopupDelete from "../../assets/Asset_Panduan/assets/PopupDelete.png";
 import Hilang from "../../assets/Asset_Panduan/assets/Hilang.png";
-import SidebarPanduan from "./SidebarPanduan";
+
+// Jangan lupa Install npm install react-medium-image-zoom
 
 const EditAsset = () => {
   return (
-    <div className="flex h-screen">
-      {/* Sidebar */}
-      <SidebarPanduan />
+    <div className="flex-1 overflow-y-auto min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white transition-colors duration-300">
+      {/* Guide Content */}
+      <div className="container mx-auto px-4 py-8">
+        {/* Step 1 */}
+        <div className="mb-16">
+          <p className="mb-4">
+            1. Untuk mengedit/menghapus konten yang telah Anda upload, pergi ke
+            halaman Manage Asset.
+          </p>
+        </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto bg-gray-100">
-        {/* Main content with vertical scroll */}
-        <div className="flex-1 overflow-y-auto">
-          {/* Navbar */}
-          <nav className="bg-gray-900 shadow-lg">
-            <div className="container mx-auto px-4 h-16 flex justify-center items-center">
-              <h1 className="text-white text-xl font-bold">
-                Panduan Edit/Hapus Asset
-              </h1>
-            </div>
-          </nav>
+        {/* Step 2 */}
+        <div className="mb-16">
+          <p className="mb-4">
+            2. Di halaman Manage Asset, pilih konten yang ingin diedit atau
+            dihapus dengan klik tombol
+            <span className="inline-flex items-center">
+              <img src={edit} alt="Edit" className="mx-1 inline h-4" />
+              untuk edit atau klik
+              <img src={hapus} alt="Hapus" className="mx-1 inline h-4" />
+              untuk hapus.
+            </span>
+          </p>
+          <Zoom>
+            <img
+              src={AddImageSudah}
+              alt="Add Image"
+              className="w-full max-w-lg mx-auto"
+            />
+          </Zoom>
+        </div>
 
-          {/* Guide Content */}
-          <div className="bg-gray-900 text-white py-8">
-            <div className="container mx-auto px-4">
-              {/* Step 1 */}
-              <div className="mb-8">
-                <p className="mb-4">
-                  1. Untuk mengedit/menghapus konten yang telah anda upload,
-                  anda bisa pergi ke halaman My Asset Market
-                </p>
-              </div>
+        {/* Step 3 */}
+        <div className="mb-16">
+          <p className="mb-4">
+            3. Klik tombol edit untuk diarahkan ke halaman edit aset. Di sana,
+            ubah aset sesuai kebutuhan, seperti contoh gambar berikut.
+          </p>
+          <Zoom>
+            <img
+              src={AddAssetImg}
+              alt="Add Dataset"
+              className="w-full max-w-lg mx-auto"
+            />
+          </Zoom>
+        </div>
 
-              {/* Step 2 */}
-              <div className="mb-8">
-                <p className="mb-4">
-                  2. Kemudian pada halaman My Asset Market, anda bisa memilih
-                  konten mana yang akan anda edit/Hapus dengan cara klik tombol
-                  <span
-                    style={{ display: "inline-flex", alignItems: "center" }}>
-                    <img
-                      src={edit}
-                      alt="Edit"
-                      style={{
-                        marginLeft: "5px",
-                        marginRight: "5px",
-                        verticalAlign: "middle",
-                        height: "1em",
-                      }}
-                    />
-                    untuk mengedit konten atau klik tombol
-                    <img
-                      src={hapus}
-                      alt="Hapus"
-                      style={{
-                        marginLeft: "5px",
-                        marginRight: "5px",
-                        verticalAlign: "middle",
-                        height: "1em",
-                      }}
-                    />
-                    untuk menghapus konten
-                  </span>
-                </p>
-                <img src={Dataset} alt="Dataset" className="mb-4" />
-              </div>
+        {/* Step 4 */}
+        <div className="mb-16">
+          <p className="mb-4">
+            4. Setelah mengedit informasi aset, klik "Save" untuk menyimpan
+            perubahan atau "Cancel" untuk membatalkan.
+          </p>
+          <Zoom>
+            <img
+              src={AddImage}
+              alt="Dataset"
+              className="w-full max-w-lg mx-auto"
+            />
+          </Zoom>
+        </div>
 
-              {/* Step 3 */}
-              <div className="mb-8">
-                <p className="mb-4">
-                  3. Sebagai contoh ketika anda ingin mengedit konten Asset
-                  Game, maka anda akan diarahkan ke halaman edit Asset Game 2D,
-                  pada halaman ini anda dapat mengedit informasi konten asset
-                  yang anda upload sebelumnya.
-                </p>
-                <img src={AddNewDataset} alt="Add Dataset" className="mb-4" />
-              </div>
+        {/* Step 5 */}
+        <div className="mb-16">
+          <p className="mb-4">
+            5. Jika ingin menghapus konten, akan muncul pop-up konfirmasi.
+          </p>
+          <Zoom>
+            <img
+              src={PopupDelete}
+              alt="Pop Up Delete"
+              className="w-full max-w-lg mx-auto"
+            />
+          </Zoom>
+        </div>
 
-              {/* Step 4 */}
-              <div className="mb-8">
-                <p className="mb-4">
-                  4. Setelah selesai mengedit informasi konten asset game, klik
-                  save untuk menyimpan perubahan, dan konten yang anda edit akan
-                  tampil pada halaman Add new Asset Game 2D, dan klik cancel
-                  untuk batal
-                </p>
-                <img src={Dataset} alt="Dataset" className="mb-4" />
-              </div>
+        {/* Step 6 */}
+        <div className="mb-16">
+          <p className="mb-4">
+            6. Di pop-up, klik "Delete" untuk menghapus atau "Close" untuk
+            membatalkan.
+          </p>
+        </div>
 
-              {/* Step 5 */}
-              <div className="mb-8">
-                <p className="mb-4">
-                  5. Dan contoh ketika anda ingin menghapus konten, maka akan
-                  tampil pop up yang berisi peringatan.
-                </p>
-                <img src={PopupDelete} alt="Pop Up Delete" className="mb-4" />
-              </div>
-
-              {/* Step 6 */}
-              <div className="mb-8">
-                <p className="mb-4">
-                  6. Dari Pop up di atas klik Delete untuk menghapus konten, dan
-                  klik close untuk batal
-                </p>
-              </div>
-
-              {/* Step 7 */}
-              <div className="mb-8">
-                <p className="mb-4">
-                  7. Konten yang anda hapus akan hilang dari daftar isi konten
-                </p>
-                <img src={Hilang} alt="Dataset Hilang" className="mb-4" />
-              </div>
-            </div>
-          </div>
+        {/* Step 7 */}
+        <div className="mb-16">
+          <p className="mb-4">
+            7. Konten yang dihapus tidak lagi muncul di daftar isi.
+          </p>
+          <Zoom>
+            <img
+              src={Hilang}
+              alt="Dataset Hilang"
+              className="w-full max-w-lg mx-auto"
+            />
+          </Zoom>
         </div>
       </div>
     </div>

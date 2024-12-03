@@ -216,7 +216,7 @@ function EditNewAsset3D() {
     setPreviewImages((prevImages) => prevImages.filter((_, i) => i !== index));
     setAsset3D((prevDataset) => ({
       ...prevDataset,
-      asset2DThumbnail: Array.isArray(prevDataset.asset3DThumbnail)
+      asset3DThumbnail: Array.isArray(prevDataset.asset3DThumbnail)
         ? prevDataset.asset3DThumbnail.filter((_, i) => i !== index)
         : [],
     }));

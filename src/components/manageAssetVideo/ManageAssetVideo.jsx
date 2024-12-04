@@ -343,14 +343,19 @@ function ManageAssetVideo() {
                       key={asset.id}
                       className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
                       <td className="px-4 py-4">
-                        <a
-                          href={asset.video}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 underline hover:underline">
-                          {asset.videoName || "View Video"}
-                        </a>
+                        {asset.video ? (
+                          <video
+                            src={asset.video}
+                            controls
+                            controlsList=" nodownload"
+                            disablePictureInPicture
+                            onContextMenu={(e) => e.preventDefault()}
+                            className="w-40 h-20 rounded-md shadow-md object-cover"></video>
+                        ) : (
+                          <p className="text-gray-500">No video available</p>
+                        )}
                       </td>
+
                       <th
                         scope="row"
                         className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap">

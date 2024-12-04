@@ -388,7 +388,7 @@ const Cart = () => {
       </div>
 
       <div className="container mx-auto py-20">
-        <h2 className="text-2xl font-semibold mb-4 mt-8">Keranjang Belanja</h2>
+        <h2 className="text-2xl font-semibold mb-4 mt-16">Keranjang Belanja</h2>
         <p className="mb-4">
           Anda mempunyai {cartItems.length} item dalam keranjang
         </p>

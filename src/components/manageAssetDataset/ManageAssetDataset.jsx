@@ -127,7 +127,7 @@ function ManageAssetImage() {
             datasetName: data.datasetName,
             description: data.description,
             price: `Rp. ${data.price}`,
-            datasetImage: data.datasetImage,
+            datasetThumbnail: data.datasetThumbnail,
             category: data.category,
             createdAt,
             userId: data.userId,
@@ -346,9 +346,9 @@ function ManageAssetImage() {
                       key={asset.id}
                       className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
                       <td className="px-6 py-4">
-                        {asset.datasetImage ? (
+                        {asset.datasetThumbnail ? (
                           <img
-                            src={asset.datasetImage || CustomImage}
+                            src={asset.datasetThumbnail || CustomImage}
                             alt="Image"
                             className="h-14 w-14 overflow-hidden relative rounded-t-[10px] mx-auto border-none max-h-full cursor-pointer"
                             onError={(e) => {

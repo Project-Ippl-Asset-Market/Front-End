@@ -1,6 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
@@ -302,7 +304,7 @@ function AdminDashboard() {
             Grafik Asset
           </h2>
           <div className="w-full" style={{ height: 400 }}>
-            <ResponsiveContainer width="110%" height="100%">
+            <ResponsiveContainer width="100%" height="100%">
               <LineChart
                 data={chartData}
                 margin={{ top: 5, right: 40, left: 0, bottom: 5 }}>

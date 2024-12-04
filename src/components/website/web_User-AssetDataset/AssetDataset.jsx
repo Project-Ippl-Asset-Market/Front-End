@@ -358,7 +358,6 @@ export function AssetDataset() {
     asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [currentIndexModal, setCurrentIndexModal] = useState(0);
 
   const handlePrevious = () => {
@@ -472,13 +471,14 @@ export function AssetDataset() {
         </h1>
       </div>
       <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen -mt-6 ">
-        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
+        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
             const isPurchased = purchasedAssets.has(data.id);
 
-            const handlePrevious = () => {
+            {
+              /* const handlePrevious = () => {
               setCurrentIndex((prevIndex) =>
                 prevIndex > 0 ? prevIndex - 1 : prevIndex
               );
@@ -490,7 +490,8 @@ export function AssetDataset() {
                   ? prevIndex + 1
                   : prevIndex
               );
-            };
+            }; */
+            }
 
             {
               /* console.log(data.datasetThumbnail); */
@@ -504,8 +505,7 @@ export function AssetDataset() {
                   {Array.isArray(data.datasetThumbnail) &&
                   data.datasetThumbnail.length > 0 ? (
                     <img
-                      src={data.datasetThumbnail[currentIndex] || CustomImage}
-                      alt={`Thumbnail ${currentIndex + 1}`}
+                      src={data.datasetThumbnail || CustomImage}
                       className="h-full w-full object-cover rounded-t-[10px] border-none"
                       onClick={() => openModal(data)}
                       onError={(e) => {
@@ -535,23 +535,6 @@ export function AssetDataset() {
                       Sudah Dibeli
                     </div>
                   )}
-
-                  {/* Navigasi Carousel */}
-                  {Array.isArray(data.datasetThumbnail) &&
-                    data.datasetThumbnail.length > 1 && (
-                      <>
-                        <button
-                          onClick={handlePrevious}
-                          className="absolute left-1 top-1/2 transform -translate-y-1/2 bg-transparent text-[25px]  text-white rounded-full p-2">
-                          &#8592;
-                        </button>
-                        <button
-                          onClick={handleNext}
-                          className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-transparent text-[25px] text-white rounded-full p-2">
-                          &#8594;
-                        </button>
-                      </>
-                    )}
                 </div>
 
                 {/* details section */}

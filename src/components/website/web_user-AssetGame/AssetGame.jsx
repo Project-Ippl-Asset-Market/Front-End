@@ -90,7 +90,7 @@ const DropdownMenu = ({ onCategorySelect }) => {
                 {dropdownItems[category].map(({ name }) => (
                   <button
                     key={name}
-                    className="block py-2 hover:bg-gray-700 w-full text-left transition duration-200 "
+                    className="block py-2 hover:bg-secondary-40 hover:text-primary-100 w-full text-left transition duration-200 "
                     onClick={() => handleClick(category, name)}>
                     {name}
                   </button>
@@ -101,7 +101,6 @@ const DropdownMenu = ({ onCategorySelect }) => {
         )}
       </div>
 
-      {/* Dropdown untuk layar besar */}
       <div className="hidden sm:flex space-x-6 relative">
         {Object.keys(dropdownItems).map((category) => (
           <div
@@ -126,7 +125,7 @@ const DropdownMenu = ({ onCategorySelect }) => {
                   {dropdownItems[category].map(({ name }) => (
                     <button
                       key={name}
-                      className="block py-2 hover:bg-gray-700 transition duration-200 w-full text-left"
+                      className="block py-2 p-2  hover:bg-secondary-40 hover:text-primary-100 transition duration-200 w-full text-left"
                       onClick={() => handleClick(category, name)}>
                       {name}
                     </button>
@@ -239,7 +238,7 @@ export function AssetGame() {
       filteredAssets.sort((a, b) => (b.likeAsset || 0) - (a.likeAsset || 0));
 
       if (filteredAssets.length === 0) {
-        setFetchMessage("No assets found.");
+        setFetchMessage("Asset Tidak Tersedia!");
       } else {
         setFetchMessage("");
       }
@@ -357,7 +356,7 @@ export function AssetGame() {
       );
       return false;
     }
-    return true; // Validasi berhasil
+    return true;
   };
 
   // Fungsi untuk menambahkan aset ke keranjang
@@ -543,6 +542,23 @@ export function AssetGame() {
     );
   });
 
+  const [currentIndexModal, setCurrentIndexModal] = useState(0);
+
+  const handlePrevious = () => {
+    setCurrentIndexModal((prevIndex) =>
+      prevIndex > 0 ? prevIndex - 1 : prevIndex
+    );
+  };
+
+  const handleNext = () => {
+    setCurrentIndexModal((prevIndex) =>
+      selectedasset.asset2DThumbnail &&
+      prevIndex < selectedasset.asset2DThumbnail.length - 1
+        ? prevIndex + 1
+        : prevIndex
+    );
+  };
+
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
       <div className="w-full bg-primary-100 dark:text-primary-100 relative z-40 ">
@@ -651,7 +667,7 @@ export function AssetGame() {
         )}
       </div>
       <div className="pt-2  w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen mt-40 ">
-        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
+        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {fetchMessage && <p>{fetchMessage}</p>}
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
@@ -783,24 +799,26 @@ export function AssetGame() {
             <div
               onClick={() => openModal(selectedasset)}
               className="flex flex-col items-center justify-center w-full">
-              <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
-                {Array.isArray(selectedasset.audioThumbnails) &&
-                selectedasset.audioThumbnails.length > 0 ? (
+              <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] lg:h-[350px] xl:h-[400px] 2xl:h-[450px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
+                {Array.isArray(selectedasset.asset2DThumbnail) &&
+                selectedasset.asset2DThumbnail.length > 0 ? (
                   <div className="flex space-x-2 overflow-x-auto">
-                    {selectedasset.audioThumbnails.map(
-                      (thumbnailUrl, index) => (
-                        <img
-                          key={index}
-                          src={thumbnailUrl}
-                          alt={`Audio Thumbnail ${index + 1}`}
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = CustomImage;
-                          }}
-                          className="h-full w-auto object-cover rounded-t-[10px] border-none"
-                        />
-                      )
-                    )}
+                    {selectedasset.asset2DThumbnail.map((thumbnail, index) => (
+                      <img
+                        key={index}
+                        src={
+                          selectedasset.asset2DThumbnail[currentIndexModal] ||
+                          selectedasset.datasetFile ||
+                          CustomImage
+                        }
+                        alt={`Thumbnail ${index + 1}`}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = CustomImage;
+                        }}
+                        className="h-full w-auto object-cover rounded-t-[10px] border-none"
+                      />
+                    ))}
                   </div>
                 ) : (
                   <img
@@ -822,6 +840,22 @@ export function AssetGame() {
                     className="h-full w-full object-cover rounded-t-[10px] border-none"
                   />
                 )}
+
+                {Array.isArray(selectedasset.asset2DThumbnail) &&
+                  selectedasset.asset2DThumbnail.length > 1 && (
+                    <>
+                      <button
+                        onClick={handlePrevious}
+                        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-transparent text-white text-[30px] sm:text-[40px] rounded-full p-2">
+                        &#8592;
+                      </button>
+                      <button
+                        onClick={handleNext}
+                        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent text-white text-[30px] sm:text-[40px] rounded-full p-2">
+                        &#8594;
+                      </button>
+                    </>
+                  )}
               </div>
             </div>
             <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">

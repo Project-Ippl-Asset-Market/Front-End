@@ -46,12 +46,11 @@ export const UserProvider = ({ children }) => {
 const mockLoginService = async (userCredentials) => {
   // Simulate fetching user role based on credentials
   if (userCredentials.username === "admin") {
-    return { role: "admin" }; // Return role as an object
+    return { role: "admin" };
   } else if (userCredentials.username === "user") {
-    return { role: "user" }; // Return role as an object
+    return { role: "user" };
   }
-  return null; // Default case
+  return null;
 };
 
-// Hook to access UserContext easily
 export const useUserContext = () => useContext(UserContext);

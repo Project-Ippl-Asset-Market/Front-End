@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import { db } from "../../../firebase/firebaseConfig";
 import { useState, useEffect } from "react";
@@ -44,76 +45,44 @@ export function MyAsset() {
   }, []);
 
   const fetchAssets = async () => {
-    const collectionsToFetch = [
-      "assetImages",
-      "assetVideos",
-      "assetAudios",
-      "assetImage3D",
-      "assetImage2D",
-      "assetDatasets",
-    ];
     const buyAssetsCollection = "buyAssets";
     const myAssetsCollection = "myAssets";
 
     try {
       const buyAssetsSnapshot = await getDocs(
-        collection(db, buyAssetsCollection)
-      );
-      const buyAssetsData = buyAssetsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        assetId: doc.data().assetId,
-        userId: doc.data().uid,
-        price: doc.data().price,
-      }));
-
-      const allAssets = await Promise.all(
-        collectionsToFetch.map(async (collectionName) => {
-          const snapshot = await getDocs(collection(db, collectionName));
-          return snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-        })
-      );
-      const combinedAssets = allAssets.flat();
-
-      const myAssetsSnapshot = await getDocs(
-        collection(db, myAssetsCollection)
-      );
-      const myAssetsData = myAssetsSnapshot.docs
-        .map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-        .filter((asset) => asset.userId === currentUserId);
-
-      const matchedAssets = combinedAssets.filter((asset) =>
-        buyAssetsData.some(
-          (buyAsset) =>
-            buyAsset.assetId === asset.id && buyAsset.userId === currentUserId
+        query(
+          collection(db, buyAssetsCollection),
+          where("userId", "==", currentUserId)
         )
       );
 
-      const allFilteredAssets = [...matchedAssets, ...myAssetsData];
+      const buyAssetsData = buyAssetsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
-      const finalAssetsData = allFilteredAssets.map((asset) => {
-        const buyAsset = buyAssetsData.find(
-          (buyAsset) => buyAsset.assetId === asset.id
-        );
-        return buyAsset
-          ? { ...asset, userId: buyAsset.userId, price: buyAsset.price }
-          : asset;
-      });
+      const myAssetsSnapshot = await getDocs(
+        query(
+          collection(db, myAssetsCollection),
+          where("userId", "==", currentUserId)
+        )
+      );
 
-      setAssetsData(finalAssetsData);
+      const myAssetsData = myAssetsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      const allFilteredAssets = [...buyAssetsData, ...myAssetsData];
+      setAssetsData(allFilteredAssets);
     } catch (error) {
       console.error("Error fetching assets:", error);
     }
   };
 
   useEffect(() => {
-    fetchAssets();
+    if (currentUserId) {
+      fetchAssets();
+    }
   }, [currentUserId]);
 
   // Filter pencarian
@@ -166,7 +135,6 @@ export function MyAsset() {
       return;
     }
 
-    // Tandai bahwa kita sedang memproses
     setIsProcessingLike(true);
 
     const assetRef = doc(db, collectionsToFetch, id);
@@ -225,7 +193,8 @@ export function MyAsset() {
       asset.asset2DName ||
       asset.asset3DName ||
       asset.videoName ||
-      "";
+      asset.name;
+    ("");
     return (
       datasetName &&
       datasetName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -233,47 +202,87 @@ export function MyAsset() {
   });
 
   // Function to validate asset fields
-  const handleSaveToMyAssets = ({
-    id,
-    uploadUrlVideo,
-    uploadUrlImage,
-    datasetImage,
-    asset2DImage,
-    asset3DImage,
-    uploadUrlAudio,
-    imageName,
-    videoName,
-    datasetName,
-    asset2DName,
-    asset3DName,
-    audioName,
-    description,
-    price,
-    category,
-  }) => {
-    const missingFields = [];
-    if (
-      !uploadUrlImage &&
-      !uploadUrlVideo &&
-      !datasetImage &&
-      !asset2DImage &&
-      !asset3DImage &&
-      !uploadUrlAudio
-    )
-      missingFields.push("image");
-    if (
-      !videoName &&
-      !imageName &&
-      !datasetName &&
-      !asset2DName &&
-      !asset3DName &&
-      !audioName
-    )
-      missingFields.push("name");
-    if (!description) missingFields.push("description");
-    if (price === undefined) missingFields.push("price");
-    if (!category) missingFields.push("category");
-    return missingFields;
+  const downloadAsset = async (asset) => {
+    try {
+      const fileUrl =
+        asset.uploadUrlAudio ||
+        asset.uploadUrlVideo ||
+        asset.uploadUrlImage ||
+        asset.datasetImage ||
+        asset.asset2DFile ||
+        asset.asset3DFile ||
+        asset.image;
+
+      const fileName =
+        asset.audioName ||
+        asset.videoName ||
+        asset.imageName ||
+        asset.asset2DName ||
+        asset.asset3DName ||
+        asset.datasetName ||
+        asset.name ||
+        "asset";
+
+      const type = asset.uploadUrlVideo
+        ? "video"
+        : asset.uploadUrlImage || asset.image
+        ? "image"
+        : "other";
+
+      if (!fileUrl || !type) {
+        alert("File atau tipe tidak tersedia untuk diunduh.");
+        return;
+      }
+
+      const size = asset.size || "No Size";
+
+      const allowedSizes = [
+        "Large (1920x1280)",
+        "Medium (1280x1280)",
+        "Small (640x427)",
+        "Original (6000x4000)",
+        "No Size",
+        "SD (360x640)",
+        "SD (540x960)",
+        "HD (720x1280)",
+        "Full HD (1080x1920)",
+        "Quad HD (1440x2560)",
+        "4K UHD (2160x3840)",
+      ];
+
+      if (!allowedSizes.includes(size)) {
+        alert("Ukuran tidak valid.");
+        return;
+      }
+
+      const proxyUrl = `http://localhost:3000/proxy/download?fileUrl=${encodeURIComponent(
+        fileUrl
+      )}&size=${encodeURIComponent(size)}&type=${encodeURIComponent(type)}`;
+
+      const response = await fetch(proxyUrl);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Gagal mengunduh file. Kode status: ${response.status}. ${errorText}`
+        );
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading the file:", error);
+      alert("Terjadi kesalahan saat mengunduh file. Silakan coba lagi.");
+    }
   };
 
   return (
@@ -353,11 +362,11 @@ export function MyAsset() {
         </h1>
       </div>
       <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen ">
-        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-2 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
+        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 place-items-center gap-2 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
-            let collectionsToFetch = "";
+            let collectionsToFetch = "myAssets";
             if (data.audioName) {
               collectionsToFetch = "myAssets";
             } else if (data.imageName) {
@@ -370,6 +379,8 @@ export function MyAsset() {
               collectionsToFetch = "myAssets";
             } else if (data.videoName) {
               collectionsToFetch = "myAssets";
+            } else if (data.name) {
+              collectionsToFetch = "buyAssets";
             }
 
             return (
@@ -379,32 +390,45 @@ export function MyAsset() {
                 <div
                   onClick={() => openModal(data)}
                   className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]">
-                  <div className="w-full h-[150px] relative">
+                  <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4 ">
                     {data.uploadUrlVideo ? (
                       <video
-                        src={data.uploadUrlVideo}
+                        src={data.uploadUrlVideo || data.image}
                         alt="Asset Video"
                         className="h-full w-full object-cover rounded-t-[10px] border-none"
                         controls
                         controlsList="nodownload"
                         onContextMenu={(e) => e.preventDefault()}
+                        draggable={false}
+                        onDragStart={(e) => e.preventDefault()}
+                      />
+                    ) : data.video ? (
+                      <video
+                        src={data.video}
+                        alt="Asset Video"
+                        className="h-full w-full object-cover rounded-t-[10px] border-none"
+                        controls
+                        controlsList="nodownload"
+                        onContextMenu={(e) => e.preventDefault()}
+                        draggable={false}
+                        onDragStart={(e) => e.preventDefault()}
                       />
                     ) : (
                       <img
                         src={
+                          data.image ||
+                          data.video ||
                           data.uploadUrlAudio ||
                           data.uploadUrlImage ||
-                          data.datasetImage ||
-                          data.asset2DImage ||
-                          data.asset3DImage ||
-                          (data.video ? CustomImage : null) ||
                           data.datasetThumbnail ||
                           data.asset2DThumbnail ||
                           data.asset3DThumbnail ||
-                          data.audioThumbnail ||
-                          CustomImage
+                          data.audioThumbnail
                         }
                         alt="Asset Image"
+                        onContextMenu={(e) => e.preventDefault()}
+                        draggable={false}
+                        onDragStart={(e) => e.preventDefault()}
                         onError={(e) => {
                           e.target.onerror = null;
                           e.target.src = CustomImage;
@@ -414,7 +438,7 @@ export function MyAsset() {
                     )}
                   </div>
                 </div>
-                <div className="flex flex-col justify-between h-full p-2 sm:p-4">
+                <div className="flex flex-col justify-between h-full p-2 sm:p-2">
                   <div onClick={() => openModal(data)} className="px-2 py-2">
                     <p className="text-xs text-neutral-10 font-semibold dark:text-primary-100 ">
                       {(
@@ -423,6 +447,7 @@ export function MyAsset() {
                         data.asset2DName ||
                         data.imageName ||
                         data.videoName ||
+                        data.name ||
                         "Nama Tidak Tersedia"
                       ).slice(0, 14) +
                         ((
@@ -438,30 +463,9 @@ export function MyAsset() {
                     </p>
 
                     <p className="text-neutral-20 text-xs sm:text-sm lg:text-base dark:text-primary-100">
-                      {data.description.length > 14
-                        ? `${data.description.substring(0, 14)}......`
+                      {data.description.length > 24
+                        ? `${data.description.substring(0, 24)}......`
                         : data.description || "Deskripsi Tidak Tersedia"}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between px-2 py-2   dark:bg-neutral-80">
-                    <button
-                      onClick={() =>
-                        handleLikeClick(data.id, likesAsset, collectionsToFetch)
-                      }
-                      className="flex justify-start items-center mr-2">
-                      {likedByCurrentUser ? (
-                        <FaHeart className="text-red-600" />
-                      ) : (
-                        <FaRegHeart className="text-neutral-10 text-[11px] sm:text-[14px] dark:text-primary-100 " />
-                      )}
-                      <p className="ml-2 text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
-                        ({likesAsset})
-                      </p>
-                    </button>
-                    <p className="text-[8px] sm:text-[11px] md:text-[11px] lg:text-[15px]">
-                      {data.price % 1000 === 0 && data.price >= 1000
-                        ? `Rp. ${(data.price / 1000).toLocaleString("id-ID")}k`
-                        : "My Asset"}
                     </p>
                   </div>
                 </div>
@@ -486,12 +490,25 @@ export function MyAsset() {
               <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
                 {selectedasset.uploadUrlVideo ? (
                   <video
-                    src={selectedasset.uploadUrlVideo}
+                    src={selectedasset.uploadUrlVideo || selectedasset.image}
                     alt="Asset Video"
                     className="w-full h-full object-cover"
                     controls
                     controlsList="nodownload"
                     onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
+                  />
+                ) : selectedasset.video ? (
+                  <video
+                    src={selectedasset.video}
+                    alt="Asset Video"
+                    className="w-full h-full object-cover"
+                    controls
+                    controlsList="nodownload"
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
                   />
                 ) : (
                   <img
@@ -503,10 +520,12 @@ export function MyAsset() {
                       selectedasset.datasetThumbnail ||
                       selectedasset.asset2DThumbnail ||
                       selectedasset.asset3DThumbnail ||
-                      selectedasset.audioThumbnail ||
-                      CustomImage
+                      selectedasset.audioThumbnail
                     }
                     alt="Asset Image"
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = CustomImage;
@@ -524,14 +543,14 @@ export function MyAsset() {
                 Kategori: {selectedasset.category}
               </p>
               <div className="text-sm mb-2 dark:text-primary-100  text-start">
-                <label className="flex-col mt-2">Deskripsi Video:</label>
+                <label className="flex-col mt-2">Deskripsi Asset:</label>
                 <div className="mt-2 text-justify">
                   {selectedasset.description}
                 </div>
               </div>
             </div>
             <button
-              onClick={() => handleSaveToMyAssets(selectedasset)}
+              onClick={() => downloadAsset(selectedasset)}
               className="flex p-2 text-center items-center justify-center bg-neutral-60 text-primary-100 w-full h-10 mt-6 rounded-md">
               <img
                 src={IconDownload}

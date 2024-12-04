@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../../firebase/firebaseConfig";
@@ -73,18 +74,17 @@ const AutoLogout = () => {
   return (
     <>
       {modalMessage && (
-        <div className="modal modal-open">
-          <div className="modal-box sm:w-[400px] md:w-[700px] lg:w-[700px] h-[250px] bg-neutral-90">
+        <div className="modal modal-open fixed inset-0 flex items-center justify-center z-50 pr-5">
+          <div className="modal-box w-[90%] max-w-[450px] h-auto bg-neutral-90 rounded-lg">
             <img
               className="h-28 w-28 mx-auto mb-6"
               src={IconModalError}
               alt="icon pop up error"
             />
-            <h3 className="text-lg text-primary-3 w-3/2 mx-auto text-center">
+            <h3 className="text-lg text-primary-3 mx-auto text-center">
               {modalMessage}
             </h3>
             <div className="modal-action">
-              {/*   // nnati kita ubah/ganti (/) jadi (/login) mengarah ke halman login jika sudah membuat home pagenya */}
               <button
                 onClick={() => {
                   setModalMessage(null);

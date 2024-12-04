@@ -1,18 +1,28 @@
-/* eslint-disable no-unused-vars */
+/* eslint-disable no-unused-vars */ //11/20/24/2:14
 import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { addDoc, doc, Timestamp, getDoc, updateDoc } from "firebase/firestore";
-import { db, auth, storage } from "../../../firebase/firebaseConfig";
+import {
+  addDoc,
+  doc,
+  Timestamp,
+  getDoc,
+  getDocs,
+  updateDoc,
+  collection,
+  query,
+  where,
+} from "firebase/firestore";
+import { db, storage, auth } from "../../../firebase/firebaseConfig";
 import {
   deleteObject,
   ref,
   uploadBytes,
   getDownloadURL,
 } from "firebase/storage";
-
+import { onAuthStateChanged } from "firebase/auth";
 function EditNewAsset2D() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -20,12 +30,10 @@ function EditNewAsset2D() {
   const [previewImages, setPreviewImages] = useState([]);
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
-  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  //const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   //const [categories, setCategories] = useState([]);
   const [user, setUser] = useState(null);
   const [role, setRole] = useState("");
-  // eslint-disable-next-line no-unused-vars
-  const [isLoading, setIsLoading] = useState(true);
 
   const categories = [
     { id: 1, name: "Characters" },
@@ -34,6 +42,50 @@ function EditNewAsset2D() {
     { id: 4, name: "GUI" },
     { id: 5, name: "Textures & Materials" },
   ];
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+
+        const adminQuery = query(
+          collection(db, "admins"),
+          where("uid", "==", currentUser.uid)
+        );
+        const adminSnapshot = await getDocs(adminQuery);
+
+        if (!adminSnapshot.empty) {
+          const adminData = adminSnapshot.docs[0].data();
+          setRole(adminData.role);
+        } else {
+          const userQuery = query(
+            collection(db, "users"),
+            where("uid", "==", currentUser.uid)
+          );
+          const userSnapshot = await getDocs(userQuery);
+          if (!userSnapshot.empty) {
+            setRole("user");
+          }
+        }
+      } else {
+        setUser(null);
+        setRole("");
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const [asset2D, setAsset2D] = useState({
     asset2DName: "",
@@ -63,7 +115,7 @@ function EditNewAsset2D() {
           navigate("/manage-asset-2D");
         }
       } catch (error) {
-        console.error("Error fetching asset2D:", error);
+        console.error("Error fetching asset 2D:", error);
       }
     };
 
@@ -181,9 +233,15 @@ function EditNewAsset2D() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // // Tambahkan pengecekan user di awal fungsi
+    // if (!user) {
+    //   console.error("Tidak ada user yang terautentikasi");
+    //   setAlertError(true);
+    //   return; // Hentikan proses submit
+    // }
+
     try {
       const priceAsNumber = parseInt(asset2D.price);
-
       if (isNaN(priceAsNumber)) {
         throw new Error("Harga tidak valid: harus berupa angka.");
       }
@@ -191,21 +249,22 @@ function EditNewAsset2D() {
       const updatedData = {
         category: asset2D.category,
         createdAt: Timestamp.now(),
-        //asset2DFile : "",
+        asset2DFile: "",
         asset2DThumbnail: [],
         asset2DName: asset2D.asset2DName,
         description: asset2D.description,
-        price: asset2D.price,
-        //uploadedByEmail: user.email,
-        //userId: user.uid,
+        price: priceAsNumber,
+        uploadedByEmail: user.email,
+        userId: user.uid,
       };
 
-      // Upload file ZIP ke folder /images-dataset jika ada
-      //if (asset2DFile.asset2DFile) {
-      //const filePath = `images-asset-2d/asset2D-${id}.zip`; // Path folder baru
-      //const asset2DFileUrl = await uploadFile(asset2D.asset2DFile, filePath);
-      //updatedData.asset2DFile = asset2DFileUrl;
-      //}
+      // Upload file ZIP ke folder /images-asset2D jika ada
+      if (asset2D.asset2DFile) {
+        const filePath = `images-asset-2d/asset2D-${id}.zip`; // Path folder baru
+        const asset2DFileUrl = await uploadFile(asset2D.asset2DFile, filePath);
+        updatedData.asset2DFile = asset2DFileUrl;
+      }
+      console.log("data", asset2D);
 
       // Upload thumbnails jika ada
       if (asset2D.asset2DThumbnail && asset2D.asset2DThumbnail.length > 0) {
@@ -218,8 +277,8 @@ function EditNewAsset2D() {
         updatedData.asset2DThumbnail = thumbnailUrls; // Menyimpan semua URL thumbnail
       }
 
-      const asset2DRef = doc(db, "assetImage2D", id);
-      await updateDoc(asset2DRef, updatedData);
+      const datasetRef = doc(db, "assetImage2D", id);
+      await updateDoc(datasetRef, updatedData);
 
       setAlertSuccess(true);
       setTimeout(() => {
@@ -267,7 +326,7 @@ function EditNewAsset2D() {
           {alertSuccess && (
             <div
               role="alert"
-              className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[10px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4  bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
+              className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[10px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4 bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
               onClick={closeAlert}>
               <div className="flex items-center justify-center space-x-2">
                 <svg
@@ -325,6 +384,63 @@ function EditNewAsset2D() {
               <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
                 <div className="w-full sm:w-[150px] md:w-[170px] lg:w-[200px] xl:w-[220px] 2xl:w-[170px]">
                   <div className="flex items-center gap-1">
+                    <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
+                      Upload File
+                    </h3>
+                    <img
+                      src={IconField}
+                      alt=""
+                      className="w-2 sm:w-2 md:w-3 lg:w-3 xl:w-3 2xl:w-3 h-2 sm:h-2 md:h-3 lg:h-3 xl:h-3 2xl:h-3 -mt-5"
+                    />
+                  </div>
+                  <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px]  xl:text-[12px] mb-2">
+                    Format file harus .zip
+                  </p>
+                </div>
+
+                {/* <div>
+                  <input
+                    className="block min-w-full sm:w-[150px] md:w-[450px] lg:w-[670px] xl:w-[670px] 2xl:w-[1200px] text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                    id="file_input"
+                    type="file"
+                    accept=".zip"
+                    onChange={handleChange}
+                    name="datasetFile"
+                  />
+                  {error && (
+                    <p className="text-red-500 mt-1 text-sm">{error}</p>
+                  )}
+                  {dataset.datasetFile && (
+                    <div className="mt-2">
+                      <p className="text-sm">File yang diunggah:</p>
+                      <span className="text-blue-500 hover:underline">
+                        {dataset.datasetFile.name}
+                      </span>
+                    </div>
+                  )}
+                </div> */}
+
+                <div>
+                  <input
+                    className="block min-w-full sm:w-[150px] md:w-[450px] lg:w-[670px] xl:w-[850px] 2xl:w-[1200px] text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                    id="file_input"
+                    type="file"
+                    accept=".zip"
+                    onChange={handleFileChange}
+                    name="asset2DFile"
+                  />
+                  {error && (
+                    <p className="text-red-500 mt-1 text-sm">{error}</p>
+                  )}
+                  {fileSize && (
+                    <p className="mt-1 text-sm">Ukuran file: {fileSize}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-col md:flex-row md:gap-[140px] mt-4 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+                <div className="w-full sm:w-[150px] md:w-[170px] lg:w-[200px] xl:w-[220px] 2xl:w-[170px]">
+                  <div className="flex items-center gap-1">
                     <h3 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px] xl:text-[14px] font-bold text-neutral-20 dark:text-primary-100">
                       Edit Thumbnail Asset 2D
                     </h3>
@@ -368,13 +484,14 @@ function EditNewAsset2D() {
                             src="path_to_your_icon"
                           />
                           <span className="text-primary-0 text-xs font-light mt-2 dark:text-primary-100">
-                            Upload Thumbnails
+                            Upload Thumbnail
                           </span>
                           <input
                             type="file"
                             id="fileUpload"
                             name="asset2DThumbnail"
                             onChange={handleChange}
+                            //value={asset2D.asset2DThumbnail}
                             accept=".jpg,.jpeg,.png"
                             multiple
                             className="hidden"

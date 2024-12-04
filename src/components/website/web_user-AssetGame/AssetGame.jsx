@@ -396,18 +396,21 @@ export function AssetGame() {
         userId: currentUserId,
         assetId: selectedasset.id,
         image:
-          selectedasset.asset2DThumbnail[0] ||
+          selectedasset.asset3DThumbnail?.[0] ||
           selectedasset.asset2DImage ||
-          selectedasset.asset3DThumbnail[0] ||
+          selectedasset.asset2DThumbnail?.[0] ||
           selectedasset.asset3DImage ||
-          selectedasset.uploadUrlAudio ||
+          selectedasset.audioThumbnail?.[0] ||
           "No Image Asset",
         name:
           selectedasset.audioName ||
           selectedasset.asset2DName ||
           selectedasset.asset3DName ||
           "No Name Asset",
-        file: selectedasset.asset2DFile,
+        file:
+          selectedasset.asset2DFile ||
+          selectedasset.asset3DFile ||
+          selectedasset.uploadUrlAudio,
         description: selectedasset.description,
         price: selectedasset.price,
         category: selectedasset.category,

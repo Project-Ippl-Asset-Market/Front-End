@@ -2,6 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import Footer from './Footer';
 import Logo from '../../../assets/logo/logoLogin.png'
+import Rectangle from '../../../assets/assetabout/Rectangle 645.png'
+import Hand from '../../../assets/assetabout/Female hand holding iPhone 14 Pro.png'
+import Screen from '../../../assets/assetabout/iPhone SE - 2.png'
+import Frame1 from '../../../assets/assetabout/Frame 1.png' 
+import Frame2 from '../../../assets/assetabout/Frame 2.png'
+import Frame3 from '../../../assets/assetabout/Frame 3.png'
+import Frame4 from '../../../assets/assetabout/Frame 4.png'
 
 // Main LandingPage component
 const About = () => {
@@ -41,7 +48,7 @@ const About = () => {
 
           {/* Get the App Button */}
           <a
-            href="/get-app"
+            href="/"
             className="bg-[#5282ED] text-xs text-white font-poppins py-1 px-1 sm:px-8 rounded ml-0 sm:ml-5" // Use responsive padding and margin
           >
             Get The App Web →
@@ -71,9 +78,9 @@ const Body = () => {
           <p className="text-sm sm:text-base md:text-lg text-gray-500 ml-0">
             Empower Your Assets and Expand Your Reach!
           </p>
-          <button className="px-3 py-2 sm:px-4 sm:py-2 md:px-6 md:py-3 text-white bg-blue-500 rounded hover:bg-blue-600 flex items-center ml-0">
-            Login Now → <span className="fas fa-arrow-right ml-2"></span>
-          </button>
+          <button className="px-3 py-2 sm:px-4 sm:py-2 md:px-6 md:py-3 text-white bg-bl ue-500 rounded hover:bg-blue-600 flex items-center ml-0">
+            <Link to="/login" className="flex items-center">Login Now → <span className="fas fa-arrow-right ml-2"></span></Link>
+            </button>
         </div>
 
         {/* Right Section */}
@@ -96,14 +103,14 @@ const Body = () => {
           >
             {/* Background layer */}
             <img
-              src="Rectangle 645.png"
+              src={Rectangle}
               alt="Background image for hand holding phone"
               className="absolute inset-0 w-full h-full object-cover"
             />
 
             {/* Hand holding phone */}
             <img
-              src="Female hand holding iPhone 14 Pro.png"
+              src={Hand}
               alt="Hand holding a phone"
               className="absolute inset-0 w-full h-full object-cover"
               style={{
@@ -117,7 +124,7 @@ const Body = () => {
             />
             {/* Content on phone screen */}
             <img
-              src="iPhone SE - 2.png"
+              src={Screen}
               alt="Phone screen content"
               className="absolute"
               style={{
@@ -151,7 +158,7 @@ const Body = () => {
     {/* Right Section */}
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:w-[55%] px-20">
       <FeatureBox
-        iconSrc="Frame 1.png"
+        iconSrc={Frame1}
         title="High-Quality Asset"
         description="Pixel Store offers a variety of visual assets, from photos and illustrations to 3D design elements."
         bgColor="bg-blue-500 text-white"
@@ -160,7 +167,7 @@ const Body = () => {
         size={250}
       />
       <FeatureBox
-        iconSrc="Frame 2.png"
+        iconSrc={Frame2}
         title="Affordable Licensing"
         description="Select from a range of budget-friendly licensing options for personal or commercial use."
         bgColor="bg-white text-black"
@@ -169,7 +176,7 @@ const Body = () => {
         size={250}
       />
       <FeatureBox
-        iconSrc="Frame 3.png"
+        iconSrc={Frame3}
         title="User-Friendly Interface"
         description="Pixel Store makes it easy to browse and download assets, ensuring a smooth user experience."
         bgColor="bg-white text-black"
@@ -178,7 +185,7 @@ const Body = () => {
         size={250}
       />
       <FeatureBox
-        iconSrc="Frame 4.png"
+        iconSrc={Frame4}
         title="Collaborative Community"
         description="Share your work and gain valuable feedback to grow as an artist or creator."
         bgColor="bg-white text-black"

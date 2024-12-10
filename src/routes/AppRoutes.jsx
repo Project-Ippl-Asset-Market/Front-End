@@ -39,8 +39,6 @@ import SaleAssets from "../components/myUserDashboard/SaleAssets";
 import Revenue from "../components/myUserDashboard/Revenue";
 // Import Halaman Dashboard End
 
-//import Halaman Panduan
-
 // Import Halaman Website start
 import Cart from "../components/payment/Cart";
 import CartBuyNow from "../components/payment/CartBuyNow";
@@ -67,6 +65,7 @@ import Pembelian from "../components/Help_Page/Pembelian";
 import PenjualanAsset from "../components/Help_Page/PenjualanAsset";
 import Layanan from "../components/Help_Page/Layanan";
 import KebijakanPixelStore from "../components/Help_Page/KebijakanPixelStore";
+import About from "../components/website/Footer/About";
 // Import Halaman Website End
 
 // eslint-disable-next-line react/prop-types
@@ -107,6 +106,7 @@ const AppRoutes = ({ handleLogout }) => {
             path="/kebijakan-pixel-store"
             element={<KebijakanPixelStore />}
           />
+          <Route path="/about" element={<About />} />
           {/* Route halaman web End */}
 
           <Route

@@ -36,12 +36,14 @@ const Footer = () => {
           <nav className="flex flex-col justify-start mt-4 md:mt-0 space-y-2">
             <h3 className="text-lg font-semibold text-gray-800">Company</h3>
             <a
-              href="#"
+              href="/about"
               className="text-sm md:text-lg text-gray-700 hover:text-gray-900 transition duration-200">
               About Us
             </a>
             <a
-              href="#"
+              href="https://api.whatsapp.com/send/?phone=6282155321594&text&type=phone_number&app_absent=0"
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-sm md:text-lg text-gray-700 hover:text-gray-900 transition duration-200">
               Contact Us
             </a>

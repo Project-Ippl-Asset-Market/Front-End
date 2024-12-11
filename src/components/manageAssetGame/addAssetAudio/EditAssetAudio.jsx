@@ -1,7 +1,18 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getDoc, Timestamp, doc, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  doc,
+  Timestamp,
+  getDoc,
+  getDocs,
+  updateDoc,
+  collection,
+  query,
+  where,
+} from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { onAuthStateChanged } from "firebase/auth";
 import { db, storage, auth } from "../../../firebase/firebaseConfig";
@@ -16,8 +27,14 @@ function EditNewAudio() {
   const [previewImages, setPreviewImages] = useState([]);
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
-  const [categories, setCategories] = useState([]);
+  const categories = [
+    { id: 1, name: "Audio Effects" },
+    { id: 2, name: "Background Music" },
+    { id: 3, name: "Voice Overs" },
+    { id: 4, name: "Sound Design" },
+  ];
   const [user, setUser] = useState(null);
+  const [role, setRole] = useState("");
 
   const [audio, setAudio] = useState({
     audioName: "",
@@ -29,18 +46,37 @@ function EditNewAudio() {
   });
 
   useEffect(() => {
-    // Listen for authentication state changes
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        setUser(currentUser); // Set the logged-in user
+        setUser(currentUser);
+
+        const adminQuery = query(
+          collection(db, "admins"),
+          where("uid", "==", currentUser.uid)
+        );
+        const adminSnapshot = await getDocs(adminQuery);
+
+        if (!adminSnapshot.empty) {
+          const adminData = adminSnapshot.docs[0].data();
+          setRole(adminData.role);
+        } else {
+          const userQuery = query(
+            collection(db, "users"),
+            where("uid", "==", currentUser.uid)
+          );
+          const userSnapshot = await getDocs(userQuery);
+          if (!userSnapshot.empty) {
+            setRole("user");
+          }
+        }
       } else {
-        setUser(null); // No user is logged in
+        setUser(null);
+        setRole("");
       }
     });
 
     return () => unsubscribe();
   }, []);
-
   useEffect(() => {
     const fetchAudio = async () => {
       try {
@@ -224,6 +260,16 @@ function EditNewAudio() {
     } catch (error) {
       console.error("Error updating audio:", error.message || error);
       setAlertError(true);
+    }
+  };
+
+  const deleteFile = async (path) => {
+    const fileRef = ref(storage, path);
+    try {
+      await deleteObject(fileRef);
+      console.log("File deleted successfully:", path);
+    } catch (error) {
+      console.error("Error deleting file:", error);
     }
   };
 

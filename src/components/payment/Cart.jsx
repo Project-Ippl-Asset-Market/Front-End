@@ -421,6 +421,7 @@ const Cart = () => {
                         item.assetAudiosImage ||
                         item.asset2DImage ||
                         item.asset3DImage ||
+                        item.thumbnailGame ||
                         item.datasetThumbnail ||
                         item.datasetFile ||
                         CustomImage

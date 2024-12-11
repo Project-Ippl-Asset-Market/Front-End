@@ -130,6 +130,7 @@ const CartBuyNow = () => {
       setIsLoading(false);
     }
   };
+
   const completeTransaction = async (
     status,
     orderId,
@@ -156,6 +157,7 @@ const CartBuyNow = () => {
   };
 
   const handleMoveAndDeleteAssets = async (assetDetails) => {
+    console.log("Handling move and delete for assets:", assetDetails);
     try {
       const moveResults = await Promise.all(
         assetDetails.map(moveAssetToBuyAssets)
@@ -165,7 +167,10 @@ const CartBuyNow = () => {
       );
 
       if (allMovedSuccessfully) {
+        console.log("All assets moved successfully, deleting from cart.");
         await deleteCartItems(assetDetails);
+      } else {
+        console.warn("Some assets failed to move, aborting delete process.");
       }
       return allMovedSuccessfully;
     } catch (error) {
@@ -175,42 +180,33 @@ const CartBuyNow = () => {
   };
 
   const moveAssetToBuyAssets = async (asset) => {
+    console.log("Attempting to move asset:", asset);
     try {
-      const buyAssetDocRef = doc(collection(db, "buyAssets"));
-      const assetData = {
-        userId: user.uid,
-        assetId: asset.assetId,
-        name: asset.name,
-        price: 0,
-        assetOwnerID: asset.assetOwnerID,
-        description: asset.description || "No Description",
-        category: asset.category || "Uncategorized",
-        size: asset.size || "No Size",
-        image:
-          asset.image ||
-          asset.Image_umum ||
-          asset.video ||
-          asset.assetImageGame ||
-          asset.datasetThumbnail ||
-          "url not found",
-        datasetFile: asset.datasetFile || "not found",
-        purchasedAt: new Date(),
-      };
+      const response = await axios.post(
+        `http://localhost:3000/api/moveAsset/${asset.docId}`
+      );
 
-      await setDoc(buyAssetDocRef, assetData);
-      return assetData;
+      if (response.status === 200) {
+        console.log("Asset moved to buyAssets successfully:", asset);
+        return asset;
+      } else {
+        console.warn("Failed to move asset:", response.data.error);
+        return null;
+      }
     } catch (error) {
-      console.warn("Error moving asset to buyAssets:", error);
+      console.warn("Error moving asset:", error);
       return null;
     }
   };
 
   const deleteCartItems = async (assetDetails) => {
+    console.log("Deleting cart items:", assetDetails);
     try {
       await Promise.all(
         assetDetails.map(async (asset) => {
           const cartDocRef = doc(db, "buyNow", asset.docId);
           await deleteDoc(cartDocRef);
+          console.log(`Deleted asset from buyNow: ${asset.docId}`);
           await axios.delete(
             `http://localhost:3000/api/assets/delete/${asset.docId}`
           );
@@ -225,7 +221,7 @@ const CartBuyNow = () => {
     return items.map((item) => ({
       assetId: item.assetId,
       price: item.price,
-      size: item.size,
+      size: item.size || item.resolution || "size & Resolution tidak ada",
       name: item.name || "Item Name Not Available",
       image:
         item.image ||
@@ -240,13 +236,14 @@ const CartBuyNow = () => {
       description: item.description || "No Description",
       category: item.category || "Uncategorized",
       uid: user.uid,
-      assetOwnerID: item.assetOwnerID,
+      assetOwnerID: item.assetOwnerID || "Owner not available",
     }));
   };
 
   const calculateSubtotal = (details) => {
     return details.reduce((total, item) => total + Number(item.price), 0);
   };
+
   const createTransaction = async (orderId, subtotal, assetDetails) => {
     const response = await axios.post(
       "http://localhost:3000/api/transactions/create-transaction",
@@ -297,8 +294,6 @@ const CartBuyNow = () => {
             asset.assetImageGame ||
             asset.datasetThumbnail ||
             "url not found",
-          datasetFile: asset.datasetFile || "not found",
-          assetOwnerID: asset.assetOwnerID,
         })),
       });
     } catch (error) {
@@ -307,11 +302,15 @@ const CartBuyNow = () => {
   };
 
   const resetCustomerInfoAndCart = () => {
-    setCartItems([]);
     setIsPaymentOpen(false);
+    setCartItems([]);
+    setSuccessMessage("");
   };
 
   const navigateBack = () => {
+    setIsPaymentOpen(false);
+    setSuccessMessage("Pembayaran dibatalkan.");
+    setIsLoading(false);
     navigate(-1);
   };
 

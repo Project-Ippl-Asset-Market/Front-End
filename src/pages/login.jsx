@@ -74,7 +74,7 @@ function Login() {
           navigate("/dashboard");
         }, 2000);
       } else {
-        setModalMessage("Login sebagai pengguna biasa berhasil!");
+        setModalMessage("Login berhasil!");
         saveUserRole("user");
         setTimeout(() => {
           setModalMessage(null);

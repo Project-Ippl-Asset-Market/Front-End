@@ -14,7 +14,6 @@ import { db, storage, auth } from "../../../firebase/firebaseConfig";
 import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
-// import DefaultPreview from "../../../assets/icon/iconSidebar/datasetzip.png";
 
 function AddNewAudio() {
   const navigate = useNavigate();

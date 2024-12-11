@@ -17,9 +17,8 @@ import {
   Legend,
   LineChart,
   Line,
-  PieChart,
-  Pie,
-  Cell,
+  BarChart,
+  Bar,
   ResponsiveContainer,
 } from "recharts";
 
@@ -103,39 +102,33 @@ function AdminDashboard() {
     }
   };
 
+  // Memodifikasi fetchAssetCountsFromFirestore untuk menyesuaikan data grafik
   const fetchAssetCountsFromFirestore = async () => {
     try {
       const collections = [
-        { name: "assetVideos", key: "assetVideos" },
-        { name: "assetImages", key: "assetImages" },
-        { name: "assetImage2D", key: "assetImage2D" },
-        { name: "assetImage3D", key: "assetImage3D" },
-        { name: "assetDatasets", key: "assetDatasets" },
-        { name: "assetAudios", key: "assetAudios" },
+        { name: "assetVideos", label: "Videos" },
+        { name: "assetImages", label: "Images" },
+        { name: "assetImage2D", label: "Images 2D" },
+        { name: "assetImage3D", label: "Images 3D" },
+        { name: "assetDatasets", label: "Datasets" },
+        { name: "assetAudios", label: "Audios" },
       ];
 
       const counts = {};
-      let assetData = [];
+      const assetData = [];
 
-      for (const { name, key } of collections) {
+      for (const { name, label } of collections) {
         const querySnapshot = await getDocs(collection(db, name));
-        counts[key] = querySnapshot.size;
+        counts[name] = querySnapshot.size; // Simpan jumlah data per koleksi
 
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          const createdAt = data.createdAt?.toDate();
-          if (createdAt) {
-            assetData.push({
-              createdAt: createdAt.toString(),
-              title: assetLabels[key],
-              count: counts[key],
-              collectionName: name,
-            });
-          }
+        // Menambahkan data untuk grafik
+        assetData.push({
+          collectionName: label,
+          count: counts[name],
         });
       }
 
-      setChartData(assetData);
+      setChartData(assetData); // Menyimpan data yang telah dimodifikasi
       setAssetCounts(counts);
     } catch (error) {
       console.error("Error fetching asset counts: ", error);
@@ -227,8 +220,6 @@ function AdminDashboard() {
     { name: "Total Users", value: userCount },
   ];
 
-  const COLORS = ["#8884d8", "#31C48D", "#3F83F8"];
-
   return (
     <div className="dark:bg-neutral-20 dark:text-primary-100 min-h-screen font-poppins bg-primary-100 p-4 -mx-4 -mt-2">
       <HeaderSideBar
@@ -248,11 +239,10 @@ function AdminDashboard() {
         </div>
       </aside>
 
-      <div className="p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 h-full bg-primary-100 text-neutral-10 dark:bg-neutral-20 dark:text-neutral-10 min-h-screen pt-24 sm:ml-64 md:ml-72 lg:ml-80">
+      <div className="p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 h-full bg-primary-100 text-neutral-10 dark:bg-neutral-20 dark:text-neutral-10 min-h-screen pt-24 sm:ml-64 md:ml-72 lg:ml-60 xl:ml-[270px] 2xl:ml-[270px] mt-10 sm:mt-14 md:mt-14 lg:mt-10 xl:mt-10 2xl:mt-10">
         <div className="breadcrumbs text-sm mt-1 mb-10">
           <Breadcrumb />
         </div>
-
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-4">
           {Object.keys(assetCounts).map((key) => (
             <div
@@ -270,56 +260,41 @@ function AdminDashboard() {
             </div>
           ))}
         </div>
-        {/* Pie Chart for Total Asset and Transaction Counts */}
-        <div className="mt-10 md:mt-14 w-full">
-          <h2 className="text-2xl mb-4 text-neutral-20 dark:text-primary-100">
-            Total Asset and Transaction
-          </h2>
+
+        <div className="p-10 mt-10 sm:mt-14 md:mt-14 lg:mt-14 xl:mt-14 2xl:mt-14 w-full grid grid-cols-1 sm:grid-cols-2 gap-20">
+          {/* Grafik Total Asset and Transaction */}
           <div className="w-full" style={{ height: 400 }}>
+            <h2 className="text-2xl mb-4 text-neutral-20 dark:text-primary-100">
+              Total Asset and Transaction
+            </h2>
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={pieChartData}
-                  dataKey="value"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius="80%"
-                  fill="#8884d8"
-                  label>
-                  {pieChartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
+              <BarChart data={pieChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
                 <Tooltip />
-              </PieChart>
+                <Legend />
+                <Bar dataKey="value" fill="#3F83F8" barSize={30} />
+              </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
 
-        <div className="mt-10 md:mt-14 w-full -pl-2">
-          <h2 className="text-2xl mb-4 text-neutral-20 dark:text-primary-100">
-            Grafik Asset
-          </h2>
+          {/* Grafik Asset */}
           <div className="w-full" style={{ height: 400 }}>
+            <h2 className="text-2xl mb-4 text-neutral-20 dark:text-primary-100">
+              Grafik Asset
+            </h2>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart
+              <BarChart
                 data={chartData}
                 margin={{ top: 5, right: 40, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="createdAt"
-                  tick={CustomXAxisTick}
-                  interval={0}
-                  height={80}
-                />
+                <XAxis dataKey="collectionName" />
                 <YAxis />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend />
-                <Line type="monotone" dataKey="count" stroke="#3F83F8" />
-              </LineChart>
+                <Bar dataKey="count" fill="#3F83F8" barSize={30} />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>

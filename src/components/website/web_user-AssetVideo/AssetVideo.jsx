@@ -40,12 +40,12 @@ export function AssetVideo() {
 
   // Size options with unique values
   const sizeOptions = [
-    { label: "SD (360x640)", value: "SD_360x640" },
-    { label: "SD (540x960)", value: "SD_540x960" },
-    { label: "HD (720x1280)", value: "HD" },
-    { label: "Full HD (1080x1920)", value: "FullHD" },
-    { label: "Quad HD (1440x2560)", value: "QuadHD" },
-    { label: "4K UHD (2160x3840)", value: "4K" },
+    { label: "SD (360x640)", value: "SD (360x640)" },
+    { label: "SD (540x960)", value: "SD (540x960)" },
+    { label: "HD (720x1280)", value: "HD (720x1280)" },
+    { label: "Full HD (1080x1920)", value: "Full HD (1080x1920)" },
+    { label: "Quad HD (1440x2560)", value: "Quad HD (1440x2560)" },
+    { label: "4K UHD (2160x3840)", value: "4K UHD (2160x3840)" },
   ];
 
   useEffect(() => {
@@ -252,10 +252,10 @@ export function AssetVideo() {
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedAsset.id,
+        video: selectedAsset.uploadUrlVideo,
         name: selectedAsset.videoName,
         description: selectedAsset.description,
         price: selectedAsset.price,
-        video: selectedAsset.uploadUrlVideo,
         category: selectedAsset.category,
         assetOwnerID: selectedAsset.userId,
         resolution: resolution,
@@ -290,10 +290,10 @@ export function AssetVideo() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[47%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[193px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[44%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[193px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className="mx-auto px-20 w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[850px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[800px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}>
               <div className="relative">
                 <input

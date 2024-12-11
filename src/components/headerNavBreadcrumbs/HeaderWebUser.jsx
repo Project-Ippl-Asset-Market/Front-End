@@ -106,13 +106,13 @@ function HeaderWebUser() {
           <div className="z-50  gap-14 sm:gap-1 md:gap-1 lg:gap-1 xl:gap-1 2xl:gap-2 flex justify-center items-center">
             <Link
               to="/my-asset"
-              className="z-20  w-[45px] sm:w-[45px] md:w-[44px] lg:w-[44px] xl:w-[60px] 2xl:w-[34px] h-[20px] sm:h-[28px] md:h-[28px] lg:h-[28px] xl:h-[28px] 2xl:h[28px] -ml-[30px] sm:ml-1 md:ml-1 lg:ml-0 xl:ml-0 2xl:ml-2 gap-1 text-[8px] sm:text-[10px] md:text-[10px] lg:text-[10px] xl:text-[10px] 2xl:text-[10px]">
+              className="z-20  w-[45px] sm:w-[45px] md:w-[44px] lg:w-[44px] xl:w-[60px] 2xl:w-[34px] h-[20px] sm:h-[28px] md:h-[28px] lg:h-[28px] xl:h-[28px] 2xl:h[28px] -ml-[30px] sm:ml-1 md:ml-1 lg:ml-0 xl:ml-0 2xl:ml-2 gap-1 text-[8px] sm:text-[8px] md:text-[8px] lg:text-[8px] xl:text-[8px] 2xl:text-[8px]">
               <img
                 src={IconMyAsset}
                 alt="icon my asset"
                 className="w-[24px] h-[24px] ml-4 sm:-ml-1 md:-ml-1 lg:-ml-1 xl:-ml-1 2xl:-ml-1"
               />
-              <label className="ml-2  sm:-ml-4 md:-ml-4 lg:-ml-4 xl:-ml-4 2xl:-ml-4">
+              <label className="ml-2  sm:-ml-4 md:-ml-4 lg:-ml-4 xl:-ml-4 2xl:-ml-4 text-[8px] sm:text-[8px] md:text-[8px] lg:text-[8px] xl:text-[8px] 2xl:text-[8px]">
                 My asset
               </label>
             </Link>

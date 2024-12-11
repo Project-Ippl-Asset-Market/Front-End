@@ -40,7 +40,6 @@ export function HomePage() {
   const [validationMessage, setValidationMessage] = useState("");
   const navigate = useNavigate();
 
-  // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -54,7 +53,6 @@ export function HomePage() {
     return () => unsubscribe();
   }, []);
 
-  // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -250,13 +248,7 @@ export function HomePage() {
     // Ambil userId dari selectedasset dan simpan dalam array
     const userIdFromAsset = [selectedasset.userId];
     console.log("User ID from Asset: ", userIdFromAsset);
-
-    // Membuat referensi dokumen untuk keranjang menggunakan ID aset
-    const cartRef = doc(
-      db,
-      "cartAssets",
-      `${currentUserId}_${selectedasset.id}`
-    );
+    const cartRef = doc(db, "cartAssets", `${selectedasset.id}`);
 
     try {
       const cartSnapshot = await getDoc(cartRef);
@@ -270,11 +262,18 @@ export function HomePage() {
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
+        thumbnailGame:
+          selectedasset.audioThumbnail ||
+          selectedasset.asset2DThumbnail ||
+          selectedasset.asset3DThumbnail ||
+          selectedasset.datasetThumbnail ||
+          "No Thumbnail Asset",
         image:
-          selectedasset.asset2DImage ||
-          selectedasset.asset3DImage ||
+          selectedasset.asset2DFile ||
+          selectedasset.asset3DFile ||
           selectedasset.uploadUrlAudio ||
           selectedasset.datasetImage ||
+          selectedasset.datasetFile ||
           selectedasset.uploadUrlImage ||
           selectedasset.uploadUrlVideo ||
           "No Image Asset",
@@ -300,6 +299,8 @@ export function HomePage() {
 
   // Fungsi untuk menangani pembelian aset
   const handleBuyNow = async (selectedasset) => {
+    console.log("handleBuyNow called with asset:", selectedasset); // Debugging log
+
     if (!currentUserId) {
       alert("Anda perlu login untuk menambahkan asset ke keranjang");
       navigate("/login");
@@ -319,16 +320,15 @@ export function HomePage() {
       return;
     }
 
-    // Document ID sekarang mengikuti asset ID
-    const cartRef = doc(db, "buyNow", ` ${selectedasset.id}`);
+    const cartRef = doc(db, "buyNow", selectedasset.id.trim());
     const cartSnapshot = await getDoc(cartRef);
+
     if (cartSnapshot.exists()) {
-      // alert("Anda sudah Membeli Asset ini.");
+      console.log("Asset already exists in buyNow:", selectedasset.id); // Debugging log
       return;
     }
 
     const {
-      id,
       uploadUrlVideo,
       uploadUrlImage,
       datasetImage,
@@ -377,7 +377,7 @@ export function HomePage() {
     try {
       await setDoc(cartRef, {
         userId: currentUserId,
-        assetId: id,
+        assetId: selectedasset.id,
         image:
           asset2DImage ||
           asset3DImage ||
@@ -400,18 +400,18 @@ export function HomePage() {
         assetOwnerID: selectedasset.userId,
       });
 
+      console.log("Asset successfully added to buyNow:", selectedasset.id); // Debugging log
       navigate("/buy-now-asset");
     } catch (error) {
       console.error("Error adding to cart: ", error);
       alert(
-        "Terjadi kesalahan saat menambahkan asset ke keranjang. Silakan coba lagi."
+        "Terjadi kesalahan saat menambahkan aset ke keranjang. Silakan coba lagi."
       );
     }
   };
 
   // Function to validate asset fields
   const handleSaveToMyAssets = ({
-    id,
     uploadUrlVideo,
     uploadUrlImage,
     datasetImage,
@@ -491,19 +491,19 @@ export function HomePage() {
           <NavbarSection />
         </div>
       </div>
-      <div className="bg-primary-100 dark:bg-neutral-20">
+      <div className="bg-primary-100 dark:bg-neutral-20 fixed z-10">
         <img
-          className="w-[300vh] mt-[142px] sm:mt-[170px] md:mt-[140px] lg:mt-[150px] xl:mt-[150px] 2xl:mt-[130px]"
+          className="w-[300vh] mt-[130px] sm:mt-[90px] md:mt-[90px] lg:mt-[120px] xl:mt-[90px] 2xl:mt-[100px]"
           src={BannerBG}
           alt="Banner"
         />
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[47%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[193px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[44%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[253px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px] -mt-16 sm:mt-0 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[850px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[800px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}>
               <div className="relative">
                 <div className="relative">
@@ -586,8 +586,8 @@ export function HomePage() {
           </div>
         )}
       </div>
-      <div className="pt-2  w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14   ">
-        <div className=" mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 place-items-center gap-4 sm:gap-2 md:gap-4 lg:gap-10 xl:gap-10 2xl:gap-12">
+      <div className="pt-4 mt-40 sm:mt-40 md:mt-44 lg:mt-72 xl:mt-72 2xl:mt-96  w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14   ">
+        <div className=" mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 place-items-center gap-4 sm:gap-2 md:gap-4 lg:gap-10 xl:gap-10 2xl:gap-12">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
@@ -818,7 +818,7 @@ export function HomePage() {
                   <>
                     <button
                       onClick={() => handleAddToCart(selectedasset)}
-                      className={`flex p-2 text-center justify-center  w-full h-10 mt-2 rounded-md ${
+                      className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${
                         purchasedAssets.has(selectedasset.id)
                           ? "bg-gray-400 pointer-events-none"
                           : "bg-neutral-60"
@@ -827,13 +827,13 @@ export function HomePage() {
                       <img
                         src={IconCart}
                         alt="Cart Icon"
-                        className="w-10 h-6 mr-2"
+                        className="w-6 h-6 mr-2"
                       />
                       <p>Tambahkan Ke Keranjang</p>
                     </button>
-                    <button
+                    {/* <button
                       onClick={() => handleBuyNow(selectedasset)}
-                      className={`flex p-2 text-center justify-center  w-full h-10 mt-2 rounded-md ${
+                      className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 mt-2 rounded-md ${
                         purchasedAssets.has(selectedasset.id)
                           ? "bg-gray-400 pointer-events-none"
                           : "bg-secondary-40"
@@ -842,21 +842,19 @@ export function HomePage() {
                       <img
                         src={IconDollar}
                         alt="Cart Icon"
-                        className="w-10 h-6 mr-2 -ml-24"
+                        className="w-6 h-6 mr-2 -ml-24"
                       />
                       <p>Beli Sekarang</p>
-                    </button>
+                    </button> */}
                   </>
                 ) : (
-                  <button
-                    onClick={() => handleSaveToMyAssets(selectedasset)}
-                    className="flex p-2 text-center items-center justify-center bg-neutral-60 text-primary-100 w-full h-10 mt-6 rounded-md">
+                  <button className="flex p-2 text-center items-center justify-center bg-neutral-60 text-primary-100 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-32 rounded-md">
                     <img
                       src={IconDownload}
                       alt="Download Icon"
                       className="w-6 h-6 mr-2"
                     />
-                    <p>Save Asset</p>
+                    <p>Download</p>
                   </button>
                 )}
               </div>

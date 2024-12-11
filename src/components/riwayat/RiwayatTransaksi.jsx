@@ -2,7 +2,7 @@ import { db } from "../../firebase/firebaseConfig";
 import { useState, useEffect } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import HeaderNav from "../HeaderNav/HeaderNav";
+import HeaderNav from "../headerNavBreadcrumbs/HeaderWebUser";
 import NavbarSection from "../../components/website/web_User-LandingPage/NavbarSection";
 import { useNavigate } from "react-router-dom";
 
@@ -92,14 +92,16 @@ export function RiwayatTransaksi() {
   };
 
   return (
-    <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
-      <div className="mt-14 pt-[2px] sm:pt-[60px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
-        <HeaderNav />
+    <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
+      <div className="w-full shadow-lg bg-primary-100 dark:text-primary-100 relative z-40 ">
+        <div className="-mt-10 pt-[2px] sm:pt-[60px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
+          <HeaderNav />
+        </div>
+        <div className="mt-0 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+          <NavbarSection />
+        </div>
       </div>
-      <div className="mt-0 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
-        <NavbarSection />
-      </div>
-      <div className="w-full p-12 mt-20">
+      <div className="w-full p-12 mt-20 min-h-screen">
         <h2 className="text-2xl font-semibold mb-4 mt-20">Riwayat Transaksi</h2>
 
         {loading ? (

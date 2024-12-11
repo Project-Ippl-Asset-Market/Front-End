@@ -185,7 +185,6 @@ export function MyAsset() {
     setSelectedasset(null);
   };
 
-  // Filter berdasarkan pencarian
   const filteredAssetsData = AssetsData.filter((asset) => {
     const datasetName =
       asset.audioName ||
@@ -201,9 +200,23 @@ export function MyAsset() {
     );
   });
 
-  // Function to validate asset fields
   const downloadAsset = async (asset) => {
     try {
+      const allowedSizes = [
+        "Large (1920x1280)",
+        "Medium (1280x1280)",
+        "Small (640x427)",
+        "Original (6000x4000)",
+        "HD",
+        "SD (360x640)",
+        "SD (540x960)",
+        "HD (720x1280)",
+        "Full HD (1080x1920)",
+        "Quad HD (1440x2560)",
+        "4K UHD (2160x3840)",
+      ];
+
+      // atur di sini variabel nya : not: tambahkan API buat zownload file zip
       const fileUrl =
         asset.uploadUrlAudio ||
         asset.uploadUrlVideo ||
@@ -211,7 +224,14 @@ export function MyAsset() {
         asset.datasetImage ||
         asset.asset2DFile ||
         asset.asset3DFile ||
-        asset.image;
+        asset.video ||
+        asset.audioThumbnail ||
+        asset.datasetThumbnail ||
+        asset.asset2DThumbnail ||
+        asset.asset3DThumbnail ||
+        asset.Image_umum ||
+        asset.image ||
+        asset.zip;
 
       const fileName =
         asset.audioName ||
@@ -221,12 +241,14 @@ export function MyAsset() {
         asset.asset3DName ||
         asset.datasetName ||
         asset.name ||
-        "asset";
+        "asset.zip";
 
       const type = asset.uploadUrlVideo
         ? "video"
         : asset.uploadUrlImage || asset.image
         ? "image"
+        : asset.zip
+        ? "zip"
         : "other";
 
       if (!fileUrl || !type) {
@@ -234,30 +256,43 @@ export function MyAsset() {
         return;
       }
 
-      const size = asset.size || "No Size";
+      const size =
+        asset.size && allowedSizes.includes(asset.size)
+          ? asset.size
+          : "Medium (1280x1280)";
 
-      const allowedSizes = [
-        "Large (1920x1280)",
-        "Medium (1280x1280)",
-        "Small (640x427)",
-        "Original (6000x4000)",
-        "No Size",
-        "SD (360x640)",
-        "SD (540x960)",
-        "HD (720x1280)",
-        "Full HD (1080x1920)",
-        "Quad HD (1440x2560)",
-        "4K UHD (2160x3840)",
-      ];
+      const normalizeSize = (size) => {
+        const sizeMapping = {
+          SD_360x640: "SD (360x640)",
+          SD_540x960: "SD (540x960)",
+          HD_720x1280: "HD (720x1280)",
+          Full_HD_1080x1920: "Full HD (1080x1920)",
+          Quad_HD_1440x2560: "Quad HD (1440x2560)",
+          "4K_UHD_2160x3840": "4K UHD (2160x3840)",
+          Large_1920x1280: "Large (1920x1280)",
+          Medium_1280x1280: "Medium (1280x1280)",
+          Small_640x427: "Small (640x427)",
+          Original_6000x4000: "Original (6000x4000)",
+        };
 
-      if (!allowedSizes.includes(size)) {
+        return sizeMapping[size] || size;
+      };
+
+      const normalizedSize = normalizeSize(size);
+
+      console.log("Size received:", size);
+
+      if (!allowedSizes.includes(normalizedSize)) {
+        console.log("Invalid size:", normalizedSize);
         alert("Ukuran tidak valid.");
         return;
       }
 
       const proxyUrl = `http://localhost:3000/proxy/download?fileUrl=${encodeURIComponent(
         fileUrl
-      )}&size=${encodeURIComponent(size)}&type=${encodeURIComponent(type)}`;
+      )}&size=${encodeURIComponent(normalizedSize)}&type=${encodeURIComponent(
+        type
+      )}`;
 
       const response = await fetch(proxyUrl);
 
@@ -297,42 +332,40 @@ export function MyAsset() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[47%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[193px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[44%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[145px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[850px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[800px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}>
               <div className="relative">
-                <div className="relative">
-                  <input
-                    type="search"
-                    id="location-search"
-                    className="block w-full p-4 pl-24 placeholder:pr-10 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
-                    placeholder="Search assets..."
-                    required
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <span className="absolute inset-y-0 left-8 flex items-center text-gray-500 dark:text-gray-400">
-                    <svg
-                      className="w-6 h-6 mx-auto"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 18 18">
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                      />
-                    </svg>
-                  </span>
-                  <span className="absolute inset-y-0 left-20 flex items-center text-neutral-20 dark:text-neutral-20 text-[20px]">
-                    |
-                  </span>
-                </div>
+                <input
+                  type="search"
+                  id="location-search"
+                  className="block w-full p-4 pl-24 placeholder:pr-10 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                  placeholder="Search assets..."
+                  required
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <span className="absolute inset-y-0 left-8 flex items-center text-gray-500 dark:text-gray-400">
+                  <svg
+                    className="w-6 h-6 mx-auto"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 18 18">
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+                    />
+                  </svg>
+                </span>
+                <span className="absolute inset-y-0 left-20 flex items-center text-neutral-20 dark:text-neutral-20 text-[20px]">
+                  |
+                </span>
               </div>
             </form>
           </div>
@@ -390,14 +423,39 @@ export function MyAsset() {
                 <div
                   onClick={() => openModal(data)}
                   className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]">
-                  <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4 ">
+                  <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
+                    {Array.isArray(data.thumbnailGame) &&
+                      data.thumbnailGame.length > 0 && (
+                        <img
+                          src={data.thumbnailGame[0] || CustomImage}
+                          alt="Asset Thumbnail"
+                          className="h-full w-full object-cover rounded-t-[10px] border-none"
+                          onContextMenu={(e) => e.preventDefault()}
+                          draggable={false}
+                          onDragStart={(e) => e.preventDefault()}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = CustomImage;
+                          }}
+                        />
+                      )}
+
                     {data.uploadUrlVideo ? (
                       <video
-                        src={data.uploadUrlVideo || data.image}
+                        src={data.uploadUrlVideo}
                         alt="Asset Video"
                         className="h-full w-full object-cover rounded-t-[10px] border-none"
                         controls
                         controlsList="nodownload"
+                        onContextMenu={(e) => e.preventDefault()}
+                        draggable={false}
+                        onDragStart={(e) => e.preventDefault()}
+                      />
+                    ) : data.image ? (
+                      <img
+                        src={data.image}
+                        alt="Asset Image"
+                        className="h-full w-full object-cover rounded-t-[10px] border-none"
                         onContextMenu={(e) => e.preventDefault()}
                         draggable={false}
                         onDragStart={(e) => e.preventDefault()}
@@ -416,14 +474,15 @@ export function MyAsset() {
                     ) : (
                       <img
                         src={
-                          data.image ||
-                          data.video ||
                           data.uploadUrlAudio ||
                           data.uploadUrlImage ||
                           data.datasetThumbnail ||
                           data.asset2DThumbnail ||
                           data.asset3DThumbnail ||
-                          data.audioThumbnail
+                          data.audioThumbnail ||
+                          data.Image_umum ||
+                          data.image ||
+                          CustomImage
                         }
                         alt="Asset Image"
                         onContextMenu={(e) => e.preventDefault()}
@@ -488,13 +547,39 @@ export function MyAsset() {
 
             <div className="flex flex-col items-center justify-center w-full">
               <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
+                {Array.isArray(selectedasset.thumbnailGame) &&
+                  selectedasset.thumbnailGame.length > 0 && (
+                    <img
+                      src={selectedasset.thumbnailGame[0] || CustomImage}
+                      alt="Asset Thumbnail"
+                      className="h-full w-full object-cover rounded-t-[10px] border-none"
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CustomImage;
+                      }}
+                    />
+                  )}
                 {selectedasset.uploadUrlVideo ? (
                   <video
-                    src={selectedasset.uploadUrlVideo || selectedasset.image}
+                    src={selectedasset.uploadUrlVideo}
                     alt="Asset Video"
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover rounded-t-[10px] border-none"
                     controls
                     controlsList="nodownload"
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
+                  />
+                ) : selectedasset.image ? (
+                  <img
+                    src={selectedasset.image}
+                    alt="Asset Video"
+                    className="h-full w-full object-cover rounded-t-[10px] border-none"
+                    // controls
+                    // controlsList="nodownload"
                     onContextMenu={(e) => e.preventDefault()}
                     draggable={false}
                     onDragStart={(e) => e.preventDefault()}
@@ -503,7 +588,7 @@ export function MyAsset() {
                   <video
                     src={selectedasset.video}
                     alt="Asset Video"
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover rounded-t-[10px] border-none"
                     controls
                     controlsList="nodownload"
                     onContextMenu={(e) => e.preventDefault()}
@@ -513,14 +598,16 @@ export function MyAsset() {
                 ) : (
                   <img
                     src={
-                      selectedasset.image ||
-                      selectedasset.video ||
+                      selectedasset.thumbnailGame ||
                       selectedasset.uploadUrlAudio ||
                       selectedasset.uploadUrlImage ||
                       selectedasset.datasetThumbnail ||
                       selectedasset.asset2DThumbnail ||
                       selectedasset.asset3DThumbnail ||
-                      selectedasset.audioThumbnail
+                      selectedasset.audioThumbnail ||
+                      selectedasset.Image_umum ||
+                      selectedasset.image ||
+                      CustomImage
                     }
                     alt="Asset Image"
                     onContextMenu={(e) => e.preventDefault()}
@@ -530,7 +617,7 @@ export function MyAsset() {
                       e.target.onerror = null;
                       e.target.src = CustomImage;
                     }}
-                    className="w-full h-full object-cover"
+                    className="h-full w-full object-cover rounded-t-[10px] border-none"
                   />
                 )}
               </div>

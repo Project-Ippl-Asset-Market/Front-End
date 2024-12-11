@@ -177,7 +177,7 @@ export function AssetGame() {
 
       const purchasedQuery = query(
         collection(db, "buyAssets"),
-        where("uid", "==", currentUserId)
+        where("userId", "==", currentUserId)
       );
 
       try {
@@ -258,8 +258,8 @@ export function AssetGame() {
     if (searchTerm) {
       const results = AssetsData.filter(
         (asset) =>
-          asset.datasetName &&
-          asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase())
+          asset.audioName &&
+          asset.audioName.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setSearchResults(results);
     } else {
@@ -388,9 +388,14 @@ export function AssetGame() {
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
+        thumbnailGame:
+          selectedasset.audioThumbnail ||
+          selectedasset.asset2DThumbnail ||
+          selectedasset.asset3DThumbnail ||
+          "No Thumbnail Asset",
         image:
-          selectedasset.asset2DImage ||
-          selectedasset.asset3DImage ||
+          selectedasset.asset2DFile ||
+          selectedasset.asset3DFile ||
           selectedasset.uploadUrlAudio ||
           "No Image Asset",
         name:
@@ -431,34 +436,39 @@ export function AssetGame() {
       return;
     }
 
-    // Document ID sekarang mengikuti asset ID
-    const cartRef = doc(db, "buyNow", `${selectedasset.id}`);
+    const cartRef = doc(db, "buyNow", selectedasset.id.trim());
+
     const cartSnapshot = await getDoc(cartRef);
     if (cartSnapshot.exists()) {
-      // alert("Anda sudah Membeli Asset ini.");
       return;
     }
 
     const {
-      id,
-      asset2DImage,
-      asset3DImage,
-      uploadUrlAudio,
-      description,
       audioName,
       asset2DName,
       asset3DName,
-      price,
+      asset2DFile,
+      asset3DFile,
+      uploadUrlAudio,
+      audioThumbnail,
+      asset2DThumbnail,
+      asset3DThumbnail,
       category,
+      description,
+      price,
     } = selectedasset;
 
-    const missingFields = [];
-    if (!asset2DImage && !asset3DImage && !uploadUrlAudio)
-      missingFields.push("image");
-    if (!audioName && !asset2DName && !asset3DName) missingFields.push("name");
-    if (!description) missingFields.push("description");
-    if (price === undefined) missingFields.push("price");
-    if (!category) missingFields.push("category");
+    const missingFields = validateAssetFields({
+      asset2DFile,
+      asset3DFile,
+      uploadUrlAudio,
+      audioName,
+      asset2DName,
+      asset3DName,
+      description,
+      price,
+      category,
+    });
 
     if (missingFields.length > 0) {
       alert(`Missing fields: ${missingFields.join(", ")}. Please try again.`);
@@ -468,20 +478,17 @@ export function AssetGame() {
     try {
       await setDoc(cartRef, {
         userId: currentUserId,
-        assetId: id,
-        image:
-          selectedasset.asset2DImage ||
-          selectedasset.asset3DImage ||
-          selectedasset.uploadUrlAudio ||
-          "No Image Asset",
-        name:
-          selectedasset.audioName ||
-          selectedasset.asset2DName ||
-          selectedasset.asset3DName ||
-          "No Name Asset",
-        description: description,
-        price: price,
-        category: category,
+        assetId: selectedasset.id,
+        thumbnailGame:
+          audioThumbnail ||
+          asset2DThumbnail ||
+          asset3DThumbnail ||
+          "No Thumbnail Asset",
+        image: asset2DFile || asset3DFile || uploadUrlAudio || "No Image Asset",
+        name: audioName || asset2DName || asset3DName || "No Name Asset",
+        description: selectedasset.description,
+        price: selectedasset.price,
+        category: selectedasset.category,
         assetOwnerID: selectedasset.userId,
       });
 
@@ -496,8 +503,8 @@ export function AssetGame() {
 
   // Function to validate asset fields
   const validateAssetFields = ({
-    asset2DImage,
-    asset3DImage,
+    asset2DFile,
+    asset3DFile,
     uploadUrlAudio,
     audioName,
     asset2DName,
@@ -507,7 +514,7 @@ export function AssetGame() {
     category,
   }) => {
     const missingFields = [];
-    if (!asset2DImage && !asset3DImage && !uploadUrlAudio)
+    if (!asset2DFile && !asset3DFile && !uploadUrlAudio)
       missingFields.push("image");
     if (!audioName && !asset2DName && !asset3DName) missingFields.push("name");
     if (!description) missingFields.push("description");
@@ -530,15 +537,14 @@ export function AssetGame() {
 
   // Filter berdasarkan pencarian
   const filteredAssetsData = AssetsData.filter((asset) => {
-    const datasetName =
+    const audioName =
       asset.name ||
       asset.audioName ||
       asset.asset2DName ||
       asset.asset3DName ||
       "";
     return (
-      datasetName &&
-      datasetName.toLowerCase().includes(searchTerm.toLowerCase())
+      audioName && audioName.toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
 
@@ -578,42 +584,40 @@ export function AssetGame() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[47%] 2xl:left-[50%] transform -translate-x-1/2 z-30 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[195px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[44%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[193px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[850px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[800px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}>
               <div className="relative">
-                <div className="relative">
-                  <input
-                    type="search"
-                    id="location-search"
-                    className="block w-full p-4 pl-24 placeholder:pr-10 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
-                    placeholder="Search assets..."
-                    required
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <span className="absolute inset-y-0 left-8 flex items-center text-gray-500 dark:text-gray-400">
-                    <svg
-                      className="w-6 h-6 mx-auto"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 18 18">
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                      />
-                    </svg>
-                  </span>
-                  <span className="absolute inset-y-0 left-20 flex items-center text-neutral-20 dark:text-neutral-20 text-[20px]">
-                    |
-                  </span>
-                </div>
+                <input
+                  type="search"
+                  id="location-search"
+                  className="block w-full p-4 pl-24 placeholder:pr-10 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                  placeholder="Search assets..."
+                  required
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <span className="absolute inset-y-0 left-8 flex items-center text-gray-500 dark:text-gray-400">
+                  <svg
+                    className="w-6 h-6 mx-auto"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 18 18">
+                    <path
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+                    />
+                  </svg>
+                </span>
+                <span className="absolute inset-y-0 left-20 flex items-center text-neutral-20 dark:text-neutral-20 text-[20px]">
+                  |
+                </span>
               </div>
             </form>
           </div>
@@ -712,7 +716,7 @@ export function AssetGame() {
                       <img
                         src={
                           data.audioThumbnail ||
-                          data.assetAudiosImage ||
+                          data.uploadUrlAudio ||
                           data.asset2DImage ||
                           data.asset3DImage ||
                           (data.assetAudiosImage ? CustomImage : null) ||
@@ -808,7 +812,7 @@ export function AssetGame() {
                         key={index}
                         src={
                           selectedasset.asset2DThumbnail[currentIndexModal] ||
-                          selectedasset.datasetFile ||
+                          selectedasset.asset2DFile ||
                           CustomImage
                         }
                         alt={`Thumbnail ${index + 1}`}

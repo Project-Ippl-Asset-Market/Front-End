@@ -56,9 +56,9 @@ function EditProfil() {
 
           const unsubscribeAdmins = onSnapshot(adminsQuery, (snapshot) => {
             if (!snapshot.empty) {
-              const userData = snapshot.docs[0].data(); // Ambil data dari dokumen pertama yang ditemukan
+              const userData = snapshot.docs[0].data(); 
               console.log("Data pengguna ditemukan:", userData);
-              setUserProfile(userData); // Simpan data pengguna ke dalam state
+              setUserProfile(userData); 
         }else{
           console.log("Data pengguna tidak ditemukan");
         }
@@ -100,17 +100,17 @@ function EditProfil() {
             setAlertMessage("Profil berhasil diperbarui!");
             setShowAlert(true);
         } else {
-            // Jika tidak ditemukan di 'users', coba di 'admins'
+           
             const adminsCollectionRef = collection(db, "admins");
             const adminsQuery = query(adminsCollectionRef, where("uid", "==", currentUserId));
             const adminQuerySnapshot = await getDocs(adminsQuery);
 
             if (!adminQuerySnapshot.empty) {
-                // Jika ditemukan di koleksi 'admins', perbarui dokumen yang ada
+                
                 const adminDoc = adminQuerySnapshot.docs[0];
                 const adminDocRef = adminDoc.ref;
 
-                // Ambil data dokumen untuk cek field yang sudah ada
+                
                 await updateDoc(adminDocRef, {
                 country: userProfile.country,
                 city: userProfile.city,

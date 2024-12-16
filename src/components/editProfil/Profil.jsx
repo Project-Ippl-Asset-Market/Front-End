@@ -22,10 +22,10 @@ function Profil() {
   const [showModal, setShowModal] = useState(false);
   const [newProfileImage, setNewProfileImage] = useState(null);
   const [previewImage,setPreviewImage] = useState(null);
-  const [profileImageUrl, setProfileImageUrl] = useState(null); // New state for profile image URL
+  const [profileImageUrl, setProfileImageUrl] = useState(null);
   const navigate = useNavigate();
 
-  // Mengambil ID pengguna saat ini (jika ada)
+
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -39,7 +39,6 @@ function Profil() {
     return () => unsubscribe();
   }, []);
 
-  // Mengambil data profil pengguna secara real-time
   useEffect(() => {
     if (currentUserId) {
       const fetchUserProfile = async () => {
@@ -54,7 +53,7 @@ function Profil() {
             if (userData.photoURL) {
               setProfileImageUrl(userData.photoURL);
             } else {
-              fetchImageFromStorage(); // Fungsi terpisah untuk mengambil gambar dari Storage
+              fetchImageFromStorage(); 
             }
             console.log("Data ditemukan di koleksi users:", userData);
           } else {
@@ -86,7 +85,7 @@ function Profil() {
         return unsubscribeUser;
       };
   
-      // Fungsi untuk mengambil gambar dari Firebase Storage jika tidak ada photoURL di Firestore
+      
       const fetchImageFromStorage = () => {
         const storage = getStorage();
         const imageRef = ref(storage, `images-user/${currentUserId}.jpg`);
@@ -97,7 +96,7 @@ function Profil() {
           })
           .catch((error) => {
             console.error("Error saat mengambil URL gambar profil:", error);
-            setProfileImageUrl("https://placehold.co/80x80"); // Placeholder jika gagal
+            setProfileImageUrl("https://placehold.co/80x80");
           });
       };
   
@@ -110,7 +109,7 @@ function Profil() {
     setShowModal(true);
   };
 
-  // Fungsi untuk menangani perubahan file gambar
+ 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file && ["image/png", "image/jpeg", "image/jpg"].includes(file.type)) {
@@ -132,7 +131,7 @@ function Profil() {
       const fileExtension = newProfileImage.name.split(".").pop();
       const newImageRef = ref(storage, `images-user/${currentUserId}.${fileExtension}`);
       
-      // Check if the user has an existing profile photo
+     
       const usersCollectionRef = collection(db, "users");
       const userQuery = query(usersCollectionRef, where("uid", "==", currentUserId));
       const userSnapshot = await getDocs(userQuery);
@@ -157,7 +156,7 @@ function Profil() {
         }
       }
   
-      // If there is an existing photoURL, delete the previous image from Storage
+    
       if (existingPhotoURL) {
         const oldImageRef = ref(storage, existingPhotoURL);
         await deleteObject(oldImageRef);
@@ -181,7 +180,7 @@ function Profil() {
   };
   
 
-  // useEffect untuk mengambil URL gambar profil dari Firestore dan menampilkannya
+
 
 
   return (
@@ -248,7 +247,7 @@ function Profil() {
             </div>
           </div>
   
-          {/* Modal for profile picture review and upload */}
+        
           {showModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm rounded-xl">
               <div className="dark:bg-white bg-black p-6 rounded-lg animate-borderGlow w-[90%] lg:w-[50%] lg:h-auto">
@@ -282,7 +281,7 @@ function Profil() {
             </div>
           )}
   
-          {/* Personal Information Section */}
+      
           <div className="bg-primary-100 dark:bg-neutral-20 mt-5 rounded-lg lg:h-full">
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-xl font-bold">Personal Information</h2>
@@ -307,7 +306,7 @@ function Profil() {
             
           </div>
             <div className="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-10">
-              {/** Address Rows **/}
+             
               <div>
                 <p className="font-bold">Nama Depan</p>
                 <p>{userProfile?.firstName || "-"}</p>
@@ -330,7 +329,7 @@ function Profil() {
               </div>
             </div>
   
-          {/* Address Section */}
+          
           <div className="bg-primary-100 dark:bg-neutral-20 mb-4">
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-xl font-bold">Address</h2>
@@ -353,7 +352,7 @@ function Profil() {
               </Link>
             </div>
             <div className="px-5 py-4 grid grid-cols-2 md:grid-cols-2 gap-10">
-              {/** Address Rows **/}
+           
               <div>
                 <p className="font-bold">Negara</p>
                 <p>{userProfile?.country || "-"}</p>

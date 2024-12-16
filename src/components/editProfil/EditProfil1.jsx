@@ -59,9 +59,9 @@ function EditProfil() {
   
             const unsubscribeAdmins = onSnapshot(adminsQuery, (snapshot) => {
               if (!snapshot.empty) {
-                const userData = snapshot.docs[0].data(); // Ambil data dari dokumen pertama yang ditemukan
+                const userData = snapshot.docs[0].data(); 
                 console.log("Data pengguna ditemukan:", userData);
-                setUserProfile(userData); // Simpan data pengguna ke dalam state
+                setUserProfile(userData);
           }else{
             console.log("Data pengguna tidak ditemukan");
           }
@@ -70,7 +70,7 @@ function EditProfil() {
       }});
       const unsubscribeList = [unsubscribeUsers];
 
-        // Bersihkan listener saat komponen di-unmount
+      
         return () => unsubscribeList.forEach(unsub=>unsub());
       }
     }, [currentUserId]);
@@ -108,25 +108,25 @@ function EditProfil() {
         setShowAlert(true);
 
       } else {
-        // Jika tidak ditemukan di 'users', coba di 'admins'
+        
         const adminsCollectionRef = collection(db, "admins");
         const adminsQuery = query(adminsCollectionRef, where("uid", "==", currentUserId));
 
         const querySnapshot = await getDocs(adminsQuery);
   
         if (!querySnapshot.empty) {
-          // Ambil dokumen pengguna pertama yang cocok dengan UID di 'admins'
+        
           const adminDoc = querySnapshot.docs[0];
           const adminDocRef = adminDoc.ref;
   
-          // Data yang akan diperbarui, gunakan nilai yang ada di userProfile
+         
           const updatedData = {
             firstName: userProfile.firstName || adminDoc.data().firstName || '',
             lastName: userProfile.lastName || adminDoc.data().lastName || '',
             email: userProfile.email || adminDoc.data().email || '',
           };
   
-          // Periksa apakah phone dan bio ada di userProfile dan perlu diperbarui
+          
           if (userProfile.phone !== "") {
             updatedData.phone = userProfile.phone;
           }
@@ -135,7 +135,7 @@ function EditProfil() {
             updatedData.bio = userProfile.bio;
           }
   
-          // Perbarui dokumen pengguna di Firestore
+          
           await updateDoc(adminDocRef, updatedData);
           setAlertMessage('Profil berhasil diperbarui!');
           setShowAlert(true);
@@ -170,7 +170,7 @@ function EditProfil() {
             />
           </div>
           <h2 className="text-xl font-bold text-center mb-4">{userProfile?.username}</h2>
-          {/* Optional for user name */}
+          
           <ul className="space-y-4 w-full">
             <li>
               <button

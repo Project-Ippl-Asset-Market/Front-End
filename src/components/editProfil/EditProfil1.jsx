@@ -23,6 +23,8 @@ function EditProfil() {
     phone: "",
     bio: "",
   });
+  const [alertMessage, setAlertMessage] = useState('');
+  const [showAlert, setShowAlert] = useState(false);
 
   const [error,] = useState("");
   const navigate = useNavigate();
@@ -80,7 +82,8 @@ function EditProfil() {
 
   const handleSave = async () => {
     if (!currentUserId) {
-      alert("User ID tidak ditemukan.");
+      setAlertMessage("User ID tidak ditemukan.");
+      setShowAlert(true);
       return;
     }
 
@@ -101,7 +104,9 @@ function EditProfil() {
           bio: userProfile.bio,
         });
 
-        alert("Profil berhasil diperbarui!");
+        setAlertMessage("Profil berhasil diperbarui!");
+        setShowAlert(true);
+
       } else {
         // Jika tidak ditemukan di 'users', coba di 'admins'
         const adminsCollectionRef = collection(db, "admins");
@@ -132,14 +137,16 @@ function EditProfil() {
   
           // Perbarui dokumen pengguna di Firestore
           await updateDoc(adminDocRef, updatedData);
-          alert('Profil berhasil diperbarui!');
+          setAlertMessage('Profil berhasil diperbarui!');
+          setShowAlert(true);
         } else {
           console.log("Data tidak ditemukan");
         }
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert('Gagal menyimpan profil. Silakan coba lagi.');
+      setAlertMessage('Gagal menyimpan profil. Silakan coba lagi.');
+      setShowAlert(true);
     }
   };
 
@@ -263,6 +270,19 @@ function EditProfil() {
               Simpan Perubahan
             </button>
           </div>
+          {showAlert && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 w-11/12 sm:w-96">
+                <p className="text-gray-800 text-center">{alertMessage}</p>
+                <button
+                  onClick={() => setShowAlert(false)}
+                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          )}
         </main>
       </div>
 

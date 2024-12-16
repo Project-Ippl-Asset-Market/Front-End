@@ -21,6 +21,8 @@ function EditProfil() {
     city: "",
     postalCode: "",
   });
+  const [alertMessage, setAlertMessage] = useState('');
+  const [showAlert, setShowAlert] = useState(false);
   const [error,] = useState("");
   const navigate = useNavigate();
 
@@ -75,7 +77,8 @@ function EditProfil() {
 
   const handleSave = async () => {
     if (!currentUserId) {
-        alert("User ID tidak ditemukan.");
+        setAlertMessage("User ID tidak ditemukan.");
+        setShowAlert(true);
         return;
     }
 
@@ -94,7 +97,8 @@ function EditProfil() {
                 postalCode: userProfile.postalCode,
             });
             
-            alert("Profil berhasil diperbarui!");
+            setAlertMessage("Profil berhasil diperbarui!");
+            setShowAlert(true);
         } else {
             // Jika tidak ditemukan di 'users', coba di 'admins'
             const adminsCollectionRef = collection(db, "admins");
@@ -112,7 +116,8 @@ function EditProfil() {
                 city: userProfile.city,
                 postalCode: userProfile.postalCode,
             });
-            alert("Profil berhasil diperbarui!")
+            setAlertMessage("Profil berhasil diperbarui!")
+            setShowAlert(true);
 
             } else {
                 console.log("Data tidak ditemukan di koleksi 'admins'.");
@@ -120,7 +125,8 @@ function EditProfil() {
         }
     } catch (error) {
         console.error("Error updating profile:", error);
-        alert("Gagal menyimpan profil. Silakan coba lagi.");
+        setAlertMessage("Gagal menyimpan profil. Silakan coba lagi.");
+        setShowAlert(true);
     }
 };
 
@@ -220,6 +226,19 @@ function EditProfil() {
               </button>
             </div>
         </main>
+        {showAlert && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-lg p-6 w-11/12 sm:w-96">
+                <p className="text-gray-800 text-center">{alertMessage}</p>
+                <button
+                  onClick={() => setShowAlert(false)}
+                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          )}
       </div>
 
       <footer className="bg-[#212121] text-white py-20 mt-10">

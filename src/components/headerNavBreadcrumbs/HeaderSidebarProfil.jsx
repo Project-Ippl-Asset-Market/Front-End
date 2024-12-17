@@ -65,6 +65,19 @@ function HeaderSidebarProfil() {
     }
   };
 
+  const getPhotoURLFromToken = () => {
+    const token = localStorage.getItem("authToken");  
+    if (!token) return null;  
+  
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));  
+      return payload.image || payload.profileImageUrl || null; 
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return null;  
+    }
+  };
+
   return (
     <section className="navbar h-24 fixed z-40 top-0 left-0 pt-0 text-neutral-10 shadow-md font-poppins font-semibold dark:text-primary-100 bg-neutral-90 dark:bg-neutral-20 dark:shadow-lg dark:shadow-neutral-10 gap-6">
       <div className="flex-1">
@@ -157,27 +170,27 @@ function HeaderSidebarProfil() {
                 tabIndex={0}
                 role="button"
                 className="btn btn-ghost btn-circle avatar mx-2 w-14 h-14 rounded-full  -ml-3">
-                <div className="w-14 h-14 p-3  rounded-full overflow-hidden bg-neutral-80 flex items-center justify-center text-secondary-40 font-bold text-2xl mx-auto">
-                  {user ? (
-                    user.photoURL ? (
-                      <img
-                        alt="Avatar"
-                        src={user.photoURL}
-                        className="w-full h-full object-cover rounded-full"
-                      />
-                    ) : (
-                      <span className="text-[22px] text-center mx-auto -ml-1">
-                        {getInitial(username)}
-                      </span>
-                    )
-                  ) : (
-                    <img
-                      alt="Default User Icon"
-                      src="/path/to/default-user-icon.svg"
-                      className="w-10 h-10"
-                    />
-                  )}
-                </div>
+                <div className="w-14 h-14 p-3 rounded-full overflow-hidden bg-neutral-80 flex items-center justify-center text-secondary-40 font-bold text-2xl mx-auto ">
+                      {user ? (
+                        user.image || user.profileImageUrl || getPhotoURLFromToken() ? ( 
+                          <img
+                            alt="Avatar"
+                            src={user.image || user.profileImageUrl || getPhotoURLFromToken()} 
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        ) : (
+                          <span className="text-[22px] text-center mx-auto -ml-1">
+                            {getInitial(username)}
+                          </span>
+                        )
+                      ) : (
+                        <img
+                          alt="Default User Icon"
+                          src="/path/to/default-user-icon.svg"
+                          className="w-10 h-10"
+                        />
+                      )}
+                    </div>
               </div>
             </div>
           </div>

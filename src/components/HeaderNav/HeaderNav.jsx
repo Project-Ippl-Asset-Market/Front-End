@@ -68,6 +68,20 @@ function HeaderNav() {
     }
   };
 
+  
+  const getPhotoURLFromToken = () => {
+    const token = localStorage.getItem("authToken");  
+    if (!token) return null;  
+  
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));  
+      return payload.image || payload.profileImageUrl || null; 
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return null;  
+    }
+  };
+
   return (
     <div className="h-20 sm:h-0 md:h-0 lg:h-0 xl:h-0 2xl:h-0 -mt-8 sm:mt-6 md:mt-3 lg:mt-4 xl:mt-4 2xl:mt-8">
       <section className="navbar h-28 fixed z-40 top-0 left-0 pt-0 text-neutral-10  font-poppins font-semibold dark:text-primary-100 bg-primary-100 dark:bg-neutral-20 gap-2 shadow-md shadow-neutral-90 dark:shadow-neutral-10">
@@ -152,27 +166,27 @@ function HeaderNav() {
                   tabIndex={0}
                   role="button"
                   className="btn btn-ghost btn-circle avatar mx-2 w-14 h-14 rounded-full -ml-3">
-                  <div className="w-14 h-14 p-3 rounded-full overflow-hidden bg-neutral-80 flex items-center justify-center text-secondary-40 font-bold text-2xl mx-auto">
-                    {user ? (
-                      user.photoURL ? (
-                        <img
-                          alt="Avatar"
-                          src={user.photoURL}
-                          className="w-full h-full object-cover rounded-full"
-                        />
+                 <div className="w-14 h-14 p-3 rounded-full overflow-hidden bg-neutral-80 flex items-center justify-center text-secondary-40 font-bold text-2xl mx-auto ">
+                      {user ? (
+                        user.image || user.profileImageUrl || getPhotoURLFromToken() ? ( 
+                          <img
+                            alt="Avatar"
+                            src={user.image || user.profileImageUrl || getPhotoURLFromToken()} 
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        ) : (
+                          <span className="text-[22px] text-center mx-auto -ml-1">
+                            {getInitial(username)}
+                          </span>
+                        )
                       ) : (
-                        <span className="text-[22px] text-center mx-auto -ml-1">
-                          {getInitial(username)}
-                        </span>
-                      )
-                    ) : (
-                      <img
-                        alt="Default User Icon"
-                        src="/path/to/default-user-icon.svg"
-                        className="w-10 h-10"
-                      />
-                    )}
-                  </div>
+                        <img
+                          alt="Default User Icon"
+                          src="/path/to/default-user-icon.svg"
+                          className="w-10 h-10"
+                        />
+                      )}
+                    </div>
                 </div>
               </div>
             </div>

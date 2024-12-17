@@ -87,6 +87,20 @@ function HeaderWebUser() {
     }
   };
 
+  const getPhotoURLFromToken = () => {
+    const token = localStorage.getItem("authToken");  
+    if (!token) return null;  
+  
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));  
+      return payload.image || payload.profileImageUrl || null; 
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return null;  
+    }
+  };
+  
+
   return (
     <div className="h-36 sm:h-0 md:h-0 lg:h-0 xl:h-0 2xl:h-0 ">
       <section className="navbar h-28 fixed z-30 top-0 left-0 pt-0 text-neutral-10  font-poppins font-semibold dark:text-primary-100 bg-primary-100 dark:bg-neutral-20 gap-2">
@@ -212,12 +226,12 @@ function HeaderWebUser() {
                     id="dropdownDefaultButton"
                     data-dropdown-toggle="dropdown"
                     className="btn btn-ghost btn-circle avatar mx-2 w-14 h-14 rounded-full -ml-3">
-                    <div className="w-14 h-14 p-3 rounded-full overflow-hidden bg-neutral-80 flex items-center justify-center text-secondary-40 font-bold text-2xl mx-auto ">
+                   <div className="w-14 h-14 p-3 rounded-full overflow-hidden bg-neutral-80 flex items-center justify-center text-secondary-40 font-bold text-2xl mx-auto ">
                       {user ? (
-                        user.photoURL ? (
+                        user.image || user.profileImageUrl || getPhotoURLFromToken() ? ( 
                           <img
                             alt="Avatar"
-                            src={user.photoURL}
+                            src={user.image || user.profileImageUrl || getPhotoURLFromToken()} 
                             className="w-full h-full object-cover rounded-full"
                           />
                         ) : (
@@ -233,6 +247,7 @@ function HeaderWebUser() {
                         />
                       )}
                     </div>
+
                   </div>
                 </div>
               </div>

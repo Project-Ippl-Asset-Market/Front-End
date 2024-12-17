@@ -31,76 +31,64 @@ function Login() {
     }
   };
 
-  const checkUserRole = async (email) => {
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", email));
+  const checkAdminRole = async (email) => {
+    const adminsRef = collection(db, "admins");
+    const q = query(adminsRef, where("email", "==", email));
     const querySnapshot = await getDocs(q);
-  
+
     if (!querySnapshot.empty) {
-      const userDoc = querySnapshot.docs[0];
-      return userDoc.data().role;
+      const adminDoc = querySnapshot.docs[0];
+      return adminDoc.data().role;
     }
     return null;
   };
-  
+
   const loginAction = async (e) => {
     e.preventDefault();
     setErrorModal("");
     setLoading(true);
-  
+
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        loginEmail,
+        loginPassword
+      );
       const user = userCredential.user;
-  
-      const response = await fetch("http://localhost:3000/api/users/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: loginEmail,
-          password: loginPassword,
-        }),
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        localStorage.setItem("authToken", data.token);
-        const adminRole = data.user.role;  
-        if (adminRole === "superadmin") {
-          setModalMessage("Login sebagai Superadmin berhasil!");
-          saveUserRole("superadmin");
-          setTimeout(() => {
-            setModalMessage(null);
-            navigate("/dashboard");
-          }, 2000);
-        } else if (adminRole === "admin") {
-          setModalMessage("Login sebagai Admin berhasil!");
-          saveUserRole("admin");
-          setTimeout(() => {
-            setModalMessage(null);
-            navigate("/dashboard");
-          }, 2000);
-        } else {
-          setModalMessage("Login berhasil!");
-          saveUserRole("user");
-          setTimeout(() => {
-            setModalMessage(null);
-            navigate("/");
-          }, 2000);
-        }
+      const token = await user.getIdToken();
+      localStorage.setItem("authToken", token);
+      const adminRole = await checkAdminRole(user.email);
+
+      if (adminRole === "superadmin") {
+        setModalMessage("Login sebagai Superadmin berhasil!");
+        saveUserRole("superadmin");
+        setTimeout(() => {
+          setModalMessage(null);
+          navigate("/dashboard");
+        }, 2000);
+      } else if (adminRole === "admin") {
+        setModalMessage("Login sebagai Admin berhasil!");
+        saveUserRole("admin");
+        setTimeout(() => {
+          setModalMessage(null);
+          navigate("/dashboard");
+        }, 2000);
       } else {
-        setErrorModal(data.error || "Login gagal. Silakan coba lagi.");
+        setModalMessage("Login berhasil!");
+        saveUserRole("user");
+        setTimeout(() => {
+          setModalMessage(null);
+          navigate("/");
+        }, 2000);
       }
     } catch (error) {
+      // console.error("Login failed:", error.message);
       setErrorModal("Email atau password tidak valid. Silakan coba lagi.");
     } finally {
       setLoading(false);
     }
   };
-  
-  
+
   return (
     <div className="bg-neutral-20 min-h-screen h-full flex justify-center items-center font-poppins">
       <div className="flex flex-col lg:flex-row w-full max-w-[1920px] lg:h-[768px] h-auto min-h-screen">

@@ -708,8 +708,12 @@ export function AssetGame() {
                               e.target.onerror = null;
                               e.target.src = CustomImage;
                             }}
+                            onContextMenu={(e) => e.preventDefault()}
+                            draggable={false}
+                            onDragStart={(e) => e.preventDefault()}
                             className="h-full w-auto object-cover rounded-t-[10px] border-none"
                           />
+                          
                         ))}
                       </div>
                     ) : (
@@ -729,6 +733,9 @@ export function AssetGame() {
                           e.target.onerror = null;
                           e.target.src = CustomImage;
                         }}
+                        onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
                         className="h-full w-full object-cover rounded-t-[10px] border-none"
                       />
                     )}
@@ -820,6 +827,9 @@ export function AssetGame() {
                           e.target.onerror = null;
                           e.target.src = CustomImage;
                         }}
+                        onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
                         className="h-full w-auto object-cover rounded-t-[10px] border-none"
                       />
                     ))}
@@ -836,6 +846,9 @@ export function AssetGame() {
                       selectedasset.asset3DThumbnail ||
                       CustomImage
                     }
+                    onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
                     alt="Asset Image"
                     onError={(e) => {
                       e.target.onerror = null;

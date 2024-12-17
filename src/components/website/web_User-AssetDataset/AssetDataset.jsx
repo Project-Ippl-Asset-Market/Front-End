@@ -511,6 +511,8 @@ export function AssetDataset() {
                         e.target.src = CustomImage;
                       }}
                       onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
                     />
                   ) : (
                     <img

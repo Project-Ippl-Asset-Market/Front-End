@@ -70,8 +70,8 @@ function Profil() {
                 const userData = snapshot.docs[0].data();
                 setUserProfile(userData);
   
-                if (userData.photoURL) {
-                  setProfileImageUrl(userData.photoURL);
+                if (userData.photoURL || userData.profileImageUrl ||"") {
+                  setProfileImageUrl(userData.photoURL || userData.profileImageUrl ||"");
                 } else {
                   fetchImageFromStorage();
                 }

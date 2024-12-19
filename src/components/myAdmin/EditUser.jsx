@@ -27,7 +27,11 @@ function EditUser() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/users/${id}`);
+        const apiBaseUrl =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://pixelstore-be.up.railway.app";
+        const response = await fetch(`${apiBaseUrl}/api/users/${id}`);
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
@@ -91,8 +95,11 @@ function EditUser() {
       if (user.profileImage) {
         formData.append("profileImage", user.profileImage);
       }
-
-      const response = await fetch(`http://localhost:3000/api/users/${id}`, {
+      const apiBaseUrl =
+      window.location.hostname === "localhost"
+        ? "http://localhost:3000"
+        : "https://pixelstore-be.up.railway.app";
+      const response = await fetch(`${apiBaseUrl}/api/users/${id}`, {
         method: "PUT",
         body: formData,
       });

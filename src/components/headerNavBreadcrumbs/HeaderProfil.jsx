@@ -1,7 +1,14 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+} from "firebase/firestore";
+import { db } from "../../firebase/firebaseConfig";
 import { useNavigate, Link } from "react-router-dom";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut,getAuth } from "firebase/auth";
 import { auth } from "../../firebase/firebaseConfig";
 import { useTheme } from "../../contexts/ThemeContext";
 import IconLightMode from "../../assets/icon/iconDarkMode&LigthMode/ligth_mode.svg";
@@ -13,8 +20,9 @@ import IconLogoutLight from "../../assets/icon/iconDarkMode&LigthMode/logOutLigh
 import IconCart from "../../assets/icon/iconHeader/iconCart.svg";
 import IconMyAsset from "../../assets/icon/iconHeader/iconMyasset.svg";
 import logoWeb from "../../assets/logo/logoWeb.png";
+import { getStorage, ref, getDownloadURL} from "firebase/storage";
 
-function HeaderWebUser() {
+function HeaderProfil() {
   const { darkMode, toggleDarkMode } = useTheme();
   const [user, setUser] = useState(null);
   const [username, setUsername] = useState("");
@@ -22,6 +30,9 @@ function HeaderWebUser() {
   const navigate = useNavigate();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const displayUsername = windowWidth < 1282 ? username.slice(0, 4) : username;
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [userProfile,setUserProfile] = useState(null);
+  const [profileImageUrl, setProfileImageUrl] = useState(null);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
@@ -37,6 +48,7 @@ function HeaderWebUser() {
       }
     });
 
+
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
 
@@ -44,6 +56,21 @@ function HeaderWebUser() {
       unsubscribeAuth();
       window.removeEventListener("resize", handleResize);
     };
+
+    
+  }, []);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUserId(user.uid);
+      } else {
+        setCurrentUserId(null);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const handleLogout = async () => {
@@ -68,18 +95,71 @@ function HeaderWebUser() {
     }
   };
 
-  const getPhotoURLFromToken = () => {
-    const token = localStorage.getItem("authToken");  
-    if (!token) return null;  
+  //ambil profil dari firebase
+  useEffect(() => {
+    if (currentUserId) {
+      const fetchUserProfile = async () => {
+        const usersCollectionRef = collection(db, "users");
+        const q = query(usersCollectionRef, where("uid", "==", currentUserId));
+        
+        const unsubscribeUser = onSnapshot(q, (snapshot) => {
+          if (!snapshot.empty) {
+            const userData = snapshot.docs[0].data();
+            setUserProfile(userData);
   
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));  
-      return payload.image || payload.profileImageUrl || null; 
-    } catch (error) {
-      console.error("Error decoding token:", error);
-      return null;  
+            if (userData.photoURL) {
+              setProfileImageUrl(userData.photoURL);
+            } else {
+              fetchImageFromStorage(); // Fungsi terpisah untuk mengambil gambar dari Storage
+            }
+            console.log("Data ditemukan di koleksi users:", userData);
+          } else {
+            console.log("Pengguna tidak ditemukan, mencoba mencari di koleksi admins");
+  
+            const adminsCollectionRef = collection(db, "admins");
+            const adminsQuery = query(adminsCollectionRef, where("uid", "==", currentUserId));
+            
+            const unsubscribeAdmin = onSnapshot(adminsQuery, (snapshot) => {
+              if (!snapshot.empty) {
+                const userData = snapshot.docs[0].data();
+                setUserProfile(userData);
+  
+                if (userData.photoURL) {
+                  setProfileImageUrl(userData.photoURL);
+                } else {
+                  fetchImageFromStorage();
+                }
+                console.log("Data ditemukan di koleksi admins:", userData);
+              } else {
+                console.log("Profil tidak ditemukan di kedua koleksi.");
+              }
+            });
+  
+            return unsubscribeAdmin;
+          }
+        });
+  
+        return unsubscribeUser;
+      };
+  
+      // Fungsi untuk mengambil gambar dari Firebase Storage jika tidak ada photoURL di Firestore
+      const fetchImageFromStorage = () => {
+        const storage = getStorage();
+        const imageRef = ref(storage, `images-user/${currentUserId}.jpg`);
+        
+        getDownloadURL(imageRef)
+          .then((url) => {
+            setProfileImageUrl(url);
+          })
+          .catch((error) => {
+            console.error("Error saat mengambil URL gambar profil:", error);
+            setProfileImageUrl("https://placehold.co/80x80"); // Placeholder jika gagal
+          });
+      };
+  
+      fetchUserProfile();
     }
-  };
+  }, [currentUserId]);
 
   return (
     <div className="h-36 sm:h-0 md:h-0 lg:h-0 xl:h-0 2xl:h-0">
@@ -138,18 +218,6 @@ function HeaderWebUser() {
                             {displayUsername}
                           </summary>
                           <ul className="bg-neutral-90 dark:bg-neutral-20 rounded-lg w-48 shadow-lg ">
-                            <li className="flex mb-1 w-full h-8 transition-colors duration-300 focus:outline-none">
-                              <div className="flex items-center hover:text-primary-100 hover:bg-secondary-40 dark:hover:bg-secondary-40  ">
-                                <img
-                                  src={darkMode ? IconUserDark : IconUserLight}
-                                  alt="User Icon"
-                                  className="w-5 h-5 me-2"
-                                />
-                                <Link to="/profile" type="button">
-                                  Profile
-                                </Link>
-                              </div>
-                            </li>
                             <li>
                               <div className="flex items-center justify-center p-2 bg-neutral-90 hover:border-none dark:bg-neutral-20   rounded-lg hover:text-primary-100 hover:bg-secondary-40 dark:hover:bg-secondary-40 ">
                                 <div
@@ -204,26 +272,12 @@ function HeaderWebUser() {
                     id="dropdownDefaultButton"
                     data-dropdown-toggle="dropdown"
                     className="btn btn-ghost btn-circle avatar mx-2 w-14 h-14 rounded-full -ml-3">
-                      <div className="w-14 h-14 p-3 rounded-full overflow-hidden bg-neutral-80 flex items-center justify-center text-secondary-40 font-bold text-2xl mx-auto ">
-                      {user ? (
-                        user.image || user.profileImageUrl || getPhotoURLFromToken() ? ( 
-                          <img
-                            alt="Avatar"
-                            src={user.image || user.profileImageUrl || getPhotoURLFromToken()} 
-                            className="w-full h-full object-cover rounded-full"
-                          />
-                        ) : (
-                          <span className="text-[22px] text-center mx-auto -ml-1">
-                            {getInitial(username)}
-                          </span>
-                        )
-                      ) : (
-                        <img
-                          alt="Default User Icon"
-                          src="/path/to/default-user-icon.svg"
-                          className="w-10 h-10"
-                        />
-                      )}
+                    <div className="w-[100%] h-[100%] rounded-full bg-neutral-80 flex items-center justify-center text-secondary-40 font-bold text-2xl mx-auto ">
+                      <img
+                        src={profileImageUrl|| "https://placehold.co/80x80"}
+                        alt="Profile"
+                        className="h-[100%] w-[100%] rounded-full cursor-pointer"
+                      />
                     </div>
                   </div>
                 </div>
@@ -263,4 +317,4 @@ function HeaderWebUser() {
   );
 }
 
-export default HeaderWebUser;
+export default HeaderProfil;

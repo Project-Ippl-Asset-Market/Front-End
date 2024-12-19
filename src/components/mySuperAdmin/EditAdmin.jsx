@@ -27,7 +27,11 @@ function EditAdmin() {
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/admins/${id}`);
+        const apiBaseUrl =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://pixelstore-be.up.railway.app";
+        const response = await fetch(`${apiBaseUrl}/api/admins/${id}`);
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
@@ -87,8 +91,11 @@ function EditAdmin() {
       if (admin.profileImage) {
         formData.append("profileImage", admin.profileImage);
       }
-
-      const response = await fetch(`http://localhost:3000/api/admins/${id}`, {
+      const apiBaseUrl =
+      window.location.hostname === "localhost"
+        ? "http://localhost:3000"
+        : "https://pixelstore-be.up.railway.app";
+      const response = await fetch(`${apiBaseUrl}/api/admins/${id}`, {
         method: "PUT",
         body: formData,
       });

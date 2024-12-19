@@ -118,8 +118,10 @@ function ManageAssetImage() {
           const data = docSnap.data();
           const createdAt =
             data.createdAt?.toDate().toLocaleString("id-ID", {
+              date: "numeric",
               year: "numeric",
               month: "long",
+              day: "numeric",
             }) || "N/A";
 
           items.push({

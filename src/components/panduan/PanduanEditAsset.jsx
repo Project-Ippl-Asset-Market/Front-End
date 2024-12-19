@@ -7,7 +7,7 @@ import hapus from "../../assets/Asset_Panduan/assets/Hapus.png";
 import AddAssetImg from "../../assets/Asset_Panduan/assets/AddAssetImg.png";
 import AddImage from "../../assets/Asset_Panduan/assets/AddImage.png";
 import PopupDelete from "../../assets/Asset_Panduan/assets/PopupDelete.png";
-import Hilang from "../../assets/Asset_Panduan/assets/Hilang.png";
+import hilang from "../../assets/Asset_Panduan/assets/Hilang.png";
 
 // Jangan lupa Install npm install react-medium-image-zoom
 
@@ -104,7 +104,7 @@ const EditAsset = () => {
           </p>
           <Zoom>
             <img
-              src={Hilang}
+              src={hilang}
               alt="Dataset Hilang"
               className="w-full max-w-lg mx-auto"
             />

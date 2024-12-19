@@ -36,7 +36,8 @@ import ManageUsers from "../components/myAdmin/ManageUsers";
 import AddUsers from "../components/myAdmin/AddUser";
 import EditUsers from "../components/myAdmin/EditUser";
 import SaleAssets from "../components/myUserDashboard/SaleAssets";
-import Revenue from "../components/myUserDashboard/Revenue";
+import Revenue from "../components/myUserDashboard/Revenue2";
+import PaymentSettings from "../components/myUserDashboard/PaymentSettings";
 // Import Halaman Dashboard End
 
 //import Halaman Panduan
@@ -67,7 +68,7 @@ import Pembelian from "../components/Help_Page/Pembelian";
 import PenjualanAsset from "../components/Help_Page/PenjualanAsset";
 import Layanan from "../components/Help_Page/Layanan";
 import KebijakanPixelStore from "../components/Help_Page/KebijakanPixelStore";
-
+import AdmintotalRevenue from "../components/myAdmin/AdminUserRevenue";
 // Import Halaman Website End
 
 // eslint-disable-next-line react/prop-types
@@ -330,6 +331,24 @@ const AppRoutes = ({ handleLogout }) => {
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <Revenue onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/paymentsettings"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <PaymentSettings onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/revenueuserbyadmin"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <AdmintotalRevenue onLogout={handleLogout} />
               </ProtectedRoute>
             }
           />

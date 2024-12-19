@@ -5,7 +5,7 @@ import LandingPage from "../../assets/Asset_Panduan/assets/LandingPage.png";
 import Login from "../../assets/Asset_Panduan/assets/Login.png";
 import LoginBerhasil from "../../assets/Asset_Panduan/assets/LoginBerhasil.png";
 import LoginGagal from "../../assets/Asset_Panduan/assets/LoginGagal.png";
-import LandingpageLog from "../../assets/Asset_Panduan/assets/LandingpageLog.png";
+import LandingpageLog from "../../assets/Asset_Panduan/assets/LandingPageLog.png";
 
 const PanduanLogin = () => {
   return (

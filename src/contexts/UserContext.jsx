@@ -46,5 +46,3 @@ export const UserProvider = ({ children }) => {
 };
 
 export const useUserContext = () => useContext(UserContext);
-
-

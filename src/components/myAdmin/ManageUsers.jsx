@@ -49,7 +49,11 @@ function ManageUsers() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await axios.get("http://localhost:3000/api/users");
+        const apiBaseUrl =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://pixelstore-be.up.railway.app";
+        const response = await axios.get(`${apiBaseUrl}/api/users`);
         setUsers(response.data);
         setFilteredUsers(response.data);
       } catch (error) {
@@ -105,8 +109,12 @@ function ManageUsers() {
       const auth = getAuth();
       const token = await auth.currentUser.getIdToken(true);
 
+      const apiBaseUrl =
+      window.location.hostname === "localhost"
+        ? "http://localhost:3000"
+        : "https://pixelstore-be.up.railway.app";
       const response = await axios.delete(
-        `http://localhost:3000/api/users/${id}`,
+        `${apiBaseUrl}/api/users/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

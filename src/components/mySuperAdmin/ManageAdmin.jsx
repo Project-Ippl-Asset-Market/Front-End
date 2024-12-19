@@ -45,7 +45,11 @@ function ManageAdmin() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await axios.get("http://localhost:3000/api/admins");
+        const apiBaseUrl =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://pixelstore-be.up.railway.app";
+        const response = await axios.get(`${apiBaseUrl}/api/admins`);
         setAdmins(response.data);
         setFilteredAdmins(response.data);
       } catch (error) {
@@ -99,8 +103,12 @@ function ManageAdmin() {
       const token = await auth.currentUser.getIdToken(true);
 
       // Hapus admin dari database
+      const apiBaseUrl =
+      window.location.hostname === "localhost"
+        ? "http://localhost:3000"
+        : "https://pixelstore-be.up.railway.app";
       const response = await axios.delete(
-        `http://localhost:3000/api/admins/${id}`,
+        `${apiBaseUrl}/api/admins/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -182,8 +182,12 @@ const CartBuyNow = () => {
   const moveAssetToBuyAssets = async (asset) => {
     console.log("Attempting to move asset:", asset);
     try {
+      const apiBaseUrl =
+      window.location.hostname === "localhost"
+        ? "http://localhost:3000"
+        : "https://pixelstore-be.up.railway.app";
       const response = await axios.post(
-        `http://localhost:3000/api/moveAsset/${asset.docId}`
+        `${apiBaseUrl}/api/moveAsset/${asset.docId}`
       );
 
       if (response.status === 200) {
@@ -207,8 +211,12 @@ const CartBuyNow = () => {
           const cartDocRef = doc(db, "buyNow", asset.docId);
           await deleteDoc(cartDocRef);
           console.log(`Deleted asset from buyNow: ${asset.docId}`);
+          const apiBaseUrl =
+          window.location.hostname === "localhost"
+            ? "http://localhost:3000"
+            : "https://pixelstore-be.up.railway.app";
           await axios.delete(
-            `http://localhost:3000/api/assets/delete/${asset.docId}`
+            `${apiBaseUrl}/api/assets/delete/${asset.docId}`
           );
         })
       );
@@ -245,8 +253,13 @@ const CartBuyNow = () => {
   };
 
   const createTransaction = async (orderId, subtotal, assetDetails) => {
+    const apiBaseUrl =
+    window.location.hostname === "localhost"
+      ? "http://localhost:3000"
+      : "https://pixelstore-be.up.railway.app";
+      
     const response = await axios.post(
-      "http://localhost:3000/api/transactions/create-transaction",
+      `${apiBaseUrl}/api/transactions/create-transaction`,
       {
         orderId,
         grossAmount: subtotal,

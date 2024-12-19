@@ -25,8 +25,12 @@ function LupaPassword() {
     setLoading(true);
 
     try {
+      const apiBaseUrl =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://pixelstore-be.up.railway.app";
       const response = await fetch(
-        "http://localhost:3000/api/users/check-email",
+        `${apiBaseUrl}/api/users/check-email`,
         {
           method: "POST",
           headers: {

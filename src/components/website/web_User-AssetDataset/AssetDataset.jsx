@@ -21,8 +21,10 @@ import IconDollar from "../../../assets/assetWeb/iconDollarLight.svg";
 import IconCart from "../../../assets/assetWeb/iconCart.svg";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineInfoCircle } from "react-icons/ai";
-import daisyui from "daisyui";
 import Footer from "../../website/Footer/Footer";
+import JSZip from "jszip";
+import * as XLSX from "xlsx";
+import Papa from "papaparse";
 
 export function AssetDataset() {
   const navigate = useNavigate();
@@ -37,7 +39,142 @@ export function AssetDataset() {
   const [searchResults, setSearchResults] = useState([]);
   const [purchasedAssets, setPurchasedAssets] = useState(new Set());
   const [validationMessage, setValidationMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
+  const fetchAndProcessZip = async () => {
+    setLoading(true);
+    try {
+      const firebaseFileUrl = selectedasset.datasetFile;
+  
+      // console.log("Fetching ZIP using proxy for URL:", firebaseFileUrl);
+      
+      const apiBaseUrl =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://pixelstore-be.up.railway.app";
+      const proxyUrl = `${apiBaseUrl}/api/proxy-file?url=${encodeURIComponent(firebaseFileUrl)}`;
+      const response = await fetch(proxyUrl);
+  
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file: ${response.statusText}`);
+      }
+  
+      const blob = await response.blob();
+      const zip = await JSZip.loadAsync(blob);
+  
+      const contents = [];
+      const previews = [];
+      const images = [];
+  
+      // Membuka tab baru di awal untuk menampilkan preview
+      const newTab = window.open("", "_blank");
+      if (!newTab) {
+        throw new Error("Unable to open new tab. Check your browser's popup blocker.");
+      }
+      newTab.document.write("<h1>Preview Dataset Contents</h1>");
+  
+      await Promise.all(
+        Object.keys(zip.files).map(async (relativePath) => {
+          const file = zip.files[relativePath];
+          contents.push(relativePath);
+  
+          if (!file.dir) {
+            const fileData = await file.async("blob");
+  
+            // Gambar
+            if (relativePath.match(/\.(png|jpg|jpeg|gif|bmp)$/i) && images.length < 20) {
+              const imageUrl = URL.createObjectURL(fileData);
+              images.push({ name: relativePath, url: imageUrl });
+            
+              // Tambahkan gambar ke tab baru
+              if (!newTab.document.getElementById("image-container")) {
+                newTab.document.write(`
+                  <div id="image-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;"></div>
+                `);
+              }
+              
+              const imageContainer = newTab.document.getElementById("image-container");
+              const imageDiv = newTab.document.createElement("div");
+              imageDiv.style.textAlign = "center";
+            
+              imageDiv.innerHTML = `
+                <h3 style="margin-bottom: 10px; font-size: 14px;">${relativePath}</h3>
+                <img src="${imageUrl}" alt="${relativePath}" style="max-width: 150px; max-height: 150px; object-fit: cover; margin: 10px;" />
+              `;
+              imageContainer.appendChild(imageDiv);
+            }             
+            // CSV
+            else if (relativePath.endsWith(".csv")) {
+              const text = await file.async("text");
+              const csvData = Papa.parse(text, { header: true }).data;
+              previews.push({ name: relativePath, data: csvData });
+  
+              // Tambahkan tabel CSV ke tab baru
+              newTab.document.write(`<h3>${relativePath}</h3>`);
+              newTab.document.write("<table border='1' style='border-collapse: collapse; width: 100%;'>");
+  
+              if (csvData.length > 0) {
+                newTab.document.write("<thead><tr>");
+                Object.keys(csvData[0])
+                  .slice(0, 10)
+                  .forEach((key) => newTab.document.write(`<th>${key}</th>`));
+                newTab.document.write("</tr></thead>");
+              }
+  
+              newTab.document.write("<tbody>");
+              csvData.slice(0, 10).forEach((row) => {
+                newTab.document.write("<tr>");
+                Object.values(row)
+                  .slice(0, 10)
+                  .forEach((value) => newTab.document.write(`<td>${value}</td>`));
+                newTab.document.write("</tr>");
+              });
+              newTab.document.write("</tbody></table>");
+            } 
+            // XLSX
+            else if (relativePath.endsWith(".xlsx")) {
+              const arrayBuffer = await file.async("arraybuffer");
+              const workbook = XLSX.read(arrayBuffer, { type: "array" });
+              const sheetName = workbook.SheetNames[0];
+              const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+              previews.push({ name: relativePath, data: sheetData });
+  
+              // Tambahkan tabel XLSX ke tab baru
+              newTab.document.write(`<h3>${relativePath}</h3>`);
+              newTab.document.write("<table border='1' style='border-collapse: collapse; width: 100%;'>");
+  
+              if (sheetData.length > 0) {
+                newTab.document.write("<thead><tr>");
+                Object.keys(sheetData[0])
+                  .slice(0, 10)
+                  .forEach((key) => newTab.document.write(`<th>${key}</th>`));
+                newTab.document.write("</tr></thead>");
+              }
+  
+              newTab.document.write("<tbody>");
+              sheetData.slice(0, 10).forEach((row) => {
+                newTab.document.write("<tr>");
+                Object.values(row)
+                  .slice(0, 10)
+                  .forEach((value) => newTab.document.write(`<td>${value}</td>`));
+                newTab.document.write("</tr>");
+              });
+              newTab.document.write("</tbody></table>");
+            }
+          }
+        })
+      );
+  
+      setFileContents(contents);
+      setPreviewContents(previews);
+      setImagePreviews(images);
+    } catch (error) {
+      console.error("Error fetching or processing ZIP:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
     const auth = getAuth();
@@ -358,6 +495,7 @@ export function AssetDataset() {
     asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [currentIndexModal, setCurrentIndexModal] = useState(0);
 
   const handlePrevious = () => {
@@ -387,40 +525,42 @@ export function AssetDataset() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[44%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[193px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[47%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[193px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[800px] 2xl:w-[1200px]"
+              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[850px] 2xl:w-[1200px]"
               onSubmit={(e) => e.preventDefault()}>
               <div className="relative">
-                <input
-                  type="search"
-                  id="location-search"
-                  className="block w-full p-4 pl-24 placeholder:pr-10 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
-                  placeholder="Search assets..."
-                  required
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <span className="absolute inset-y-0 left-8 flex items-center text-gray-500 dark:text-gray-400">
-                  <svg
-                    className="w-6 h-6 mx-auto"
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 18 18">
-                    <path
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-                    />
-                  </svg>
-                </span>
-                <span className="absolute inset-y-0 left-20 flex items-center text-neutral-20 dark:text-neutral-20 text-[20px]">
-                  |
-                </span>
+                <div className="relative">
+                  <input
+                    type="search"
+                    id="location-search"
+                    className="block w-full p-4 pl-24 placeholder:pr-10 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:border-blue-500"
+                    placeholder="Search assets..."
+                    required
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <span className="absolute inset-y-0 left-8 flex items-center text-gray-500 dark:text-gray-400">
+                    <svg
+                      className="w-6 h-6 mx-auto"
+                      aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 18 18">
+                      <path
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+                      />
+                    </svg>
+                  </span>
+                  <span className="absolute inset-y-0 left-20 flex items-center text-neutral-20 dark:text-neutral-20 text-[20px]">
+                    |
+                  </span>
+                </div>
               </div>
             </form>
           </div>
@@ -469,14 +609,13 @@ export function AssetDataset() {
         </h1>
       </div>
       <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen -mt-6 ">
-        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
+        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);
             const isPurchased = purchasedAssets.has(data.id);
 
-            {
-              /* const handlePrevious = () => {
+            const handlePrevious = () => {
               setCurrentIndex((prevIndex) =>
                 prevIndex > 0 ? prevIndex - 1 : prevIndex
               );
@@ -488,8 +627,7 @@ export function AssetDataset() {
                   ? prevIndex + 1
                   : prevIndex
               );
-            }; */
-            }
+            };
 
             {
               /* console.log(data.datasetThumbnail); */
@@ -503,7 +641,8 @@ export function AssetDataset() {
                   {Array.isArray(data.datasetThumbnail) &&
                   data.datasetThumbnail.length > 0 ? (
                     <img
-                      src={data.datasetThumbnail || CustomImage}
+                      src={data.datasetThumbnail[currentIndex] || CustomImage}
+                      alt={`Thumbnail ${currentIndex + 1}`}
                       className="h-full w-full object-cover rounded-t-[10px] border-none"
                       onClick={() => openModal(data)}
                       onError={(e) => {
@@ -511,8 +650,6 @@ export function AssetDataset() {
                         e.target.src = CustomImage;
                       }}
                       onContextMenu={(e) => e.preventDefault()}
-                      draggable={false}
-                      onDragStart={(e) => e.preventDefault()}
                     />
                   ) : (
                     <img
@@ -535,6 +672,23 @@ export function AssetDataset() {
                       Sudah Dibeli
                     </div>
                   )}
+
+                  {/* Navigasi Carousel */}
+                  {Array.isArray(data.datasetThumbnail) &&
+                    data.datasetThumbnail.length > 1 && (
+                      <>
+                        <button
+                          onClick={handlePrevious}
+                          className="absolute left-1 top-1/2 transform -translate-y-1/2 bg-transparent text-[25px]  text-white rounded-full p-2">
+                          &#8592;
+                        </button>
+                        <button
+                          onClick={handleNext}
+                          className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-transparent text-[25px] text-white rounded-full p-2">
+                          &#8594;
+                        </button>
+                      </>
+                    )}
                 </div>
 
                 {/* details section */}
@@ -632,8 +786,18 @@ export function AssetDataset() {
                   )}
               </div>
             </div>
-
-            <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+            <div className="p-1 pt-2 flex flex-col items-center justify-center">
+              <button 
+                onClick={fetchAndProcessZip} 
+                disabled={loading} 
+                className={`px-6 py-2 text-white font-semibold rounded-lg 
+                  ${loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"} 
+                  transition duration-200 ease-in-out`}
+              >
+                {loading ? "Loading..." : "Load Preview"}
+              </button>
+            </div>
+            <div className="w-full text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
               <h2 className="text-lg font-semibold mb-2 dark:text-primary-100 text-start">
                 {selectedasset.datasetName}
               </h2>
@@ -644,7 +808,7 @@ export function AssetDataset() {
                 Rp. {selectedasset.price.toLocaleString("id-ID")}
               </p>
               <div className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
-                <label className="flex-col mt-2 ">Deskripsi gambar:</label>
+                <label className="flex-col mt-2 ">Deskripsi dataset:</label>
                 <div className="mt-2 text-justify">
                   {selectedasset.description}
                 </div>

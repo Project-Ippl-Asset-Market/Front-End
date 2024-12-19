@@ -221,14 +221,10 @@ export function MyAsset() {
         asset.uploadUrlAudio ||
         asset.uploadUrlVideo ||
         asset.uploadUrlImage ||
-        asset.datasetImage ||
+        asset.datasetFile ||
         asset.asset2DFile ||
         asset.asset3DFile ||
         asset.video ||
-        asset.audioThumbnail ||
-        asset.datasetThumbnail ||
-        asset.asset2DThumbnail ||
-        asset.asset3DThumbnail ||
         asset.Image_umum ||
         asset.image ||
         asset.zip;
@@ -245,7 +241,7 @@ export function MyAsset() {
 
       const type = asset.uploadUrlVideo
         ? "video"
-        : asset.uploadUrlImage || asset.image
+        : asset.uploadUrlImage
         ? "image"
         : asset.zip
         ? "zip"
@@ -288,7 +284,13 @@ export function MyAsset() {
         return;
       }
 
-      const proxyUrl = `http://localhost:3000/proxy/download?fileUrl=${encodeURIComponent(
+      const apiBaseUrl =
+      window.location.hostname === "localhost"
+        ? "http://localhost:3000"
+        : "https://pixelstore-be.up.railway.app";
+          
+
+      const proxyUrl = `${apiBaseUrl}/proxy/download?fileUrl=${encodeURIComponent(
         fileUrl
       )}&size=${encodeURIComponent(normalizedSize)}&type=${encodeURIComponent(
         type
@@ -445,7 +447,6 @@ export function MyAsset() {
                         src={data.uploadUrlVideo}
                         alt="Asset Video"
                         className="h-full w-full object-cover rounded-t-[10px] border-none"
-                        controls
                         controlsList="nodownload"
                         onContextMenu={(e) => e.preventDefault()}
                         draggable={false}
@@ -465,7 +466,6 @@ export function MyAsset() {
                         src={data.video}
                         alt="Asset Video"
                         className="h-full w-full object-cover rounded-t-[10px] border-none"
-                        controls
                         controlsList="nodownload"
                         onContextMenu={(e) => e.preventDefault()}
                         draggable={false}
@@ -480,6 +480,7 @@ export function MyAsset() {
                           data.asset2DThumbnail ||
                           data.asset3DThumbnail ||
                           data.audioThumbnail ||
+                          data.thumbnailGame ||
                           data.Image_umum ||
                           data.image ||
                           CustomImage

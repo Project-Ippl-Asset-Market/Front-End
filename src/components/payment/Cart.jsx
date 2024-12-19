@@ -31,7 +31,6 @@ const Cart = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
   const auth = getAuth();
   const user = auth.currentUser;
 
@@ -42,9 +41,9 @@ const Cart = () => {
           asset.datasetName &&
           asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setSearchResults(results);
+      setCartItems(results);
     } else {
-      setSearchResults(cartItems);
+      setCartItems(cartItems);
     }
   }, [searchTerm, cartItems]);
 
@@ -86,6 +85,7 @@ const Cart = () => {
       return () => unsubscribe();
     }
   }, [user]);
+
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
@@ -135,18 +135,23 @@ const Cart = () => {
           item.video ||
           item.assetImageGame ||
           item.datasetThumbnail ||
+          item.audioThumbnail ||
           "url tidak ada",
-        datasetFile: item.datasetFile || "tidak ada",
+        datasetFile: item.datasetFile || item.file || "tidak ada",
         docId: item.id,
+        file: item.file,
         userId: item.userId,
         description: item.description || "No Description",
         category: item.category || "Uncategorized",
         assetOwnerID: item.assetOwnerID || "Asset Owner ID Not Available",
         size: item.size || item.resolution || "size & Resolution tidak ada",
       }));
-
+      const apiBaseUrl =
+      window.location.hostname === "localhost"
+        ? "http://localhost:3000"
+        : "https://pixelstore-be.up.railway.app";
       const response = await axios.post(
-        "http://localhost:3000/api/transactions/create-transaction",
+        `${apiBaseUrl}/api/transactions/create-transaction`,
         {
           orderId,
           grossAmount: subtotal,
@@ -172,7 +177,6 @@ const Cart = () => {
               transactionData.token,
               assetDetails
             );
-            await moveAssetsToBuyAssets(assetDetails);
             await deletePurchasedAssets(selectedItems);
             resetCustomerInfoAndCart();
             setSuccessMessage("Transaction completed successfully.");
@@ -232,13 +236,7 @@ const Cart = () => {
           price: asset.price,
           description: asset.description,
           category: asset.category,
-          image:
-            asset.image ||
-            asset.Image_umum ||
-            asset.video ||
-            asset.assetImageGame ||
-            asset.datasetThumbnail ||
-            "url tidak ada",
+          image: asset.image || "url tidak ada",
           datasetFile: asset.datasetFile || "tidak ada",
           assetOwnerID: asset.assetOwnerID,
           size: asset.size || asset.resolution || "size & Resolution tidak ada",
@@ -262,25 +260,21 @@ const Cart = () => {
       const buyAssetsPromises = assets.map((asset) => {
         const newAsset = {
           assetId: asset.assetId,
-          price: 0,
+          price: asset.price,
           name: asset.name,
-          image:
-            asset.Image_umum ||
-            asset.image ||
-            asset.video ||
-            asset.assetImageGame ||
-            asset.datasetThumbnail ||
-            "url tidak ada",
-          datasetFile:
-            asset.datasetFile || asset.datasetThumbnail || "tidak ada",
+          image: asset.image || "url tidak ada",
+          datasetFile: asset.datasetFile || asset.file || "tidak ada",
           docId: asset.docId,
           userId: asset.userId,
-          description: asset.description,
-          category: asset.category,
-          assetOwnerID: asset.assetOwnerID,
+          description: asset.description || "No Description",
+          category: asset.category || "Uncategorized",
+          assetOwnerID: asset.assetOwnerID || "Asset Owner ID Not Available",
           size: asset.size || asset.resolution || "size & Resolution tidak ada",
         };
-        return setDoc(doc(collection(db, "buyAssets"), asset.docId), newAsset);
+        return setDoc(
+          doc(collection(db, "buyAssets"), asset.assetId),
+          newAsset
+        );
       });
 
       await Promise.all(buyAssetsPromises);
@@ -289,9 +283,9 @@ const Cart = () => {
     }
   };
 
-  const deletePurchasedAssets = async (purchasedItems) => {
+  const deletePurchasedAssets = async (selectedItems) => {
     try {
-      const deletePromises = purchasedItems.map((item) => {
+      const deletePromises = selectedItems.map((item) => {
         const itemDoc = doc(db, "cartAssets", item.id);
         return deleteDoc(itemDoc);
       });
@@ -318,9 +312,12 @@ const Cart = () => {
         console.error("Polling timeout reached");
         return;
       }
-
+      const apiBaseUrl =
+      window.location.hostname === "localhost"
+        ? "http://localhost:3000"
+        : "https://pixelstore-be.up.railway.app";
       const response = await axios.get(
-        `http://localhost:3000/api/transactions/check-status/${orderId}`
+        `${apiBaseUrl}/api/transactions/check-status/${orderId}`
       );
       if (response.data.status === "settlement") {
         await updateTransactionStatus(orderId, "Success");
@@ -397,7 +394,8 @@ const Cart = () => {
             {filteredAssetsData.map((item) => (
               <div
                 key={item.id}
-                className="flex flex-col sm:flex-row items-center sm:items-start justify-between bg-gray-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-20 p-3 rounded-lg shadow-md mb-4">
+                className="flex flex-col sm:flex-row items-center sm:items-start justify-between bg-gray-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-20 p-3 rounded-lg shadow-md mb-4"
+              >
                 <div className="flex flex-row items-center sm:w-full">
                   <input
                     type="checkbox"
@@ -414,15 +412,18 @@ const Cart = () => {
                   ) : (
                     <img
                       src={
+                        item.image ||
                         item.Image ||
                         item.Image_umum ||
                         item.uploadUrlImage ||
                         item.datasetImage ||
                         item.assetAudiosImage ||
+                        item.asset2DThumbnail?.[0] ||
                         item.asset2DImage ||
                         item.asset3DImage ||
-                        item.thumbnailGame ||
+                        item.thumbnailGame?.[0] ||
                         item.datasetThumbnail ||
+                        item.audioThumbnail ||
                         item.datasetFile ||
                         CustomImage
                       }
@@ -458,7 +459,8 @@ const Cart = () => {
                 </div>
                 <button
                   className="text-red-500 mt-2 sm:mt-0 sm:ml-auto"
-                  onClick={() => handleDeleteItem(item.id)}>
+                  onClick={() => handleDeleteItem(item.id)}
+                >
                   <FaTrashAlt />
                 </button>
               </div>
@@ -519,7 +521,8 @@ const Cart = () => {
             )}
             <button
               className="mt-6 w-full bg-blue-600 text-white py-2 rounded-md text-sm md:text-base"
-              onClick={handlePayment}>
+              onClick={handlePayment}
+            >
               Proses Ke Pembayaran
             </button>
           </div>

@@ -106,7 +106,7 @@ function HeaderSidebar({ toggleSidebar }) {
                               alt="Logout Icon"
                               className="w-5 h-5 me-2"
                             />
-                            <Link to="/profile" type="button">
+                            <Link to="/Profil" type="button">
                                   Profile
                                 </Link>
                           </div>

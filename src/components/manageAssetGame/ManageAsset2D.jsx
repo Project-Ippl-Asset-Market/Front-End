@@ -209,11 +209,29 @@ function ManageAsset2D() {
     );
     if (confirmDelete) {
       try {
-        // Update the storage path based on structure
-        const FileRef = ref(storage, `images-asset-2d/asset2D-${id}.zip`);
-        await deleteObject(FileRef);
-        const ImageRef = ref(storage, `images-asset-2d/asset2D-${id}.jpg`);
-        await deleteObject(ImageRef);
+        // Path untuk file di Firebase Storage
+        const zipFilePath = `images-asset-2d/asset2D-${id}.zip`;
+        const imageFilePath = `images-asset-2d/asset2D-${id}.jpg`;
+  
+        // Periksa apakah file zip ada
+        try {
+          await getDownloadURL(ref(storage, zipFilePath));
+          await deleteObject(ref(storage, zipFilePath));
+          console.log(`Deleted zip file: ${zipFilePath}`);
+        } catch (error) {
+          console.warn(`Zip file not found: ${zipFilePath}`, error.message);
+        }
+  
+        // Periksa apakah file image ada
+        try {
+          await getDownloadURL(ref(storage, imageFilePath));
+          await deleteObject(ref(storage, imageFilePath));
+          console.log(`Deleted image file: ${imageFilePath}`);
+        } catch (error) {
+          console.warn(`Image file not found: ${imageFilePath}`, error.message);
+        }
+  
+        // Hapus dokumen dari Firestore
         await deleteDoc(doc(db, "assetImage2D", id));
         setAssets(assets.filter((asset) => asset.id !== id));
         setAlertSuccess(true);

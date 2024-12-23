@@ -259,11 +259,12 @@ function EditNewAsset3D() {
       };
 
       // Upload file ZIP ke folder /images-dataset jika ada
-      if (asset3DFile.asset3DFile) {
+      if (asset3D.asset3DFile) {
         const filePath = `images-asset-3d/asset3D-${id}.zip`; // Path folder baru
         const asset3DFileUrl = await uploadFile(asset3D.asset3DFile, filePath);
         updatedData.asset3DFile = asset3DFileUrl;
       }
+      console.log("data", asset3D)
 
       // Upload thumbnails jika ada
       if (asset3D.asset3DThumbnail && asset3D.asset3DThumbnail.length > 0) {
@@ -284,7 +285,7 @@ function EditNewAsset3D() {
         navigate("/manage-asset-3D");
       }, 2000);
     } catch (error) {
-      // console.error("Error updating asset 2D: ", error);
+     console.error("Error updating asset 3D: ", error);
       setAlertError(true);
     }
   };
@@ -492,9 +493,9 @@ function EditNewAsset3D() {
                           id="fileUpload"
                           name="asset3DThumbnail"
                           onChange={handleChange}
-                          multiple
+                          //multiple
                           accept=".jpg,.jpeg,.png"
-                          
+                          multiple
                           className="hidden"
                         />
                       </label>

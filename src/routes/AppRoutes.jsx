@@ -88,7 +88,7 @@ const AppRoutes = ({ handleLogout }) => {
           <Route path="/asset-image" element={<AssetImage />} />
           <Route path="/asset-dataset" element={<AssetDataset />} />
           <Route path="/asset-game" element={<AssetGame />} />
-          <Route path="/my-asset" element={<MyAsset />} />
+          {/* <Route path="/my-asset" element={<MyAsset />} /> */}
           <Route path="/riwayat-transaksi" element={<RiwayatTransaksi />} />
           <Route
             path="/transaction-detail/:orderId"
@@ -128,6 +128,15 @@ const AppRoutes = ({ handleLogout }) => {
             element={
               <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
                 <Cart onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />\
+
+          <Route
+            path="/my-asset"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <MyAsset onLogout={handleLogout} />
               </ProtectedRoute>
             }
           />

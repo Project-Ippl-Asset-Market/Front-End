@@ -9,6 +9,10 @@ import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
 import Login from "../../assets/Asset_Panduan/assets/Login.png";
 import EmailPass from "../../assets/Asset_Panduan/assets/EmailPass.png";
+import Email from "../../assets/Asset_Panduan/assets/Email.png";
+import LinkPemulihan from '../../assets/Asset_Panduan/assets/LinkPemulihan.png';
+import Reset from '../../assets/Asset_Panduan/assets/Reset.png';
+import PasswordGanti from '../../assets/Asset_Panduan/assets/PasswordGanti.png';
 
 function LupaPassword() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -80,14 +84,45 @@ function LupaPassword() {
             </div>
             <div className="mb-16">
               <p className="mb-4">
-                3. Dan jika data yang anda isi benar maka perubahan password anda
-                berhasil, dan klik lanjut masuk. Anda otomatis diarahkan ke Halaman
-                Login.
+                3. Dan jika data yang anda isi benar , link pemulihan password akan dikirimkan ke inbox email anda, silahkan cek inbox email anda , jika tidak ada maka cari di folder spam.
               </p>
               <Zoom>
                 <img
-                  src={EmailPass}
+                  src={Email}
                   alt="Ganti Password Berhasil"
+                  className="w-full max-w-lg mx-auto"
+                />
+              </Zoom>
+            </div>
+            <div className="mb-16">
+              <p className="mb-4">
+                4. Klik Link yang tersedia di inbox email.</p>
+              <Zoom>
+                <img
+                  src={LinkPemulihan}
+                  alt="Link"
+                  className="w-full max-w-lg mx-auto"
+                />
+              </Zoom>
+            </div>
+            <div className="mb-16">
+              <p className="mb-4">
+                5. Tulislah Password yang ingin dipakai, lalu tekan save.</p>
+              <Zoom>
+                <img
+                  src={Reset}
+                  alt="Reset Password"
+                  className="w-full max-w-lg mx-auto"
+                />
+              </Zoom>
+            </div>
+            <div className="mb-16">
+              <p className="mb-4">
+                6. Password telah diubah silahkan kembali ke halaman login untuk masuk.</p>
+              <Zoom>
+                <img
+                  src={PasswordGanti}
+                  alt="Ganti Password"
                   className="w-full max-w-lg mx-auto"
                 />
               </Zoom>

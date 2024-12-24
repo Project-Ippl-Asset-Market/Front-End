@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Headerprofil from "../headerNavBreadcrumbs/HeaderWebProfile";
+import Headerprofil from "../editProfil/HeaderWebProfile";
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {

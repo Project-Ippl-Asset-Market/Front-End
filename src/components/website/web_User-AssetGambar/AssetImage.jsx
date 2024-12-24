@@ -485,7 +485,7 @@ export function AssetImage() {
                   <img
                     src={data.uploadUrlImage || CustomImage}
                     alt="Image"
-                    className="h-full w-full object-cover rounded-t-[10px] border-none"
+                    className="h-full w-full object-fill rounded-t-[10px] border-none"
                     onClick={() => openModal(data)}
                     onError={(e) => {
                       e.target.onerror = null;
@@ -542,9 +542,9 @@ export function AssetImage() {
 
       {/* Modal untuk detail aset */}
       {modalIsOpen && selectedasset && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50  ">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-full sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] mx-4 flex flex-col relative">
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[90%] sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] sm:h-[400px] md:h-[500px] lg:h-[550px] xl:h-[600px] 2xl:h-[750px] max-w-3xl mx-auto flex flex-col relative">
             <button
               className="absolute top-1 right-4 text-gray-600 dark:text-gray-400 text-4xl"
               onClick={closeModal}>
@@ -555,7 +555,7 @@ export function AssetImage() {
                 <img
                   src={selectedasset.uploadUrlImage || CustomImage}
                   alt="asset Image"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-fill"
                   onClick={() => openModal()}
                   onError={(e) => {
                     e.target.onerror = null;
@@ -599,11 +599,10 @@ export function AssetImage() {
                 </div>
                 <button
                   onClick={() => handleAddToCart(selectedasset)}
-                  className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${
-                    purchasedAssets.has(selectedasset.id)
-                      ? "bg-gray-400 pointer-events-none"
-                      : "bg-neutral-60"
-                  }`}
+                  className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${purchasedAssets.has(selectedasset.id)
+                    ? "bg-gray-400 pointer-events-none"
+                    : "bg-neutral-60"
+                    }`}
                   disabled={purchasedAssets.has(selectedasset.id)}>
                   <img
                     src={IconCart}
@@ -614,11 +613,10 @@ export function AssetImage() {
                 </button>
                 <button
                   onClick={() => handleBuyNow(selectedasset)}
-                  className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 mt-2 rounded-md ${
-                    purchasedAssets.has(selectedasset.id)
-                      ? "bg-gray-400 pointer-events-none"
-                      : "bg-secondary-40"
-                  }`}
+                  className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 mt-2 rounded-md ${purchasedAssets.has(selectedasset.id)
+                    ? "bg-gray-400 pointer-events-none"
+                    : "bg-secondary-40"
+                    }`}
                   disabled={purchasedAssets.has(selectedasset.id)}>
                   <img
                     src={IconDollar}

@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+ 
 import { useState, useRef, useEffect } from "react";
 import { collection, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
@@ -111,7 +111,7 @@ function SalesAsset() {
 
   return (
     <>
-      <div className="min-h-screen font-poppins dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-20">
+      <div className="min-h-screen font-poppins dark:bg-neutral-10 dark:text-primary-100 text-neutral-20">
         <HeaderSidebar
           isSidebarOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}
@@ -129,13 +129,13 @@ function SalesAsset() {
           </div>
         </aside>
 
-        <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 min-h-screen pt-24">
+        <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 min-h-screen pt-24">
           <div className="breadcrumbs text-sm mt-1 mb-10">
             <Breadcrumb />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
+            <div className="dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
               <FaDollarSign className="text-4xl text-green-500 mr-4" />
               <div>
                 <h3 className="text-lg font-semibold">Total Penjualan</h3>
@@ -144,14 +144,14 @@ function SalesAsset() {
                 </p>
               </div>
             </div>
-            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center text-neutral-10">
+            <div className="dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center text-neutral-10">
               <FaChartLine className="text-4xl text-blue-500 mr-4" />
               <div>
                 <h3 className="text-lg font-semibold">Aset Terjual</h3>
                 <p className="text-2xl font-bold">{userAssets.length}</p>
               </div>
             </div>
-            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
+            <div className="dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
               <FaThumbsUp className="text-4xl text-yellow-500 mr-4" />
               <div>
                 <h3 className="text-lg font-semibold">Jumlah Disukai</h3>

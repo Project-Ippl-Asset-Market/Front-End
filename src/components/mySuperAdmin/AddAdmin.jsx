@@ -35,6 +35,7 @@ function AddNewAdmin() {
   const [showPassword, setShowPassword] = useState(false);
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -66,6 +67,7 @@ function AddNewAdmin() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     const emailExists = await handleEmailValidation(admin.email);
     if (emailExists) {
@@ -120,6 +122,8 @@ function AddNewAdmin() {
     } catch (error) {
       // console.error("Error menambahkan admin: ", error);
       setAlertError(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -150,13 +154,15 @@ function AddNewAdmin() {
             <div
               role="alert"
               className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[10px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4  bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-              onClick={closeAlert}>
+              onClick={closeAlert}
+            >
               <div className="flex items-center justify-center space-x-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6 shrink-0 stroke-current"
                   fill="none"
-                  viewBox="0 0 24 24">
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -174,13 +180,15 @@ function AddNewAdmin() {
             <div
               role="alert"
               className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[340px] sm:w-[300px] md:w-[400px] lg:w-[400px] xl:w-[400px] 2xl:w-[400px] text-[8px] sm:text-[10px] md:text-[10px] lg:text-[12px] xl:text-[12px] 2xl:text-[12px] -translate-y-1/2 z-50 p-4  bg-primary-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-              onClick={closeAlert}>
+              onClick={closeAlert}
+            >
               <div className="flex items-center justify-center space-x-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6 shrink-0 stroke-current"
                   fill="none"
-                  viewBox="0 0 24 24">
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -195,7 +203,8 @@ function AddNewAdmin() {
 
           <form
             onSubmit={handleSubmit}
-            className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24   h-[1434px] gap-[50px]  overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0">
+            className="mx-0 sm:mx-0 md:mx-0 lg:mx-0 xl:mx-28 2xl:mx-24   h-[1434px] gap-[50px]  overflow-hidden  mt-4 sm:mt-0 md:mt-0 lg:-mt-0 xl:mt-0 2xl:-mt-0"
+          >
             <h1 className="text-[14px] sm:text-[14px] md:text-[16px] lg:text-[18px]  xl:text-[14px] font-bold text-neutral-10 dark:text-primary-100 p-4">
               Add New Admin
             </h1>
@@ -226,7 +235,8 @@ function AddNewAdmin() {
                     <div className="mt-2 md:ml-2 lg:ml-4 xl:ml-6 2xl:ml-4 flex justify-center items-center border border-dashed border-neutral-60 w-[100px] h-[100px] sm:w-[100px] md:w-[120px] lg:w-[150px] sm:h-[100px] md:h-[120px] lg:h-[150px] xl:h-[150px] 2xl:h-[160px]">
                       <label
                         htmlFor="fileUpload"
-                        className="flex flex-col justify-center items-center cursor-pointer text-center">
+                        className="flex flex-col justify-center items-center cursor-pointer text-center"
+                      >
                         {!previewImage && (
                           <>
                             <img
@@ -263,7 +273,8 @@ function AddNewAdmin() {
                                 setPreviewImage(null);
                                 setAdmin({ ...admin, profileImage: null });
                               }}
-                              className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded">
+                              className="absolute top-0 right-0 m-0 -mt-3 bg-primary-50 text-white px-2 py-1 text-xs rounded"
+                            >
                               x
                             </button>
                           </div>
@@ -299,7 +310,8 @@ function AddNewAdmin() {
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 16 16"
                       fill="currentColor"
-                      className="h-6 w-6 opacity-150">
+                      className="h-6 w-6 opacity-150"
+                    >
                       <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z" />
                       <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z" />
                     </svg>
@@ -437,7 +449,8 @@ function AddNewAdmin() {
                       name="role"
                       value={admin.role}
                       onChange={handleChange}
-                      className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md">
+                      className="w-full border-none focus:outline-none focus:ring-0 text-neutral-20 text-[12px] bg-transparent h-[40px] -ml-2 rounded-md"
+                    >
                       <option value="admin">Admin</option>
                       <option value="superadmin">Superadmin</option>
                     </select>
@@ -477,7 +490,8 @@ function AddNewAdmin() {
                     <button
                       type="button"
                       className="inset-y-0 right-0 pr-5 flex items-center text-gray-600"
-                      onClick={() => setShowPassword(!showPassword)}>
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
                       {showPassword ? (
                         <EyeSlashIcon className="h-6 w-6 text-gray-500" />
                       ) : (
@@ -492,13 +506,18 @@ function AddNewAdmin() {
             <div className="w-full inline-flex sm:gap-6 xl:gap-[21px] justify-center sm:justify-center md:justify-end  gap-6 mt-12 sm:mt-12 md:mt-14 lg:mt-14 xl:mt-12  ">
               <button
                 onClick={handleCancel}
-                className="btn bg-neutral-60 border-neutral-60 hover:bg-neutral-60 hover:border-neutral-60 rounded-lg  font-semibold   text-primary-100 text-center text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
+                className="btn bg-neutral-60 border-neutral-60 hover:bg-neutral-60 hover:border-neutral-60 rounded-lg  font-semibold   text-primary-100 text-center text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]"
+              >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="btn  bg-secondary-40 border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg  font-semibold leading-[24px]  text-primary-100 text-center  text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
-                Save
+                disabled={loading}
+                className={`btn ${
+                  loading ? "bg-gray-400" : "bg-secondary-40"
+                } border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg font-semibold leading-[24px] text-primary-100 text-center text-[10px] sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px] w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]`}
+              >
+                {loading ? "Saving..." : "Save"}
               </button>
             </div>
           </form>

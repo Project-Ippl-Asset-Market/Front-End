@@ -144,7 +144,7 @@ function AddNewVideo() {
   };
 
   const handleCancel = () => {
-    navigate("/manageAssetVideo");
+    navigate("/manage-asset-video");
   };
 
   const closeAlert = () => {
@@ -487,7 +487,7 @@ function AddNewVideo() {
                 />
                 <div className="mt-4 flex justify-end">
                   <button
-                    onClick={() => setShowPopup(false)}
+                    onClick={handleCancel}
                     className="bg-[#9B9B9B] text-white h-12 px-4 py-2  rounded-lg">
                     Cancel
                   </button>

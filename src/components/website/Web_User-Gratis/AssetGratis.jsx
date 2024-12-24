@@ -350,7 +350,7 @@ export function AssetGratis() {
                       <video
                         src={data.uploadUrlVideo}
                         alt="Asset Video"
-                        className="h-full w-full object-cover rounded-t-[10px] border-none"
+                        className="h-full w-full object-fill rounded-t-[10px] border-none"
                         onContextMenu={(e) => e.preventDefault()}
                         controls
                         controlsList="nodownload"
@@ -375,7 +375,7 @@ export function AssetGratis() {
                           e.target.onerror = null;
                           e.target.src = CustomImage;
                         }}
-                        className="h-full w-full object-cover rounded-t-[10px] border-none"
+                        className="h-full w-full object-fill rounded-t-[10px] border-none"
                       />
                     )}
                   </div>
@@ -456,7 +456,7 @@ export function AssetGratis() {
                   <video
                     src={selectedasset.uploadUrlVideo}
                     alt="Asset Video"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-fill"
                     onContextMenu={(e) => e.preventDefault()}
                     controls
                     controlsList="nodownload"
@@ -482,7 +482,7 @@ export function AssetGratis() {
                       e.target.onerror = null;
                       e.target.src = CustomImage;
                     }}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-fill"
                   />
                 )}
               </div>

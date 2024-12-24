@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-// eslint-disable-next-line no-unused-vars
+ 
 import React, { Children } from "react";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
@@ -129,6 +129,7 @@ const Sidebar = () => {
             <img src={IconDollarDark} alt="IconDollarDark" />
           ),
         },
+
         {
           href: "/revenue",
           label: "Revenue",
@@ -138,8 +139,19 @@ const Sidebar = () => {
             <img src={IconRevenueDark} alt="IconRevenueDark" />
           ),
         },
+
+        {
+          href: "/paymentSetting",
+          label: "No.Rekening ",
+          icon: darkMode ? (
+            <img src={IconRevenueLight} alt="IconRevenueLight" />
+          ) : (
+            <img src={IconRevenueDark} alt="IconRevenueDark" />
+          ),
+        },
       ],
     },
+
 
     (userRole === "superadmin" || userRole === "admin") && {
       section: "User Management",
@@ -159,8 +171,18 @@ const Sidebar = () => {
             },
           ],
         },
+        {
+          href: "/user-revenue",
+          label: "User Revenue",
+          icon: darkMode ? (
+            <img src={IconManageAdminDark} alt="iconManageAdminDark" />
+          ) : (
+            <img src={IconManageAdminLight} alt="iconlightMode" />
+          ),
+        },
       ],
     },
+
 
     userRole === "superadmin" && {
       section: "Admin Management",
@@ -200,22 +222,23 @@ const Sidebar = () => {
   ].filter(Boolean); // Kita gunakan Bolean dengan memfilter untuk menghapus nilai false jika bukan superadmin
 
   return (
-    <nav className="space-y-4 overflow-y-auto min-h-screen h-[1000vh] p-4 bg-neutral-100 dark:bg-neutral-10 font-poppins  ">
-      <div className="h-[80px] flex items-center justify-center gap-4">
-        <img alt="Logo" src={Logo} className="w-28 h-28 rounded-full" />
+    <nav className="space-y-4 p-4 -mt-8 dark:bg-neutral-10 font-poppins  lg:h-auto lg:overflow-y-auto transform lg:scale-95"> {/* Menambahkan transform scale */}
+      <div className="h-[60px] flex items-center justify-center gap-4">
+        <img alt="Logo" src={Logo} className="w-24 h-24 rounded-full" />
         <h1 className="text-xl text-center font-bold text-neutral-20 dark:text-primary-100 py-8">
           PixelStore
         </h1>
       </div>
       {navigationItems.map((section, sectionIndex) => (
         <div key={sectionIndex} className="text-xs ">
-          <h2 className="text-xs font-semibold text-neutral-10 dark:text-primary-100 mb-2 uppercase mt-8">
+          <h2 className="text-xs font-semibold text-neutral-10 dark:text-primary-100 mb-1 uppercase mt-6">
             {section.section}
           </h2>
           {section.items.map((item, itemIndex) => (
             <div
               key={itemIndex}
-              className={section.section === "Manage Assets" ? "mb-2" : ""}>
+              className={section.section === "Manage Assets" || section.section === "Manage Users" ? "mb-1 -mt-0.5" : ""}
+            >
               <SidebarNavItem
                 item={item}
                 isActive={false}
@@ -227,6 +250,8 @@ const Sidebar = () => {
       ))}
     </nav>
   );
+  
+  
 };
 
 export default Sidebar;

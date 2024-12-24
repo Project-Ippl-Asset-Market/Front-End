@@ -30,9 +30,9 @@ function AddCategory({ isOpen, onClose, onAddCategory }) {
     // Listen for authentication state changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
-        setUser(currentUser); // Set the logged-in user
+        setUser(currentUser);  
       } else {
-        setUser(null); // No user is logged in
+        setUser(null);  
       }
     });
 
@@ -127,6 +127,7 @@ function AddNewDataset() {
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);  
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -232,6 +233,7 @@ function AddNewDataset() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       const priceAsNumber = parseInt(dataset.price);
@@ -298,6 +300,8 @@ function AddNewDataset() {
     } catch (error) {
       console.error("Error adding dataset: ", error);
       setAlertError(true);
+    }finally {
+      setLoading(false);  
     }
   };
 
@@ -686,9 +690,10 @@ function AddNewDataset() {
                 Cancel
               </button>
               <button
-                type="submit"
-                className="btn  bg-secondary-40 border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg  font-semibold leading-[24px]  text-primary-100 text-center  text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
-                Save
+                  type="submit"
+                  disabled={loading}  
+                  className={`btn ${loading ? 'bg-gray-400' : 'bg-secondary-40'} border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg font-semibold leading-[24px] text-primary-100 text-center text-[10px] sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px] w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]`}>
+                  {loading ? 'Saving...' : 'Save'}
               </button>
             </div>
           </form>

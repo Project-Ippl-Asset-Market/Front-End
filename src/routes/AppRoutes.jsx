@@ -39,7 +39,19 @@ import SaleAssets from "../components/myUserDashboard/SaleAssets";
 import Revenue from "../components/myUserDashboard/Revenue";
 // Import Halaman Dashboard End
 
-//import Halaman Panduan
+// Penarikan dana start
+import AdminUserRevenue from "../components/myAdmin/AdminUserRevenue";
+import PaymentSetting from "../components/myUserDashboard/PaymentSettings";
+// Penarikan dana End
+
+//import Halaman Panduan start
+import Panduan from "../components/panduan/pandauns"
+import PanduanRegistrasi from "../components/panduan/PanduanRegistrasi";
+import PanduanLogin from "../components/panduan/PanduanLogin";
+import PanduanLupaPassword from "../components/panduan/PanduanLupaPassword";
+import JualAsset from "../components/panduan/PanduanJualAsset";
+import EditAsset from "../components/panduan/PanduanEditAsset";
+//import Halaman Panduan End
 
 // Import Halaman Website start
 import Cart from "../components/payment/Cart";
@@ -50,23 +62,11 @@ import { AssetGratis } from "../components/website/Web_User-Gratis/AssetGratis";
 import { AssetVideo } from "../components/website/web_user-AssetVideo/AssetVideo";
 import { AssetImage } from "../components/website/web_User-AssetGambar/AssetImage";
 import { AssetDataset } from "../components/website/web_User-AssetDataset/AssetDataset";
-import { Asset2D } from "../components/website/web_user-AssetGame/asset_2D/Asset2D";
-import { Asset3D } from "../components/website/web_user-AssetGame/asset_3D/Asset3D";
-import { AssetAudio } from "../components/website/web_user-AssetGame/asset_audio/AssetAudio";
 import { AssetGame } from "../components/website/web_user-AssetGame/AssetGame";
 import { MyAsset } from "../components/website/web_User-MyAsset/MyAsset";
 import EditProfil from "../components/editProfil/Profil";
 import RiwayatTransaksi from "../components/riwayat/RiwayatTransaksi";
 import DetailTransaksi from "../components/riwayat/detail_transaksi";
-
-import SidebarPanduan from "../components/panduan/SidebarPanduan";
-import MainHelp_Page from "../components/Help_Page/mainHelp_Page";
-import HalamanBantuan from "../components/Help_Page/Bantuan";
-import AkunDanKeamanan from "../components/Help_Page/AkundanKeamanan";
-import Pembelian from "../components/Help_Page/Pembelian";
-import PenjualanAsset from "../components/Help_Page/PenjualanAsset";
-import Layanan from "../components/Help_Page/Layanan";
-import KebijakanPixelStore from "../components/Help_Page/KebijakanPixelStore";
 
 // Import Halaman Website End
 
@@ -88,28 +88,23 @@ const AppRoutes = ({ handleLogout }) => {
           <Route path="/asset-image" element={<AssetImage />} />
           <Route path="/asset-dataset" element={<AssetDataset />} />
           <Route path="/asset-game" element={<AssetGame />} />
-          <Route path="/asset-game/Asset-2D" element={<Asset2D />} />
-          <Route path="/asset-game/Asset-3D" element={<Asset3D />} />
-          <Route path="/asset-game/Asset-audio" element={<AssetAudio />} />
           <Route path="/my-asset" element={<MyAsset />} />
           <Route path="/riwayat-transaksi" element={<RiwayatTransaksi />} />
           <Route
             path="/transaction-detail/:orderId"
             element={<DetailTransaksi />}
           />
-          <Route path="/sidebarPanduan" element={<SidebarPanduan />} />
-          <Route path="/mainHelp_Page" element={<MainHelp_Page />} />
-          <Route path="/halaman-bantuan" element={<HalamanBantuan />} />
-          <Route path="/akun-dan-keamanan" element={<AkunDanKeamanan />} />
-          <Route path="/pembelian" element={<Pembelian />} />
-          <Route path="/penjualan-asset" element={<PenjualanAsset />} />
-          <Route path="/layanan" element={<Layanan />} />
-          <Route
-            path="/kebijakan-pixel-store"
-            element={<KebijakanPixelStore />}
-          />
+          
+           {/* Route Halaman Panduan Start */}
+           <Route path="/panduan-registrasi" element={<PanduanRegistrasi/>} />
+          <Route path="/panduan-login" element={<PanduanLogin/>} />
+          <Route path="/panduan-lupa-password" element={<PanduanLupaPassword/>} />
+          <Route path="/panduan-jual-asset" element={<JualAsset/>} />
+          <Route path="/panduan-edit-asset" element={<EditAsset/>} />
+          <Route path= "/panduan" element={<Panduan/>} />
+          {/* Route Halaman Panduan End */}
+        
           {/* Route halaman web End */}
-
           <Route
             path="/profile"
             element={
@@ -316,6 +311,15 @@ const AppRoutes = ({ handleLogout }) => {
               </ProtectedRoute>
             }
           />
+          
+          <Route
+            path="/paymentSetting"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <PaymentSetting onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/sale"
@@ -333,6 +337,16 @@ const AppRoutes = ({ handleLogout }) => {
               </ProtectedRoute>
             }
           />
+          
+          <Route
+            path="/user-revenue"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin", "superadmin"]}>
+                <AdminUserRevenue onLogout={handleLogout} />
+              </ProtectedRoute>
+            }
+          />
+          
 
           <Route
             path="/manage-users"

@@ -475,36 +475,16 @@ export function AssetDataset() {
             const likedByCurrentUser = likedAssets.has(data.id);
             const isPurchased = purchasedAssets.has(data.id);
 
-            {
-              /* const handlePrevious = () => {
-              setCurrentIndex((prevIndex) =>
-                prevIndex > 0 ? prevIndex - 1 : prevIndex
-              );
-            };
-
-            const handleNext = () => {
-              setCurrentIndex((prevIndex) =>
-                prevIndex < data.datasetThumbnail.length - 1
-                  ? prevIndex + 1
-                  : prevIndex
-              );
-            }; */
-            }
-
-            {
-              /* console.log(data.datasetThumbnail); */
-            }
-
             return (
               <div
                 key={data.id}
                 className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg">
                 <div className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]">
                   {Array.isArray(data.datasetThumbnail) &&
-                  data.datasetThumbnail.length > 0 ? (
+                    data.datasetThumbnail.length > 0 ? (
                     <img
                       src={data.datasetThumbnail || CustomImage}
-                      className="h-full w-full object-cover rounded-t-[10px] border-none"
+                      className="h-full w-full object-fill rounded-t-[10px] border-none"
                       onClick={() => openModal(data)}
                       onError={(e) => {
                         e.target.onerror = null;
@@ -518,7 +498,7 @@ export function AssetDataset() {
                     <img
                       src={data.datasetThumbnail || CustomImage}
                       alt="Default Image"
-                      className="h-full w-full object-cover rounded-t-[10px] border-none"
+                      className="h-full w-full object-fill rounded-t-[10px] border-none"
                       onClick={() => openModal(data)}
                       onError={(e) => {
                         e.target.onerror = null;
@@ -581,9 +561,9 @@ export function AssetDataset() {
 
       {/* Modal untuk detail asset */}
       {modalIsOpen && selectedasset && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50  ">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-full sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] mx-4 flex flex-col relative">
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[90%] sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] sm:h-[400px] md:h-[500px] lg:h-[550px] xl:h-[600px] 2xl:h-[750px] max-w-3xl mx-auto flex flex-col relative">
             <button
               className="absolute top-1 right-4 text-gray-600 dark:text-gray-400 text-4xl"
               onClick={closeModal}>
@@ -597,17 +577,17 @@ export function AssetDataset() {
                 <img
                   src={
                     Array.isArray(selectedasset.datasetThumbnail) &&
-                    selectedasset.datasetThumbnail.length > 0
+                      selectedasset.datasetThumbnail.length > 0
                       ? selectedasset.datasetThumbnail[currentIndexModal]
                       : selectedasset.datasetThumbnail ||
-                        selectedasset.datasetFile ||
-                        CustomImage
+                      selectedasset.datasetFile ||
+                      CustomImage
                   }
                   alt="Asset Dataset"
                   onContextMenu={(e) => e.preventDefault()}
                   draggable={false}
                   onDragStart={(e) => e.preventDefault()}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-fill"
                   onError={(e) => {
                     e.target.onerror = null;
                     e.target.src = CustomImage;
@@ -620,12 +600,12 @@ export function AssetDataset() {
                     <>
                       <button
                         onClick={handlePrevious}
-                        className="absolute left-1 top-1/2 transform -translate-y-1/2 bg-transparent text-white text-[40px] rounded-full p-2">
+                        className="absolute left-1 top-1/2 transform -translate-y-1/2 bg-transparent text-secondary-40 text-[40px] rounded-full p-2">
                         &#8592;
                       </button>
                       <button
                         onClick={handleNext}
-                        className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-transparent text-white text-[40px] rounded-full p-2">
+                        className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-transparent text-secondary-40 text-[40px] rounded-full p-2">
                         &#8594;
                       </button>
                     </>
@@ -653,11 +633,10 @@ export function AssetDataset() {
               <div className="mt-28">
                 <button
                   onClick={() => handleAddToCart(selectedasset)}
-                  className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${
-                    purchasedAssets.has(selectedasset.id)
-                      ? "bg-gray-400 pointer-events-none"
-                      : "bg-neutral-60"
-                  }`}
+                  className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${purchasedAssets.has(selectedasset.id)
+                    ? "bg-gray-400 pointer-events-none"
+                    : "bg-neutral-60"
+                    }`}
                   disabled={purchasedAssets.has(selectedasset.id)}>
                   <img
                     src={IconCart}
@@ -668,11 +647,10 @@ export function AssetDataset() {
                 </button>
                 <button
                   onClick={() => handleBuyNow(selectedasset)}
-                  className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 mt-2 rounded-md ${
-                    purchasedAssets.has(selectedasset.id)
-                      ? "bg-gray-400 pointer-events-none"
-                      : "bg-secondary-40"
-                  }`}
+                  className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 mt-2 rounded-md ${purchasedAssets.has(selectedasset.id)
+                    ? "bg-gray-400 pointer-events-none"
+                    : "bg-secondary-40"
+                    }`}
                   disabled={purchasedAssets.has(selectedasset.id)}>
                   <img
                     src={IconDollar}

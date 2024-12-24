@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-// eslint-disable-next-line no-unused-vars
+ 
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
@@ -163,7 +163,8 @@ function ManageAdmin() {
         className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } sm:translate-x-0`}
-        aria-label="Sidebar">
+        aria-label="Sidebar"
+      >
         <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
           <NavigationItem />
         </div>
@@ -179,7 +180,8 @@ function ManageAdmin() {
               <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-48">
                 <Link
                   to="/manage-admin/add"
-                  className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
+                  className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]"
+                >
                   + Add new Admin
                 </Link>
               </div>
@@ -238,7 +240,8 @@ function ManageAdmin() {
                 {currentAdmins.map((admin) => (
                   <tr
                     key={admin.id}
-                    className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
+                    className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9"
+                  >
                     <td className="px-6 py-4">
                       <img
                         src={admin.profileImageUrl || defaultImageUrl}
@@ -248,7 +251,8 @@ function ManageAdmin() {
                     </td>
                     <th
                       scope="row"
-                      className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 space-nowrap">
+                      className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 space-nowrap"
+                    >
                       {admin.username}
                     </th>
                     <td className="px-6 py-4">{admin.role}</td>
@@ -294,10 +298,12 @@ function ManageAdmin() {
         {isModalOpen && (
           <div
             className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50"
-            onClick={() => setIsModalOpen(false)}>
+            onClick={() => setIsModalOpen(false)}
+          >
             <div
               className="bg-white rounded-lg p-6 shadow-lg"
-              onClick={(e) => e.stopPropagation()}>
+              onClick={(e) => e.stopPropagation()}
+            >
               <h2 className="text-lg font-semibold">Konfirmasi Penghapusan</h2>
               <p className="mt-2">
                 Apakah Anda yakin ingin menghapus admin
@@ -306,12 +312,14 @@ function ManageAdmin() {
               <div className="mt-4 flex justify-end">
                 <button
                   className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2"
-                  onClick={confirmDeleteAdmin}>
+                  onClick={confirmDeleteAdmin}
+                >
                   Hapus
                 </button>
                 <button
                   className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg"
-                  onClick={() => setIsModalOpen(false)}>
+                  onClick={() => setIsModalOpen(false)}
+                >
                   Batal
                 </button>
               </div>
@@ -324,7 +332,8 @@ function ManageAdmin() {
           <button
             className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}>
+            disabled={currentPage === 1}
+          >
             «
           </button>
           <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
@@ -335,7 +344,8 @@ function ManageAdmin() {
             onClick={() =>
               setCurrentPage((prev) => Math.min(prev + 1, totalPages))
             }
-            disabled={currentPage === totalPages}>
+            disabled={currentPage === totalPages}
+          >
             »
           </button>
         </div>

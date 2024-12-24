@@ -14,7 +14,7 @@ import {
 import { db } from "../../firebase/firebaseConfig";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
-import Headerprofil from "../headerNavBreadcrumbs/HeaderWebProfile";
+import Headerprofil from "../editProfil/HeaderWebProfile";
 import Logoprofil from "../../assets/icon/iconWebUser/profil.svg";
 import Logoprofilwhite from "../../assets/icon/iconWebUser/Profilwhite.svg";
 import Footer from "../../components/website/Footer/Footer"

@@ -1,6 +1,12 @@
 /* eslint-disable no-unused-vars */
 import { useState, useRef, useEffect } from "react";
-import { collection, getDocs, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  onSnapshot,
+  setDoc,
+  doc,
+} from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { getAuth } from "firebase/auth";
 import { FaChartLine, FaDollarSign, FaThumbsUp } from "react-icons/fa";
@@ -57,7 +63,7 @@ function Revenue() {
 
       const unsubscribe = onSnapshot(
         collection(db, "transactions"),
-        (snapshot) => {
+        async (snapshot) => {
           const orderIds = new Set();
           let totalPrice = 0;
           const filteredAssets = [];
@@ -84,6 +90,17 @@ function Revenue() {
           setUserAssets(filteredAssets);
           setTransactionCount(orderIds.size);
           setTotalRevenue(totalPrice);
+
+          const userDoc = await getDocs(collection(db, "users"));
+          const userData = userDoc.docs.find(
+            (doc) => doc.data().uid === user.uid
+          );
+          const username = userData
+            ? userData.data().username
+            : "Tidak Ditemukan";
+
+          // Simpan total pendapatan ke koleksi revenue
+          saveTotalRevenue(user.uid, username, totalPrice);
         }
       );
 
@@ -137,6 +154,17 @@ function Revenue() {
     }
   }, []);
 
+   const saveTotalRevenue = async (ownerId, username, total) => {
+    try {
+      await setDoc(doc(collection(db, "revenue"), ownerId), {
+        username: username,
+        totalPendapatan: total,
+      });
+    } catch (error) {
+      console.error("Error saving total revenue:", error);
+    }
+  };
+
   const chartData = {
     labels: ["Aset Terjual", "Pendapatan"],
     datasets: [
@@ -182,19 +210,20 @@ function Revenue() {
           className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           } sm:translate-x-0`}
-          aria-label="Sidebar">
+          aria-label="Sidebar"
+        >
           <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
             <NavigationItem />
           </div>
         </aside>
 
-        <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 min-h-screen pt-24">
+        <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 min-h-screen pt-24">
           <div className="breadcrumbs text-sm mt-1 mb-10">
             <Breadcrumb />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
+            <div className="dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
               <FaDollarSign className="text-4xl text-green-500 mr-4" />
               <div>
                 <h3 className="text-lg font-semibold">Total Pendapatan</h3>
@@ -203,7 +232,7 @@ function Revenue() {
                 </p>
               </div>
             </div>
-            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center text-neutral-10">
+            <div className="dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center text-neutral-10">
               <FaChartLine className="text-4xl text-blue-500 mr-4" />
               <div>
                 <h3 className="text-lg font-semibold text-neutral-10">
@@ -214,7 +243,7 @@ function Revenue() {
                 </p>
               </div>
             </div>
-            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
+            <div className="dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
               <FaThumbsUp className="text-4xl text-yellow-500 mr-4" />
               <div>
                 <h3 className="text-lg font-semibold text-neutral-10">

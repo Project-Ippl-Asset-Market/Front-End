@@ -59,7 +59,18 @@ import EditProfil from "../components/editProfil/Profil";
 import RiwayatTransaksi from "../components/riwayat/RiwayatTransaksi";
 import DetailTransaksi from "../components/riwayat/detail_transaksi";
 
-import SidebarPanduan from "../components/panduan/SidebarPanduan";
+//import Halaman Panduan start
+import Panduan from "../components/panduan/panduans"
+import PanduanRegistrasi from "../components/panduan/PanduanRegistrasi";
+import PanduanLogin from "../components/panduan/PanduanLogin";
+import PanduanLupaPassword from "../components/panduan/PanduanLupaPassword";
+import JualAsset from "../components/panduan/PanduanJualAsset";
+import EditAsset from "../components/panduan/PanduanEditAsset";
+// import SidebarNavPanduan from "../components/panduan/SidebarPanduan/SidebarNavPanduan";
+// import NavigationPanduan from "../components/panduan/NavigationPanduan";
+
+
+//import halaman Panduan End
 import MainHelp_Page from "../components/Help_Page/mainHelp_Page";
 import HalamanBantuan from "../components/Help_Page/Bantuan";
 import AkunDanKeamanan from "../components/Help_Page/AkundanKeamanan";
@@ -97,7 +108,16 @@ const AppRoutes = ({ handleLogout }) => {
             path="/transaction-detail/:orderId"
             element={<DetailTransaksi />}
           />
-          <Route path="/sidebarPanduan" element={<SidebarPanduan />} />
+          {/* Route Halaman Panduan Start */}
+       
+          <Route path="/panduan-registrasi" element={<PanduanRegistrasi/>} />
+          <Route path="/panduan-login" element={<PanduanLogin/>} />
+          <Route path="/panduan-lupa-password" element={<PanduanLupaPassword/>} />
+          <Route path="/panduan-jual-asset" element={<JualAsset/>} />
+          <Route path="/panduan-edit-asset" element={<EditAsset/>} />
+          <Route path= "/panduan" element={<Panduan/>} />
+
+          {/* Route Halaman Panduan End */}
           <Route path="/mainHelp_Page" element={<MainHelp_Page />} />
           <Route path="/halaman-bantuan" element={<HalamanBantuan />} />
           <Route path="/akun-dan-keamanan" element={<AkunDanKeamanan />} />

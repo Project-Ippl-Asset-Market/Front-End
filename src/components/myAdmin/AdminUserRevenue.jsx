@@ -19,6 +19,11 @@ function AdminUserRevenue() {
   const [error, setError] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState({});
   const [accountDetails, setAccountDetails] = useState({});
+  const [showPPNModal, setShowPPNModal] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null); // ID pengguna yang dipilih
+  const [totalPendapatanUser, setTotalPendapatanUser] = useState(0); // Total pendapatan pengguna
+  const [ppnAmount, setPpnAmount] = useState(0); // Jumlah PPN yang akan dipotong
+  const [finalTotal, setFinalTotal] = useState(0); // Total final setelah potongan
 
   const toggleDropdown = async (userId) => {
     setDropdownOpen((prev) => ({
@@ -26,6 +31,7 @@ function AdminUserRevenue() {
       [userId]: !prev[userId],
     }));
 
+    // Ambil detail rekening jika dropdown dibuka
     if (!dropdownOpen[userId]) {
       const accountData = await fetchAccountDetails(userId);
       setAccountDetails((prev) => ({
@@ -61,7 +67,7 @@ function AdminUserRevenue() {
   }, [db]);
 
   const fetchAccountDetails = async (userId) => {
-    const accountDocRef = doc(db, "aturBayaran", userId); // Mengambil detail rekening berdasarkan userId
+    const accountDocRef = doc(db, "aturBayaran", userId);
     const accountDoc = await getDoc(accountDocRef);
     if (accountDoc.exists()) {
       return accountDoc.data(); // Mengembalikan data rekening
@@ -71,22 +77,19 @@ function AdminUserRevenue() {
     }
   };
 
-  const handleWithdraw = async (userId, amount) => {
-    // Logic to handle withdrawal request
+  const handleWithdraw = async (userId) => {
     try {
       const accountDocRef = doc(db, "revenue", userId);
       const accountDoc = await getDoc(accountDocRef);
 
       if (accountDoc.exists()) {
         const currentData = accountDoc.data();
-        const newTotal = currentData.totalPendapatan - amount;
+        const newTotal = currentData.totalPendapatan - amount; // Mengurangi total
 
-        // Update totalPendapatan setelah penarikan
         await updateDoc(accountDocRef, {
           totalPendapatan: newTotal,
         });
 
-        // Update state
         setRevenues((prev) =>
           prev.map((revenue) =>
             revenue.id === userId
@@ -99,6 +102,42 @@ function AdminUserRevenue() {
       }
     } catch (error) {
       console.error("Error processing withdrawal:", error);
+    }
+  };
+
+  const handlePPNClick = (userId, totalPendapatan) => {
+    setSelectedUserId(userId);
+    setTotalPendapatanUser(totalPendapatan); // Set total pendapatan untuk pengguna yang dipilih
+    const ppn = totalPendapatan * 0.1; // Menghitung PPN 10%
+    setPpnAmount(ppn); // Simpan total PPN
+    setFinalTotal(totalPendapatan - ppn); // Hitung total final
+    setShowPPNModal(true); // Tampilkan modal
+  };
+
+  const confirmPPN = async () => {
+    if (!selectedUserId) return;
+
+    const accountDocRef = doc(db, "revenue", selectedUserId);
+    const accountDoc = await getDoc(accountDocRef);
+
+    if (accountDoc.exists()) {
+      const currentData = accountDoc.data();
+      const newTotal = currentData.totalPendapatan - ppnAmount; // Mengurangi PPN
+      await updateDoc(accountDocRef, {
+        totalPendapatan: newTotal,
+      });
+
+      // Update state setelah pemotongan PPN
+      setRevenues((prev) =>
+        prev.map((revenue) =>
+          revenue.id === selectedUserId
+            ? { ...revenue, totalPendapatan: newTotal }
+            : revenue
+        )
+      );
+
+      console.log("PPN applied successfully: new total is", newTotal);
+      setShowPPNModal(false); // Tutup modal
     }
   };
 
@@ -137,83 +176,90 @@ function AdminUserRevenue() {
             <h2 className="text-xl font-semibold mb-4">
               Total Pendapatan: Rp. {totalRevenue.toLocaleString()}
             </h2>
-            <div className="overflow-x-auto">
-              <table className="min-w-full bg-white border rounded-lg">
-                <thead>
-                  <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                    <th className="py-3 px-6 text-left">Username</th>
-                    <th className="py-3 px-6 text-left">Total Pendapatan</th>
-                    <th className="py-3 px-6 text-left">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="text-gray-600 text-sm font-light">
-                  {revenues.length > 0 ? (
-                    revenues.map((revenue) => (
-                      <React.Fragment key={revenue.id}>
-                        <tr className="border-b border-gray-200 hover:bg-gray-100">
-                          <td
-                            className="py-3 px-6"
-                            onClick={() => toggleDropdown(revenue.id)}
-                          >
-                            {revenue.username} ▼
-                          </td>
-                          <td className="py-3 px-6">
-                            Rp. {revenue.totalPendapatan.toLocaleString()}
-                          </td>
-                          <td className="py-3 px-6">
-                            <button
-                              onClick={() => handleWithdraw(revenue.id, 100000)}
-                              className="bg-blue-500 text-white px-4 py-1 rounded"
-                            >
-                              Cairkan Dana
-                            </button>
-                          </td>
-                        </tr>
-
-                        {dropdownOpen[revenue.id] && (
-                          <tr>
-                            <td
-                              colSpan="3"
-                              className="bg-gray-100 text-left p-4"
-                            >
-                              <h3 className="font-semibold">Detail Rekening</h3>
-                              {accountDetails[revenue.id] ? (
-                                <>
-                                  <p>
-                                    Nama Rekening:{" "}
-                                    {accountDetails[revenue.id]
-                                      .namaPemilikRekening || "Tidak Diketahui"}
-                                  </p>
-                                  <p>
-                                    Nomor Rekening:{" "}
-                                    {accountDetails[revenue.id].nomorRekening ||
-                                      "Tidak Diketahui"}
-                                  </p>
-                                  <p>
-                                    Nama Bank:{" "}
-                                    {accountDetails[revenue.id].namaBank ||
-                                      "Tidak Diketahui"}
-                                  </p>
-                                </>
-                              ) : (
-                                <p>Data rekening belum tersedia.</p>
-                              )}
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="3" className="py-3 px-6 text-center">
-                        Tidak ada data pendapatan yang tersedia.
+            <table className="min-w-full bg-white border rounded-lg">
+              <thead>
+                <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                  <th className="py-3 px-6 text-left">Username</th>
+                  <th className="py-3 px-6 text-left">Total Pendapatan</th>
+                  <th className="py-3 px-6 text-left">Aksi</th>
+                  <th className="py-3 px-6 text-left">PPN</th>{" "}
+                  {/* Tambahkan kolom PPN */}
+                </tr>
+              </thead>
+              <tbody className="text-gray-600 text-sm font-light">
+                {revenues.length > 0 ? (
+                  revenues.map((revenue) => (
+                    <tr
+                      key={revenue.id}
+                      className="border-b border-gray-200 hover:bg-gray-100"
+                    >
+                      <td className="py-3 px-6">{revenue.username}</td>
+                      <td className="py-3 px-6">
+                        Rp. {revenue.totalPendapatan.toLocaleString()}
+                      </td>
+                      <td className="py-3 px-6">
+                        <button
+                          onClick={() => handleWithdraw(revenue.id, 50000)}
+                          className={`bg-blue-500 text-white px-4 py-1 rounded ${
+                            revenue.totalPendapatan < 50000
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                          }`}
+                          disabled={revenue.totalPendapatan < 50000}
+                        >
+                          Riset
+                        </button>
+                      </td>
+                      <td className="py-3 px-6">
+                        <button
+                          onClick={() =>
+                            handlePPNClick(revenue.id, revenue.totalPendapatan)
+                          } // Tampilkan modal PPN
+                          className="bg-yellow-500 text-white px-4 py-1 rounded"
+                        >
+                          PPN
+                        </button>
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="py-3 px-6 text-center">
+                      Tidak ada data pendapatan yang tersedia.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </>
+        )}
+
+        {/* Modal PPN */}
+        {showPPNModal && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white rounded-lg p-6 w-96">
+              <h2 className="text-lg font-semibold mb-4">Konfirmasi PPN</h2>
+              <p>
+                Total Pendapatan: Rp. {totalPendapatanUser.toLocaleString()}
+              </p>
+              <p>PPN (10%): Rp. {ppnAmount.toLocaleString()}</p>
+              <p>Total Setelah PPN: Rp. {finalTotal.toLocaleString()}</p>
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={confirmPPN} // Konfirmasi penerapan PPN
+                  className="bg-green-500 text-white px-4 py-2 rounded mr-2"
+                >
+                  Ya, lakukan pemotongan
+                </button>
+                <button
+                  onClick={() => setShowPPNModal(false)} // Tutup modal
+                  className="bg-red-500 text-white px-4 py-2 rounded"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

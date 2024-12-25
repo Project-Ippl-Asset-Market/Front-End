@@ -1,3 +1,5 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -17,7 +19,6 @@ import { db, storage, auth } from "../../../firebase/firebaseConfig";
 import Breadcrumb from "../../breadcrumbs/Breadcrumbs";
 import IconField from "../../../assets/icon/iconField/icon.svg";
 import HeaderNav from "../../HeaderNav/HeaderNav";
-
 
 function EditNewAudio() {
   const { id } = useParams();
@@ -230,8 +231,11 @@ function EditNewAudio() {
 
       // Upload file ZIP ke folder /images-audio jika ada
       if (audio.uploadUrlAudio) {
-        const filePath = `images-audio/audio-${id}.mp3`; // Path folder baru
-        const uploadUrlAudioUrl = await uploadFile(audio.uploadUrlAudio, filePath);
+        const filePath = `images-asset-audio/audio-${id}.mp3`; // Path folder baru
+        const uploadUrlAudioUrl = await uploadFile(
+          audio.uploadUrlAudio,
+          filePath
+        );
         updatedData.uploadUrlAudio = uploadUrlAudioUrl;
       }
 
@@ -239,7 +243,7 @@ function EditNewAudio() {
       if (audio.audioThumbnail && audio.audioThumbnail.length > 0) {
         const thumbnailUrls = await Promise.all(
           audio.audioThumbnail.map((thumbnail, index) => {
-            const thumbnailPath = `images-audio/audio-${id}-${index}.jpg`;
+            const thumbnailPath = `images-asset-audio/audioThumbnail-${id}-${index}.jpg`;
             return uploadFile(thumbnail, thumbnailPath);
           })
         );
@@ -361,7 +365,7 @@ function EditNewAudio() {
                     />
                   </div>
                   <p className="w-2/2 text-neutral-60 dark:text-primary-100 mt-4 text-justify text-[10px] sm:text-[10px] md:text-[12px] lg:text-[14px] xl:text-[12px] mb-2">
-                    Format file harus .mp3 
+                    Format file harus .mp3
                   </p>
                 </div>
 
@@ -517,7 +521,6 @@ function EditNewAudio() {
                       ))}
                     </select>
                   </label>
-
                 </div>
               </div>
 

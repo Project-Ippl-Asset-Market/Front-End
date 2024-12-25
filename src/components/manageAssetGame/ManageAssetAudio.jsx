@@ -179,26 +179,44 @@ function ManageAudio() {
     }
     setCurrentPage(1);
   }, [searchTerm, assets]);
-
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this audio?"
     );
-    if (confirmDelete) {
-      try {
-        const ImageRef = ref(storage, `images-audio/audio-${id}.mp3`);
-        await deleteObject(ImageRef);
-        await deleteDoc(doc(db, "assetAudios", id));
-        setAssets(assets.filter((asset) => asset.id !== id));
-        setAlertSuccess(true);
-      } catch (error) {
-        setAlertError(true);
-      }
-    } else {
+  
+    if (!confirmDelete) {
       alert("Deletion cancelled");
+      return;
+    }
+  
+    try {
+      // Referensi file di Firebase Storage
+      const imageRef = ref(storage, `images-asset-audio/uploadUrlAudio-${id}.mp3`);
+  
+      // Hapus file dari Firebase Storage
+      await deleteObject(imageRef);
+  
+      // Referensi dokumen di Firestore
+      const docRef = doc(db, "assetAudios", id);
+  
+      // Hapus dokumen dari Firestore
+      await deleteDoc(docRef);
+  
+      // Perbarui state aset
+      setAssets((prevAssets) => prevAssets.filter((asset) => asset.id !== id));
+  
+      // Tampilkan alert sukses
+      setAlertSuccess(true);
+    } catch (error) {
+      console.error("Error during deletion:", error);
+  
+      // Tampilkan alert error
+      setAlertError(true);
     }
   };
-
+  
+  
+  // Fungsi untuk menutup alert
   const closeAlert = () => {
     setAlertError(false);
     setAlertSuccess(false);

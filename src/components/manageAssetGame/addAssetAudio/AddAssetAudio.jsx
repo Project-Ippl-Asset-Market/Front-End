@@ -135,7 +135,7 @@ function AddNewAudio() {
           async (thumbnailFile, index) => {
             const thumbnailRef = ref(
               storage,
-              `images-audio/audio-${docId}-thumbnail-${index}.jpg`
+              `images-asset-audio/audio-${docId}-thumbnail-${index}.jpg`
             );
             await uploadBytes(thumbnailRef, thumbnailFile);
             const downloadUrl = await getDownloadURL(thumbnailRef);

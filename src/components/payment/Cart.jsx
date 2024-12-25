@@ -27,6 +27,7 @@ const Cart = () => {
     email: "",
     phoneNumber: "",
   });
+  
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -86,6 +87,7 @@ const Cart = () => {
       return () => unsubscribe();
     }
   }, [user]);
+
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
@@ -172,7 +174,7 @@ const Cart = () => {
               transactionData.token,
               assetDetails
             );
-            await moveAssetsToBuyAssets(assetDetails);
+            await moveAssetsToBuyAssets(assetDetails); // Move only IDs
             await deletePurchasedAssets(selectedItems);
             resetCustomerInfoAndCart();
             setSuccessMessage("Transaction completed successfully.");
@@ -250,7 +252,7 @@ const Cart = () => {
         },
       });
       if (status === "Success") {
-        await moveAssetsToBuyAssets(assetDetails);
+        await moveAssetsToBuyAssets(assetDetails); // Move only IDs
       }
     } catch (error) {
       throw error;
@@ -259,33 +261,22 @@ const Cart = () => {
 
   const moveAssetsToBuyAssets = async (assets) => {
     try {
-      const buyAssetsPromises = assets.map((asset) => {
-        const newAsset = {
-          assetId: asset.assetId,
-          price: 0,
-          name: asset.name,
-          image:
-            asset.Image_umum ||
-            asset.image ||
-            asset.video ||
-            asset.assetImageGame ||
-            asset.datasetThumbnail ||
-            "url tidak ada",
-          datasetFile:
-            asset.datasetFile || asset.datasetThumbnail || "tidak ada",
-          docId: asset.docId,
-          userId: asset.userId,
-          description: asset.description,
-          category: asset.category,
-          assetOwnerID: asset.assetOwnerID,
-          size: asset.size || asset.resolution || "size & Resolution tidak ada",
-        };
-        return setDoc(doc(collection(db, "buyAssets"), asset.docId), newAsset);
+      const moveAssetPromises = assets.map(async (asset) => {
+        // Only send the necessary identifiers
+        const response = await axios.post(`http://localhost:3000/api/moveAsset/${asset.docId}`, {
+          assetId: asset.assetId, // Only send assetId
+        });
+
+        if (response.status !== 200) {
+          throw new Error(`Failed to move asset with docId: ${asset.docId}`);
+        }
       });
 
-      await Promise.all(buyAssetsPromises);
+      await Promise.all(moveAssetPromises);
+      alert("Assets moved to purchased successfully!"); // Success alert
     } catch (error) {
       console.error("Error moving assets to buyAssets:", error);
+      alert("Failed to move assets to purchased. Please try again."); // Failure alert
     }
   };
 
@@ -342,9 +333,10 @@ const Cart = () => {
 
   const handleCheckboxChange = (id) => {
     setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item.id === id ? { ...item, selected: !item.selected } : item
-      )
+      prevItems.map((item) => ({
+        ...item,
+        selected: item.id === id, // Only set the selected item to true
+      }))
     );
   };
 
@@ -402,7 +394,7 @@ const Cart = () => {
                   <input
                     type="checkbox"
                     className="mr-2 sm:mr-4"
-                    checked={item.selected}
+                    checked={item.selected} // This will now only be true for the selected item
                     onChange={() => handleCheckboxChange(item.id)}
                   />
                   {item.video ? (
@@ -411,7 +403,7 @@ const Cart = () => {
                       className="h-20 w-20 sm:h-24 sm:w-24 lg:h-20 lg:w-20 rounded overflow-hidden border-none cursor-pointer"
                       controls
                     />
-                  ) : (
+                  ) :(
                     <img
                       src={
                         item.Image ||

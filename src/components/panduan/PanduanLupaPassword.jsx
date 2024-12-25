@@ -9,10 +9,10 @@ import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
 import Login from "../../assets/Asset_Panduan/assets/Login.png";
 import EmailPass from "../../assets/Asset_Panduan/assets/EmailPass.png";
-import Email from "../../assets/Asset_Panduan/assets/Email.png";
-import LinkPemulihan from '../../assets/Asset_Panduan/assets/LinkPemulihan.png';
-import Reset from '../../assets/Asset_Panduan/assets/Reset.png';
-import PasswordGanti from '../../assets/Asset_Panduan/assets/PasswordGanti.png';
+import Email from "../../assets/Asset_Panduan/assets/Email.svg";
+import LinkPemulihan from '../../assets/Asset_Panduan/assets/LinkPemulihan.svg';
+import Reset from '../../assets/Asset_Panduan/assets/Reset.svg';
+import PasswordGanti from '../../assets/Asset_Panduan/assets/PasswordGanti.svg';
 
 function LupaPassword() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);

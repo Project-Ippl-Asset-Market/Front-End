@@ -20,10 +20,10 @@ function AdminUserRevenue() {
   const [dropdownOpen, setDropdownOpen] = useState({});
   const [accountDetails, setAccountDetails] = useState({});
   const [showPPNModal, setShowPPNModal] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState(null); // ID pengguna yang dipilih
-  const [totalPendapatanUser, setTotalPendapatanUser] = useState(0); // Total pendapatan pengguna
-  const [ppnAmount, setPpnAmount] = useState(0); // Jumlah PPN yang akan dipotong
-  const [finalTotal, setFinalTotal] = useState(0); // Total final setelah potongan
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [totalPendapatanUser, setTotalPendapatanUser] = useState(0);
+  const [ppnAmount, setPpnAmount] = useState(0);
+  const [finalTotal, setFinalTotal] = useState(0);
 
   const toggleDropdown = async (userId) => {
     setDropdownOpen((prev) => ({
@@ -70,7 +70,7 @@ function AdminUserRevenue() {
     const accountDocRef = doc(db, "aturBayaran", userId);
     const accountDoc = await getDoc(accountDocRef);
     if (accountDoc.exists()) {
-      return accountDoc.data(); // Mengembalikan data rekening
+      return accountDoc.data();
     } else {
       console.log("Tidak ada data rekening untuk userId:", userId);
       return null;
@@ -84,7 +84,7 @@ function AdminUserRevenue() {
 
       if (accountDoc.exists()) {
         const currentData = accountDoc.data();
-        const newTotal = currentData.totalPendapatan - amount; // Mengurangi total
+        const newTotal = currentData.totalPendapatan - amount;
 
         await updateDoc(accountDocRef, {
           totalPendapatan: newTotal,
@@ -107,11 +107,11 @@ function AdminUserRevenue() {
 
   const handlePPNClick = (userId, totalPendapatan) => {
     setSelectedUserId(userId);
-    setTotalPendapatanUser(totalPendapatan); // Set total pendapatan untuk pengguna yang dipilih
-    const ppn = totalPendapatan * 0.1; // Menghitung PPN 10%
-    setPpnAmount(ppn); // Simpan total PPN
-    setFinalTotal(totalPendapatan - ppn); // Hitung total final
-    setShowPPNModal(true); // Tampilkan modal
+    setTotalPendapatanUser(totalPendapatan);
+    const ppn = totalPendapatan * 0.1;
+    setPpnAmount(ppn);
+    setFinalTotal(totalPendapatan - ppn);
+    setShowPPNModal(true);
   };
 
   const confirmPPN = async () => {
@@ -122,12 +122,11 @@ function AdminUserRevenue() {
 
     if (accountDoc.exists()) {
       const currentData = accountDoc.data();
-      const newTotal = currentData.totalPendapatan - ppnAmount; // Mengurangi PPN
+      const newTotal = currentData.totalPendapatan - ppnAmount;
       await updateDoc(accountDocRef, {
         totalPendapatan: newTotal,
       });
 
-      // Update state setelah pemotongan PPN
       setRevenues((prev) =>
         prev.map((revenue) =>
           revenue.id === selectedUserId
@@ -137,7 +136,7 @@ function AdminUserRevenue() {
       );
 
       console.log("PPN applied successfully: new total is", newTotal);
-      setShowPPNModal(false); // Tutup modal
+      setShowPPNModal(false);
     }
   };
 
@@ -183,7 +182,6 @@ function AdminUserRevenue() {
                   <th className="py-3 px-6 text-left">Total Pendapatan</th>
                   <th className="py-3 px-6 text-left">Aksi</th>
                   <th className="py-3 px-6 text-left">PPN</th>{" "}
-                  {/* Tambahkan kolom PPN */}
                 </tr>
               </thead>
               <tbody className="text-gray-600 text-sm font-light">
@@ -214,7 +212,7 @@ function AdminUserRevenue() {
                         <button
                           onClick={() =>
                             handlePPNClick(revenue.id, revenue.totalPendapatan)
-                          } // Tampilkan modal PPN
+                          }
                           className="bg-yellow-500 text-white px-4 py-1 rounded"
                         >
                           PPN
@@ -246,13 +244,13 @@ function AdminUserRevenue() {
               <p>Total Setelah PPN: Rp. {finalTotal.toLocaleString()}</p>
               <div className="flex justify-end mt-4">
                 <button
-                  onClick={confirmPPN} // Konfirmasi penerapan PPN
+                  onClick={confirmPPN}
                   className="bg-green-500 text-white px-4 py-2 rounded mr-2"
                 >
                   Ya, lakukan pemotongan
                 </button>
                 <button
-                  onClick={() => setShowPPNModal(false)} // Tutup modal
+                  onClick={() => setShowPPNModal(false)}
                   className="bg-red-500 text-white px-4 py-2 rounded"
                 >
                   Batal

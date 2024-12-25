@@ -404,31 +404,9 @@ function EditNewAsset3D() {
                   </p>
                 </div>
 
-                {/* <div>
-                  <input
-                    className="block min-w-full sm:w-[150px] md:w-[450px] lg:w-[670px] xl:w-[670px] 2xl:w-[1200px] text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                    id="file_input"
-                    type="file"
-                    accept=".zip"
-                    onChange={handleChange}
-                    name="datasetFile"
-                  />
-                  {error && (
-                    <p className="text-red-500 mt-1 text-sm">{error}</p>
-                  )}
-                  {dataset.datasetFile && (
-                    <div className="mt-2">
-                      <p className="text-sm">File yang diunggah:</p>
-                      <span className="text-blue-500 hover:underline">
-                        {dataset.datasetFile.name}
-                      </span>
-                    </div>
-                  )}
-                </div> */}
-
                 <div>
                   <input
-                    className="block min-w-full sm:w-[150px] md:w-[450px] lg:w-[670px] xl:w-[850px] 2xl:w-[1200px] text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                    className="block min-w-full sm:w-[150px] md:w-[450px] lg:w-[570px] xl:w-[700px] 2xl:w-[1100px] text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
                     id="file_input"
                     type="file"
                     accept=".zip"
@@ -658,9 +636,8 @@ function EditNewAsset3D() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`btn ${
-                  loading ? "bg-gray-400" : "bg-secondary-40"
-                } border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg font-semibold leading-[24px] text-primary-100 text-center text-[10px] sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px] w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]`}
+                className={`btn ${loading ? "bg-gray-400" : "bg-secondary-40"
+                  } border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg font-semibold leading-[24px] text-primary-100 text-center text-[10px] sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px] w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]`}
               >
                 {loading ? "Saving..." : "Save"}
               </button>

@@ -17,7 +17,7 @@ import {
   where,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import { deleteObject, ref } from "firebase/storage";
+import { deleteObject, ref, getDownloadURL } from "firebase/storage";
 import CustomImage from "../../assets/assetmanage/Iconrarzip.svg";
 
 function ManageAsset3D() {
@@ -32,29 +32,13 @@ function ManageAsset3D() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredAssets, setFilteredAssets] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const asset3DPerPage = 5;
+  const datasetPerPage = 5;
 
-  useEffect(() => {
-    if (searchTerm) {
-      setFilteredAssets(
-        assets.filter(
-          (asset) =>
-            asset.asset3DName &&
-            asset.asset3DName.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-    } else {
-      setFilteredAssets(assets);
-    }
-
-    setCurrentPage(1);
-  }, [searchTerm, assets]);
-
-  const totalPages = Math.ceil(filteredAssets.length / asset3DPerPage);
-  const startIndex = (currentPage - 1) * asset3DPerPage;
+  const totalPages = Math.ceil(filteredAssets.length / datasetPerPage);
+  const startIndex = (currentPage - 1) * datasetPerPage;
   const currentDatasets = filteredAssets.slice(
     startIndex,
-    startIndex + asset3DPerPage
+    startIndex + datasetPerPage
   );
 
   const toggleSidebar = () => {
@@ -83,7 +67,6 @@ function ManageAsset3D() {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-
         const adminQuery = query(
           collection(db, "admins"),
           where("uid", "==", currentUser.uid)
@@ -137,12 +120,11 @@ function ManageAsset3D() {
             data.createdAt?.toDate().toLocaleString("id-ID", {
               year: "numeric",
               month: "long",
-              day: "numeric",
             }) || "N/A";
 
           items.push({
             id: docSnap.id,
-            asset3DName: data.asset3DName, //
+            asset3DName: data.asset3DName,
             description: data.description,
             price: `Rp. ${data.price}`,
             asset3DFile: data.asset3DFile,
@@ -154,6 +136,8 @@ function ManageAsset3D() {
           });
         }
 
+        console.log("Fetched assets:", items); // Debugging line
+
         if (role === "admin") {
           const superadminQuery = query(
             collection(db, "admins"),
@@ -163,6 +147,7 @@ function ManageAsset3D() {
           const superadminIds = superadminSnapshot.docs.map(
             (doc) => doc.data().uid
           );
+
           const filteredItems = items.filter(
             (item) => !superadminIds.includes(item.userId)
           );
@@ -172,6 +157,7 @@ function ManageAsset3D() {
           setFilteredAssets(items);
         }
       } catch (error) {
+        console.error("Error fetching data: ", error); // Debugging line
         setAlertError(true);
       } finally {
         setIsLoading(false);
@@ -183,23 +169,60 @@ function ManageAsset3D() {
     }
   }, [user, role]);
 
+  useEffect(() => {
+    if (searchTerm) {
+      setFilteredAssets(
+        assets.filter(
+          (asset) =>
+            asset.asset3DName &&
+            asset.asset3DName.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredAssets(assets);
+    }
+    setCurrentPage(1);
+  }, [searchTerm, assets]);
+
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this asset 2D?"
+      "Are you sure you want to delete this asset 3D?"
     );
     if (confirmDelete) {
       try {
-        // Update the storage path based on assetDatasets structure
         const FileRef = ref(storage, `images-asset-3d/asset3D-${id}.zip`);
-        await deleteObject(FileRef);
         const ImageRef = ref(storage, `images-asset-3d/asset3D-${id}.jpg`);
-        await deleteObject(ImageRef);
-        await deleteDoc(doc(db, "assetImage3D", id));
-        setAssets(assets.filter((asset) => asset.id !== id));
-        setAlertSuccess(true);
+
+        // Check if the zip file exists
+        try {
+          await getDownloadURL(FileRef);
+          await deleteObject(FileRef); // Delete the zip file
+        } catch (error) {
+          if (error.code === 'storage/object-not-found') {
+            console.log("Zip file does not exist, skipping deletion.");
+          } else {
+            throw error; // Rethrow if it's a different error
+          }
+        }
+
+        // Check if the image file exists
+        try {
+          await getDownloadURL(ImageRef);
+          await deleteObject(ImageRef); // Delete the jpg file
+        } catch (error) {
+          if (error.code === 'storage/object-not-found') {
+            console.log("Image file does not exist, skipping deletion.");
+          } else {
+            throw error; // Rethrow if it's a different error
+          }
+        }
+
+        await deleteDoc(doc(db, "assetImage3D", id)); // Delete the document from Firestore
+        setAssets(assets.filter((asset) => asset.id !== id)); // Update local state
+        setAlertSuccess(true); // Show success alert
       } catch (error) {
         console.error("Error deleting dataset: ", error);
-        setAlertError(true);
+        setAlertError(true); // Show error alert
       }
     } else {
       alert("Deletion cancelled");
@@ -222,9 +245,8 @@ function ManageAsset3D() {
         <aside
           ref={sidebarRef}
           id="sidebar-multi-level-sidebar"
-          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } sm:translate-x-0`}
+          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } sm:translate-x-0`}
           aria-label="Sidebar"
         >
           <div className="min-h-screen px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
@@ -253,7 +275,7 @@ function ManageAsset3D() {
                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span>Asset 3D berhasil dihapus.</span>
+              <span>Dataset berhasil dihapus.</span>
             </div>
           </div>
         )}
@@ -279,7 +301,7 @@ function ManageAsset3D() {
                   d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span>Gagal menghapus asset 3D, silakan coba lagi</span>
+              <span>Gagal menghapus dataset, silakan coba lagi</span>
             </div>
           </div>
         )}
@@ -293,7 +315,7 @@ function ManageAsset3D() {
           <div className="flex flex-col gap-4 md:flex-row">
             {/* Button Container */}
             <div className="flex items-center justify-center md:justify-start">
-              <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-40">
+              <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
                 <Link
                   to="/manage-asset-3D/add"
                   className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]"

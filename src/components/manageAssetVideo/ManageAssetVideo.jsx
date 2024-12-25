@@ -201,6 +201,11 @@ function ManageAssetVideo() {
     }
   };
 
+  const closeAlert = () => {
+    setAlertSuccess(false);
+    setAlertError(false);
+  };
+
   return (
     <>
       <div className="dark:bg-neutral-90 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
@@ -212,9 +217,8 @@ function ManageAssetVideo() {
         <aside
           ref={sidebarRef}
           id="sidebar-multi-level-sidebar"
-          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } sm:translate-x-0`}
+          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } sm:translate-x-0`}
           aria-label="Sidebar"
         >
           <div className="min-h-screen px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">

@@ -581,7 +581,7 @@ export function HomePage() {
           </button>
         </div>
       )}
-      
+
       {/* validasi like button */}
       <div className="fixed top-12 left-1/2 transform -translate-x-1/2 w-full max-w-md p-4 z-50">
         {alertLikes && (
@@ -604,8 +604,8 @@ export function HomePage() {
           </div>
         )}
       </div>
-      
-            
+
+
       <div className="relative  flex items-center justify-center">
         <div className="text-center">
           {searchResults.length === 0 && searchTerm && (

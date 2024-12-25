@@ -34,6 +34,7 @@ function AddNewVideo() {
   const [categories, setCategories] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [newCategory, setNewCategory] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -98,6 +99,8 @@ function AddNewVideo() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
       const docRef = await addDoc(collection(db, "assetVideos"), {
         category: video.category,
@@ -140,6 +143,8 @@ function AddNewVideo() {
     } catch (error) {
       // console.error("Error menambahkan video: ", error);
       setAlertError(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -492,9 +497,10 @@ function AddNewVideo() {
                     Cancel
                   </button>
                   <button
-                    onClick={handleAddCategory}
-                    className="ml-2 bg-[#2563EB] text-white h-12 px-4 py-2 rounded-lg">
-                    Upload
+                    type="submit"
+                    disabled={loading}
+                    className={`btn ${loading ? 'bg-gray-400' : 'bg-secondary-40'} border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg font-semibold leading-[24px] text-primary-100 text-center text-[10px] sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px] w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]`}>
+                    {loading ? 'Saving...' : 'Save'}
                   </button>
                 </div>
               </div>

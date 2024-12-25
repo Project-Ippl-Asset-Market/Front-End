@@ -646,36 +646,36 @@ export function AssetGame() {
 
       <div className="w-full p-6 mx-auto">
         {/* validasi like button */}
-      <div className="fixed top-12 left-1/2 transform -translate-x-1/2 w-full max-w-md p-4 z-50">
-        {alertLikes && (
-          <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
-            <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
-            <span className="block sm:inline">{alertLikes}</span>
-            <button
-              className="absolute top-0 bottom-0 right-0 px-4 py-3"
-              onClick={() => setAlertLikes(false)}
-            >
-              <svg
-                className="fill-current h-6 w-6 text-red-500"
-                role="button"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
+        <div className="fixed top-12 left-1/2 transform -translate-x-1/2 w-full max-w-md p-4 z-50">
+          {alertLikes && (
+            <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
+              <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
+              <span className="block sm:inline">{alertLikes}</span>
+              <button
+                className="absolute top-0 bottom-0 right-0 px-4 py-3"
+                onClick={() => setAlertLikes(false)}
               >
-                <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
-              </svg>
-            </button>
-          </div>
-        )}
-        </div>
-        
-        <div className="relative mt-56 flex items-center justify-center">
-        <div className="text-center">
-          {searchResults.length === 0 && searchTerm && (
-            <p className="text-black text-[20px]">No assets found</p>
+                <svg
+                  className="fill-current h-6 w-6 text-red-500"
+                  role="button"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
+                </svg>
+              </button>
+            </div>
           )}
         </div>
-      </div>
-        
+
+        <div className="relative mt-56 flex items-center justify-center">
+          <div className="text-center">
+            {searchResults.length === 0 && searchTerm && (
+              <p className="text-black text-[20px]">No assets found</p>
+            )}
+          </div>
+        </div>
+
       </div>
       <div className="pt-2  w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen mt-40 lg:-mt-16 ">
         <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">

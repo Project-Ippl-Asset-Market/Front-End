@@ -17,7 +17,7 @@ import {
   where,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import { deleteObject, ref } from "firebase/storage";
+import { deleteObject, ref, getDownloadURL } from "firebase/storage";
 import CustomImage from "../../assets/assetmanage/Iconrarzip.svg";
 
 function ManageAsset2D() {
@@ -29,34 +29,16 @@ function ManageAsset2D() {
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredAssets, setFilteredAssets] = useState([]);
-
   const [currentPage, setCurrentPage] = useState(1);
-  const asset2DPerPage = 5;
+  const datasetPerPage = 5;
 
-  useEffect(() => {
-    if (searchTerm) {
-      setFilteredAssets(
-        assets.filter(
-          (asset) =>
-            asset.asset2DName &&
-            asset.asset2DName.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-    } else {
-      setFilteredAssets(assets);
-    }
-
-    setCurrentPage(1);
-  }, [searchTerm, assets]);
-
-  const totalPages = Math.ceil(filteredAssets.length / asset2DPerPage);
-  const startIndex = (currentPage - 1) * asset2DPerPage;
+  const totalPages = Math.ceil(filteredAssets.length / datasetPerPage);
+  const startIndex = (currentPage - 1) * datasetPerPage;
   const currentDatasets = filteredAssets.slice(
     startIndex,
-    startIndex + asset2DPerPage
+    startIndex + datasetPerPage
   );
 
   const toggleSidebar = () => {
@@ -138,7 +120,6 @@ function ManageAsset2D() {
             data.createdAt?.toDate().toLocaleString("id-ID", {
               year: "numeric",
               month: "long",
-              day: "numeric",
             }) || "N/A";
 
           items.push({
@@ -164,6 +145,7 @@ function ManageAsset2D() {
           const superadminIds = superadminSnapshot.docs.map(
             (doc) => doc.data().uid
           );
+
           const filteredItems = items.filter(
             (item) => !superadminIds.includes(item.userId)
           );
@@ -184,6 +166,21 @@ function ManageAsset2D() {
     }
   }, [user, role]);
 
+  useEffect(() => {
+    if (searchTerm) {
+      setFilteredAssets(
+        assets.filter(
+          (asset) =>
+            asset.asset2DName &&
+            asset.asset2DName.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredAssets(assets);
+    }
+    setCurrentPage(1);
+  }, [searchTerm, assets]);
+
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this asset 2D?"
@@ -191,15 +188,38 @@ function ManageAsset2D() {
     if (confirmDelete) {
       try {
         const FileRef = ref(storage, `images-asset-2d/asset2D-${id}.zip`);
-        await deleteObject(FileRef);
         const ImageRef = ref(storage, `images-asset-2d/asset2D-${id}.jpg`);
-        await deleteObject(ImageRef);
-        await deleteDoc(doc(db, "assetImage2D", id));
-        setAssets(assets.filter((asset) => asset.id !== id));
-        setAlertSuccess(true);
+
+        // Check if the zip file exists
+        try {
+          await getDownloadURL(FileRef);
+          await deleteObject(FileRef); // Delete the zip file
+        } catch (error) {
+          if (error.code === 'storage/object-not-found') {
+            console.log("Zip file does not exist, skipping deletion.");
+          } else {
+            throw error; // Rethrow if it's a different error
+          }
+        }
+
+        // Check if the image file exists
+        try {
+          await getDownloadURL(ImageRef);
+          await deleteObject(ImageRef); // Delete the jpg file
+        } catch (error) {
+          if (error.code === 'storage/object-not-found') {
+            console.log("Image file does not exist, skipping deletion.");
+          } else {
+            throw error; // Rethrow if it's a different error
+          }
+        }
+
+        await deleteDoc(doc(db, "assetImage2D", id)); // Delete the document from Firestore
+        setAssets(assets.filter((asset) => asset.id !== id)); // Update local state
+        setAlertSuccess(true); // Show success alert
       } catch (error) {
         console.error("Error deleting dataset: ", error);
-        setAlertError(true);
+        setAlertError(true); // Show error alert
       }
     } else {
       alert("Deletion cancelled");
@@ -222,9 +242,8 @@ function ManageAsset2D() {
         <aside
           ref={sidebarRef}
           id="sidebar-multi-level-sidebar"
-          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } sm:translate-x-0`}
+          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } sm:translate-x-0`}
           aria-label="Sidebar"
         >
           <div className="min-h-screen px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
@@ -253,7 +272,7 @@ function ManageAsset2D() {
                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span>Asset 2D berhasil dihapus.</span>
+              <span>Dataset berhasil dihapus.</span>
             </div>
           </div>
         )}
@@ -279,7 +298,7 @@ function ManageAsset2D() {
                   d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span>Gagal menghapus asset 2D, silakan coba lagi</span>
+              <span>Gagal menghapus dataset, silakan coba lagi</span>
             </div>
           </div>
         )}

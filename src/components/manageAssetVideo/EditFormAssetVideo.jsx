@@ -35,6 +35,7 @@ function EditNewVideo() {
   const [categories, setCategories] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [newCategory, setNewCategory] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [video, setVideo] = useState({
     videoName: "",
@@ -181,6 +182,7 @@ function EditNewVideo() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
       let uploadUrlVideo = video.uploadUrlVideo;
@@ -221,6 +223,8 @@ function EditNewVideo() {
     } catch (error) {
       // console.error("Error updating video: ", error);
       setAlertError(true);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -577,8 +581,9 @@ function EditNewVideo() {
               </button>
               <button
                 type="submit"
-                className="btn  bg-secondary-40 border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg  font-semibold leading-[24px]  text-primary-100 text-center  text-[10px]  sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px],  w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] ,  h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]">
-                Save
+                disabled={loading}
+                className={`btn ${loading ? 'bg-gray-400' : 'bg-secondary-40'} border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg font-semibold leading-[24px] text-primary-100 text-center text-[10px] sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px] w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]`}>
+                {loading ? 'Saving...' : 'Save'}
               </button>
             </div>
           </form>

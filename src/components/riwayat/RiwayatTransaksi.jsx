@@ -38,8 +38,8 @@ export function RiwayatTransaksi() {
     const fetchTransactions = async () => {
       const user = auth.currentUser;
       if (!user) {
-        setErrorMessage("Anda harus login untuk melihat transaksi.");
-        setLoading(false);
+        // Redirect to login page if user is not logged in
+        navigate("/login");
         return;
       }
 
@@ -74,7 +74,7 @@ export function RiwayatTransaksi() {
     };
 
     fetchTransactions();
-  }, []);
+  }, [auth, navigate]); // Add auth and navigate to dependencies
 
   const getAssetNames = (assets) => {
     if (!Array.isArray(assets) || assets.length === 0) {

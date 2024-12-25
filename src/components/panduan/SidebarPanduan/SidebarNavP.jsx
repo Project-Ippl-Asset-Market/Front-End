@@ -59,7 +59,7 @@ const SidebarNav = ({ item }) => {
     return (
       <Link to={item.href} className={itemClass} onClick={item.onClick}>
         {item.icon}
-        <span className="ml-3 text-lg">{item.label}</span>
+        <span className="ml-3 text-md">{item.label}</span>
       </Link>
     );
   }

@@ -56,13 +56,13 @@ const Sidebar = () => {
       </div>
       {navigationItems.map((section, sectionIndex) => (
         <div key={sectionIndex} className="text-xs ">
-          <h2 className="text-xs font-semibold text-neutral-10 dark:text-primary-100 mb-4 uppercase mt-8">
+          <h2 className="text-xl font-semibold text-neutral-10 dark:text-primary-100 mb-4 uppercase mt-8">
             {section.section}
           </h2>
           {section.items.map((item, itemIndex) => (
             <div
               key={itemIndex}
-              className={section.section === "Panduan" ? "mb-4" : ""}>
+              className={section.section === "Panduan" ? "mb-4 text-xs" : ""}>
               <SidebarNavPanduan
                 item={item}
                 isActive={false}

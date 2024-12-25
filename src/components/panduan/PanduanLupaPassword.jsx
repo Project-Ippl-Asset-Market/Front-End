@@ -1,7 +1,5 @@
 /* eslint-disable no-unused-vars */
- 
-import React, { useEffect, useRef, useState, useCallback } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, {  useRef, useState} from "react";
 import NavigationItem from "./SidebarPanduan/NavigationPanduan";
 import Breadcrumb from "../panduan/BreadcrumbsPanduan/BreadcrumbsPanduan";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
@@ -9,28 +7,20 @@ import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
 import Login from "../../assets/Asset_Panduan/assets/Login.png";
 import EmailPass from "../../assets/Asset_Panduan/assets/EmailPass.png";
-import Email from "../../assets/Asset_Panduan/assets/EmailPass.png";
-// import LinkPemulihan from '../../assets/Asset_Panduan/assets/LinkPemulihan.png';
-// import Reset from '../../assets/Asset_Panduan/assets/Reset.png';
-// import PasswordGanti from '../../assets/Asset_Panduan/assets/PasswordGanti.png';
+import Email from "../../assets/Asset_Panduan/assets/Email.svg";
+import LinkPemulihan from '../../assets/Asset_Panduan/assets/LinkPemulihan.svg';
+import Reset from '../../assets/Asset_Panduan/assets/Reset.svg';
+import PasswordGanti from '../../assets/Asset_Panduan/assets/PasswordGanti.svg';
 
 function LupaPassword() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
-  const navigate = useNavigate();
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
   };
 
-  const handleClickOutside = useCallback(
-    (event) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
-        setIsSidebarOpen(false);
-      }
-    },
-    [sidebarRef]
-  );
+  
 
   return (
     <div className="dark:bg-neutral-90 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
@@ -99,7 +89,7 @@ function LupaPassword() {
                 4. Klik Link yang tersedia di inbox email.</p>
               <Zoom>
                 <img
-                  src={'LinkPemulihan'}
+                  src={LinkPemulihan}
                   alt="Link"
                   className="w-full max-w-lg mx-auto"
                 />
@@ -110,7 +100,7 @@ function LupaPassword() {
                 5. Tulislah Password yang ingin dipakai, lalu tekan save.</p>
               <Zoom>
                 <img
-                  src={'Reset'}
+                  src={Reset}
                   alt="Reset Password"
                   className="w-full max-w-lg mx-auto"
                 />
@@ -121,7 +111,7 @@ function LupaPassword() {
                 6. Password telah diubah silahkan kembali ke halaman login untuk masuk.</p>
               <Zoom>
                 <img
-                  src={'PasswordGanti'}
+                  src={PasswordGanti}
                   alt="Ganti Password"
                   className="w-full max-w-lg mx-auto"
                 />

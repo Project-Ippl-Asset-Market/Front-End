@@ -2,33 +2,25 @@
 /* eslint-disable no-unused-vars */
 import { db } from "../../../firebase/firebaseConfig";
 import { useState, useEffect } from "react";
-import {
-  collection,
-  doc,
-  query,
-  where,
-  runTransaction,
-  getDocs,
-} from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import HeaderNav from "../../headerNavBreadcrumbs/HeaderWebUser";
 import NavbarSection from "../web_User-LandingPage/NavbarSection";
-import { FaRegHeart, FaHeart } from "react-icons/fa";
 import CustomImage from "../../../assets/assetmanage/Iconrarzip.svg";
-import { AiOutlineInfoCircle } from "react-icons/ai";
 import Footer from "../../website/Footer/Footer";
 import IconDownload from "../../../assets/icon/iconHeader/iconMyasset.svg";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 export function MyAsset() {
   const [AssetsData, setAssetsData] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
-  const [likedAssets, setLikedAssets] = useState(new Set());
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedasset, setSelectedasset] = useState(null);
-  const [alertLikes, setAlertLikes] = useState(false);
-  const [isProcessingLike, setIsProcessingLike] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const navigate = useNavigate(); // Initialize useNavigate
 
   // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
@@ -38,11 +30,12 @@ export function MyAsset() {
         setCurrentUserId(user.uid);
       } else {
         setCurrentUserId(null);
+        navigate("/login"); // Redirect to login if not authenticated
       }
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [navigate]); // Add navigate to dependencies
 
   const fetchAssets = async () => {
     const buyAssetsCollection = "buyAssets";
@@ -99,80 +92,6 @@ export function MyAsset() {
     }
   }, [searchTerm, AssetsData]);
 
-  useEffect(() => {
-    const fetchUserLikes = async () => {
-      if (!currentUserId) return;
-      const likesQuery = query(
-        collection(db, "likes"),
-        where("userId", "==", currentUserId)
-      );
-
-      try {
-        const likesSnapshot = await getDocs(likesQuery);
-        const userLikes = new Set();
-
-        likesSnapshot.forEach((doc) => {
-          userLikes.add(doc.data().id);
-        });
-
-        setLikedAssets(userLikes);
-      } catch (error) {
-        console.error("Error fetching likes: ", error);
-      }
-    };
-
-    fetchUserLikes();
-  }, [currentUserId]);
-
-  const handleLikeClick = async (id, currentLikes, collectionsToFetch) => {
-    if (isProcessingLike) return;
-
-    if (!currentUserId) {
-      setAlertLikes("Anda perlu login untuk menyukai Asset ini");
-      setTimeout(() => {
-        setAlertLikes(false);
-      }, 3000);
-      return;
-    }
-
-    setIsProcessingLike(true);
-
-    const assetRef = doc(db, collectionsToFetch, id);
-    const likeRef = doc(db, "likes", `${currentUserId}_${id}`);
-
-    try {
-      await runTransaction(db, async (transaction) => {
-        const newLikedAssets = new Set(likedAssets);
-        let newLikesAsset;
-        if (newLikedAssets.has(id)) {
-          // Untuk Hapus like
-          transaction.delete(likeRef);
-          newLikesAsset = Math.max(0, currentLikes - 1);
-          transaction.update(assetRef, { likeAsset: newLikesAsset });
-          newLikedAssets.delete(id);
-        } else {
-          // Untuk Tambah like
-          transaction.set(likeRef, {
-            userId: currentUserId,
-            id: id,
-            collectionsToFetch: collectionsToFetch,
-          });
-          newLikesAsset = currentLikes + 1;
-          transaction.update(assetRef, { likeAsset: newLikesAsset });
-          newLikedAssets.add(id);
-        }
-
-        // Update state setelah transaksi sukses
-        setLikedAssets(newLikedAssets);
-      });
-      await fetchAssets();
-    } catch (error) {
-      console.error("Error updating likes: ", error);
-    } finally {
-      setIsProcessingLike(false);
-    }
-  };
-
   // Menampilkan modal
   const openModal = (asset) => {
     setSelectedasset(asset);
@@ -193,7 +112,6 @@ export function MyAsset() {
       asset.asset3DName ||
       asset.videoName ||
       asset.name;
-    ("");
     return (
       datasetName &&
       datasetName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -201,6 +119,7 @@ export function MyAsset() {
   });
 
   const downloadAsset = async (asset) => {
+    setIsLoading(true); // Start loading
     try {
       const allowedSizes = [
         "Large (1920x1280)",
@@ -216,38 +135,35 @@ export function MyAsset() {
         "4K UHD (2160x3840)",
       ];
 
-      // atur di sini variabel nya : not: tambahkan API buat zownload file zip
       const fileUrl =
-        asset.uploadUrlAudio ||
-        asset.uploadUrlVideo ||
-        asset.uploadUrlImage ||
-        asset.datasetImage ||
-        asset.asset2DFile ||
-        asset.asset3DFile ||
-        asset.video ||
-        asset.audioThumbnail ||
-        asset.datasetThumbnail ||
-        asset.asset2DThumbnail ||
-        asset.asset3DThumbnail ||
-        asset.Image_umum ||
-        asset.image ||
-        asset.zip;
+        asset.datasetFile && asset.datasetFile !== "tidak ada"
+          ? asset.datasetFile
+          : asset.uploadUrlAudio ||
+            asset.uploadUrlVideo ||
+            asset.uploadUrlImage ||
+            asset.asset2DFile ||
+            asset.asset3DFile ||
+            asset.video ||
+            asset.Image_umum ||
+            asset.image;
 
       const fileName =
-        asset.audioName ||
-        asset.videoName ||
-        asset.imageName ||
-        asset.asset2DName ||
-        asset.asset3DName ||
-        asset.datasetName ||
-        asset.name ||
-        "asset.zip";
+        asset.datasetFile && asset.datasetFile !== "tidak ada"
+          ? asset.datasetName || "dataset.zip"
+          : asset.audioName ||
+            asset.videoName ||
+            asset.imageName ||
+            asset.asset2DName ||
+            asset.asset3DName ||
+            asset.datasetName ||
+            asset.name ||
+            "asset.zip";
 
       const type = asset.uploadUrlVideo
         ? "video"
         : asset.uploadUrlImage || asset.image
         ? "image"
-        : asset.zip
+        : asset.datasetFile && asset.datasetFile !== "tidak ada"
         ? "zip"
         : "other";
 
@@ -280,43 +196,51 @@ export function MyAsset() {
 
       const normalizedSize = normalizeSize(size);
 
-      console.log("Size received:", size);
-
       if (!allowedSizes.includes(normalizedSize)) {
-        console.log("Invalid size:", normalizedSize);
         alert("Ukuran tidak valid.");
         return;
       }
 
-      const proxyUrl = `http://localhost:3000/proxy/download?fileUrl=${encodeURIComponent(
-        fileUrl
-      )}&size=${encodeURIComponent(normalizedSize)}&type=${encodeURIComponent(
-        type
-      )}`;
-
-      const response = await fetch(proxyUrl);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Gagal mengunduh file. Kode status: ${response.status}. ${errorText}`
-        );
+      // Jika file adalah .zip, unduh juga semua thumbnail
+      const downloadUrls = [fileUrl];
+      if (fileName.includes(".zip") && Array.isArray(asset.datasetThumbnail)) {
+        downloadUrls.push(...asset.datasetThumbnail);
       }
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      await Promise.all(
+        downloadUrls.map(async (url, index) => {
+          const proxyUrl = `http://localhost:3000/proxy/download?fileUrl=${encodeURIComponent(
+            url
+          )}&size=${encodeURIComponent(
+            normalizedSize
+          )}&type=${encodeURIComponent(type)}`;
 
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
+          const response = await fetch(proxyUrl);
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(
+              `Gagal mengunduh file. Kode status: ${response.status}. ${errorText}`
+            );
+          }
 
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+          const blob = await response.blob();
+          const urlBlob = window.URL.createObjectURL(blob);
+
+          const link = document.createElement("a");
+          link.href = urlBlob;
+          link.download = index === 0 ? fileName : `thumbnail-${index}.jpg`;
+          document.body.appendChild(link);
+          link.click();
+
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(urlBlob);
+        })
+      );
+      setIsLoading(false);
     } catch (error) {
-      console.error("Error downloading the file:", error);
+      console.error("Error downloading the files:", error);
       alert("Terjadi kesalahan saat mengunduh file. Silakan coba lagi.");
+      setIsLoading(false);
     }
   };
 
@@ -332,11 +256,12 @@ export function MyAsset() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[44%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[145px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[44%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[253px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[200px] md:w-[200px] lg:w-[100px] xl:w-[600px] 2xl:w-[1000px] -mt-16 sm:mt-0 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[800px] 2xl:w-[1200px]"
-              onSubmit={(e) => e.preventDefault()}>
+              className=" mx-auto  w-[570px] sm:w-[200px] md:w-[400px] lg:w-[500px] xl:w-[700px] 2xl:w-[1000px]"
+              onSubmit={(e) => e.preventDefault()}
+            >
               <div className="relative">
                 <input
                   type="search"
@@ -353,7 +278,8 @@ export function MyAsset() {
                     aria-hidden="true"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
-                    viewBox="0 0 18 18">
+                    viewBox="0 0 18 18"
+                  >
                     <path
                       stroke="currentColor"
                       strokeLinecap="round"
@@ -373,23 +299,6 @@ export function MyAsset() {
       </div>
 
       <div className="w-full p-12 mx-auto">
-        {alertLikes && (
-          <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
-            <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
-            <span className="block sm:inline">{alertLikes}</span>
-            <button
-              className="absolute top-0 bottom-0 right-0 px-4 py-3"
-              onClick={() => setAlertLikes(false)}>
-              <svg
-                className="fill-current h-6 w-6 text-red-500"
-                role="button"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20">
-                <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
-              </svg>
-            </button>
-          </div>
-        )}
         <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] -ml-10">
           My Asset
         </h1>
@@ -397,8 +306,6 @@ export function MyAsset() {
       <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen ">
         <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 place-items-center gap-2 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {filteredAssetsData.map((data) => {
-            const likesAsset = data.likeAsset || 0;
-            const likedByCurrentUser = likedAssets.has(data.id);
             let collectionsToFetch = "myAssets";
             if (data.audioName) {
               collectionsToFetch = "myAssets";
@@ -419,10 +326,12 @@ export function MyAsset() {
             return (
               <div
                 key={data.id}
-                className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between">
+                className="w-[140px] h-[200px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[180px] md:h-[260px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between"
+              >
                 <div
                   onClick={() => openModal(data)}
-                  className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]">
+                  className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]"
+                >
                   <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
                     {Array.isArray(data.thumbnailGame) &&
                       data.thumbnailGame.length > 0 && (
@@ -445,27 +354,16 @@ export function MyAsset() {
                         src={data.uploadUrlVideo}
                         alt="Asset Video"
                         className="h-full w-full object-cover rounded-t-[10px] border-none"
-                        controls
                         controlsList="nodownload"
                         onContextMenu={(e) => e.preventDefault()}
                         draggable={false}
                         onDragStart={(e) => e.preventDefault()}
                       />
-                    ) : data.image ? (
-                      <img
-                        src={data.image}
-                        alt="Asset Image"
-                        className="h-full w-full object-cover rounded-t-[10px] border-none"
-                        onContextMenu={(e) => e.preventDefault()}
-                        draggable={false}
-                        onDragStart={(e) => e.preventDefault()}
-                      />
-                    ) : data.video ? (
+                    ) : data.image && data.image.includes(".mp4") ? (
                       <video
-                        src={data.video}
+                        src={data.image}
                         alt="Asset Video"
                         className="h-full w-full object-cover rounded-t-[10px] border-none"
-                        controls
                         controlsList="nodownload"
                         onContextMenu={(e) => e.preventDefault()}
                         draggable={false}
@@ -541,7 +439,8 @@ export function MyAsset() {
           <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-full sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] mx-4 flex flex-col relative">
             <button
               className="absolute top-1 right-4 text-gray-600 dark:text-gray-400 text-4xl"
-              onClick={closeModal}>
+              onClick={closeModal}
+            >
               &times;
             </button>
 
@@ -573,20 +472,10 @@ export function MyAsset() {
                     draggable={false}
                     onDragStart={(e) => e.preventDefault()}
                   />
-                ) : selectedasset.image ? (
-                  <img
-                    src={selectedasset.image}
-                    alt="Asset Video"
-                    className="h-full w-full object-cover rounded-t-[10px] border-none"
-                    // controls
-                    // controlsList="nodownload"
-                    onContextMenu={(e) => e.preventDefault()}
-                    draggable={false}
-                    onDragStart={(e) => e.preventDefault()}
-                  />
-                ) : selectedasset.video ? (
+                ) : selectedasset.image &&
+                  selectedasset.image.includes(".mp4") ? (
                   <video
-                    src={selectedasset.video}
+                    src={selectedasset.image}
                     alt="Asset Video"
                     className="h-full w-full object-cover rounded-t-[10px] border-none"
                     controls
@@ -638,13 +527,21 @@ export function MyAsset() {
             </div>
             <button
               onClick={() => downloadAsset(selectedasset)}
-              className="flex p-2 text-center items-center justify-center bg-neutral-60 text-primary-100 w-full h-10 mt-6 rounded-md">
-              <img
-                src={IconDownload}
-                alt="Download Icon"
-                className="w-6 h-6 mr-2"
-              />
-              <p>Download</p>
+              className="flex p-2 text-center items-center justify-center bg-neutral-60 text-primary-100 w-full h-10 mt-6 rounded-md"
+              disabled={isLoading} // Disable the button while loading
+            >
+              {isLoading ? (
+                <span className="loader"></span> // Add your loading spinner or text here
+              ) : (
+                <>
+                  <img
+                    src={IconDownload}
+                    alt="Download Icon"
+                    className="w-6 h-6 mr-2"
+                  />
+                  <p>Download</p>
+                </>
+              )}
             </button>
           </div>
         </div>

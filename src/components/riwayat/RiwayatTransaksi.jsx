@@ -7,6 +7,7 @@ import NavbarSection from "../../components/website/web_User-LandingPage/NavbarS
 import { useNavigate } from "react-router-dom";
 
 const transactionsCollectionRef = collection(db, "transactions");
+const buyAssetsCollectionRef = collection(db, "buyAssets");
 
 export function RiwayatTransaksi() {
   const [transactions, setTransactions] = useState([]);
@@ -33,7 +34,7 @@ export function RiwayatTransaksi() {
     });
   };
 
-  // Fetching all transactions
+  // Mengambil semua transaksi
   useEffect(() => {
     const fetchTransactions = async () => {
       const user = auth.currentUser;
@@ -44,7 +45,7 @@ export function RiwayatTransaksi() {
 
       const transactionsQuery = query(
         transactionsCollectionRef,
-        where("status", "==", "Success"),
+        where("status", "==", "Panding"),
         where("uid", "==", user.uid)
       );
 
@@ -56,11 +57,17 @@ export function RiwayatTransaksi() {
           return;
         }
 
-        const transactionsList = transactionsSnapshot.docs.map((doc) => {
-          const transactionData = { id: doc.id, ...doc.data() };
-          transactionData.assetNames = getAssetNames(transactionData.assets);
-          return transactionData;
-        });
+        const transactionsList = await Promise.all(
+          transactionsSnapshot.docs.map(async (doc) => {
+            const transactionData = { id: doc.id, ...doc.data() };
+
+            // Ambil nama aset berdasarkan assetId dari buyAssets
+            const assetName = await getAssetName(transactionData.assetId);
+            transactionData.assetName = assetName;
+
+            return transactionData;
+          })
+        );
 
         setTransactions(transactionsList);
       } catch (error) {
@@ -74,15 +81,23 @@ export function RiwayatTransaksi() {
     fetchTransactions();
   }, [auth, navigate]);
 
-  const getAssetNames = (assets) => {
-    if (!Array.isArray(assets) || assets.length === 0) {
+  const getAssetName = async (assetId) => {
+    if (!assetId) {
       return "Nama Aset Tidak Diketahui";
     }
 
-    const names = assets.map(
-      (asset) => asset.name || "Nama Aset Tidak Diketahui"
+    const assetQuery = query(
+      buyAssetsCollectionRef,
+      where("assetId", "==", assetId)
     );
-    return names.join(", ");
+    const assetSnapshot = await getDocs(assetQuery);
+
+    if (assetSnapshot.empty) {
+      return "Nama Aset Tidak Diketahui";
+    }
+
+    const assetData = assetSnapshot.docs[0].data();
+    return assetData.name || "Nama Aset Tidak Diketahui";
   };
 
   const viewTransactionDetails = (orderId) => {
@@ -108,7 +123,6 @@ export function RiwayatTransaksi() {
               <tr className="bg-gray-200 text-left text-sm text-gray-600 uppercase tracking-wider">
                 <th className="px-4 py-2">Nama Aset</th>
                 <th className="px-4 py-2">Jumlah Pembayaran</th>
-
                 <th className="px-4 py-2">Tanggal Transaksi</th>
                 <th className="px-4 py-2">Aksi</th>
               </tr>
@@ -117,14 +131,13 @@ export function RiwayatTransaksi() {
               {transactions.map((transaction) => (
                 <tr key={transaction.id} className="border-b">
                   <td className="px-4 py-2">
-                    {transaction.assetNames || "Nama tidak diketahui"}
+                    {transaction.assetName || "Nama tidak diketahui"}
                   </td>
                   <td className="px-4 py-2">
                     Rp.{" "}
                     {transaction.grossAmount?.toLocaleString("id-ID") ||
                       "Data tidak ada"}
                   </td>
-
                   <td className="px-4 py-2">
                     {formatDate(transaction.createdAt)}
                   </td>

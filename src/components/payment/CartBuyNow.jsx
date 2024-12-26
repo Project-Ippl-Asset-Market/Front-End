@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
 import { getAuth } from "firebase/auth";
 import { db } from "../../firebase/firebaseConfig";
@@ -102,101 +101,61 @@ const CartBuyNow = () => {
       );
 
       window.snap.pay(transactionData.token, {
-        onSuccess: async () => {
-          await completeTransaction(
-            "Success",
-            orderId,
-            subtotal,
-            transactionData.token,
-            assetDetails
-          );
+        onSuccess: async (result) => {
+          try {
+            await saveToBuyAssets(assetDetails);
+            await saveTransaction(orderId, subtotal, assetDetails);
+            resetCustomerInfoAndCart();
+            setSuccessMessage("Transaksi berhasil.");
+          } catch (saveError) {
+            setErrorMessage("Transaksi berhasil, tetapi gagal menyimpan aset.");
+
+          }
         },
-        onPending: async () => {
-          await completeTransaction(
-            "Pending",
-            orderId,
-            subtotal,
-            transactionData.token,
-            assetDetails
-          );
+        onPending: async (result) => { },
+        onError: function (result) {
+          setErrorMessage("Terjadi kesalahan pembayaran.");
         },
-        onError: navigateBack,
-        onClose: navigateBack,
       });
     } catch (error) {
-      console.error("Error during transaction process:", error);
-      navigateBack();
+      setErrorMessage("Gagal memproses pembayaran.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const completeTransaction = async (
-    status,
-    orderId,
-    subtotal,
-    token,
-    assetDetails
-  ) => {
-    await saveTransaction(status, orderId, subtotal, token, assetDetails);
-
-    if (status === "Success") {
-      const moveAssetsSuccess = await handleMoveAndDeleteAssets(assetDetails);
-      if (moveAssetsSuccess) {
-        setSuccessMessage(
-          "Pembayaran berhasil. Aset telah dipindahkan ke koleksi."
-        );
+  const saveToBuyAssets = async (assetDetails) => {
+    const buyAssetPromises = assetDetails.map(async (asset) => {
+      const buyAssetDocRef = doc(collection(db, "buyAssets"));
+      try {
+        await setDoc(buyAssetDocRef, {
+          assetId: asset.assetId,
+          price: asset.price,
+          name: asset.name,
+          image:
+            asset.image ||
+            asset.Image_umum ||
+            asset.video ||
+            asset.assetImageGame || asset.audioThumbnail || asset.datasetThumbnail
+            || asset.asset2DThumbnail
+            || asset.asset3DThumbnail || "url tidak ada",
+          datasetFile: asset.datasetFile || asset.asset3DFile || asset.asset2DFile || asset.uploadUrlAudio || "tidak ada",
+          userId: asset.userId,
+          description: asset.description || "Tidak Ada Deskripsi",
+          category: asset.category || "Tanpa Kategori",
+          assetOwnerID: asset.assetOwnerID || "ID Pemilik Aset Tidak Tersedia",
+          size: asset.size || asset.resolution || "size & Resolution tidak ada",
+          createdAt: new Date(),
+        });
+        console.log(`Berhasil menyimpan aset ke buyAssets: ${asset.assetId}`);
+      } catch (error) {
+        console.error(`Kesalahan saat menyimpan aset ke buyAssets: ${asset.assetId}`, error);
+        throw error;
       }
-    } else {
-      setSuccessMessage(
-        `Pembayaran ${status.toLowerCase()}, cek status di dashboard transaksi.`
-      );
-    }
+    });
 
-    resetCustomerInfoAndCart();
-  };
-
-  const handleMoveAndDeleteAssets = async (assetDetails) => {
-    console.log("Handling move and delete for assets:", assetDetails);
-    try {
-      const moveResults = await Promise.all(
-        assetDetails.map(moveAssetToBuyAssets)
-      );
-      const allMovedSuccessfully = moveResults.every(
-        (result) => result !== null
-      );
-
-      if (allMovedSuccessfully) {
-        console.log("All assets moved successfully, deleting from cart.");
-        await deleteCartItems(assetDetails);
-      } else {
-        console.warn("Some assets failed to move, aborting delete process.");
-      }
-      return allMovedSuccessfully;
-    } catch (error) {
-      console.warn("Error moving and deleting assets:", error);
-      return false;
-    }
-  };
-
-  const moveAssetToBuyAssets = async (asset) => {
-    console.log("Attempting to move asset:", asset);
-    try {
-      const response = await axios.post(
-        `http://localhost:3000/api/moveAsset/${asset.docId}`
-      );
-
-      if (response.status === 200) {
-        console.log("Asset moved to buyAssets successfully:", asset);
-        return asset;
-      } else {
-        console.warn("Failed to move asset:", response.data.error);
-        return null;
-      }
-    } catch (error) {
-      console.warn("Error moving asset:", error);
-      return null;
-    }
+    await Promise.all(buyAssetPromises);
+    alert("Transaksi berhasil!");
   };
 
   const deleteCartItems = async (assetDetails) => {
@@ -208,7 +167,7 @@ const CartBuyNow = () => {
           await deleteDoc(cartDocRef);
           console.log(`Deleted asset from buyNow: ${asset.docId}`);
           await axios.delete(
-            `http://localhost:3000/api/assets/delete/${asset.docId}`
+            `http://localhost:3000/api/removeCart/${asset.docId}`
           );
         })
       );
@@ -227,10 +186,10 @@ const CartBuyNow = () => {
         item.image ||
         item.Image_umum ||
         item.video ||
-        item.assetImageGame ||
-        item.datasetThumbnail ||
-        "url not found",
-      datasetFile: item.datasetFile || "not found",
+        item.assetImageGame || item.audioThumbnail || item.datasetThumbnail
+        || item.asset2DThumbnail
+        || item.asset3DThumbnail || "url tidak ada",
+      datasetFile: item.datasetFile || item.asset3DFile || item.asset2DFile || item.uploadUrlAudio || item.thumbnailGame || "tidak ada",
       docId: item.id,
       userId: item.userId,
       description: item.description || "No Description",
@@ -270,9 +229,9 @@ const CartBuyNow = () => {
     assetDetails
   ) => {
     try {
-      const transactionDocRef = doc(collection(db, "transactions"));
+      const transactionDocRef = doc(collection(db, "buyAssets"));
       await setDoc(transactionDocRef, {
-        orderId,
+        orderId, // Ensure orderId is saved
         userId: user.uid,
         grossAmount: subtotal,
         token,
@@ -294,6 +253,7 @@ const CartBuyNow = () => {
             asset.assetImageGame ||
             asset.datasetThumbnail ||
             "url not found",
+          uid: user.uid,
         })),
       });
     } catch (error) {

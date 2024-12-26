@@ -19,7 +19,7 @@ export function MyAsset() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const navigate = useNavigate(); // Initialize useNavigate
 
   // Mengambil ID pengguna saat ini (jika ada)
@@ -107,6 +107,7 @@ export function MyAsset() {
   const filteredAssetsData = AssetsData.filter((asset) => {
     const datasetName =
       asset.audioName ||
+      asset.datasetName ||
       asset.imageName ||
       asset.asset2DName ||
       asset.asset3DName ||
@@ -119,7 +120,7 @@ export function MyAsset() {
   });
 
   const downloadAsset = async (asset) => {
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
     try {
       const allowedSizes = [
         "Large (1920x1280)",
@@ -139,33 +140,35 @@ export function MyAsset() {
         asset.datasetFile && asset.datasetFile !== "tidak ada"
           ? asset.datasetFile
           : asset.uploadUrlAudio ||
-            asset.uploadUrlVideo ||
-            asset.uploadUrlImage ||
-            asset.asset2DFile ||
-            asset.asset3DFile ||
-            asset.video ||
-            asset.Image_umum ||
-            asset.image;
+          asset.uploadUrlVideo ||
+          asset.uploadUrlImage ||
+          asset.asset2DFile ||
+          asset.asset3DFile ||
+          asset.image;
+
+      console.log("url : ", fileUrl);
 
       const fileName =
         asset.datasetFile && asset.datasetFile !== "tidak ada"
           ? asset.datasetName || "dataset.zip"
           : asset.audioName ||
-            asset.videoName ||
-            asset.imageName ||
-            asset.asset2DName ||
-            asset.asset3DName ||
-            asset.datasetName ||
-            asset.name ||
-            "asset.zip";
+          asset.videoName ||
+          asset.imageName ||
+          asset.asset2DName ||
+          asset.asset3DName ||
+          asset.datasetName ||
+          asset.name ||
+          "asset.zip";
 
-      const type = asset.uploadUrlVideo
-        ? "video"
-        : asset.uploadUrlImage || asset.image
-        ? "image"
-        : asset.datasetFile && asset.datasetFile !== "tidak ada"
-        ? "zip"
-        : "other";
+      const type = asset.uploadUrlAudio
+        ? "audio"
+        : asset.uploadUrlVideo
+          ? "video"
+          : asset.uploadUrlImage || asset.image
+            ? "image"
+            : asset.datasetFile && asset.datasetFile !== "tidak ada"
+              ? "zip"
+              : "other";
 
       if (!fileUrl || !type) {
         alert("File atau tipe tidak tersedia untuk diunduh.");
@@ -201,41 +204,32 @@ export function MyAsset() {
         return;
       }
 
-      // Jika file adalah .zip, unduh juga semua thumbnail
-      const downloadUrls = [fileUrl];
-      if (fileName.includes(".zip") && Array.isArray(asset.datasetThumbnail)) {
-        downloadUrls.push(...asset.datasetThumbnail);
+      const proxyUrl = `http://localhost:3000/proxy/download?fileUrl=${encodeURIComponent(
+        fileUrl
+      )}&size=${encodeURIComponent(normalizedSize)}&type=${encodeURIComponent(
+        type
+      )}`;
+
+      const response = await fetch(proxyUrl);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Gagal mengunduh file. Kode status: ${response.status}. ${errorText}`
+        );
       }
 
-      await Promise.all(
-        downloadUrls.map(async (url, index) => {
-          const proxyUrl = `http://localhost:3000/proxy/download?fileUrl=${encodeURIComponent(
-            url
-          )}&size=${encodeURIComponent(
-            normalizedSize
-          )}&type=${encodeURIComponent(type)}`;
+      const blob = await response.blob();
+      const urlBlob = window.URL.createObjectURL(blob);
 
-          const response = await fetch(proxyUrl);
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(
-              `Gagal mengunduh file. Kode status: ${response.status}. ${errorText}`
-            );
-          }
+      const link = document.createElement("a");
+      link.href = urlBlob;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
 
-          const blob = await response.blob();
-          const urlBlob = window.URL.createObjectURL(blob);
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(urlBlob);
 
-          const link = document.createElement("a");
-          link.href = urlBlob;
-          link.download = index === 0 ? fileName : `thumbnail-${index}.jpg`;
-          document.body.appendChild(link);
-          link.click();
-
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(urlBlob);
-        })
-      );
       setIsLoading(false);
     } catch (error) {
       console.error("Error downloading the files:", error);
@@ -348,10 +342,35 @@ export function MyAsset() {
                           }}
                         />
                       )}
+                    {Array.isArray(data.audioThumbnail) &&
+                      data.audioThumbnail.length > 0 && (
+                        <img
+                          src={data.audioThumbnail[0] || CustomImage}
+                          alt="Asset Thumbnail"
+                          className="h-full w-full object-cover rounded-t-[10px] border-none"
+                          onContextMenu={(e) => e.preventDefault()}
+                          draggable={false}
+                          onDragStart={(e) => e.preventDefault()}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = CustomImage;
+                          }}
+                        />
+                      )}
 
                     {data.uploadUrlVideo ? (
                       <video
                         src={data.uploadUrlVideo}
+                        alt="Asset Video"
+                        className="h-full w-full object-cover rounded-t-[10px] border-none"
+                        controlsList="nodownload"
+                        onContextMenu={(e) => e.preventDefault()}
+                        draggable={false}
+                        onDragStart={(e) => e.preventDefault()}
+                      />
+                    ) : data.video ? (
+                      <video
+                        src={data.video}
                         alt="Asset Video"
                         className="h-full w-full object-cover rounded-t-[10px] border-none"
                         controlsList="nodownload"
@@ -372,15 +391,11 @@ export function MyAsset() {
                     ) : (
                       <img
                         src={
-                          data.uploadUrlAudio ||
-                          data.uploadUrlImage ||
                           data.datasetThumbnail ||
                           data.asset2DThumbnail ||
                           data.asset3DThumbnail ||
                           data.audioThumbnail ||
-                          data.Image_umum ||
-                          data.image ||
-                          CustomImage
+                          data.image
                         }
                         alt="Asset Image"
                         onContextMenu={(e) => e.preventDefault()}
@@ -402,6 +417,7 @@ export function MyAsset() {
                         data.audioName ||
                         data.datasetName ||
                         data.asset2DName ||
+                        data.asset3DName ||
                         data.imageName ||
                         data.videoName ||
                         data.name ||
@@ -411,6 +427,7 @@ export function MyAsset() {
                           data.audioName ||
                           data.datasetName ||
                           data.asset2DName ||
+                          data.asset3DName ||
                           data.imageName ||
                           data.videoName ||
                           "Nama Tidak Tersedia"
@@ -447,24 +464,36 @@ export function MyAsset() {
             <div className="flex flex-col items-center justify-center w-full">
               <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
                 {Array.isArray(selectedasset.thumbnailGame) &&
-                  selectedasset.thumbnailGame.length > 0 && (
-                    <img
-                      src={selectedasset.thumbnailGame[0] || CustomImage}
-                      alt="Asset Thumbnail"
-                      className="h-full w-full object-cover rounded-t-[10px] border-none"
-                      onContextMenu={(e) => e.preventDefault()}
-                      draggable={false}
-                      onDragStart={(e) => e.preventDefault()}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = CustomImage;
-                      }}
-                    />
-                  )}
-                {selectedasset.uploadUrlVideo ? (
+                  selectedasset.thumbnailGame[0] ? (
+                  <img
+                    src={selectedasset.thumbnailGame[0]}
+                    alt="Asset Thumbnail"
+                    className="h-full w-full object-cover rounded-t-[10px] border-none"
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = CustomImage;
+                    }}
+                  />
+                ) : Array.isArray(selectedasset.audioThumbnail) &&
+                  selectedasset.audioThumbnail[0] ? (
+                  <img
+                    src={selectedasset.audioThumbnail[0]}
+                    alt="Asset Thumbnail"
+                    className="h-full w-full object-cover rounded-t-[10px] border-none"
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = CustomImage;
+                    }}
+                  />
+                ) : selectedasset.uploadUrlVideo ? (
                   <video
                     src={selectedasset.uploadUrlVideo}
-                    alt="Asset Video"
                     className="h-full w-full object-cover rounded-t-[10px] border-none"
                     controls
                     controlsList="nodownload"
@@ -476,7 +505,6 @@ export function MyAsset() {
                   selectedasset.image.includes(".mp4") ? (
                   <video
                     src={selectedasset.image}
-                    alt="Asset Video"
                     className="h-full w-full object-cover rounded-t-[10px] border-none"
                     controls
                     controlsList="nodownload"
@@ -487,13 +515,10 @@ export function MyAsset() {
                 ) : (
                   <img
                     src={
-                      selectedasset.thumbnailGame ||
-                      selectedasset.uploadUrlAudio ||
                       selectedasset.uploadUrlImage ||
                       selectedasset.datasetThumbnail ||
                       selectedasset.asset2DThumbnail ||
                       selectedasset.asset3DThumbnail ||
-                      selectedasset.audioThumbnail ||
                       selectedasset.Image_umum ||
                       selectedasset.image ||
                       CustomImage
@@ -506,14 +531,20 @@ export function MyAsset() {
                       e.target.onerror = null;
                       e.target.src = CustomImage;
                     }}
-                    className="h-full w-full object-cover rounded-t-[10px] border-none"
+                    className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]"
                   />
                 )}
               </div>
             </div>
             <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
               <h2 className="text-lg sm:text-xl text-neutral-10 font-semibold dark:text-primary-100 text-start">
-                {selectedasset.datasetName}
+                {selectedasset.datasetName ||
+                  selectedasset.name ||
+                  selectedasset.asset2DName ||
+                  selectedasset.asset3DName ||
+                  selectedasset.audioName ||
+                  selectedasset.videoName ||
+                  selectedasset.imageName}
               </h2>
               <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
                 Kategori: {selectedasset.category}

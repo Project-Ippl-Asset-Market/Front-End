@@ -111,10 +111,10 @@ function AdminUserRevenue() {
 			</aside>
 
 			<div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 min-h-screen pt-24">
-				 <div className="breadcrumbs text-sm mt-1 mb-10">
+				<div className="breadcrumbs text-sm mt-1 mb-10">
 					<Breadcrumbs />
-				        </div>
-				
+				</div>
+
 				<h1 className="text-2xl font-semibold mb-6">
 					Daftar Pengguna dan Pendapatan
 				</h1>

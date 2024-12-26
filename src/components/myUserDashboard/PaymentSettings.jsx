@@ -84,9 +84,8 @@ function AccountSettings() {
 
         <aside
           id="sidebar-multi-level-sidebar"
-          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } sm:translate-x-0`}
+          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } sm:translate-x-0`}
           aria-label="Sidebar"
         >
           <div className="min-h-screen px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
@@ -94,8 +93,8 @@ function AccountSettings() {
           </div>
         </aside>
 
-        <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 min-h-screen pt-24">
-         <div className="breadcrumbs text-sm mt-1 mb-10">
+        <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 min-h-screen pt-24">
+          <div className="breadcrumbs text-sm mt-1 mb-10">
             <Breadcrumbs />
           </div> <h1 className="text-2xl font-semibold mb-6">Pengaturan Rekening</h1>
 
@@ -103,7 +102,7 @@ function AccountSettings() {
           {saveStatus && <p className="text-green-500 mb-4">{saveStatus}</p>}
 
           <form
-            className="shadow-lg p-6 bg-white rounded-lg"
+            className="shadow-lg p-6 bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100  rounded-lg"
             onSubmit={(e) => e.preventDefault()}
           >
             <label
@@ -118,7 +117,7 @@ function AccountSettings() {
               value={namaPemilikRekening}
               onChange={(e) => setNamaPemilikRekening(e.target.value)}
               required
-              className="mb-4 w-full p-2 border rounded"
+              className="mb-4 w-full p-2 border rounded bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100"
             />
 
             <label className="block mb-2 font-medium" htmlFor="account-number">
@@ -130,7 +129,7 @@ function AccountSettings() {
               value={nomorRekening}
               onChange={(e) => setNomorRekening(e.target.value)}
               required
-              className="mb-4 w-full p-2 border rounded"
+              className="mb-4 w-full p-2 border rounded bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100"
             />
 
             <label className="block mb-2 font-medium" htmlFor="bank-name">
@@ -141,7 +140,7 @@ function AccountSettings() {
               value={namaBank}
               onChange={(e) => setNamaBank(e.target.value)}
               required
-              className="mb-4 w-full p-2 border rounded"
+              className="mb-4 w-full p-2 border rounded bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100"
             >
               <option value="">Pilih Bank</option>
               <option value="Bank BCA">Bank BCA</option>

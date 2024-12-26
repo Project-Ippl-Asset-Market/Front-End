@@ -1,6 +1,5 @@
- 
 import { useState, useRef, useEffect } from "react";
-import { collection, getDocs, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, getDocs } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { getAuth } from "firebase/auth";
 import { FaChartLine, FaDollarSign, FaThumbsUp } from "react-icons/fa";
@@ -31,7 +30,7 @@ function SalesAsset() {
 
     if (user) {
       const unsubscribe = onSnapshot(
-        collection(db, "transactions"),
+        collection(db, "buyAssets"),
         (snapshot) => {
           const filteredAssets = [];
           let totalPrice = 0;
@@ -39,18 +38,14 @@ function SalesAsset() {
           snapshot.forEach((doc) => {
             const data = doc.data();
 
-            if (data.status === "Success" && data.assets) {
-              data.assets.forEach((asset) => {
-                if (asset.assetOwnerID === user.uid) {
-                  filteredAssets.push({
-                    ...asset,
-                    docId: doc.id,
-                  });
-                  if (asset.price) {
-                    totalPrice += Number(asset.price);
-                  }
-                }
+            if (data.assetOwnerID === user.uid) {
+              filteredAssets.push({
+                ...data,
+                docId: doc.id,
               });
+              if (data.price) {
+                totalPrice += Number(data.price);
+              }
             }
           });
 
@@ -120,16 +115,15 @@ function SalesAsset() {
         <aside
           ref={sidebarRef}
           id="sidebar-multi-level-sidebar"
-          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } sm:translate-x-0`}
+          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } sm:translate-x-0`}
           aria-label="Sidebar">
           <div className="min-h-screen px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
             <NavigationItem />
           </div>
         </aside>
 
-        <div className="p-8 sm:ml-[280px]  h-full dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 min-h-screen pt-24">
+        <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 min-h-screen pt-24">
           <div className="breadcrumbs text-sm mt-1 mb-10">
             <Breadcrumb />
           </div>
@@ -138,7 +132,7 @@ function SalesAsset() {
             <div className="dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
               <FaDollarSign className="text-4xl text-green-500 mr-4" />
               <div>
-                <h3 className="text-lg font-semibold">Total Penjualan</h3>
+                <h3 className="text-lg font-semibold">Total Penjualan Asset</h3>
                 <p className="text-2xl font-bold">
                   Rp. {totalSales.toLocaleString()}
                 </p>
@@ -154,7 +148,7 @@ function SalesAsset() {
             <div className="dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
               <FaThumbsUp className="text-4xl text-yellow-500 mr-4" />
               <div>
-                <h3 className="text-lg font-semibold">Jumlah Disukai</h3>
+                <h3 className="text-lg font-semibold">Jumlah Anda Disukai</h3>
                 <p className="text-2xl font-bold">+{totalLikes}</p>
               </div>
             </div>
@@ -162,7 +156,7 @@ function SalesAsset() {
 
           <div className="mb-8 ">
             <h3 className="text-lg font-semibold mb-4 text-neutral-10">
-              Daftar Aset
+              Daftar Aset Terjual
             </h3>
             <div className="overflow-x-auto">
               <table className="min-w-full bg-white border border-gray-200">
@@ -172,7 +166,7 @@ function SalesAsset() {
                       Preview
                     </th>
                     <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nama Dataset
+                      Nama Aset
                     </th>
                     <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Kategori
@@ -181,7 +175,7 @@ function SalesAsset() {
                       Harga
                     </th>
                     <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Dibuat Pada
+                      Tanggal Asset Terjual
                     </th>
                   </tr>
                 </thead>
@@ -191,14 +185,14 @@ function SalesAsset() {
                       <td className="px-6 py-4 border-b border-gray-200">
                         <img
                           src={
-                            asset.previewUrl || "https://via.placeholder.com/50"
+                            asset.image || "https://via.placeholder.com/50"
                           }
                           alt="Preview"
                           className="w-10 h-10 object-cover"
                         />
                       </td>
                       <td className="px-6 py-4 border-b border-gray-200">
-                        {asset.datasetName || "N/A"}
+                        {asset.name || "N/A"}
                       </td>
                       <td className="px-6 py-4 border-b border-gray-200">
                         {asset.category || "N/A"}
@@ -210,7 +204,7 @@ function SalesAsset() {
                           : "0"}
                       </td>
                       <td className="px-6 py-4 border-b border-gray-200">
-                        {asset.createdAt || "N/A"}
+                        {asset.createdAt ? new Date(asset.createdAt.seconds * 1000).toLocaleDateString() : "N/A"}
                       </td>
                     </tr>
                   ))}

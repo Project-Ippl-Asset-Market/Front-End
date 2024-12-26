@@ -556,13 +556,18 @@ export function AssetGame() {
   };
 
   const handleNext = () => {
-    setCurrentIndexModal((prevIndex) =>
-      selectedasset.asset2DThumbnail &&
-        prevIndex < selectedasset.asset2DThumbnail.length - 1
-        ? prevIndex + 1
-        : prevIndex
-    );
+    setCurrentIndexModal((prevIndex) => {
+      if (
+        (selectedasset.asset2DThumbnail && prevIndex < selectedasset.asset2DThumbnail.length - 1) ||
+        (selectedasset.asset3DThumbnail && prevIndex < selectedasset.asset3DThumbnail.length - 1) ||
+        (selectedasset.audioThumbnail && prevIndex < selectedasset.audioThumbnail.length - 1)
+      ) {
+        return prevIndex + 1;
+      }
+      return prevIndex;
+    });
   };
+
 
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
@@ -677,7 +682,7 @@ export function AssetGame() {
         </div>
 
       </div>
-      <div className="pt-2  w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen mt-40 lg:-mt-16 ">
+      <div className="pt-2  w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen -mt-20 lg:-mt-16 ">
         <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {fetchMessage && <p>{fetchMessage}</p>}
           {filteredAssetsData.map((data) => {
@@ -809,7 +814,7 @@ export function AssetGame() {
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
           <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[90%] sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] sm:h-[400px] md:h-[500px] lg:h-[550px] xl:h-[600px] 2xl:h-[750px] max-w-3xl mx-auto flex flex-col relative">
             <button
-              className="absolute top-1 right-4 z-40 text-gray-600 dark:text-gray-400 text-4xl"
+              className="absolute top-1 right-4 z-50 text-gray-600 dark:text-gray-400 text-4xl"
               onClick={closeModal}>
               &times;
             </button>
@@ -819,27 +824,39 @@ export function AssetGame() {
               className="flex flex-col items-center justify-center w-full">
               <div className="w-full h-auto max-h-[300px] relative overflow-hidden rounded-md flex items-center justify-center">
                 {Array.isArray(selectedasset.asset2DThumbnail) && selectedasset.asset2DThumbnail.length > 0 ? (
-                  <div className="flex space-x-2 overflow-x-auto">
-                    {selectedasset.asset2DThumbnail.map((thumbnail, index) => (
-                      <img
-                        key={index}
-                        src={
-                          selectedasset.asset2DThumbnail[currentIndexModal] ||
-                          selectedasset.asset2DFile ||
-                          CustomImage
-                        }
-                        alt={`Thumbnail ${index + 1}`}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = CustomImage;
-                        }}
-                        onContextMenu={(e) => e.preventDefault()}
-                        draggable={false}
-                        onDragStart={(e) => e.preventDefault()}
-                        className="h-full max-h-[200px] w-auto object-fill rounded-t-[10px] border-none"
-                      />
-                    ))}
-                  </div>
+                  <img
+                    src={
+                      selectedasset.asset2DThumbnail[currentIndexModal] ||
+                      selectedasset.asset2DFile ||
+                      CustomImage
+                    }
+                    alt={`Thumbnail ${currentIndexModal + 1}`}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = CustomImage;
+                    }}
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
+                    className="h-full max-h-[400px] w-full p-8 max-w-[400px object-fill rounded-t-[10px] border-none"
+                  />
+                ) : Array.isArray(selectedasset.asset3DThumbnail) && selectedasset.asset3DThumbnail.length > 0 ? (
+                  <img
+                    src={
+                      selectedasset.asset3DThumbnail[currentIndexModal] ||
+                      selectedasset.asset3DFile ||
+                      CustomImage
+                    }
+                    alt={`Thumbnail ${currentIndexModal + 1}`}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = CustomImage;
+                    }}
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
+                    className="h-full max-h-[400px] w-full max-w-[400px object-fill rounded-t-[10px] border-none"
+                  />
                 ) : (
                   <img
                     src={
@@ -847,9 +864,6 @@ export function AssetGame() {
                       selectedasset.assetAudiosImage ||
                       selectedasset.asset2DImage ||
                       selectedasset.asset3DImage ||
-                      (selectedasset.assetAudiosImage ? CustomImage : null) ||
-                      selectedasset.asset2DThumbnail ||
-                      selectedasset.asset3DThumbnail ||
                       CustomImage
                     }
                     onContextMenu={(e) => e.preventDefault()}
@@ -862,24 +876,26 @@ export function AssetGame() {
                     }}
                     className="h-full w-full object-fill rounded-t-[10px] border-none"
                   />
-
                 )}
 
-                {Array.isArray(selectedasset.asset2DThumbnail) && selectedasset.asset2DThumbnail.length > 1 && (
+                {(Array.isArray(selectedasset.asset2DThumbnail) && selectedasset.asset2DThumbnail.length > 1) ||
+                  (Array.isArray(selectedasset.asset3DThumbnail) && selectedasset.asset3DThumbnail.length > 1) ? (
                   <>
                     <button
                       onClick={handlePrevious}
-                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-transparent text-secondary-40  text-[30px] sm:text-[40px] rounded-full p-2">
+                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-transparent text-secondary-40 text-[40px] sm:text-[50px] rounded-full p-4 sm:p-6">
                       &#8592;
                     </button>
                     <button
                       onClick={handleNext}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent text-secondary-40  text-[30px] sm:text-[40px] rounded-full p-2">
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent text-secondary-40 text-[40px] sm:text-[50px] rounded-full p-4 sm:p-6">
                       &#8594;
                     </button>
                   </>
-                )}
+
+                ) : null}
               </div>
+
             </div>
 
             <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">

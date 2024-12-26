@@ -268,7 +268,7 @@ export function HomePage() {
           selectedasset.asset3DThumbnail ||
           selectedasset.datasetThumbnail ||
           "No Thumbnail Asset",
-        image:
+        Image:
           selectedasset.asset2DFile ||
           selectedasset.asset3DFile ||
           selectedasset.uploadUrlAudio ||
@@ -481,21 +481,78 @@ export function HomePage() {
     );
   });
 
-  const [currentIndexModal, setCurrentIndexModal] = useState(0);
+  const handleDownload = async (selectedasset) => {
+    if (!currentUserId) {
+      alert("Anda perlu login untuk membeli asset");
+      navigate("/login");
+      return;
+    }
 
-  const handlePrevious = () => {
-    if (currentIndexModal > 0) {
-      setCurrentIndexModal(currentIndexModal - 1);
+    // Check if the user is trying to buy their own asset
+    if (selectedasset.userId === currentUserId) {
+      alert("Anda tidak dapat membeli aset yang Anda jual sendiri.");
+      return;
+    }
+
+    // Check if the asset has already been purchased
+    if (purchasedAssets.has(selectedasset.id)) {
+      alert("Anda sudah menyimpan asset ini.");
+      return;
+    }
+
+    const buyAssetsRef = doc(db, "buyAssets", selectedasset.id.trim());
+    const buyAssetsSnapshot = await getDoc(buyAssetsRef);
+
+    if (buyAssetsSnapshot.exists()) {
+      alert("Asset sudah ada dalam My Asset.");
+      return;
+    }
+
+    try {
+      await setDoc(buyAssetsRef, {
+        userId: currentUserId,
+        assetId: selectedasset.id,
+        name: selectedasset.audioName || selectedasset.asset2DName || selectedasset.asset3DName || selectedasset.datasetName || selectedasset.imageName || selectedasset.videoName || "Nama Tidak Tersedia",
+        description: selectedasset.description,
+        price: selectedasset.price,
+        category: selectedasset.category,
+        assetOwnerID: selectedasset.userId,
+        image: selectedasset.uploadUrlAudio || selectedasset.datasetFile
+          || selectedasset.asset2DFile || selectedasset.asset3DFile || selectedasset.uploadUrlImage || selectedasset.uploadUrlVideo
+          || "File Tidak Tersedia",
+        thumbnailGame: selectedasset.audioThumbnail || selectedasset.datasetThumbnail
+          || selectedasset.asset2DThumbnail
+          || selectedasset.asset3DThumbnail || "File Tidak Tersedia",
+      });
+
+      alert("Asset berhasil ditambahkan ke My Asset!");
+    } catch (error) {
+      console.error("Error adding to buyAssets: ", error);
+      alert("Terjadi kesalahan saat menyimpan aset. Silakan coba lagi.");
     }
   };
 
+
+  const [currentIndexModal, setCurrentIndexModal] = useState(0);
+
+  const handlePrevious = () => {
+    setCurrentIndexModal((prevIndex) =>
+      prevIndex > 0 ? prevIndex - 1 : prevIndex
+    );
+  };
+
   const handleNext = () => {
-    if (
-      selectedasset.datasetThumbnail &&
-      currentIndexModal < selectedasset.datasetThumbnail.length - 1
-    ) {
-      setCurrentIndexModal(currentIndexModal + 1);
-    }
+    setCurrentIndexModal((prevIndex) => {
+      if (
+        (selectedasset.asset2DThumbnail && prevIndex < selectedasset.asset2DThumbnail.length - 1) ||
+        (selectedasset.asset3DThumbnail && prevIndex < selectedasset.asset3DThumbnail.length - 1) ||
+        (selectedasset.audioThumbnail && prevIndex < selectedasset.audioThumbnail.length - 1) ||
+        (selectedasset.datasetThumbnail && prevIndex < selectedasset.datasetThumbnail.length - 1)
+      ) {
+        return prevIndex + 1;
+      }
+      return prevIndex;
+    });
   };
 
   return (
@@ -766,14 +823,10 @@ export function HomePage() {
             {/* Bagian Gambar */}
             <div
               onClick={() => openModal(selectedasset)}
-              className="flex flex-col items-center justify-center w-full"
-            >
-              <div
-                onClick={() => openModal(selectedasset)}
-                className="flex flex-col items-center justify-center w-full"
-              >
-                <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
-                  {selectedasset.uploadUrlVideo ? (
+              className="flex flex-col items-center justify-center w-full">
+              <div className="w-full h-auto max-h-[300px] relative overflow-hidden rounded-md flex items-center justify-center p-4">
+                {
+                  selectedasset.uploadUrlVideo ? (
                     <video
                       src={selectedasset.uploadUrlVideo}
                       alt="Asset Video"
@@ -782,53 +835,73 @@ export function HomePage() {
                       controlsList="nodownload"
                       onContextMenu={(e) => e.preventDefault()}
                     />
-                  ) : Array.isArray(selectedasset.datasetThumbnail) &&
-                    selectedasset.datasetThumbnail.length > 0 ? (
+                  ) : Array.isArray(selectedasset.asset2DThumbnail) && selectedasset.asset2DThumbnail.length > 0 ? (
                     <img
-                      src={selectedasset.datasetThumbnail[currentIndexModal] || CustomImage}
+                      src={
+                        selectedasset.asset2DThumbnail[currentIndexModal] ||
+                        selectedasset.asset2DFile ||
+                        CustomImage
+                      }
                       alt={`Thumbnail ${currentIndexModal + 1}`}
-                      className="w-full h-full object-cover"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = CustomImage;
                       }}
                       onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                      className="h-full max-h-[400px] w-full p-8 max-w-[400px object-fill rounded-t-[10px] border-none"
                     />
-                  ) : Array.isArray(selectedasset.asset2DThumbnail) &&
-                    selectedasset.asset2DThumbnail.length > 0 ? (
+                  ) : Array.isArray(selectedasset.asset3DThumbnail) && selectedasset.asset3DThumbnail.length > 0 ? (
                     <img
-                      src={selectedasset.asset2DThumbnail[currentIndexModal] || CustomImage}
+                      src={
+                        selectedasset.asset3DThumbnail[currentIndexModal] ||
+                        selectedasset.asset3DFile ||
+                        CustomImage
+                      }
                       alt={`Thumbnail ${currentIndexModal + 1}`}
-                      className="h-full w-full object-fill rounded-t-[10px] border-none"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = CustomImage;
                       }}
                       onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                      className="h-full max-h-[400px] w-full max-w-[400px object-fill rounded-t-[10px] border-none"
                     />
-                  ) : Array.isArray(selectedasset.asset3DThumbnail) &&
-                    selectedasset.asset3DThumbnail.length > 0 ? (
+                  ) : Array.isArray(selectedasset.audioThumbnail) && selectedasset.audioThumbnail.length > 0 ? (
                     <img
-                      src={selectedasset.asset3DThumbnail[currentIndexModal] || CustomImage}
+                      src={
+                        selectedasset.audioThumbnail[currentIndexModal] ||
+                        selectedasset.asset3DFile ||
+                        CustomImage
+                      }
                       alt={`Thumbnail ${currentIndexModal + 1}`}
-                      className="h-full w-full object-fill rounded-t-[10px] border-none"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = CustomImage;
                       }}
                       onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                      className="h-full max-h-[400px] w-full max-w-[400px object-fill rounded-t-[10px] border-none"
                     />
-                  ) : Array.isArray(selectedasset.audioThumbnail) &&
-                    selectedasset.audioThumbnail.length > 0 ? (
+                  ) : Array.isArray(selectedasset.datasetThumbnail) && selectedasset.datasetThumbnail.length > 0 ? (
                     <img
-                      src={selectedasset.audioThumbnail[currentIndexModal] || CustomImage}
+                      src={
+                        selectedasset.datasetThumbnail[currentIndexModal] ||
+                        selectedasset.asset3DFile ||
+                        CustomImage
+                      }
                       alt={`Thumbnail ${currentIndexModal + 1}`}
-                      className="h-full w-full object-fill rounded-t-[10px] border-none"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = CustomImage;
                       }}
                       onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                      className="h-full max-h-[400px] w-full max-w-[400px object-fill rounded-t-[10px] border-none"
                     />
                   ) : (
                     <img
@@ -843,6 +916,7 @@ export function HomePage() {
                         (selectedasset.video ? CustomImage : null) ||
                         selectedasset.datasetThumbnail ||
                         selectedasset.asset3DThumbnail ||
+                        selectedasset.audioThumbnail ||
                         CustomImage
                       }
                       alt="Asset Image"
@@ -855,30 +929,29 @@ export function HomePage() {
                       onDragStart={(e) => e.preventDefault()}
                       className="w-full h-full object-cover"
                     />
-                  )}
+                  )
+                }
 
-                  {/* Carousel Navigation */}
-                  {Array.isArray(selectedasset.datasetThumbnail) &&
-                    selectedasset.datasetThumbnail.length > 1 && (
-                      <>
-                        <button
-                          onClick={handlePrevious}
-                          className="absolute left-1 top-1/2 transform -translate-y-1/2 bg-transparent text-secondary-40 text-[40px] rounded-full p-2"
-                        >
-                          &#8592;
-                        </button>
-                        <button
-                          onClick={handleNext}
-                          className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-transparent text-secondary-40 text-[40px] rounded-full p-2"
-                        >
-                          &#8594;
-                        </button>
-                      </>
-                    )}
-                </div>
+                {(Array.isArray(selectedasset.asset2DThumbnail) && selectedasset.asset2DThumbnail.length > 1) ||
+                  (Array.isArray(selectedasset.asset3DThumbnail) && selectedasset.asset3DThumbnail.length > 1) ||
+                  (Array.isArray(selectedasset.datasetThumbnail) && selectedasset.datasetThumbnail.length > 1) ? (
+                  <>
+                    <button
+                      onClick={handlePrevious}
+                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-transparent text-secondary-40 text-[40px] sm:text-[50px] rounded-full p-4 sm:p-6">
+                      &#8592;
+                    </button>
+                    <button
+                      onClick={handleNext}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent text-secondary-40 text-[40px] sm:text-[50px] rounded-full p-4 sm:p-6">
+                      &#8594;
+                    </button>
+                  </>
+
+                ) : null}
               </div>
-
             </div>
+
 
             <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
               <p className="text-lg sm:text-xl text-neutral-10 font-bold dark:text-primary-100 text-start">
@@ -927,6 +1000,7 @@ export function HomePage() {
                   </>
                 ) : (
                   <button
+                    onClick={() => handleDownload(selectedasset)} // Call handleDownload on click
                     className={`flex p-2 text-center items-center justify-center bg-neutral-60 text-primary-100 w-full h-10 rounded-md hover:bg-neutral-70 transition duration-200`}
                   >
                     <img
@@ -934,19 +1008,21 @@ export function HomePage() {
                       alt="Download Icon"
                       className="w-6 h-6 mr-2"
                     />
-                    <p>Download</p>
+                    <p>Simpan Ke MyAsset Anda!</p> {/* Change the text to indicate purchase */}
                   </button>
+
                 )}
               </div>
             </div>
           </div>
         </div>
-      )}
+      )
+      }
 
       <div className="mt-[700px]">
         <Footer />
       </div>
-    </div>
+    </div >
   );
 }
 

@@ -1,11 +1,8 @@
-/* eslint-disable no-unused-vars */
 import { useState, useRef, useEffect } from "react";
 import {
   collection,
-  getDocs,
   onSnapshot,
-  setDoc,
-  doc,
+  getDocs,
 } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { getAuth } from "firebase/auth";
@@ -23,6 +20,7 @@ import {
   Title,
   Tooltip,
   Legend,
+  Filler,
 } from "chart.js";
 
 ChartJS.register(
@@ -32,15 +30,14 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
 function Revenue() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [transactionCount, setTransactionCount] = useState(0);
-  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [totalSales, setTotalSales] = useState(0);
   const [totalLikes, setTotalLikes] = useState(0);
-  const [currentUserId, setCurrentUserId] = useState(null);
   const [userAssets, setUserAssets] = useState([]);
   const sidebarRef = useRef(null);
 
@@ -59,48 +56,28 @@ function Revenue() {
     const user = auth.currentUser;
 
     if (user) {
-      setCurrentUserId(user.uid);
-
       const unsubscribe = onSnapshot(
-        collection(db, "transactions"),
-        async (snapshot) => {
-          const orderIds = new Set();
-          let totalPrice = 0;
+        collection(db, "buyAssets"),
+        (snapshot) => {
           const filteredAssets = [];
+          let totalPrice = 0;
 
           snapshot.forEach((doc) => {
             const data = doc.data();
 
-            if (data.status === "Success" && data.assets) {
-              data.assets.forEach((asset) => {
-                if (asset.assetOwnerID === user.uid) {
-                  filteredAssets.push({
-                    ...asset,
-                    docId: doc.id,
-                  });
-                  if (asset.price) {
-                    totalPrice += Number(asset.price);
-                  }
-                }
+            if (data.assetOwnerID === user.uid) {
+              filteredAssets.push({
+                ...data,
+                docId: doc.id,
               });
-              orderIds.add(data.orderId);
+              if (data.price) {
+                totalPrice += Number(data.price);
+              }
             }
           });
 
           setUserAssets(filteredAssets);
-          setTransactionCount(orderIds.size);
-          setTotalRevenue(totalPrice);
-
-          const userDoc = await getDocs(collection(db, "users"));
-          const userData = userDoc.docs.find(
-            (doc) => doc.data().uid === user.uid
-          );
-          const username = userData
-            ? userData.data().username
-            : "Tidak Ditemukan";
-
-          // Simpan total pendapatan ke koleksi revenue
-          saveTotalRevenue(user.uid, username, totalPrice);
+          setTotalSales(totalPrice);
         }
       );
 
@@ -154,25 +131,15 @@ function Revenue() {
     }
   }, []);
 
-   const saveTotalRevenue = async (ownerId, username, total) => {
-    try {
-      await setDoc(doc(collection(db, "revenue"), ownerId), {
-        username: username,
-        totalPendapatan: total,
-      });
-    } catch (error) {
-      console.error("Error saving total revenue:", error);
-    }
-  };
-
+  // Data untuk grafik
   const chartData = {
     labels: ["Aset Terjual", "Pendapatan"],
     datasets: [
       {
         label: "Perbandingan Aset Terjual dan Pendapatan",
-        data: [userAssets.length, totalRevenue],
+        data: [userAssets.length, totalSales],
         backgroundColor: "rgba(75, 192, 192, 0.2)",
-        borderColor: "#3F83F8",
+        borderColor: "#2563EB",
         borderWidth: 2,
         fill: true,
       },
@@ -207,12 +174,10 @@ function Revenue() {
         <aside
           ref={sidebarRef}
           id="sidebar-multi-level-sidebar"
-          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } sm:translate-x-0`}
-          aria-label="Sidebar"
-        >
-          <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
+          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } sm:translate-x-0`}
+          aria-label="Sidebar">
+          <div className="min-h-screen px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
             <NavigationItem />
           </div>
         </aside>
@@ -222,13 +187,13 @@ function Revenue() {
             <Breadcrumb />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 ">
             <div className="dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
               <FaDollarSign className="text-4xl text-green-500 mr-4" />
               <div>
                 <h3 className="text-lg font-semibold">Total Pendapatan</h3>
                 <p className="text-2xl font-bold">
-                  Rp. {totalRevenue.toLocaleString()}
+                  Rp. {totalSales.toLocaleString()}
                 </p>
               </div>
             </div>

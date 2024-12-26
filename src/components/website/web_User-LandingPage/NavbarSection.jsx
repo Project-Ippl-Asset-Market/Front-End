@@ -41,9 +41,8 @@ const NavbarSection = () => {
 
         {/* Navbar Links */}
         <div
-          className={`${
-            isOpen ? "block" : "hidden sm:flex navbar-hidden "
-          } absolute top-full left-0 w-full sm:relative sm:w-auto bg-neutral-90 dark:bg-neutral-5 dark:text-primary-100 text-neutral-10 shadow-lg  `}>
+          className={`${isOpen ? "block" : "hidden sm:flex navbar-hidden "
+            } absolute top-full left-0 w-full sm:relative sm:w-auto bg-neutral-90 dark:bg-neutral-5 dark:text-primary-100 text-neutral-10 shadow-lg  `}>
           <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 text-right mx-2 mt-0 sm:mt-4 md:mt-8 lg:mt-10 xl:mt-10  2xl:mt-10">
             {/* Telusuri Semua */}
             <div className="relative group mt-4 flex">
@@ -51,11 +50,10 @@ const NavbarSection = () => {
                 to="/"
                 className={`relative flex text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px]
                 w-full text-start rounded-md h-10 p-2
-                ${
-                  isLinkActive("/")
+                ${isLinkActive("/")
                     ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
                     : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
-                }
+                  }
 
                 hover:bg-secondary-40 sm:hover:bg-secondary-40 md:hover:bg-secondary-40 lg:hover:bg-transparent xl:hover:bg-transparent 2xl:hover:bg-transparent 
                 dark:hover:bg-secondary-40 sm:dark:hover:bg-secondary-40 md:dark:hover:bg-secondary-40 lg:dark:hover:bg-transparent xl:dark:hover:bg-transparent 2xl:dark:hover:bg-transparent 
@@ -69,11 +67,10 @@ const NavbarSection = () => {
                 <span className="absolute bottom-0 left-0 right-0 mx-auto h-[2px] ">
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
-      ${
-        isLinkActive("/")
-          ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-10 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
-          : "hidden sm:w-1/2"
-      }`}></span>
+      ${isLinkActive("/")
+                        ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-10 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
+                        : "hidden sm:w-1/2"
+                      }`}></span>
 
                   <span
                     className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
@@ -88,11 +85,10 @@ const NavbarSection = () => {
                 to="/asset-video"
                 className={`relative inline-block text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px] 
                 w-full text-start rounded-md h-10 p-2
-                ${
-                  isLinkActive("/asset-video")
+                ${isLinkActive("/asset-video")
                     ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
                     : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
-                }
+                  }
 
                 hover:bg-secondary-40 sm:hover:bg-secondary-40 md:hover:bg-secondary-40 lg:hover:bg-transparent xl:hover:bg-transparent 2xl:hover:bg-transparent 
                 dark:hover:bg-secondary-40 sm:dark:hover:bg-secondary-40 md:dark:hover:bg-secondary-40 lg:dark:hover:bg-transparent xl:dark:hover:bg-transparent 2xl:dark:hover:bg-transparent 
@@ -101,19 +97,17 @@ const NavbarSection = () => {
                 <span className="absolute bottom-0 left-0 right-0 mx-auto h-[2px] ">
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
-            ${
-              isLinkActive("/asset-video")
-                ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-8 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
-                : "hidden sm:w-1/2"
-            }`}></span>
+            ${isLinkActive("/asset-video")
+                        ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-8 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
+                        : "hidden sm:w-1/2"
+                      }`}></span>
 
                   <span
                     className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
-            ${
-              isLinkActive("/asset-video")
-                ? "hidden"
-                : "hidden sm:group-hover:w-1/2"
-            }`}></span>
+            ${isLinkActive("/asset-video")
+                        ? "hidden"
+                        : "hidden sm:group-hover:w-1/2"
+                      }`}></span>
                 </span>
               </Link>
             </div>
@@ -124,11 +118,10 @@ const NavbarSection = () => {
                 to="/asset-image"
                 className={`relative inline-block text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px]
               w-full text-start rounded-md h-10 p-2
-              ${
-                isLinkActive("/asset-image")
-                  ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
-                  : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
-              }
+              ${isLinkActive("/asset-image")
+                    ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
+                    : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
+                  }
 
                 hover:bg-secondary-40 sm:hover:bg-secondary-40 md:hover:bg-secondary-40 lg:hover:bg-transparent xl:hover:bg-transparent 2xl:hover:bg-transparent 
                 dark:hover:bg-secondary-40 sm:dark:hover:bg-secondary-40 md:dark:hover:bg-secondary-40 lg:dark:hover:bg-transparent xl:dark:hover:bg-transparent 2xl:dark:hover:bg-transparent 
@@ -137,19 +130,17 @@ const NavbarSection = () => {
                 <span className="absolute bottom-0 left-0 right-0 mx-auto h-[2px] ">
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
-            ${
-              isLinkActive("/asset-image")
-                ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-8 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
-                : "hidden sm:w-1/2"
-            }`}></span>
+            ${isLinkActive("/asset-image")
+                        ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-8 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
+                        : "hidden sm:w-1/2"
+                      }`}></span>
 
                   <span
                     className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
-            ${
-              isLinkActive("/asset-image")
-                ? "hidden"
-                : "hidden sm:group-hover:w-1/2"
-            }`}></span>
+            ${isLinkActive("/asset-image")
+                        ? "hidden"
+                        : "hidden sm:group-hover:w-1/2"
+                      }`}></span>
                 </span>
               </Link>
             </div>
@@ -160,11 +151,10 @@ const NavbarSection = () => {
                 to="/asset-dataset"
                 className={`relative inline-block text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px] 
             w-full text-start rounded-md h-10 p-2
-            ${
-              isLinkActive("/asset-dataset")
-                ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
-                : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
-            }
+            ${isLinkActive("/asset-dataset")
+                    ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
+                    : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
+                  }
 
                 hover:bg-secondary-40 sm:hover:bg-secondary-40 md:hover:bg-secondary-40 lg:hover:bg-transparent xl:hover:bg-transparent 2xl:hover:bg-transparent 
                 dark:hover:bg-secondary-40 sm:dark:hover:bg-secondary-40 md:dark:hover:bg-secondary-40 lg:dark:hover:bg-transparent xl:dark:hover:bg-transparent 2xl:dark:hover:bg-transparent 
@@ -173,19 +163,17 @@ const NavbarSection = () => {
                 <span className="absolute bottom-0 left-0 right-0 mx-auto h-[2px] ">
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
-            ${
-              isLinkActive("/asset-dataset")
-                ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-8 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
-                : "hidden sm:w-1/2"
-            }`}></span>
+            ${isLinkActive("/asset-dataset")
+                        ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-8 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
+                        : "hidden sm:w-1/2"
+                      }`}></span>
 
                   <span
                     className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
-            ${
-              isLinkActive("/asset-dataset")
-                ? "hidden"
-                : "hidden sm:group-hover:w-1/2"
-            }`}></span>
+            ${isLinkActive("/asset-dataset")
+                        ? "hidden"
+                        : "hidden sm:group-hover:w-1/2"
+                      }`}></span>
                 </span>
               </Link>
             </div>
@@ -196,11 +184,10 @@ const NavbarSection = () => {
                 to="/asset-game"
                 className={`relative inline-block text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px] 
             w-full text-start rounded-md h-10 p-2
-            ${
-              isLinkActive("/asset-game")
-                ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
-                : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
-            }
+            ${isLinkActive("/asset-game")
+                    ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
+                    : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
+                  }
 
                 hover:bg-secondary-40 sm:hover:bg-secondary-40 md:hover:bg-secondary-40 lg:hover:bg-transparent xl:hover:bg-transparent 2xl:hover:bg-transparent 
                 dark:hover:bg-secondary-40 sm:dark:hover:bg-secondary-40 md:dark:hover:bg-secondary-40 lg:dark:hover:bg-transparent xl:dark:hover:bg-transparent 2xl:dark:hover:bg-transparent 
@@ -209,19 +196,17 @@ const NavbarSection = () => {
                 <span className="absolute bottom-0 left-0 right-0 mx-auto h-[2px] ">
                   <span
                     className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
-            ${
-              isLinkActive("/asset-game")
-                ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-8 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
-                : "hidden sm:w-1/2"
-            }`}></span>
+            ${isLinkActive("/asset-game")
+                        ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-8 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
+                        : "hidden sm:w-1/2"
+                      }`}></span>
 
                   <span
                     className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
-            ${
-              isLinkActive("/asset-game")
-                ? "hidden"
-                : "hidden sm:group-hover:w-1/2"
-            }`}></span>
+            ${isLinkActive("/asset-game")
+                        ? "hidden"
+                        : "hidden sm:group-hover:w-1/2"
+                      }`}></span>
                 </span>
               </Link>
             </div>
@@ -234,11 +219,10 @@ const NavbarSection = () => {
                     to="/asset-gratis"
                     className={`relative inline-block text-[12px] sm:text-[10px] md:text-[12px] lg:text-[16px] xl:text-[16px] 2xl:text-[16px] 
           w-full text-start rounded-md h-10 p-2
-          ${
-            isLinkActive("/asset-gratis")
-              ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
-              : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
-          }
+          ${isLinkActive("/asset-gratis")
+                        ? "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
+                        : "dark:bg-neutral-5 dark:text-primary-100 text-neutral-10"
+                      }
 
                 hover:bg-secondary-40 sm:hover:bg-secondary-40 md:hover:bg-secondary-40 lg:hover:bg-transparent xl:hover:bg-transparent 2xl:hover:bg-transparent 
                 dark:hover:bg-secondary-40 sm:dark:hover:bg-secondary-40 md:dark:hover:bg-secondary-40 lg:dark:hover:bg-transparent xl:dark:hover:bg-transparent 2xl:dark:hover:bg-transparent 
@@ -247,19 +231,17 @@ const NavbarSection = () => {
                     <span className="absolute bottom-0 left-0 right-0 mx-auto h-[2px] ">
                       <span
                         className={`absolute bottom-0 left-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
-            ${
-              isLinkActive("/asset-gratis")
-                ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-7 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
-                : "hidden sm:w-1/2"
-            }`}></span>
+            ${isLinkActive("/asset-gratis")
+                            ? "w-0 sm:w-16 md:w-18 lg:w-20 xl:w-24 2xl:w-14 sm:-ml-7 md:-ml-8 lg:-ml-10 xl:-ml-12 2xl:-ml-8"
+                            : "hidden sm:w-1/2"
+                          }`}></span>
 
                       <span
                         className={`absolute bottom-0 right-1/2 w-0 h-[3px] bg-secondary-40 transition-all duration-500 ease-in-out 
-            ${
-              isLinkActive("/asset-gratis")
-                ? "hidden"
-                : "hidden sm:group-hover:w-1/2"
-            }`}></span>
+            ${isLinkActive("/asset-gratis")
+                            ? "hidden"
+                            : "hidden sm:group-hover:w-1/2"
+                          }`}></span>
                     </span>
                   </Link>
                 </div>
@@ -297,7 +279,7 @@ const NavbarSection = () => {
                 </div>
                 <div
                   tabIndex={0}
-                  className="dropdown-content bg-neutral-90 dark:bg-neutral-20 card card-compact text-start text-primary-content z-[1] w-[200px] sm:w-[200px] p-2 shadow rounded-none absolute left-0 sm:left-auto sm:right-0 max-h-60 overflow-y-auto sm:max-h-[300px]">
+                  className="dropdown-content bg-neutral-90 dark:bg-neutral-20 card card-compact bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-start text-primary-content z-[1] w-[200px] sm:w-[200px] p-2 shadow rounded-none absolute left-0 sm:left-auto sm:right-0 max-h-60 overflow-y-auto sm:max-h-[300px]">
                   <div className="card-body">
                     <Link
                       to={isLoggedIn ? "/dashboard" : "/login"}

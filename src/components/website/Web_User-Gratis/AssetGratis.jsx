@@ -234,6 +234,28 @@ export function AssetGratis() {
     );
   });
 
+  const [currentIndexModal, setCurrentIndexModal] = useState(0);
+
+  const handlePrevious = () => {
+    setCurrentIndexModal((prevIndex) =>
+      prevIndex > 0 ? prevIndex - 1 : prevIndex
+    );
+  };
+
+  const handleNext = () => {
+    setCurrentIndexModal((prevIndex) => {
+      if (
+        (selectedasset.asset2DThumbnail && prevIndex < selectedasset.asset2DThumbnail.length - 1) ||
+        (selectedasset.asset3DThumbnail && prevIndex < selectedasset.asset3DThumbnail.length - 1) ||
+        (selectedasset.audioThumbnail && prevIndex < selectedasset.audioThumbnail.length - 1) ||
+        (selectedasset.datasetThumbnail && prevIndex < selectedasset.datasetThumbnail.length - 1)
+      ) {
+        return prevIndex + 1;
+      }
+      return prevIndex;
+    });
+  };
+
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
       <div className="w-full shadow-lg bg-primary-100 dark:text-primary-100 relative z-40 ">
@@ -290,27 +312,27 @@ export function AssetGratis() {
 
       <div className="w-full p-12 mx-auto">
         {/* validasi like button */}
-      <div className="fixed top-12 left-1/2 transform -translate-x-1/2 w-full max-w-md p-4 z-50">
-        {alertLikes && (
-          <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
-            <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
-            <span className="block sm:inline">{alertLikes}</span>
-            <button
-              className="absolute top-0 bottom-0 right-0 px-4 py-3"
-              onClick={() => setAlertLikes(false)}
-            >
-              <svg
-                className="fill-current h-6 w-6 text-red-500"
-                role="button"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
+        <div className="fixed top-12 left-1/2 transform -translate-x-1/2 w-full max-w-md p-4 z-50">
+          {alertLikes && (
+            <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
+              <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
+              <span className="block sm:inline">{alertLikes}</span>
+              <button
+                className="absolute top-0 bottom-0 right-0 px-4 py-3"
+                onClick={() => setAlertLikes(false)}
               >
-                <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
-              </svg>
-            </button>
-          </div>
-        )}
-      </div>
+                <svg
+                  className="fill-current h-6 w-6 text-red-500"
+                  role="button"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100 pt-[100px] -ml-10">
           All Category
@@ -457,43 +479,137 @@ export function AssetGratis() {
               onClick={closeModal}>
               &times;
             </button>
-            <div className="flex flex-col items-center justify-center w-full">
-              <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
-                {selectedasset.uploadUrlVideo ? (
-                  <video
-                    src={selectedasset.uploadUrlVideo}
-                    alt="Asset Video"
-                    className="w-full h-full object-fill"
-                    onContextMenu={(e) => e.preventDefault()}
-                    controls
-                    controlsList="nodownload"
-                  />
-                ) : (
-                  <img
-                    src={
-                      selectedasset.image ||
-                      selectedasset.uploadUrlImage ||
-                      selectedasset.datasetImage ||
-                      selectedasset.assetAudiosImage ||
-                      selectedasset.asset2DImage ||
-                      selectedasset.asset3DImage ||
-                      (selectedasset.video ? CustomImage : null) ||
-                      selectedasset.datasetThumbnail ||
-                      selectedasset.asset2DThumbnail ||
-                      selectedasset.asset3DThumbnail ||
-                      selectedasset.audioThumbnail ||
-                      CustomImage
-                    }
-                    alt="Asset Image"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = CustomImage;
-                    }}
-                    className="w-full h-full object-fill"
-                  />
-                )}
+            <div
+              onClick={() => openModal(selectedasset)}
+              className="flex flex-col items-center justify-center w-full">
+              <div className="w-full h-auto max-h-[300px] relative overflow-hidden rounded-md flex items-center justify-center p-4">
+                {
+                  selectedasset.uploadUrlVideo ? (
+                    <video
+                      src={selectedasset.uploadUrlVideo}
+                      alt="Asset Video"
+                      className="w-full h-full object-cover"
+                      controls
+                      controlsList="nodownload"
+                      onContextMenu={(e) => e.preventDefault()}
+                    />
+                  ) : Array.isArray(selectedasset.asset2DThumbnail) && selectedasset.asset2DThumbnail.length > 0 ? (
+                    <img
+                      src={
+                        selectedasset.asset2DThumbnail[currentIndexModal] ||
+                        selectedasset.asset2DFile ||
+                        CustomImage
+                      }
+                      alt={`Thumbnail ${currentIndexModal + 1}`}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CustomImage;
+                      }}
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                      className="h-full max-h-[400px] w-full p-8 max-w-[400px object-fill rounded-t-[10px] border-none"
+                    />
+                  ) : Array.isArray(selectedasset.asset3DThumbnail) && selectedasset.asset3DThumbnail.length > 0 ? (
+                    <img
+                      src={
+                        selectedasset.asset3DThumbnail[currentIndexModal] ||
+                        selectedasset.asset3DFile ||
+                        CustomImage
+                      }
+                      alt={`Thumbnail ${currentIndexModal + 1}`}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CustomImage;
+                      }}
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                      className="h-full max-h-[400px] w-full max-w-[400px object-fill rounded-t-[10px] border-none"
+                    />
+                  ) : Array.isArray(selectedasset.audioThumbnail) && selectedasset.audioThumbnail.length > 0 ? (
+                    <img
+                      src={
+                        selectedasset.audioThumbnail[currentIndexModal] ||
+                        selectedasset.asset3DFile ||
+                        CustomImage
+                      }
+                      alt={`Thumbnail ${currentIndexModal + 1}`}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CustomImage;
+                      }}
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                      className="h-full max-h-[400px] w-full max-w-[400px object-fill rounded-t-[10px] border-none"
+                    />
+                  ) : Array.isArray(selectedasset.datasetThumbnail) && selectedasset.datasetThumbnail.length > 0 ? (
+                    <img
+                      src={
+                        selectedasset.datasetThumbnail[currentIndexModal] ||
+                        selectedasset.asset3DFile ||
+                        CustomImage
+                      }
+                      alt={`Thumbnail ${currentIndexModal + 1}`}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CustomImage;
+                      }}
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                      className="h-full max-h-[400px] w-full max-w-[400px object-fill rounded-t-[10px] border-none"
+                    />
+                  ) : (
+                    <img
+                      src={
+                        selectedasset.image ||
+                        selectedasset.uploadUrlImage ||
+                        selectedasset.uploadUrlAudio ||
+                        selectedasset.datasetImage ||
+                        selectedasset.assetAudiosImage ||
+                        selectedasset.asset2DImage ||
+                        selectedasset.asset3DImage ||
+                        (selectedasset.video ? CustomImage : null) ||
+                        selectedasset.datasetThumbnail ||
+                        selectedasset.asset3DThumbnail ||
+                        selectedasset.audioThumbnail ||
+                        CustomImage
+                      }
+                      alt="Asset Image"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CustomImage;
+                      }}
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                      className="w-full h-full object-cover"
+                    />
+                  )
+                }
+
+                {(Array.isArray(selectedasset.asset2DThumbnail) && selectedasset.asset2DThumbnail.length > 1) ||
+                  (Array.isArray(selectedasset.asset3DThumbnail) && selectedasset.asset3DThumbnail.length > 1) ||
+                  (Array.isArray(selectedasset.datasetThumbnail) && selectedasset.datasetThumbnail.length > 1) ? (
+                  <>
+                    <button
+                      onClick={handlePrevious}
+                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-transparent text-secondary-40 text-[40px] sm:text-[50px] rounded-full p-4 sm:p-6">
+                      &#8592;
+                    </button>
+                    <button
+                      onClick={handleNext}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent text-secondary-40 text-[40px] sm:text-[50px] rounded-full p-4 sm:p-6">
+                      &#8594;
+                    </button>
+                  </>
+
+                ) : null}
               </div>
             </div>
+
             <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
               <h2 className="text-md mb-2 dark:text-primary-100 mt-4 text-start font-semibold">
                 {selectedasset.datasetName ||
@@ -533,7 +649,7 @@ export function AssetGratis() {
           </div>
         </div>
       )}
-      
+
 
       <div className="mt-96">
         <Footer />

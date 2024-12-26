@@ -1,5 +1,3 @@
-/* eslint-disable no-useless-catch */
-/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import { FaTrashAlt } from "react-icons/fa";
 import { getAuth } from "firebase/auth";
@@ -17,7 +15,7 @@ import {
 } from "firebase/firestore";
 import Header from "../headerNavBreadcrumbs/HeaderWebUser";
 import NavbarSection from "../website/web_User-LandingPage/NavbarSection";
-import CustomImage from "../../assets/assetmanage/Iconrarzip.svg";
+// import CustomImage from "../../assets/assetmanage/Iconrarzip.svg";
 import Footer from "../website/Footer/Footer";
 
 const Cart = () => {
@@ -27,7 +25,6 @@ const Cart = () => {
     email: "",
     phoneNumber: "",
   });
-  
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -108,7 +105,7 @@ const Cart = () => {
 
   const handlePayment = async () => {
     if (selectedItems.length === 0) {
-      setErrorMessage("Please select at least one item to proceed.");
+      setErrorMessage("Silakan pilih setidaknya satu item untuk melanjutkan.");
       return;
     }
 
@@ -117,7 +114,7 @@ const Cart = () => {
       !customerInfo.email ||
       !customerInfo.phoneNumber
     ) {
-      setErrorMessage("Please fill out all customer information.");
+      setErrorMessage("Silakan lengkapi semua informasi pelanggan.");
       return;
     }
 
@@ -130,20 +127,20 @@ const Cart = () => {
       const assetDetails = selectedItems.map((item) => ({
         assetId: item.assetId,
         price: item.price,
-        name: item.name || "Item Name Not Available",
+        name: item.name || "Nama Item Tidak Tersedia",
         image:
           item.image ||
           item.Image_umum ||
           item.video ||
-          item.assetImageGame ||
-          item.datasetThumbnail ||
-          "url tidak ada",
-        datasetFile: item.datasetFile || "tidak ada",
-        docId: item.id,
+          item.assetImageGame || item.audioThumbnail || item.datasetThumbnail
+          || item.asset2DThumbnail
+          || item.asset3DThumbnail || "url tidak ada",
+        datasetFile: item.datasetFile || item.asset3DFile || item.asset2DFile || item.uploadUrlAudio || "tidak ada",
+        docId: item.docId,
         userId: item.userId,
-        description: item.description || "No Description",
-        category: item.category || "Uncategorized",
-        assetOwnerID: item.assetOwnerID || "Asset Owner ID Not Available",
+        description: item.description || "Tidak Ada Deskripsi",
+        category: item.category || "Tanpa Kategori",
+        assetOwnerID: item.assetOwnerID || "ID Pemilik Aset Tidak Tersedia",
         size: item.size || item.resolution || "size & Resolution tidak ada",
       }));
 
@@ -167,128 +164,72 @@ const Cart = () => {
       window.snap.pay(transactionData.token, {
         onSuccess: async (result) => {
           try {
-            await saveTransaction(
-              "Success",
-              orderId,
-              subtotal,
-              transactionData.token,
-              assetDetails
-            );
-            await moveAssetsToBuyAssets(assetDetails); // Move only IDs
-            await deletePurchasedAssets(selectedItems);
+            await saveToBuyAssets(assetDetails);
+            await saveTransaction(orderId, subtotal, assetDetails);
             resetCustomerInfoAndCart();
-            setSuccessMessage("Transaction completed successfully.");
+            setSuccessMessage("Transaksi berhasil.");
           } catch (saveError) {
-            console.error("Error in transaction success handling:", saveError);
-            setErrorMessage(
-              "Transaction completed, but failed to move assets."
-            );
+            setErrorMessage("Transaksi berhasil, tetapi gagal menyimpan aset.");
+
           }
         },
-        onPending: async (result) => {
-          try {
-            await saveTransaction(
-              "Pending",
-              orderId,
-              subtotal,
-              transactionData.token,
-              assetDetails
-            );
-            pollPaymentStatus(orderId);
-          } catch (saveError) {
-            console.error("Error saving pending transaction:", saveError);
-          }
-        },
+        onPending: async (result) => { },
         onError: function (result) {
-          console.error("Payment error:", result);
+          setErrorMessage("Terjadi kesalahan pembayaran.");
         },
       });
     } catch (error) {
-      console.error("Error during transaction:", error);
-      setErrorMessage("Failed to process payment.");
+      setErrorMessage("Gagal memproses pembayaran.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const saveTransaction = async (
-    status,
-    orderId,
-    subtotal,
-    token,
-    assetDetails
-  ) => {
-    const transactionDocRef = doc(collection(db, "transactions"));
+  const saveToBuyAssets = async (assetDetails) => {
+    const buyAssetPromises = assetDetails.map(async (asset) => {
+      const buyAssetDocRef = doc(collection(db, "buyAssets"));
+      try {
+        await setDoc(buyAssetDocRef, {
+          assetId: asset.assetId,
+          price: asset.price,
+          name: asset.name,
+          image: asset.image || asset.audioThumbnail || asset.datasetThumbnail
+            || asset.asset2DThumbnail
+            || asset.asset3DThumbnail || "File Tidak Tersedia",
+          datasetFile: asset.datasetFile || asset.asset3DFile || asset.asset2DFile || asset.uploadUrlAudio || "tidak ada",
+          description: asset.description || "Tidak Ada Deskripsi",
+          category: asset.category || "Tanpa Kategori",
+          assetOwnerID: asset.assetOwnerID || "ID Pemilik Aset Tidak Tersedia",
+          size: asset.size || asset.resolution || "size & Resolution tidak ada",
+          createdAt: new Date(),
+          userId: asset.userId,
+        });
+        console.log(`Berhasil menyimpan aset ke buyAssets: ${asset.assetId}`);
+      } catch (error) {
+        console.error(`Kesalahan saat menyimpan aset ke buyAssets: ${asset.assetId}`, error);
+        throw error;
+      }
+    });
+
+    await Promise.all(buyAssetPromises);
+    alert("Transaksi berhasil!");
+  };
+
+  const saveTransaction = async (orderId, subtotal, assetDetails) => {
+    const transactionDocRef = doc(collection(db, "transactions"), orderId);
     try {
       await setDoc(transactionDocRef, {
-        orderId,
-        uid: user.uid,
-        grossAmount: subtotal,
-        token,
-        status,
         createdAt: new Date(),
-        assets: assetDetails.map((asset) => ({
-          docId: asset.docId,
-          userId: user.uid,
-          name: asset.name,
-          price: asset.price,
-          description: asset.description,
-          category: asset.category,
-          image:
-            asset.image ||
-            asset.Image_umum ||
-            asset.video ||
-            asset.assetImageGame ||
-            asset.datasetThumbnail ||
-            "url tidak ada",
-          datasetFile: asset.datasetFile || "tidak ada",
-          assetOwnerID: asset.assetOwnerID,
-          size: asset.size || asset.resolution || "size & Resolution tidak ada",
-        })),
-        customerDetails: {
-          fullName: customerInfo.fullName,
-          email: customerInfo.email,
-          phoneNumber: customerInfo.phoneNumber,
-        },
+        orderId: orderId,
+        grossAmount: subtotal,
+        assets: assetDetails,
+        uid: user.uid,
+        status: "success",
       });
-      if (status === "Success") {
-        await moveAssetsToBuyAssets(assetDetails); // Move only IDs
-      }
+      console.log(`Transaksi berhasil disimpan: ${orderId}`);
     } catch (error) {
+      console.error(`Kesalahan saat menyimpan transaksi: ${orderId}`, error);
       throw error;
-    }
-  };
-
-  const moveAssetsToBuyAssets = async (assets) => {
-    try {
-      const moveAssetPromises = assets.map(async (asset) => {
-        // Only send the necessary identifiers
-        const response = await axios.post(`http://localhost:3000/api/moveAsset/${asset.docId}`, {
-          assetId: asset.assetId, // Only send assetId
-        });
-
-        if (response.status !== 200) {
-          throw new Error(`Failed to move asset with docId: ${asset.docId}`);
-        }
-      });
-
-      await Promise.all(moveAssetPromises);
-      alert("Assets moved to purchased successfully!"); // Success alert
-    } catch (error) {
-      console.error("Error moving assets to buyAssets:", error);
-      alert("Failed to move assets to purchased. Please try again."); // Failure alert
-    }
-  };
-
-  const deletePurchasedAssets = async (purchasedItems) => {
-    try {
-      const deletePromises = purchasedItems.map((item) => {
-        const itemDoc = doc(db, "cartAssets", item.id);
-        return deleteDoc(itemDoc);
-      });
-      await Promise.all(deletePromises);
-    } catch (error) {
-      console.error("Error deleting purchased assets:", error);
     }
   };
 
@@ -297,45 +238,11 @@ const Cart = () => {
     setCartItems((prevItems) => prevItems.filter((item) => !item.selected));
   };
 
-  const pollPaymentStatus = async (
-    orderId,
-    interval = 5000,
-    timeout = 30000
-  ) => {
-    const startTime = Date.now();
-
-    const checkStatus = async () => {
-      if (Date.now() - startTime >= timeout) {
-        console.error("Polling timeout reached");
-        return;
-      }
-
-      const response = await axios.get(
-        `http://localhost:3000/api/transactions/check-status/${orderId}`
-      );
-      if (response.data.status === "settlement") {
-        await updateTransactionStatus(orderId, "Success");
-      } else if (response.data.status === "expire") {
-        await updateTransactionStatus(orderId, "Expired");
-      } else {
-        console.log(`Transaction status: ${response.data.status}`);
-      }
-      setTimeout(checkStatus, interval);
-    };
-
-    checkStatus();
-  };
-
-  const updateTransactionStatus = async (orderId, status) => {
-    const transactionDocRef = doc(collection(db, "transactions"), orderId);
-    await setDoc(transactionDocRef, { status }, { merge: true });
-  };
-
   const handleCheckboxChange = (id) => {
     setCartItems((prevItems) =>
       prevItems.map((item) => ({
         ...item,
-        selected: item.id === id, // Only set the selected item to true
+        selected: item.id === id,
       }))
     );
   };
@@ -351,7 +258,7 @@ const Cart = () => {
       await deleteDoc(itemDoc);
       setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
     } catch (error) {
-      console.error("Error deleting item:", error);
+      console.error("Kesalahan saat menghapus item:", error);
     }
   };
 
@@ -394,38 +301,60 @@ const Cart = () => {
                   <input
                     type="checkbox"
                     className="mr-2 sm:mr-4"
-                    checked={item.selected} // This will now only be true for the selected item
+                    checked={item.selected}
                     onChange={() => handleCheckboxChange(item.id)}
                   />
-                  {item.video ? (
-                    <video
-                      src={item.video}
-                      className="h-20 w-20 sm:h-24 sm:w-24 lg:h-20 lg:w-20 rounded overflow-hidden border-none cursor-pointer"
-                      controls
-                    />
-                  ) :(
-                    <img
-                      src={
-                        item.Image ||
-                        item.Image_umum ||
-                        item.uploadUrlImage ||
-                        item.datasetImage ||
-                        item.assetAudiosImage ||
-                        item.asset2DImage ||
-                        item.asset3DImage ||
-                        item.thumbnailGame ||
-                        item.datasetThumbnail ||
-                        item.datasetFile ||
-                        CustomImage
-                      }
-                      alt="Asset"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = CustomImage;
-                      }}
-                      className="h-20 w-20 sm:h-24 sm:w-24 lg:h-20 lg:w-20 rounded overflow-hidden"
-                    />
-                  )}
+                  <div>
+                    {item.video ? (
+                      <video
+                        src={item.video}
+                        className="h-20 w-20 sm:h-24 sm:w-24 lg:h-20 lg:w-20 rounded overflow-hidden border-none cursor-pointer"
+                        controls
+                      />
+                    ) : (
+                      <div>
+
+                        {[
+                          item.thumbnailGame,
+                          item.Image,
+                          item.Image_umum,
+                          item.uploadUrlImage,
+                          item.datasetImage,
+                          item.assetAudiosImage,
+                          item.asset2DImage,
+                          item.asset3DImage,
+                          item.datasetThumbnail,
+                          item.datasetFile,
+                        ].find((src) => src) ? (
+                          <img
+                            src={
+                              [
+                                item.Image,
+                                item.thumbnailGame,
+                                item.Image_umum,
+                                item.uploadUrlImage,
+                                item.datasetImage,
+                                item.assetAudiosImage,
+                                item.asset2DImage,
+                                item.asset3DImage,
+                                item.datasetThumbnail,
+                                item.datasetFile,
+                              ].find((src) => src)
+                            }
+                            alt="Asset"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = '';
+                            }}
+                            className="h-20 w-20 sm:h-24 sm:w-24 lg:h-20 lg:w-20 rounded overflow-hidden"
+                          />
+                        ) : (
+                          <p>No image available</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   <div className="ml-2 sm:ml-4 w-full">
                     <h3 className="font-semibold text-sm sm:text-base truncate">
                       {item.name ||
@@ -438,41 +367,47 @@ const Cart = () => {
                         "Tidak ada nama"}
                     </h3>
                     <p className="text-sm sm:text-base">
-                      Category: {item.category || "Unknown Category"}
+                      Kategori: {item.category || "Kategori Tidak Dikenal"}
                     </p>
                     <p className="text-gray-700 mt-1 text-sm sm:text-base">
                       Rp. {(item.price || 0).toLocaleString("id-ID")}
                     </p>
-                    <p className="text-sm sm:text-base">
-                      Size: {item.size || item.resolution || "Tidak ada size"}
-                    </p>
+                    {(item.size || item.resolution) && (
+                      <p className="text-sm sm:text-base">
+                        Ukuran: {item.size || item.resolution || "Tidak ada ukuran"}
+                      </p>
+                    )}
+
                   </div>
                 </div>
-                <button
-                  className="text-red-500 mt-2 sm:mt-0 sm:ml-auto"
-                  onClick={() => handleDeleteItem(item.id)}>
-                  <FaTrashAlt />
-                </button>
+                <div className="flex justify-center p-10 items-center">
+                  <button
+                    className="text-red-500 mt-2 sm:mt-0 sm:ml-auto"
+                    onClick={() => handleDeleteItem(item.id)}>
+                    <FaTrashAlt />
+                  </button>
+                </div>
+
               </div>
             ))}
           </div>
 
-          <div className="bg-gray-200 p-5 rounded-lg shadow-md w-full md:w-[320px] mt-4 md:mt-0 mx-auto">
-            <h4 className="text-gray-950 font-semibold mb-2 text-sm md:text-base">
+          <div className="bg-gray-200 p-5 rounded-lg shadow-md w-full md:w-[320px] text-primary-100 bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 mt-4 md:mt-0 mx-auto">
+            <h4 className="text-gray-950 font-semibold mb-2 text-sm md:text-base bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100">
               Detail Pembayaran
             </h4>
-            <p className="text-gray-700">
-              Harga ({selectedItems.length} items): Rp.{" "}
+            <p className="text-gray-700 bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100">
+              Harga ({selectedItems.length} item): Rp.{" "}
               {subtotal.toLocaleString("id-ID")}
             </p>
             <div className="mt-4">
               <input
                 type="text"
                 name="fullName"
-                placeholder="Full Name"
+                placeholder="Nama Lengkap"
                 value={customerInfo.fullName}
                 onChange={handleInputChange}
-                className="block w-full mb-2 p-2 border rounded text-sm md:text-base"
+                className="block w-full mb-2 p-2 border rounded text-sm md:text-base bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100"
                 required
               />
               <input
@@ -481,16 +416,16 @@ const Cart = () => {
                 placeholder="Email"
                 value={customerInfo.email}
                 onChange={handleInputChange}
-                className="block w-full mb-2 p-2 border rounded text-sm md:text-base"
+                className="block w-full mb-2 p-2 border rounded text-sm md:text-base bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100"
                 required
               />
               <input
                 type="tel"
                 name="phoneNumber"
-                placeholder="Phone Number"
+                placeholder="Nomor Telepon"
                 value={customerInfo.phoneNumber}
                 onChange={handleInputChange}
-                className="block w-full mb-4 p-2 border rounded text-sm md:text-base"
+                className="block w-full mb-4 p-2 border rounded text-sm md:text-base bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100"
                 required
               />
             </div>

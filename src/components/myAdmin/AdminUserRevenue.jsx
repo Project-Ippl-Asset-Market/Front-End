@@ -9,6 +9,7 @@ import {
 } from "firebase/firestore";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
+import Breadcrumbs from "../breadcrumbs/Breadcrumbs";
 
 function AdminUserRevenue() {
   const db = getFirestore();
@@ -19,25 +20,13 @@ function AdminUserRevenue() {
   const [error, setError] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState({});
   const [accountDetails, setAccountDetails] = useState({});
-  const [showPPNModal, setShowPPNModal] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState(null);
-  const [totalPendapatanUser, setTotalPendapatanUser] = useState(0);
-  const [ppnAmount, setPpnAmount] = useState(0);
-  const [finalTotal, setFinalTotal] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false); // Tambahkan ini
 
   const toggleDropdown = async (userId) => {
-    setDropdownOpen((prev) => ({
-      ...prev,
-      [userId]: !prev[userId],
-    }));
-
-    // Ambil detail rekening jika dropdown dibuka
+    setDropdownOpen((prev) => ({ ...prev, [userId]: !prev[userId] }));
     if (!dropdownOpen[userId]) {
       const accountData = await fetchAccountDetails(userId);
-      setAccountDetails((prev) => ({
-        ...prev,
-        [userId]: accountData || {},
-      }));
+      setAccountDetails((prev) => ({ ...prev, [userId]: accountData || {} }));
     }
   };
 
@@ -77,14 +66,37 @@ function AdminUserRevenue() {
     }
   };
 
-  const handleWithdraw = async (userId) => {
+  const handleWithdraw = async (userId, amount) => {
+    if (isProcessing) return; // Cek jika sedang memproses
+    setIsProcessing(true);
+
     try {
       const accountDocRef = doc(db, "revenue", userId);
       const accountDoc = await getDoc(accountDocRef);
 
       if (accountDoc.exists()) {
         const currentData = accountDoc.data();
+
+        // Validasi
+        if (
+          typeof currentData.totalPendapatan !== "number" ||
+          isNaN(currentData.totalPendapatan)
+        ) {
+          console.error(
+            "Invalid totalPendapatan:",
+            currentData.totalPendapatan
+          );
+          setIsProcessing(false);
+          return;
+        }
+
         const newTotal = currentData.totalPendapatan - amount;
+
+        if (newTotal < 0) {
+          console.error("New totalPendapatan cannot be negative:", newTotal);
+          setIsProcessing(false);
+          return;
+        }
 
         await updateDoc(accountDocRef, {
           totalPendapatan: newTotal,
@@ -102,46 +114,13 @@ function AdminUserRevenue() {
       }
     } catch (error) {
       console.error("Error processing withdrawal:", error);
-    }
-  };
-
-  const handlePPNClick = (userId, totalPendapatan) => {
-    setSelectedUserId(userId);
-    setTotalPendapatanUser(totalPendapatan);
-    const ppn = totalPendapatan * 0.1;
-    setPpnAmount(ppn);
-    setFinalTotal(totalPendapatan - ppn);
-    setShowPPNModal(true);
-  };
-
-  const confirmPPN = async () => {
-    if (!selectedUserId) return;
-
-    const accountDocRef = doc(db, "revenue", selectedUserId);
-    const accountDoc = await getDoc(accountDocRef);
-
-    if (accountDoc.exists()) {
-      const currentData = accountDoc.data();
-      const newTotal = currentData.totalPendapatan - ppnAmount;
-      await updateDoc(accountDocRef, {
-        totalPendapatan: newTotal,
-      });
-
-      setRevenues((prev) =>
-        prev.map((revenue) =>
-          revenue.id === selectedUserId
-            ? { ...revenue, totalPendapatan: newTotal }
-            : revenue
-        )
-      );
-
-      console.log("PPN applied successfully: new total is", newTotal);
-      setShowPPNModal(false);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   return (
-    <div className="min-h-screen font-poppins dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-20">
+    <div className="min-h-screen font-poppins dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 text-neutral-20">
       <HeaderSidebar
         isSidebarOpen={isSidebarOpen}
         toggleSidebar={setIsSidebarOpen}
@@ -154,12 +133,16 @@ function AdminUserRevenue() {
         } sm:translate-x-0`}
         aria-label="Sidebar"
       >
-        <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100">
+        <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
           <NavigationItem />
         </div>
       </aside>
 
-      <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 min-h-screen pt-24">
+      <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 min-h-screen pt-24">
+        <div className="breadcrumbs text-sm mt-1 mb-10">
+          <Breadcrumbs />
+        </div>
+
         <h1 className="text-2xl font-semibold mb-6">
           Daftar Pengguna dan Pendapatan
         </h1>
@@ -175,89 +158,89 @@ function AdminUserRevenue() {
             <h2 className="text-xl font-semibold mb-4">
               Total Pendapatan: Rp. {totalRevenue.toLocaleString()}
             </h2>
-            <table className="min-w-full bg-white border rounded-lg">
-              <thead>
-                <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                  <th className="py-3 px-6 text-left">Username</th>
-                  <th className="py-3 px-6 text-left">Total Pendapatan</th>
-                  <th className="py-3 px-6 text-left">Aksi</th>
-                  <th className="py-3 px-6 text-left">PPN</th>{" "}
-                </tr>
-              </thead>
-              <tbody className="text-gray-600 text-sm font-light">
-                {revenues.length > 0 ? (
-                  revenues.map((revenue) => (
-                    <tr
-                      key={revenue.id}
-                      className="border-b border-gray-200 hover:bg-gray-100"
-                    >
-                      <td className="py-3 px-6">{revenue.username}</td>
-                      <td className="py-3 px-6">
-                        Rp. {revenue.totalPendapatan.toLocaleString()}
-                      </td>
-                      <td className="py-3 px-6">
-                        <button
-                          onClick={() => handleWithdraw(revenue.id, 50000)}
-                          className={`bg-blue-500 text-white px-4 py-1 rounded ${
-                            revenue.totalPendapatan < 50000
-                              ? "opacity-50 cursor-not-allowed"
-                              : ""
-                          }`}
-                          disabled={revenue.totalPendapatan < 50000}
-                        >
-                          Riset
-                        </button>
-                      </td>
-                      <td className="py-3 px-6">
-                        <button
-                          onClick={() =>
-                            handlePPNClick(revenue.id, revenue.totalPendapatan)
-                          }
-                          className="bg-yellow-500 text-white px-4 py-1 rounded"
-                        >
-                          PPN
-                        </button>
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white border rounded-lg">
+                <thead>
+                  <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                    <th className="py-3 px-6 text-left">Username</th>
+                    <th className="py-3 px-6 text-left">Total Pendapatan</th>
+                    <th className="py-3 px-6 text-left">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-600 text-sm font-light">
+                  {revenues.length > 0 ? (
+                    revenues.map((revenue) => (
+                      <React.Fragment key={revenue.id}>
+                        <tr className="border-b border-gray-200 hover:bg-gray-100">
+                          <td
+                            className="py-3 px-6 cursor-pointer"
+                            onClick={() => toggleDropdown(revenue.id)}
+                          >
+                            {revenue.username}{" "}
+                            {dropdownOpen[revenue.id] ? "▲" : "▼"}
+                          </td>
+                          <td className="py-3 px-6">
+                            Rp. {revenue.totalPendapatan.toLocaleString()}
+                          </td>
+                          <td className="py-3 px-6">
+                            <button
+                              onClick={() => handleWithdraw(revenue.id, 50000)}
+                              className={`bg-blue-500 text-white px-4 py-1 rounded ${
+                                revenue.totalPendapatan < 50000
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : ""
+                              }`}
+                              disabled={revenue.totalPendapatan < 50000}
+                            >
+                              Accept
+                            </button>
+                          </td>
+                        </tr>
+
+                        {dropdownOpen[revenue.id] && (
+                          <tr>
+                            <td
+                              colSpan="3"
+                              className="bg-gray-100 text-left p-4"
+                            >
+                              <h3 className="font-semibold">Detail Rekening</h3>
+                              {accountDetails[revenue.id] ? (
+                                <>
+                                  <p>
+                                    Nama Rekening:{" "}
+                                    {accountDetails[revenue.id]
+                                      .namaPemilikRekening || "Tidak Diketahui"}
+                                  </p>
+                                  <p>
+                                    Nomor Rekening:{" "}
+                                    {accountDetails[revenue.id].nomorRekening ||
+                                      "Tidak Diketahui"}
+                                  </p>
+                                  <p>
+                                    Nama Bank:{" "}
+                                    {accountDetails[revenue.id].namaBank ||
+                                      "Tidak Diketahui"}
+                                  </p>
+                                </>
+                              ) : (
+                                <p>Data rekening belum tersedia.</p>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="3" className="py-3 px-6 text-center">
+                        Tidak ada data pendapatan yang tersedia.
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="4" className="py-3 px-6 text-center">
-                      Tidak ada data pendapatan yang tersedia.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </>
-        )}
-
-        {/* Modal PPN */}
-        {showPPNModal && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white rounded-lg p-6 w-96">
-              <h2 className="text-lg font-semibold mb-4">Konfirmasi PPN</h2>
-              <p>
-                Total Pendapatan: Rp. {totalPendapatanUser.toLocaleString()}
-              </p>
-              <p>PPN (10%): Rp. {ppnAmount.toLocaleString()}</p>
-              <p>Total Setelah PPN: Rp. {finalTotal.toLocaleString()}</p>
-              <div className="flex justify-end mt-4">
-                <button
-                  onClick={confirmPPN}
-                  className="bg-green-500 text-white px-4 py-2 rounded mr-2"
-                >
-                  Ya, lakukan pemotongan
-                </button>
-                <button
-                  onClick={() => setShowPPNModal(false)}
-                  className="bg-red-500 text-white px-4 py-2 rounded"
-                >
-                  Batal
-                </button>
-              </div>
+                  )}
+                </tbody>
+              </table>
             </div>
-          </div>
+          </>
         )}
       </div>
     </div>

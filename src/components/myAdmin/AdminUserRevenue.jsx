@@ -6,6 +6,7 @@ import {
   getDoc,
   getFirestore,
   updateDoc,
+  addDoc,
 } from "firebase/firestore";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
@@ -20,6 +21,9 @@ function AdminUserRevenue() {
   const [error, setError] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState({});
   const [accountDetails, setAccountDetails] = useState({});
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedRevenue, setSelectedRevenue] = useState(null);
+
   const toggleDropdown = async (userId) => {
     setDropdownOpen((prev) => ({
       ...prev,
@@ -84,13 +88,15 @@ function AdminUserRevenue() {
     }
   };
 
-  const handleWithdraw = async (userId) => {
-    const revenueData = revenues.find((revenue) => revenue.id === userId);
-    if (!revenueData) {
-      console.error("Data pendapatan tidak ditemukan untuk pengguna ini.");
-      return;
-    }
+  const handleWithdraw = (revenue) => {
+    setSelectedRevenue(revenue);
+    setModalOpen(true);
+  };
 
+  const confirmWithdraw = async () => {
+    if (!selectedRevenue) return;
+
+    const revenueData = selectedRevenue;
     const amountToWithdraw = revenueData.totalPendapatan;
 
     if (amountToWithdraw < 50000) {
@@ -98,8 +104,10 @@ function AdminUserRevenue() {
       return;
     }
 
+    const amountAfterFee = amountToWithdraw * 0.9; // Hitung jumlah setelah potongan 10%
+
     try {
-      const revenueDocRef = doc(db, "revenue", userId);
+      const revenueDocRef = doc(db, "revenue", revenueData.id);
       const currentData = await getDoc(revenueDocRef);
 
       if (currentData.exists()) {
@@ -110,10 +118,18 @@ function AdminUserRevenue() {
           totalPendapatan: newTotal,
         });
 
+        // Simpan data penarikan ke koleksi withdrawals dengan ID unik
+        await addDoc(collection(db, "withdrawals"), {
+          amount: amountAfterFee, // Simpan jumlah setelah potongan
+          createdAt: new Date(),
+          sellerId: revenueData.id,
+          status: "Berhasil",
+        });
+
         // Perbarui data yang ditampilkan
         setRevenues((prev) =>
           prev.map((revenue) =>
-            revenue.id === userId
+            revenue.id === revenueData.id
               ? { ...revenue, totalPendapatan: newTotal }
               : revenue
           )
@@ -123,6 +139,9 @@ function AdminUserRevenue() {
       }
     } catch (error) {
       console.error("Error processing withdrawal:", error);
+    } finally {
+      setModalOpen(false);
+      setSelectedRevenue(null);
     }
   };
 
@@ -186,7 +205,7 @@ function AdminUserRevenue() {
                         </td>
                         <td className="py-3 px-6">
                           <button
-                            onClick={() => handleWithdraw(revenue.id)}
+                            onClick={() => handleWithdraw(revenue)}
                             className={`bg-blue-500 text-white px-4 py-1 rounded ${
                               revenue.totalPendapatan < 50000
                                 ? "opacity-50 cursor-not-allowed"
@@ -237,6 +256,43 @@ function AdminUserRevenue() {
               </tbody>
             </table>
           </>
+        )}
+
+        {/* Modal untuk konfirmasi penarikan */}
+        {modalOpen && selectedRevenue && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white p-6 rounded shadow-lg">
+              <h2 className="text-lg font-semibold mb-4">
+                Konfirmasi Penarikan
+              </h2>
+              <p>
+                Total Pendapatan: Rp.{" "}
+                {selectedRevenue.totalPendapatan.toLocaleString()}
+              </p>
+              <p>
+                Potongan 10%: Rp.{" "}
+                {(selectedRevenue.totalPendapatan * 0.1).toLocaleString()}
+              </p>
+              <p className="font-bold">
+                Jumlah yang Diterima: Rp.{" "}
+                {(selectedRevenue.totalPendapatan * 0.9).toLocaleString()}
+              </p>
+              <div className="mt-4 flex justify-end">
+                <button
+                  onClick={confirmWithdraw}
+                  className="bg-blue-500 text-white px-4 py-2 rounded mr-2"
+                >
+                  Ya, Cairkan Dana
+                </button>
+                <button
+                  onClick={() => setModalOpen(false)}
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
+                >
+                  Batal
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

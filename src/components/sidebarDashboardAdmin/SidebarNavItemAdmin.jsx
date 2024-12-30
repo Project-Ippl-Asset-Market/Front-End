@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 
+
 const SidebarNavItem = ({ item }) => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
@@ -16,8 +17,8 @@ const SidebarNavItem = ({ item }) => {
   );
   const isOpenDropdown = isOpen || isChildActive;
 
-  const itemClass = `font-poppins flex items-center w-full p-2 text-neutral-10 font-semibold rounded-r-full hover:text-primary-100 hover:font-semibold hover:rounded-lg dark:text-primary-100 hover:bg-secondary-40 dark:hover:bg-secondary-40 ${
-    isActive ? "bg-secondary-40 dark:bg-secondary-40" : ""
+  const itemClass = `font-poppins flex items-center w-full p-2 text-neutral-10 font-semibold rounded-r-full hover:rounded-r-full hover:text-primary-100 hover:font-semibold hover:rounded-lg dark:text-primary-100 hover:bg-secondary-40 dark:hover:bg-secondary-40 ${
+    isActive ? "bg-secondary-40 text-primary-100 dark:bg-secondary-40" : ""
   }`;
 
   const toggleDropdown = () => setIsOpen(!isOpen);
@@ -41,7 +42,7 @@ const SidebarNavItem = ({ item }) => {
                   <Link
                     to={child.href || "#"}
                     className={`font-poppins flex items-center w-full p-2 text-neutral-10 font-semibold rounded-r-full hover:text-primary-100 hover:font-semibold hover:rounded-lg dark:text-primary-100 hover:bg-secondary-40 dark:hover:bg-secondary-40 ${
-                      isChildActive ? "bg-secondary-40" : ""
+                      isChildActive ? "bg-secondary-40 text-primary-100" : ""
                     }`}>
                     {child.icon}
                     <span className="ml-3">{child.label}</span>

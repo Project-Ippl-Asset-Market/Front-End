@@ -36,25 +36,25 @@ function HeaderWebUser() {
       } else {
         setUser(null);
         setUsername("");
-        setCartCount(0);
+        // setCartCount(0);
       }
     });
 
     // Fetch Cart Count
-    const fetchCartCount = async () => {
-      if (user) {
-        const cartCollection = collection(db, "cartAssets");
-        // Create a query to filter by user UID
-        const q = query(cartCollection, where("userId", "==", user.uid));
-        const cartSnapshot = await getDocs(q);
+    // const fetchCartCount = async () => {
+    //   if (user) {
+    //     const cartCollection = collection(db, "cartAssets");
+    //     // Create a query to filter by user UID
+    //     const q = query(cartCollection, where("userId", "==", user.uid));
+    //     const cartSnapshot = await getDocs(q);
 
-        // Set the cartCount based on the size of the cartSnapshot
-        setCartCount(cartSnapshot.size);
-      }
-    };
+    //     // Set the cartCount based on the size of the cartSnapshot
+    //     setCartCount(cartSnapshot.size);
+    //   }
+    // };
 
     // Fetch cart count whenever the user changes
-    fetchCartCount();
+    // fetchCartCount();
 
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
@@ -88,17 +88,17 @@ function HeaderWebUser() {
   };
 
   const getPhotoURLFromToken = () => {
-    const token = localStorage.getItem("authToken");  
-    if (!token) return null;  
+    const token = localStorage.getItem("authToken");
+    if (!token) return null;
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));  
-      return payload.image || payload.profileImageUrl || null; 
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.image || payload.profileImageUrl || null;
     } catch (error) {
       console.error("Error decoding token:", error);
-      return null;  
+      return null;
     }
   };
-  
+
 
   return (
     <div className="h-36 sm:h-0 md:h-0 lg:h-0 xl:h-0 2xl:h-0 ">
@@ -138,11 +138,11 @@ function HeaderWebUser() {
                 alt="icon cart"
                 className="w-[24px] h-[24px]"
               />
-              {cartCount > 0 && (
+              {/* {cartCount > 0 && (
                 <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                   {cartCount}
                 </span>
-              )}
+              )} */}
               <label>Cart</label>
             </Link>
           </div>
@@ -190,11 +190,10 @@ function HeaderWebUser() {
                                     />
                                   )}
                                   <span
-                                    className={`text-[13px] font-semibold transition-colors duration-100${
-                                      darkMode
-                                        ? "text-neutral-100"
-                                        : "text-neutral-800"
-                                    }`}>
+                                    className={`text-[13px] font-semibold transition-colors duration-100${darkMode
+                                      ? "text-neutral-100"
+                                      : "text-neutral-800"
+                                      }`}>
                                     {darkMode ? "Light Mode" : "Dark Mode"}
                                   </span>
                                 </div>
@@ -225,12 +224,12 @@ function HeaderWebUser() {
                     id="dropdownDefaultButton"
                     data-dropdown-toggle="dropdown"
                     className="btn btn-ghost btn-circle avatar mx-2 w-14 h-14 rounded-full -ml-3">
-                   <div className="w-14 h-14 p-3 rounded-full overflow-hidden bg-neutral-80 flex items-center justify-center text-secondary-40 font-bold text-2xl mx-auto ">
+                    <div className="w-14 h-14 p-3 rounded-full overflow-hidden bg-neutral-80 flex items-center justify-center text-secondary-40 font-bold text-2xl mx-auto ">
                       {user ? (
-                        user.image || user.profileImageUrl || getPhotoURLFromToken() ? ( 
+                        user.image || user.profileImageUrl || getPhotoURLFromToken() ? (
                           <img
                             alt="Avatar"
-                            src={user.image || user.profileImageUrl || getPhotoURLFromToken()} 
+                            src={user.image || user.profileImageUrl || getPhotoURLFromToken()}
                             className="w-full h-full object-cover rounded-full"
                           />
                         ) : (

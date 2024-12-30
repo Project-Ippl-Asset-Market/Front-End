@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-// eslint-disable-next-line no-unused-vars
+ 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
@@ -108,11 +108,10 @@ function ManageUsers() {
     try {
       const auth = getAuth();
       const token = await auth.currentUser.getIdToken(true);
-
       const apiBaseUrl =
-      window.location.hostname === "localhost"
-        ? "http://localhost:3000"
-        : "https://pixelstore-be.up.railway.app";
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://pixelstore-be.up.railway.app";
       const response = await axios.delete(
         `${apiBaseUrl}/api/users/${id}`,
         {

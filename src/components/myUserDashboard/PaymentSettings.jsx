@@ -3,6 +3,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
+import Breadcrumbs from "../breadcrumbs/Breadcrumbs";
 
 function AccountSettings() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -11,6 +12,7 @@ function AccountSettings() {
   const [namaPemilikRekening, setNamaPemilikRekening] = useState("");
   const [currentUserId, setCurrentUserId] = useState(null);
   const [saveStatus, setSaveStatus] = useState("");
+  const [isChanged, setIsChanged] = useState(false); 
   const auth = getAuth();
   const db = getFirestore();
 
@@ -23,7 +25,7 @@ function AccountSettings() {
       if (user) {
         setCurrentUserId(user.uid);
 
-        // Ambil data pengguna dari koleksi aturBayaran
+        
         const userDocRef = doc(db, "aturBayaran", user.uid);
         const userDoc = await getDoc(userDocRef);
 
@@ -45,13 +47,18 @@ function AccountSettings() {
     return () => unsubscribe();
   }, [auth, db]);
 
+  const handleInputChange = (setter) => (e) => {
+    setter(e.target.value);
+    setIsChanged(true); 
+  };
+
   const handleSave = async () => {
     if (!currentUserId) {
       console.error("User ID tidak ditemukan.");
       return;
     }
 
-    const userDocRef = doc(db, "aturBayaran", currentUserId); // Menyimpan informasi ke koleksi aturBayaran
+    const userDocRef = doc(db, "aturBayaran", currentUserId); 
     try {
       await setDoc(
         userDocRef,
@@ -59,23 +66,24 @@ function AccountSettings() {
           nomorRekening,
           namaBank,
           namaPemilikRekening,
-          userId: currentUserId, // Menyimpan userId di dokumen
+          userId: currentUserId, 
         },
         { merge: true }
-      ); // Menggunakan merge agar field lain tidak hilang
+      ); 
       setSaveStatus("Pengaturan akun berhasil disimpan.");
+      setIsChanged(false); 
     } catch (error) {
       console.error("Error saat menyimpan pengaturan akun:", error);
       setSaveStatus("Gagal menyimpan pengaturan akun.");
     }
 
-    // Reset status simpan setelah beberapa detik
-    setTimeout(() => setSaveStatus(""), 3000);
+    
+    setTimeout(() => setSaveStatus(""), 5000);
   };
 
   return (
     <>
-      <div className="min-h-screen font-poppins dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-20">
+      <div className="min-h-screen font-poppins dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 text-neutral-20">
         <HeaderSidebar
           isSidebarOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}
@@ -88,15 +96,18 @@ function AccountSettings() {
           } sm:translate-x-0`}
           aria-label="Sidebar"
         >
-          <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
+          <div className="min-h-screen px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
             <NavigationItem />
           </div>
         </aside>
 
-        <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 min-h-screen pt-24">
+        <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 min-h-screen pt-24">
+          <div className="breadcrumbs text-sm mt-1 mb-10">
+            <Breadcrumbs />
+          </div>
           <h1 className="text-2xl font-semibold mb-6">Pengaturan Rekening</h1>
 
-          {/* Menampilkan status simpan */}
+          
           {saveStatus && <p className="text-green-500 mb-4">{saveStatus}</p>}
 
           <form
@@ -113,7 +124,7 @@ function AccountSettings() {
               type="text"
               id="account-owner-name"
               value={namaPemilikRekening}
-              onChange={(e) => setNamaPemilikRekening(e.target.value)}
+              onChange={handleInputChange(setNamaPemilikRekening)}
               required
               className="mb-4 w-full p-2 border rounded"
             />
@@ -125,7 +136,7 @@ function AccountSettings() {
               type="text"
               id="account-number"
               value={nomorRekening}
-              onChange={(e) => setNomorRekening(e.target.value)}
+              onChange={handleInputChange(setNomorRekening)}
               required
               className="mb-4 w-full p-2 border rounded"
             />
@@ -136,7 +147,7 @@ function AccountSettings() {
             <select
               id="bank-name"
               value={namaBank}
-              onChange={(e) => setNamaBank(e.target.value)}
+              onChange={handleInputChange(setNamaBank)}
               required
               className="mb-4 w-full p-2 border rounded"
             >
@@ -146,14 +157,17 @@ function AccountSettings() {
               <option value="Bank Niaga">Bank Niaga</option>
               <option value="Bank Central Asia">Bank Central Asia</option>
               <option value="Bank CIMB Niaga">Bank CIMB Niaga</option>
-              {/* Tambahkan lebih banyak bank sesuai kebutuhan */}
+              
             </select>
 
             <div className="flex justify-end">
               <button
                 type="button"
                 onClick={handleSave}
-                className="mr-2 bg-green-500 text-white px-4 py-2 rounded"
+                disabled={!isChanged} 
+                className={`mr-2 ${
+                  isChanged ? "bg-green-500" : "bg-gray-400"
+                } text-white px-4 py-2 rounded`}
               >
                 Simpan
               </button>

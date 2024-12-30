@@ -33,7 +33,7 @@ const DropdownMenu = ({ onCategorySelect }) => {
     "All Category": [{ name: "See all" }],
     "3D": [
       { name: "Animations" },
-      { name: "3D Character" },
+      { name: " 3D Character" },
       { name: "3D Environment" },
       { name: "3D GUI" },
       { name: "Props" },
@@ -67,9 +67,7 @@ const DropdownMenu = ({ onCategorySelect }) => {
           onClick={() => setIsOpen(!isOpen)}>
           Tampil berdasarkan Category
           <svg
-            className={`w-4 h-4 transition-transform ${
-              isOpen ? "rotate-180" : ""
-            }`}
+            className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 10 6">
@@ -125,7 +123,7 @@ const DropdownMenu = ({ onCategorySelect }) => {
                   {dropdownItems[category].map(({ name }) => (
                     <button
                       key={name}
-                      className="block py-2 p-2  hover:bg-secondary-40 hover:text-primary-100 transition duration-200 w-full text-left"
+                      className="block py-2 p-2 hover:bg-secondary-40 hover:text-primary-100 transition rounded-md duration-200 w-full text-left"
                       onClick={() => handleClick(category, name)}>
                       {name}
                     </button>
@@ -156,7 +154,6 @@ export function AssetGame() {
   const [fetchMessage, setFetchMessage] = useState("");
   const navigate = useNavigate();
 
-  // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -169,8 +166,6 @@ export function AssetGame() {
 
     return () => unsubscribe();
   }, []);
-
-  // Menangani pengambilan aset yang telah dibeli
   useEffect(() => {
     const fetchUserPurchasedAssets = async () => {
       if (!currentUserId) return;
@@ -205,8 +200,7 @@ export function AssetGame() {
     try {
       const promises = collectionsFetch.map((collectionName) => {
         let q;
-
-        if (selectedSubCategory && selectedSubCategory != "See all") {
+        if (selectedSubCategory && selectedSubCategory !== "See all") {
           q = query(
             collection(db, collectionName),
             where("category", "==", selectedSubCategory)
@@ -230,19 +224,14 @@ export function AssetGame() {
         }));
         return [...accumulator, ...docsData];
       }, []);
-
-      const filteredAssets = allAssets
-        .flat()
-        .filter((asset) => asset.price > 0);
+      const filteredAssets = allAssets.filter((asset) => asset.price > 0);
 
       filteredAssets.sort((a, b) => (b.likeAsset || 0) - (a.likeAsset || 0));
-
       if (filteredAssets.length === 0) {
         setFetchMessage("Asset Tidak Tersedia!");
       } else {
         setFetchMessage("");
       }
-
       setAssetsData(filteredAssets);
     } catch (error) {
       console.error("Error fetching assets: ", error);
@@ -296,7 +285,7 @@ export function AssetGame() {
     if (isProcessingLike) return;
 
     if (!currentUserId) {
-      setAlertLikes("Anda perlu login untuk menyukai Asset ini");
+      setAlertLikes("Login untuk menyukai Asset ini");
       setTimeout(() => {
         setAlertLikes(false);
       }, 3000);
@@ -388,12 +377,12 @@ export function AssetGame() {
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
-        thumbnailGame:
+        image:
           selectedasset.audioThumbnail ||
           selectedasset.asset2DThumbnail ||
           selectedasset.asset3DThumbnail ||
           "No Thumbnail Asset",
-        image:
+        datasetFile:
           selectedasset.asset2DFile ||
           selectedasset.asset3DFile ||
           selectedasset.uploadUrlAudio ||
@@ -479,12 +468,12 @@ export function AssetGame() {
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
-        thumbnailGame:
+        image:
           audioThumbnail ||
           asset2DThumbnail ||
           asset3DThumbnail ||
           "No Thumbnail Asset",
-        image: asset2DFile || asset3DFile || uploadUrlAudio || "No Image Asset",
+        datasetFile: asset2DFile || asset3DFile || uploadUrlAudio || "No Image Asset",
         name: audioName || asset2DName || asset3DName || "No Name Asset",
         description: selectedasset.description,
         price: selectedasset.price,
@@ -557,13 +546,18 @@ export function AssetGame() {
   };
 
   const handleNext = () => {
-    setCurrentIndexModal((prevIndex) =>
-      selectedasset.asset2DThumbnail &&
-      prevIndex < selectedasset.asset2DThumbnail.length - 1
-        ? prevIndex + 1
-        : prevIndex
-    );
+    setCurrentIndexModal((prevIndex) => {
+      if (
+        (selectedasset.asset2DThumbnail && prevIndex < selectedasset.asset2DThumbnail.length - 1) ||
+        (selectedasset.asset3DThumbnail && prevIndex < selectedasset.asset3DThumbnail.length - 1) ||
+        (selectedasset.audioThumbnail && prevIndex < selectedasset.audioThumbnail.length - 1)
+      ) {
+        return prevIndex + 1;
+      }
+      return prevIndex;
+    });
   };
+
 
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
@@ -584,11 +578,12 @@ export function AssetGame() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[44%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[193px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[44%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[253px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[200px] md:w-[200px] lg:w-[100px] xl:w-[600px] 2xl:w-[1000px] -mt-16 sm:mt-0 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[800px] 2xl:w-[1200px]"
-              onSubmit={(e) => e.preventDefault()}>
+              className=" mx-auto  w-[570px] sm:w-[200px] md:w-[400px] lg:w-[500px] xl:w-[700px] 2xl:w-[1000px]"
+              onSubmit={(e) => e.preventDefault()}
+            >
               <div className="relative">
                 <input
                   type="search"
@@ -605,7 +600,8 @@ export function AssetGame() {
                     aria-hidden="true"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
-                    viewBox="0 0 18 18">
+                    viewBox="0 0 18 18"
+                  >
                     <path
                       stroke="currentColor"
                       strokeLinecap="round"
@@ -621,14 +617,6 @@ export function AssetGame() {
               </div>
             </form>
           </div>
-        </div>
-      </div>
-
-      <div className="relative flex items-center justify-center">
-        <div className="text-center">
-          {searchResults.length === 0 && searchTerm && (
-            <p className="text-black text-[20px]">No assets found</p>
-          )}
         </div>
       </div>
 
@@ -652,25 +640,39 @@ export function AssetGame() {
       )}
 
       <div className="w-full p-6 mx-auto">
-        {alertLikes && (
-          <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
-            <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
-            <span className="block sm:inline">{alertLikes}</span>
-            <button
-              className="absolute top-0 bottom-0 right-0 px-4 py-3"
-              onClick={() => setAlertLikes(false)}>
-              <svg
-                className="fill-current h-6 w-6 text-red-500"
-                role="button"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20">
-                <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
-              </svg>
-            </button>
+        {/* validasi like button */}
+        <div className="fixed top-12 left-1/2 transform -translate-x-1/2 w-full max-w-md p-4 z-50">
+          {alertLikes && (
+            <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
+              <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
+              <span className="block sm:inline">{alertLikes}</span>
+              <button
+                className="absolute top-0 bottom-0 right-0 px-4 py-3"
+                onClick={() => setAlertLikes(false)}
+              >
+                <svg
+                  className="fill-current h-6 w-6 text-red-500"
+                  role="button"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="relative mt-56 flex items-center justify-center">
+          <div className="text-center">
+            {searchResults.length === 0 && searchTerm && (
+              <p className="text-black text-[20px]">No assets found</p>
+            )}
           </div>
-        )}
+        </div>
+
       </div>
-      <div className="pt-2  w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen mt-40 ">
+      <div className="pt-2  w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen -mt-20 lg:-mt-16 ">
         <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {fetchMessage && <p>{fetchMessage}</p>}
           {filteredAssetsData.map((data) => {
@@ -697,7 +699,7 @@ export function AssetGame() {
                   className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]">
                   <div className="w-full h-[150px] relative">
                     {Array.isArray(data.audioThumbnails) &&
-                    data.audioThumbnails.length > 0 ? (
+                      data.audioThumbnails.length > 0 ? (
                       <div className="flex space-x-2 overflow-x-auto">
                         {data.audioThumbnails.map((thumbnailUrl, index) => (
                           <img
@@ -713,7 +715,7 @@ export function AssetGame() {
                             onDragStart={(e) => e.preventDefault()}
                             className="h-full w-auto object-cover rounded-t-[10px] border-none"
                           />
-                          
+
                         ))}
                       </div>
                     ) : (
@@ -734,9 +736,9 @@ export function AssetGame() {
                           e.target.src = CustomImage;
                         }}
                         onContextMenu={(e) => e.preventDefault()}
-                      draggable={false}
-                      onDragStart={(e) => e.preventDefault()}
-                        className="h-full w-full object-cover rounded-t-[10px] border-none"
+                        draggable={false}
+                        onDragStart={(e) => e.preventDefault()}
+                        className="h-full w-full object-fill rounded-t-[10px] border-none"
                       />
                     )}
                     {isPurchased && (
@@ -756,15 +758,15 @@ export function AssetGame() {
                         "Nama Tidak Tersedia"
                       ).length > 14
                         ? (
-                            data.audioName ||
-                            data.asset2DName ||
-                            data.asset3DName ||
-                            "Nama Tidak Tersedia"
-                          ).substring(0, 14) + "..."
-                        : data.audioName ||
+                          data.audioName ||
                           data.asset2DName ||
                           data.asset3DName ||
-                          "Nama Tidak Tersedia"}
+                          "Nama Tidak Tersedia"
+                        ).substring(0, 14) + "..."
+                        : data.audioName ||
+                        data.asset2DName ||
+                        data.asset3DName ||
+                        "Nama Tidak Tersedia"}
                     </p>
 
                     <h4 className="text-neutral-20 text-xs sm:text-sm lg:text-base dark:text-primary-100">
@@ -798,11 +800,11 @@ export function AssetGame() {
       </div>
 
       {modalIsOpen && selectedasset && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50  ">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-full sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] mx-4 flex flex-col relative">
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[90%] sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] sm:h-[400px] md:h-[500px] lg:h-[550px] xl:h-[600px] 2xl:h-[750px] max-w-3xl mx-auto flex flex-col relative">
             <button
-              className="absolute top-1 right-4 text-gray-600 dark:text-gray-400 text-4xl"
+              className="absolute top-1 right-4 z-50 text-gray-600 dark:text-gray-400 text-4xl"
               onClick={closeModal}>
               &times;
             </button>
@@ -810,30 +812,41 @@ export function AssetGame() {
             <div
               onClick={() => openModal(selectedasset)}
               className="flex flex-col items-center justify-center w-full">
-              <div className="w-full h-[200px] sm:h-[250px] md:h-[300px] lg:h-[350px] xl:h-[400px] 2xl:h-[450px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
-                {Array.isArray(selectedasset.asset2DThumbnail) &&
-                selectedasset.asset2DThumbnail.length > 0 ? (
-                  <div className="flex space-x-2 overflow-x-auto">
-                    {selectedasset.asset2DThumbnail.map((thumbnail, index) => (
-                      <img
-                        key={index}
-                        src={
-                          selectedasset.asset2DThumbnail[currentIndexModal] ||
-                          selectedasset.asset2DFile ||
-                          CustomImage
-                        }
-                        alt={`Thumbnail ${index + 1}`}
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = CustomImage;
-                        }}
-                        onContextMenu={(e) => e.preventDefault()}
-                      draggable={false}
-                      onDragStart={(e) => e.preventDefault()}
-                        className="h-full w-auto object-cover rounded-t-[10px] border-none"
-                      />
-                    ))}
-                  </div>
+              <div className="w-full h-auto max-h-[300px] relative overflow-hidden rounded-md flex items-center justify-center">
+                {Array.isArray(selectedasset.asset2DThumbnail) && selectedasset.asset2DThumbnail.length > 0 ? (
+                  <img
+                    src={
+                      selectedasset.asset2DThumbnail[currentIndexModal] ||
+                      selectedasset.asset2DFile ||
+                      CustomImage
+                    }
+                    alt={`Thumbnail ${currentIndexModal + 1}`}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = CustomImage;
+                    }}
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
+                    className="h-full max-h-[400px] w-full p-8 max-w-[400px object-fill rounded-t-[10px] border-none"
+                  />
+                ) : Array.isArray(selectedasset.asset3DThumbnail) && selectedasset.asset3DThumbnail.length > 0 ? (
+                  <img
+                    src={
+                      selectedasset.asset3DThumbnail[currentIndexModal] ||
+                      selectedasset.asset3DFile ||
+                      CustomImage
+                    }
+                    alt={`Thumbnail ${currentIndexModal + 1}`}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = CustomImage;
+                    }}
+                    onContextMenu={(e) => e.preventDefault()}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
+                    className="h-full max-h-[400px] w-full max-w-[400px object-fill rounded-t-[10px] border-none"
+                  />
                 ) : (
                   <img
                     src={
@@ -841,40 +854,40 @@ export function AssetGame() {
                       selectedasset.assetAudiosImage ||
                       selectedasset.asset2DImage ||
                       selectedasset.asset3DImage ||
-                      (selectedasset.assetAudiosImage ? CustomImage : null) ||
-                      selectedasset.asset2DThumbnail ||
-                      selectedasset.asset3DThumbnail ||
                       CustomImage
                     }
                     onContextMenu={(e) => e.preventDefault()}
-                      draggable={false}
-                      onDragStart={(e) => e.preventDefault()}
+                    draggable={false}
+                    onDragStart={(e) => e.preventDefault()}
                     alt="Asset Image"
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = CustomImage;
                     }}
-                    className="h-full w-full object-cover rounded-t-[10px] border-none"
+                    className="h-full w-full object-fill rounded-t-[10px] border-none"
                   />
                 )}
 
-                {Array.isArray(selectedasset.asset2DThumbnail) &&
-                  selectedasset.asset2DThumbnail.length > 1 && (
-                    <>
-                      <button
-                        onClick={handlePrevious}
-                        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-transparent text-white text-[30px] sm:text-[40px] rounded-full p-2">
-                        &#8592;
-                      </button>
-                      <button
-                        onClick={handleNext}
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent text-white text-[30px] sm:text-[40px] rounded-full p-2">
-                        &#8594;
-                      </button>
-                    </>
-                  )}
+                {(Array.isArray(selectedasset.asset2DThumbnail) && selectedasset.asset2DThumbnail.length > 1) ||
+                  (Array.isArray(selectedasset.asset3DThumbnail) && selectedasset.asset3DThumbnail.length > 1) ? (
+                  <>
+                    <button
+                      onClick={handlePrevious}
+                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-transparent text-secondary-40 text-[40px] sm:text-[50px] rounded-full p-4 sm:p-6">
+                      &#8592;
+                    </button>
+                    <button
+                      onClick={handleNext}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent text-secondary-40 text-[40px] sm:text-[50px] rounded-full p-4 sm:p-6">
+                      &#8594;
+                    </button>
+                  </>
+
+                ) : null}
               </div>
+
             </div>
+
             <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
               <p className="text-md mb-2 dark:text-primary-100 mt-4 text-start font-semibold">
                 {selectedasset.audioName ||
@@ -887,9 +900,7 @@ export function AssetGame() {
                 Kategori: {selectedasset.category}
               </p>
               <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
-                {/* {selectedasset.price === 0
-                  ? "Free"
-                  : `Rp. ${selectedasset.price.toLocaleString("id-ID")}`} */}
+
 
                 {selectedasset.price > 0
                   ? `Rp ${selectedasset.price.toLocaleString("id-ID")}`
@@ -904,11 +915,10 @@ export function AssetGame() {
                   <>
                     <button
                       onClick={() => handleAddToCart(selectedasset)}
-                      className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${
-                        purchasedAssets.has(selectedasset.id)
-                          ? "bg-gray-400 pointer-events-none"
-                          : "bg-neutral-60"
-                      }`}
+                      className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${purchasedAssets.has(selectedasset.id)
+                        ? "bg-gray-400 pointer-events-none"
+                        : "bg-neutral-60"
+                        }`}
                       disabled={purchasedAssets.has(selectedasset.id)}>
                       <img
                         src={IconCart}
@@ -919,11 +929,10 @@ export function AssetGame() {
                     </button>
                     <button
                       onClick={() => handleBuyNow(selectedasset)}
-                      className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 mt-2 rounded-md ${
-                        purchasedAssets.has(selectedasset.id)
-                          ? "bg-gray-400 pointer-events-none"
-                          : "bg-secondary-40"
-                      }`}
+                      className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 mt-2 rounded-md ${purchasedAssets.has(selectedasset.id)
+                        ? "bg-gray-400 pointer-events-none"
+                        : "bg-secondary-40"
+                        }`}
                       disabled={purchasedAssets.has(selectedasset.id)}>
                       <img
                         src={IconDollar}

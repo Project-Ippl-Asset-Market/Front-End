@@ -25,6 +25,9 @@ import { AiOutlineInfoCircle } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 const myAssetsCollectionRef = collection(db, "myAssets");
 import Footer from "../../website/Footer/Footer";
+import JSZip from "jszip";
+import * as XLSX from "xlsx";
+import Papa from "papaparse";
 
 export function HomePage() {
   const [AssetsData, setAssetsData] = useState([]);
@@ -172,7 +175,7 @@ export function HomePage() {
     if (isProcessingLike) return;
 
     if (!currentUserId) {
-      setAlertLikes("Anda perlu login untuk menyukai Asset ini");
+      setAlertLikes("Login untuk menyukai Asset ini");
       setTimeout(() => {
         setAlertLikes(false);
       }, 3000);
@@ -268,7 +271,7 @@ export function HomePage() {
           selectedasset.asset3DThumbnail ||
           selectedasset.datasetThumbnail ||
           "No Thumbnail Asset",
-        image:
+        Image:
           selectedasset.asset2DFile ||
           selectedasset.asset3DFile ||
           selectedasset.uploadUrlAudio ||
@@ -461,6 +464,7 @@ export function HomePage() {
 
   // Menutup modal
   const closeModal = () => {
+    handlePrevious();
     setModalIsOpen(false);
     setselectedasset(null);
   };
@@ -481,6 +485,229 @@ export function HomePage() {
     );
   });
 
+  const handleDownload = async (selectedasset) => {
+    if (!currentUserId) {
+      alert("Anda perlu login untuk membeli asset");
+      navigate("/login");
+      return;
+    }
+
+    // Check if the user is trying to buy their own asset
+    if (selectedasset.userId === currentUserId) {
+      alert("Anda tidak dapat membeli aset yang Anda jual sendiri.");
+      return;
+    }
+
+    // Check if the asset has already been purchased
+    if (purchasedAssets.has(selectedasset.id)) {
+      alert("Anda sudah menyimpan asset ini.");
+      return;
+    }
+
+    const buyAssetsRef = doc(db, "buyAssets", selectedasset.id.trim());
+    const buyAssetsSnapshot = await getDoc(buyAssetsRef);
+
+    if (buyAssetsSnapshot.exists()) {
+      alert("Asset sudah ada dalam My Asset.");
+      return;
+    }
+
+    try {
+      await setDoc(buyAssetsRef, {
+        userId: currentUserId,
+        assetId: selectedasset.id,
+        name: selectedasset.audioName || selectedasset.asset2DName || selectedasset.asset3DName || selectedasset.datasetName || selectedasset.imageName || selectedasset.videoName || "Nama Tidak Tersedia",
+        description: selectedasset.description,
+        price: selectedasset.price,
+        category: selectedasset.category,
+        assetOwnerID: selectedasset.userId,
+        image: selectedasset.uploadUrlAudio || selectedasset.datasetFile
+          || selectedasset.asset2DFile || selectedasset.asset3DFile || selectedasset.uploadUrlImage || selectedasset.uploadUrlVideo
+          || "File Tidak Tersedia",
+        thumbnailGame: selectedasset.audioThumbnail || selectedasset.datasetThumbnail
+          || selectedasset.asset2DThumbnail
+          || selectedasset.asset3DThumbnail || "File Tidak Tersedia",
+          createdAt: new Date(),
+      });
+
+      alert("Asset berhasil ditambahkan ke My Asset!");
+    } catch (error) {
+      console.error("Error adding to buyAssets: ", error);
+      alert("Terjadi kesalahan saat menyimpan aset. Silakan coba lagi.");
+    }
+  };
+
+
+  const [currentIndexModal, setCurrentIndexModal] = useState(0);
+
+  const handlePrevious = () => {
+    setCurrentIndexModal((prevIndex) =>
+      prevIndex > 0 ? prevIndex - 1 : prevIndex
+    );
+  };
+
+  const handleNext = () => {
+    setCurrentIndexModal((prevIndex) => {
+      if (
+        (selectedasset.asset2DThumbnail && prevIndex < selectedasset.asset2DThumbnail.length - 1) ||
+        (selectedasset.asset3DThumbnail && prevIndex < selectedasset.asset3DThumbnail.length - 1) ||
+        (selectedasset.audioThumbnail && prevIndex < selectedasset.audioThumbnail.length - 1) ||
+        (selectedasset.datasetThumbnail && prevIndex < selectedasset.datasetThumbnail.length - 1)
+      ) {
+        return prevIndex + 1;
+      }
+      return prevIndex;
+    });
+  };
+
+  const [loading, setLoading] = useState(false);
+
+  const fetchAndProcessZip = async () => {
+    setLoading(true);
+    try {
+      const firebaseFileUrl = selectedasset.datasetFile;
+
+      const apiBaseUrl =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://pixelstore-be.up.railway.app";
+      const proxyUrl = `${apiBaseUrl}/api/proxy-file?url=${encodeURIComponent(
+        firebaseFileUrl
+      )}`;
+      const response = await fetch(proxyUrl);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file: ${response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      const zip = await JSZip.loadAsync(blob);
+
+      const contents = [];
+      const previews = [];
+      const images = [];
+
+      // Membuka tab baru di awal untuk menampilkan preview
+      const newTab = window.open("", "_blank");
+      if (!newTab) {
+        throw new Error(
+          "Unable to open new tab. Check your browser's popup blocker."
+        );
+      }
+      newTab.document.write("<h1>Preview Dataset Contents</h1>");
+
+      await Promise.all(
+        Object.keys(zip.files).map(async (relativePath) => {
+          const file = zip.files[relativePath];
+          contents.push(relativePath);
+
+          if (!file.dir) {
+            const fileData = await file.async("blob");
+
+            // Gambar
+            if (
+              relativePath.match(/\.(png|jpg|jpeg|gif|bmp)$/i) &&
+              images.length < 20
+            ) {
+              const imageUrl = URL.createObjectURL(fileData);
+              images.push({ name: relativePath, url: imageUrl });
+
+              // Tambahkan gambar ke tab baru
+              if (!newTab.document.getElementById("image-container")) {
+                newTab.document.write(`
+                  <div id="image-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;"></div>
+                `);
+              }
+
+              const imageContainer =
+                newTab.document.getElementById("image-container");
+              const imageDiv = newTab.document.createElement("div");
+              imageDiv.style.textAlign = "center";
+
+              imageDiv.innerHTML = `
+                <h3 style="margin-bottom: 10px; font-size: 14px;">${relativePath}</h3>
+                <img src="${imageUrl}" alt="${relativePath}" style="max-width: 150px; max-height: 150px; object-fit: cover; margin: 10px;" />
+              `;
+              imageContainer.appendChild(imageDiv);
+            }
+            // CSV
+            else if (relativePath.endsWith(".csv")) {
+              const text = await file.async("text");
+              const csvData = Papa.parse(text, { header: true }).data;
+              previews.push({ name: relativePath, data: csvData });
+
+              // Tambahkan tabel CSV ke tab baru
+              newTab.document.write(`<h3>${relativePath}</h3>`);
+              newTab.document.write(
+                "<table border='1' style='border-collapse: collapse; width: 100%;'>"
+              );
+
+              if (csvData.length > 0) {
+                newTab.document.write("<thead><tr>");
+                Object.keys(csvData[0])
+                  .slice(0, 10)
+                  .forEach((key) => newTab.document.write(`<th>${key}</th>`));
+                newTab.document.write("</tr></thead>");
+              }
+
+              newTab.document.write("<tbody>");
+              csvData.slice(0, 10).forEach((row) => {
+                newTab.document.write("<tr>");
+                Object.values(row)
+                  .slice(0, 10)
+                  .forEach((value) =>
+                    newTab.document.write(`<td>${value}</td>`)
+                  );
+                newTab.document.write("</tr>");
+              });
+              newTab.document.write("</tbody></table>");
+            }
+            // XLSX
+            else if (relativePath.endsWith(".xlsx")) {
+              const arrayBuffer = await file.async("arraybuffer");
+              const workbook = XLSX.read(arrayBuffer, { type: "array" });
+              const sheetName = workbook.SheetNames[0];
+              const sheetData = XLSX.utils.sheet_to_json(
+                workbook.Sheets[sheetName]
+              );
+              previews.push({ name: relativePath, data: sheetData });
+
+              // Tambahkan tabel XLSX ke tab baru
+              newTab.document.write(`<h3>${relativePath}</h3>`);
+              newTab.document.write(
+                "<table border='1' style='border-collapse: collapse; width: 100%;'>"
+              );
+
+              if (sheetData.length > 0) {
+                newTab.document.write("<thead><tr>");
+                Object.keys(sheetData[0])
+                  .slice(0, 10)
+                  .forEach((key) => newTab.document.write(`<th>${key}</th>`));
+                newTab.document.write("</tr></thead>");
+              }
+
+              newTab.document.write("<tbody>");
+              sheetData.slice(0, 10).forEach((row) => {
+                newTab.document.write("<tr>");
+                Object.values(row)
+                  .slice(0, 10)
+                  .forEach((value) =>
+                    newTab.document.write(`<td>${value}</td>`)
+                  );
+                newTab.document.write("</tr>");
+              });
+              newTab.document.write("</tbody></table>");
+            }
+          }
+        })
+      );
+    } catch (error) {
+      console.error("Error fetching or processing ZIP:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
       <div className="w-full shadow-lg bg-primary-100 dark:text-primary-100 relative z-40 ">
@@ -500,11 +727,12 @@ export function HomePage() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[44%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[253px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px] -mt-16 sm:mt-0 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[44%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[253px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[200px] md:w-[200px] lg:w-[100px] xl:w-[600px] 2xl:w-[1000px] -mt-16 sm:mt-0 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[800px] 2xl:w-[1200px]"
-              onSubmit={(e) => e.preventDefault()}>
+              className=" mx-auto  w-[570px] sm:w-[200px] md:w-[400px] lg:w-[500px] xl:w-[700px] 2xl:w-[1000px]"
+              onSubmit={(e) => e.preventDefault()}
+            >
               <div className="relative">
                 <div className="relative">
                   <input
@@ -522,7 +750,8 @@ export function HomePage() {
                       aria-hidden="true"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
-                      viewBox="0 0 18 18">
+                      viewBox="0 0 18 18"
+                    >
                       <path
                         stroke="currentColor"
                         strokeLinecap="round"
@@ -544,49 +773,58 @@ export function HomePage() {
 
       {/* Menampilkan pesan validasi jika ada */}
       {validationMessage && (
-        <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
+        <div className=" alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
           <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
           <span className="block sm:inline">{validationMessage}</span>
           <button
             className="absolute top-0 bottom-0 right-0 px-4 py-3"
-            onClick={() => setValidationMessage("")}>
+            onClick={() => setValidationMessage("")}
+          >
             <svg
               className="fill-current h-6 w-6 text-red-500"
               role="button"
               xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20">
+              viewBox="0 0 20 20"
+            >
               <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
             </svg>
           </button>
         </div>
       )}
-      <div className="relative  flex items-center justify-center">
-        <div className="text-center">
-          {searchResults.length === 0 && searchTerm && (
-            <p className="text-black text-[20px] mt-40">No assets found</p>
-          )}
-        </div>
-      </div>
-      <div className="w-full p-4 mx-auto ">
+
+      {/* validasi like button */}
+      <div className="fixed top-12 left-1/2 transform -translate-x-1/2 w-full max-w-md p-4 z-50">
         {alertLikes && (
           <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
             <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
             <span className="block sm:inline">{alertLikes}</span>
             <button
               className="absolute top-0 bottom-0 right-0 px-4 py-3"
-              onClick={() => setAlertLikes(false)}>
+              onClick={() => setAlertLikes(false)}
+            >
               <svg
                 className="fill-current h-6 w-6 text-red-500"
                 role="button"
                 xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20">
+                viewBox="0 0 20 20"
+              >
                 <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
               </svg>
             </button>
           </div>
         )}
       </div>
-      <div className="pt-4 mt-40 sm:mt-40 md:mt-44 lg:mt-72 xl:mt-72 2xl:mt-96  w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14   ">
+
+
+      <div className="relative  flex items-center justify-center">
+        <div className="text-center">
+          {searchResults.length === 0 && searchTerm && (
+            <p className="text-black text-[20px] mt-64 lg:mt-96">No assets found</p>
+          )}
+        </div>
+      </div>
+
+      <div className="pt-4 mt-44 sm:mt-40 md:mt-44 lg:mt-72 xl:mt-72 2xl:mt-96  w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14   ">
         <div className=" mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 place-items-center gap-4 sm:gap-2 md:gap-4 lg:gap-10 xl:gap-10 2xl:gap-12">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
@@ -613,10 +851,12 @@ export function HomePage() {
             return (
               <div
                 key={data.id}
-                className=" w-[140px] h-[240px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[190px] md:h-[280px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg">
+                className=" w-[140px] h-[240px] ssm:w-[165px] ssm:h-[230px] sm:w-[180px] sm:h-[250px] md:w-[190px] md:h-[280px] lg:w-[210px] lg:h-[300px] rounded-[10px] shadow-md bg-primary-100 dark:bg-neutral-25 group flex flex-col justify-between transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-lg"
+              >
                 <div
                   onClick={() => openModal(data)}
-                  className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[120px] lg:w-full lg:h-[183px] xl:h-full 2xl:h-full ">
+                  className="w-full h-[73px] ssm:w-full ssm:h-[98px] sm:w-full sm:h-[113px] md:w-full md:h-[120px] lg:w-full lg:h-[183px] xl:h-full 2xl:h-full "
+                >
                   <div className="w-full h-[150px] relative">
                     {data.uploadUrlVideo ? (
                       <video
@@ -698,7 +938,8 @@ export function HomePage() {
                       onClick={() =>
                         handleLikeClick(data.id, likesAsset, collectionsToFetch)
                       }
-                      className="flex items-center">
+                      className="flex items-center"
+                    >
                       {likedByCurrentUser ? (
                         <FaHeart className="text-red-600" />
                       ) : (
@@ -727,7 +968,8 @@ export function HomePage() {
           <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-full sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] mx-4 flex flex-col relative">
             <button
               className="absolute top-1 right-4 text-gray-600 dark:text-gray-400 text-4xl"
-              onClick={closeModal}>
+              onClick={closeModal}
+            >
               &times;
             </button>
 
@@ -735,56 +977,154 @@ export function HomePage() {
             <div
               onClick={() => openModal(selectedasset)}
               className="flex flex-col items-center justify-center w-full">
-              <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
-                {selectedasset.uploadUrlVideo ? (
-                  <video
-                    src={selectedasset.uploadUrlVideo}
-                    alt="Asset Video"
-                    className="w-full h-full object-cover"
-                    controls
-                    controlsList="nodownload"
-                    onContextMenu={(e) => e.preventDefault()}
-                  />
-                ) : Array.isArray(selectedasset.datasetThumbnail) &&
-                  selectedasset.datasetThumbnail.length > 0 ? (
-                  <img
-                    src={selectedasset.datasetThumbnail[0] || CustomImage}
-                    alt="Thumbnail 1"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = CustomImage;
-                    }}
-                    onContextMenu={(e) => e.preventDefault()}
-                  />
-                ) : (
-                  <img
-                    src={
-                      selectedasset.image ||
-                      selectedasset.uploadUrlImage ||
-                      selectedasset.datasetImage ||
-                      selectedasset.assetAudiosImage ||
-                      selectedasset.asset2DImage ||
-                      selectedasset.asset3DImage ||
-                      (selectedasset.video ? CustomImage : null) ||
-                      selectedasset.datasetThumbnail ||
-                      selectedasset.asset2DThumbnail ||
-                      selectedasset.asset3DThumbnail ||
-                      selectedasset.audioThumbnail ||
-                      CustomImage
-                    }
-                    alt="Asset Image"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = CustomImage;
-                    }}
-                    onContextMenu={(e) => e.preventDefault()}
-                    draggable={false}
-                    onDragStart={(e) => e.preventDefault()}
-                    className="w-full h-full object-cover"
-                  />
-                )}
+              <div className="w-full h-auto max-h-[300px] relative overflow-hidden rounded-md flex items-center justify-center p-4">
+                {
+                  selectedasset.uploadUrlVideo ? (
+                    <video
+                      src={selectedasset.uploadUrlVideo}
+                      alt="Asset Video"
+                      className="w-full h-full object-cover"
+                      controls
+                      controlsList="nodownload"
+                      onContextMenu={(e) => e.preventDefault()}
+                    />
+                  ) : Array.isArray(selectedasset.asset2DThumbnail) && selectedasset.asset2DThumbnail.length > 0 ? (
+                    <img
+                      src={
+                        selectedasset.asset2DThumbnail[currentIndexModal] ||
+                        selectedasset.asset2DFile ||
+                        CustomImage
+                      }
+                      alt={`Thumbnail ${currentIndexModal + 1}`}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CustomImage;
+                      }}
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                      className="h-full max-h-[400px] w-full p-8 max-w-[400px object-fill rounded-t-[10px] border-none"
+                    />
+                  ) : Array.isArray(selectedasset.asset3DThumbnail) && selectedasset.asset3DThumbnail.length > 0 ? (
+                    <img
+                      src={
+                        selectedasset.asset3DThumbnail[currentIndexModal] ||
+                        selectedasset.asset3DFile ||
+                        CustomImage
+                      }
+                      alt={`Thumbnail ${currentIndexModal + 1}`}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CustomImage;
+                      }}
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                      className="h-full max-h-[400px] w-full max-w-[400px object-fill rounded-t-[10px] border-none"
+                    />
+                  ) : Array.isArray(selectedasset.audioThumbnail) && selectedasset.audioThumbnail.length > 0 ? (
+                    <img
+                      src={
+                        selectedasset.audioThumbnail[currentIndexModal] ||
+                        selectedasset.asset3DFile ||
+                        CustomImage
+                      }
+                      alt={`Thumbnail ${currentIndexModal + 1}`}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CustomImage;
+                      }}
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                      className="h-full max-h-[400px] w-full max-w-[400px object-fill rounded-t-[10px] border-none"
+                    />
+                  ) : Array.isArray(selectedasset.datasetThumbnail) && selectedasset.datasetThumbnail.length > 0 ? (
+                    <img
+                      src={
+                        selectedasset.datasetThumbnail[currentIndexModal] ||
+                        selectedasset.asset3DFile ||
+                        CustomImage
+                      }
+                      alt={`Thumbnail ${currentIndexModal + 1}`}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CustomImage;
+                      }}
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                      className="h-full max-h-[400px] w-full max-w-[400px object-fill rounded-t-[10px] border-none"
+                    />
+                  ) : (
+                    <img
+                      src={
+                        selectedasset.image ||
+                        selectedasset.uploadUrlImage ||
+                        selectedasset.uploadUrlAudio ||
+                        selectedasset.datasetImage ||
+                        selectedasset.assetAudiosImage ||
+                        selectedasset.asset2DImage ||
+                        selectedasset.asset3DImage ||
+                        (selectedasset.video ? CustomImage : null) ||
+                        selectedasset.datasetThumbnail ||
+                        selectedasset.asset3DThumbnail ||
+                        selectedasset.audioThumbnail ||
+                        CustomImage
+                      }
+                      alt="Asset Image"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = CustomImage;
+                      }}
+                      onContextMenu={(e) => e.preventDefault()}
+                      draggable={false}
+                      onDragStart={(e) => e.preventDefault()}
+                      className="w-full h-full object-cover"
+                    />
+                  )
+                }
+
+                {(Array.isArray(selectedasset.asset2DThumbnail) && selectedasset.asset2DThumbnail.length > 1) ||
+                  (Array.isArray(selectedasset.asset3DThumbnail) && selectedasset.asset3DThumbnail.length > 1) ||
+                  (Array.isArray(selectedasset.datasetThumbnail) && selectedasset.datasetThumbnail.length > 1) ? (
+                  <>
+                    <button
+                      onClick={handlePrevious}
+                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-transparent text-secondary-40 text-[40px] sm:text-[50px] rounded-full p-4 sm:p-6">
+                      &#8592;
+                    </button>
+                    <button
+                      onClick={handleNext}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent text-secondary-40 text-[40px] sm:text-[50px] rounded-full p-4 sm:p-6">
+                      &#8594;
+                    </button>
+                  </>
+
+                ) : null}
               </div>
+            </div>
+
+            <div className="p-1 pt-2 flex flex-col items-center justify-center">
+              {selectedasset.datasetFile ? (
+                <>
+                  <button
+                    onClick={fetchAndProcessZip}
+                    disabled={loading}
+                    className={`px-6 py-2 text-white font-semibold rounded-lg 
+                      ${
+                        loading
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-blue-500 hover:bg-blue-600"
+                      } 
+                      transition duration-200 ease-in-out`}
+                  >
+                    {loading ? "Loading..." : "Load Preview"}
+                  </button>
+                </>
+              ) : ( 
+                <></>
+              )}
             </div>
 
             <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
@@ -818,12 +1158,12 @@ export function HomePage() {
                   <>
                     <button
                       onClick={() => handleAddToCart(selectedasset)}
-                      className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${
-                        purchasedAssets.has(selectedasset.id)
-                          ? "bg-gray-400 pointer-events-none"
-                          : "bg-neutral-60"
-                      }`}
-                      disabled={purchasedAssets.has(selectedasset.id)}>
+                      className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${purchasedAssets.has(selectedasset.id)
+                        ? "bg-gray-400 pointer-events-none"
+                        : "bg-neutral-60"
+                        }`}
+                      disabled={purchasedAssets.has(selectedasset.id)}
+                    >
                       <img
                         src={IconCart}
                         alt="Cart Icon"
@@ -831,42 +1171,32 @@ export function HomePage() {
                       />
                       <p>Tambahkan Ke Keranjang</p>
                     </button>
-                    {/* <button
-                      onClick={() => handleBuyNow(selectedasset)}
-                      className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 mt-2 rounded-md ${
-                        purchasedAssets.has(selectedasset.id)
-                          ? "bg-gray-400 pointer-events-none"
-                          : "bg-secondary-40"
-                      }`}
-                      disabled={purchasedAssets.has(selectedasset.id)}>
-                      <img
-                        src={IconDollar}
-                        alt="Cart Icon"
-                        className="w-6 h-6 mr-2 -ml-24"
-                      />
-                      <p>Beli Sekarang</p>
-                    </button> */}
                   </>
                 ) : (
-                  <button className="flex p-2 text-center items-center justify-center bg-neutral-60 text-primary-100 w-48 sm:w-[250px] md:w-[250px] lg:w-[300px] xl:w-[300px] 2xl:w-[300px] h-10 mt-32 rounded-md">
+                  <button
+                    onClick={() => handleDownload(selectedasset)} // Call handleDownload on click
+                    className={`flex p-2 text-center items-center justify-center bg-neutral-60 text-primary-100 w-full h-10 rounded-md hover:bg-neutral-70 transition duration-200`}
+                  >
                     <img
                       src={IconDownload}
                       alt="Download Icon"
                       className="w-6 h-6 mr-2"
                     />
-                    <p>Download</p>
+                    <p>Simpan Ke MyAsset Anda!</p> {/* Change the text to indicate purchase */}
                   </button>
+
                 )}
               </div>
             </div>
           </div>
         </div>
-      )}
+      )
+      }
 
       <div className="mt-[700px]">
         <Footer />
       </div>
-    </div>
+    </div >
   );
 }
 

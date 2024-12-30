@@ -38,7 +38,6 @@ const AutoLogout = () => {
       auth
         .signOut()
         .then(() => {
-          // Hapus semua data dari localStorage
           localStorage.removeItem("lastActivity");
           localStorage.removeItem("userRole");
           localStorage.removeItem("authToken");

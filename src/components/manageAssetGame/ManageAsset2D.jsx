@@ -17,7 +17,7 @@ import {
   where,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import { deleteObject, ref } from "firebase/storage";
+import { deleteObject, ref, getDownloadURL } from "firebase/storage";
 import CustomImage from "../../assets/assetmanage/Iconrarzip.svg";
 
 function ManageAsset2D() {
@@ -29,34 +29,16 @@ function ManageAsset2D() {
   const [alertSuccess, setAlertSuccess] = useState(false);
   const [alertError, setAlertError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredAssets, setFilteredAssets] = useState([]);
-
   const [currentPage, setCurrentPage] = useState(1);
-  const asset2DPerPage = 5;
+  const datasetPerPage = 5;
 
-  useEffect(() => {
-    if (searchTerm) {
-      setFilteredAssets(
-        assets.filter(
-          (asset) =>
-            asset.asset2DName &&
-            asset.asset2DName.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
-    } else {
-      setFilteredAssets(assets);
-    }
-
-    setCurrentPage(1);
-  }, [searchTerm, assets]);
-
-  const totalPages = Math.ceil(filteredAssets.length / asset2DPerPage);
-  const startIndex = (currentPage - 1) * asset2DPerPage;
+  const totalPages = Math.ceil(filteredAssets.length / datasetPerPage);
+  const startIndex = (currentPage - 1) * datasetPerPage;
   const currentDatasets = filteredAssets.slice(
     startIndex,
-    startIndex + asset2DPerPage
+    startIndex + datasetPerPage
   );
 
   const toggleSidebar = () => {
@@ -138,7 +120,6 @@ function ManageAsset2D() {
             data.createdAt?.toDate().toLocaleString("id-ID", {
               year: "numeric",
               month: "long",
-              day: "numeric",
             }) || "N/A";
 
           items.push({
@@ -164,6 +145,7 @@ function ManageAsset2D() {
           const superadminIds = superadminSnapshot.docs.map(
             (doc) => doc.data().uid
           );
+
           const filteredItems = items.filter(
             (item) => !superadminIds.includes(item.userId)
           );
@@ -184,6 +166,21 @@ function ManageAsset2D() {
     }
   }, [user, role]);
 
+  useEffect(() => {
+    if (searchTerm) {
+      setFilteredAssets(
+        assets.filter(
+          (asset) =>
+            asset.asset2DName &&
+            asset.asset2DName.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    } else {
+      setFilteredAssets(assets);
+    }
+    setCurrentPage(1);
+  }, [searchTerm, assets]);
+
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this asset 2D?"
@@ -191,15 +188,27 @@ function ManageAsset2D() {
     if (confirmDelete) {
       try {
         const FileRef = ref(storage, `images-asset-2d/asset2D-${id}.zip`);
-        await deleteObject(FileRef);
         const ImageRef = ref(storage, `images-asset-2d/asset2D-${id}.jpg`);
-        await deleteObject(ImageRef);
-        await deleteDoc(doc(db, "assetImage2D", id));
-        setAssets(assets.filter((asset) => asset.id !== id));
-        setAlertSuccess(true);
+
+        // Check if the zip file exists
+        try {
+          await getDownloadURL(FileRef);
+          await deleteObject(FileRef); // Delete the zip file
+        } catch (error) {
+          if (error.code === 'storage/object-not-found') {
+            console.log("Zip file does not exist, skipping deletion.");
+          } else {
+            throw error; // Rethrow if it's a different error
+          }
+        }
+
+
+        await deleteDoc(doc(db, "assetImage2D", id)); // Delete the document from Firestore
+        setAssets(assets.filter((asset) => asset.id !== id)); // Update local state
+        setAlertSuccess(true); // Show success alert
       } catch (error) {
         console.error("Error deleting dataset: ", error);
-        setAlertError(true);
+        setAlertError(true); // Show error alert
       }
     } else {
       alert("Deletion cancelled");
@@ -222,11 +231,11 @@ function ManageAsset2D() {
         <aside
           ref={sidebarRef}
           id="sidebar-multi-level-sidebar"
-          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } sm:translate-x-0`}
-          aria-label="Sidebar">
-          <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
+          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } sm:translate-x-0`}
+          aria-label="Sidebar"
+        >
+          <div className="min-h-screen px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
             <NavigationItem />
           </div>
         </aside>
@@ -236,13 +245,15 @@ function ManageAsset2D() {
           <div
             role="alert"
             className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] text-[10px] sm:text-[10px] p-4 bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-            onClick={closeAlert}>
+            onClick={closeAlert}
+          >
             <div className="flex items-center justify-center space-x-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 shrink-0 stroke-current"
                 fill="none"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -250,7 +261,7 @@ function ManageAsset2D() {
                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span>Asset 2D berhasil dihapus.</span>
+              <span>Dataset berhasil dihapus.</span>
             </div>
           </div>
         )}
@@ -260,13 +271,15 @@ function ManageAsset2D() {
           <div
             role="alert"
             className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[340px] text-[10px] sm:text-[10px] p-4 bg-primary-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-            onClick={closeAlert}>
+            onClick={closeAlert}
+          >
             <div className="flex items-center justify-center space-x-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 shrink-0 stroke-current"
                 fill="none"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -274,14 +287,14 @@ function ManageAsset2D() {
                   d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span>Gagal menghapus asset 2D, silakan coba lagi</span>
+              <span>Gagal menghapus dataset, silakan coba lagi</span>
             </div>
           </div>
         )}
 
         {/* Isi Konten */}
-        <div className="p-8 sm:ml-[280px] h-full bg-primary-100 text-neutral-10 dark:bg-neutral-20 dark:text-neutral-10 min-h-screen pt-24">
-          <div className="breadcrumbs text-sm mt-1 mb-10">
+        <div className="p-4 sm:p-6 md:p-8 lg:p-14 xl:p-14 2xl:p-14 h-full bg-primary-100 text-neutral-10 dark:bg-neutral-20 dark:text-neutral-10 min-h-screen pt-24 sm:ml-64 md:ml-72 lg:ml-60 xl:ml-[270px] 2xl:ml-[270px] -mt-2 sm:mt-14 md:mt-14 lg:mt-10 xl:mt-10 2xl:mt-10">
+          <div className="breadcrumbs text-sm mt-1 mb-6">
             <Breadcrumb />
           </div>
 
@@ -291,7 +304,8 @@ function ManageAsset2D() {
               <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
                 <Link
                   to="/manage-asset-2D/add"
-                  className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
+                  className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]"
+                >
                   + Add Asset 2D
                 </Link>
               </div>
@@ -351,7 +365,8 @@ function ManageAsset2D() {
                   {currentDatasets.map((asset) => (
                     <tr
                       key={asset.id}
-                      className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
+                      className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9"
+                    >
                       <td className="px-6 py-4">
                         {asset.asset2DThumbnail ? (
                           <img
@@ -377,7 +392,8 @@ function ManageAsset2D() {
 
                       <th
                         scope="row"
-                        className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap">
+                        className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap"
+                      >
                         {asset.asset2DName}
                       </th>
                       <td className="px-6 py-4">{asset.category}</td>
@@ -410,7 +426,8 @@ function ManageAsset2D() {
             <button
               className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}>
+              disabled={currentPage === 1}
+            >
               «
             </button>
             <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
@@ -421,7 +438,8 @@ function ManageAsset2D() {
               onClick={() =>
                 setCurrentPage((prev) => Math.min(prev + 1, totalPages))
               }
-              disabled={currentPage === totalPages}>
+              disabled={currentPage === totalPages}
+            >
               »
             </button>
           </div>

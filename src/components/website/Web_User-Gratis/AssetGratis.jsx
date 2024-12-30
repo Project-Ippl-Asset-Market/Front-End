@@ -18,6 +18,9 @@ import CustomImage from "../../../assets/assetmanage/Iconrarzip.svg";
 import IconDownload from "../../../assets/icon/iconDownload/iconDownload.svg";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 import Footer from "../../website/Footer/Footer";
+import JSZip from "jszip";
+import * as XLSX from "xlsx";
+import Papa from "papaparse";
 
 export function AssetGratis() {
   const [AssetsData, setAssetsData] = useState([]);
@@ -122,7 +125,7 @@ export function AssetGratis() {
     if (isProcessingLike) return;
 
     if (!currentUserId) {
-      setAlertLikes("Anda perlu login untuk menyukai Asset ini");
+      setAlertLikes("Login untuk menyukai Asset ini");
       setTimeout(() => {
         setAlertLikes(false);
       }, 3000);
@@ -222,6 +225,7 @@ export function AssetGratis() {
   const filteredAssetsData = AssetsData.filter((asset) => {
     const datasetName =
       asset.assetAudiosName ||
+      asset.datasetName ||
       asset.audioName ||
       asset.imageName ||
       asset.asset2DName ||
@@ -233,6 +237,154 @@ export function AssetGratis() {
       datasetName.toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
+
+  const [loading, setLoading] = useState(false);
+
+  const fetchAndProcessZip = async () => {
+    setLoading(true);
+    try {
+      const firebaseFileUrl = selectedasset.datasetFile;
+
+      const apiBaseUrl =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://pixelstore-be.up.railway.app";
+      const proxyUrl = `${apiBaseUrl}/api/proxy-file?url=${encodeURIComponent(
+        firebaseFileUrl
+      )}`;
+      const response = await fetch(proxyUrl);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch file: ${response.statusText}`);
+      }
+
+      const blob = await response.blob();
+      const zip = await JSZip.loadAsync(blob);
+
+      const contents = [];
+      const previews = [];
+      const images = [];
+
+      // Membuka tab baru di awal untuk menampilkan preview
+      const newTab = window.open("", "_blank");
+      if (!newTab) {
+        throw new Error(
+          "Unable to open new tab. Check your browser's popup blocker."
+        );
+      }
+      newTab.document.write("<h1>Preview Dataset Contents</h1>");
+
+      await Promise.all(
+        Object.keys(zip.files).map(async (relativePath) => {
+          const file = zip.files[relativePath];
+          contents.push(relativePath);
+
+          if (!file.dir) {
+            const fileData = await file.async("blob");
+
+            // Gambar
+            if (
+              relativePath.match(/\.(png|jpg|jpeg|gif|bmp)$/i) &&
+              images.length < 20
+            ) {
+              const imageUrl = URL.createObjectURL(fileData);
+              images.push({ name: relativePath, url: imageUrl });
+
+              // Tambahkan gambar ke tab baru
+              if (!newTab.document.getElementById("image-container")) {
+                newTab.document.write(`
+                  <div id="image-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px;"></div>
+                `);
+              }
+
+              const imageContainer =
+                newTab.document.getElementById("image-container");
+              const imageDiv = newTab.document.createElement("div");
+              imageDiv.style.textAlign = "center";
+
+              imageDiv.innerHTML = `
+                <h3 style="margin-bottom: 10px; font-size: 14px;">${relativePath}</h3>
+                <img src="${imageUrl}" alt="${relativePath}" style="max-width: 150px; max-height: 150px; object-fit: cover; margin: 10px;" />
+              `;
+              imageContainer.appendChild(imageDiv);
+            }
+            // CSV
+            else if (relativePath.endsWith(".csv")) {
+              const text = await file.async("text");
+              const csvData = Papa.parse(text, { header: true }).data;
+              previews.push({ name: relativePath, data: csvData });
+
+              // Tambahkan tabel CSV ke tab baru
+              newTab.document.write(`<h3>${relativePath}</h3>`);
+              newTab.document.write(
+                "<table border='1' style='border-collapse: collapse; width: 100%;'>"
+              );
+
+              if (csvData.length > 0) {
+                newTab.document.write("<thead><tr>");
+                Object.keys(csvData[0])
+                  .slice(0, 10)
+                  .forEach((key) => newTab.document.write(`<th>${key}</th>`));
+                newTab.document.write("</tr></thead>");
+              }
+
+              newTab.document.write("<tbody>");
+              csvData.slice(0, 10).forEach((row) => {
+                newTab.document.write("<tr>");
+                Object.values(row)
+                  .slice(0, 10)
+                  .forEach((value) =>
+                    newTab.document.write(`<td>${value}</td>`)
+                  );
+                newTab.document.write("</tr>");
+              });
+              newTab.document.write("</tbody></table>");
+            }
+            // XLSX
+            else if (relativePath.endsWith(".xlsx")) {
+              const arrayBuffer = await file.async("arraybuffer");
+              const workbook = XLSX.read(arrayBuffer, { type: "array" });
+              const sheetName = workbook.SheetNames[0];
+              const sheetData = XLSX.utils.sheet_to_json(
+                workbook.Sheets[sheetName]
+              );
+              previews.push({ name: relativePath, data: sheetData });
+
+              // Tambahkan tabel XLSX ke tab baru
+              newTab.document.write(`<h3>${relativePath}</h3>`);
+              newTab.document.write(
+                "<table border='1' style='border-collapse: collapse; width: 100%;'>"
+              );
+
+              if (sheetData.length > 0) {
+                newTab.document.write("<thead><tr>");
+                Object.keys(sheetData[0])
+                  .slice(0, 10)
+                  .forEach((key) => newTab.document.write(`<th>${key}</th>`));
+                newTab.document.write("</tr></thead>");
+              }
+
+              newTab.document.write("<tbody>");
+              sheetData.slice(0, 10).forEach((row) => {
+                newTab.document.write("<tr>");
+                Object.values(row)
+                  .slice(0, 10)
+                  .forEach((value) =>
+                    newTab.document.write(`<td>${value}</td>`)
+                  );
+                newTab.document.write("</tr>");
+              });
+              newTab.document.write("</tbody></table>");
+            }
+          }
+        })
+      );
+    } catch (error) {
+      console.error("Error fetching or processing ZIP:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
@@ -246,11 +398,12 @@ export function AssetGratis() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[44%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[193px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[44%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[253px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[200px] md:w-[200px] lg:w-[100px] xl:w-[600px] 2xl:w-[1000px] -mt-16 sm:mt-0 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[800px] 2xl:w-[1200px]"
-              onSubmit={(e) => e.preventDefault()}>
+              className=" mx-auto  w-[570px] sm:w-[200px] md:w-[400px] lg:w-[500px] xl:w-[700px] 2xl:w-[1000px]"
+              onSubmit={(e) => e.preventDefault()}
+            >
               <div className="relative">
                 <input
                   type="search"
@@ -267,7 +420,8 @@ export function AssetGratis() {
                     aria-hidden="true"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
-                    viewBox="0 0 18 18">
+                    viewBox="0 0 18 18"
+                  >
                     <path
                       stroke="currentColor"
                       strokeLinecap="round"
@@ -287,35 +441,40 @@ export function AssetGratis() {
       </div>
 
       <div className="w-full p-12 mx-auto">
+        {/* validasi like button */}
+      <div className="fixed top-12 left-1/2 transform -translate-x-1/2 w-full max-w-md p-4 z-50">
         {alertLikes && (
           <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
             <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
             <span className="block sm:inline">{alertLikes}</span>
             <button
               className="absolute top-0 bottom-0 right-0 px-4 py-3"
-              onClick={() => setAlertLikes(false)}>
+              onClick={() => setAlertLikes(false)}
+            >
               <svg
                 className="fill-current h-6 w-6 text-red-500"
                 role="button"
                 xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20">
+                viewBox="0 0 20 20"
+              >
                 <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
               </svg>
             </button>
           </div>
         )}
+      </div>
 
-        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100 pt-[100px] -ml-10">
+        {/* <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100 pt-[100px] -ml-10">
           All Category
-        </h1>
+        </h1> */}
 
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center mt-32">
           {searchResults.length === 0 && searchTerm && (
             <p className="text-black text-[20px]">No assets found</p>
           )}
         </div>
       </div>
-      <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen ">
+      <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen mt-12">
         <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
@@ -350,7 +509,7 @@ export function AssetGratis() {
                       <video
                         src={data.uploadUrlVideo}
                         alt="Asset Video"
-                        className="h-full w-full object-cover rounded-t-[10px] border-none"
+                        className="h-full w-full object-fill rounded-t-[10px] border-none"
                         onContextMenu={(e) => e.preventDefault()}
                         controls
                         controlsList="nodownload"
@@ -359,7 +518,7 @@ export function AssetGratis() {
                       <img
                         src={
                           data.uploadUrlImage ||
-                          data.datasetImage ||
+                          data.datasetThumbnail ||
                           data.assetAudiosImage ||
                           data.asset2DImage ||
                           data.asset3DImage ||
@@ -375,7 +534,7 @@ export function AssetGratis() {
                           e.target.onerror = null;
                           e.target.src = CustomImage;
                         }}
-                        className="h-full w-full object-cover rounded-t-[10px] border-none"
+                        className="h-full w-full object-fill rounded-t-[10px] border-none"
                       />
                     )}
                   </div>
@@ -388,6 +547,7 @@ export function AssetGratis() {
                         data.audioName ||
                         data.datasetName ||
                         data.asset2DName ||
+                        data.asset3DName ||
                         data.imageName ||
                         data.videoName ||
                         "Nama Tidak Tersedia"
@@ -397,6 +557,7 @@ export function AssetGratis() {
                         data.audioName ||
                         data.datasetName ||
                         data.asset2DName ||
+                        data.asset3DName ||
                         data.imageName ||
                         data.videoName ||
                         "Nama Tidak Tersedia"
@@ -456,7 +617,7 @@ export function AssetGratis() {
                   <video
                     src={selectedasset.uploadUrlVideo}
                     alt="Asset Video"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-fill"
                     onContextMenu={(e) => e.preventDefault()}
                     controls
                     controlsList="nodownload"
@@ -482,10 +643,31 @@ export function AssetGratis() {
                       e.target.onerror = null;
                       e.target.src = CustomImage;
                     }}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-fill"
                   />
                 )}
               </div>
+            </div>
+            <div className="p-1 pt-2 flex flex-col items-center justify-center">
+              {selectedasset.datasetFile ? (
+                <>
+                  <button
+                    onClick={fetchAndProcessZip}
+                    disabled={loading}
+                    className={`px-6 py-2 text-white font-semibold rounded-lg 
+                      ${
+                        loading
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-blue-500 hover:bg-blue-600"
+                      } 
+                      transition duration-200 ease-in-out`}
+                  >
+                    {loading ? "Loading..." : "Load Preview"}
+                  </button>
+                </>
+              ) : ( 
+                <></>
+              )}
             </div>
             <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
               <h2 className="text-md mb-2 dark:text-primary-100 mt-4 text-start font-semibold">
@@ -494,6 +676,7 @@ export function AssetGratis() {
                   selectedasset.audioName ||
                   selectedasset.datasetName ||
                   selectedasset.asset2DName ||
+                  selectedasset.asset3DName ||
                   selectedasset.imageName ||
                   selectedasset.videoName ||
                   "No Name"}
@@ -526,13 +709,7 @@ export function AssetGratis() {
           </div>
         </div>
       )}
-      <div className="relative -mt-60 flex items-center justify-center">
-        <div className="text-center">
-          {searchResults.length === 0 && searchTerm && (
-            <p className="text-black text-[20px]">No assets found</p>
-          )}
-        </div>
-      </div>
+      
 
       <div className="mt-96">
         <Footer />

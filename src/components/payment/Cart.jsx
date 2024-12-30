@@ -109,7 +109,7 @@ const Cart = () => {
       setErrorMessage("Please select at least one item to proceed.");
       return;
     }
-
+  
     if (
       !customerInfo.fullName ||
       !customerInfo.email ||
@@ -118,11 +118,11 @@ const Cart = () => {
       setErrorMessage("Please fill out all customer information.");
       return;
     }
-
+  
     setIsLoading(true);
     setErrorMessage("");
     setSuccessMessage("");
-
+  
     try {
       const orderId = `order_${Date.now()}`;
       const assetDetails = selectedItems.map((item) => ({
@@ -146,10 +146,12 @@ const Cart = () => {
         assetOwnerID: item.assetOwnerID || "Asset Owner ID Not Available",
         size: item.size || item.resolution || "size & Resolution tidak ada",
       }));
+  
       const apiBaseUrl =
-      window.location.hostname === "localhost"
-        ? "http://localhost:3000"
-        : "https://pixelstore-be.up.railway.app";
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://pixelstore-be.up.railway.app";
+  
       const response = await axios.post(
         `${apiBaseUrl}/api/transactions/create-transaction`,
         {
@@ -164,31 +166,58 @@ const Cart = () => {
           },
         }
       );
-
+  
       const transactionData = response.data;
-
+  
       window.snap.pay(transactionData.token, {
         onSuccess: async (result) => {
           try {
-            await saveTransaction(
-              "Success",
-              orderId,
-              subtotal,
-              transactionData.token,
-              assetDetails
+            // Kirim token dan selectedItems ke backend untuk memeriksa status pembayaran
+            const assetDetails = selectedItems.map((item) => ({
+              assetId: item.assetId,
+              price: item.price,
+              name: item.name || "Item Name Not Available",
+              image:
+                item.image ||
+                item.Image_umum ||
+                item.video ||
+                item.assetImageGame ||
+                item.datasetThumbnail ||
+                item.audioThumbnail ||
+                "url tidak ada",
+              datasetFile: item.datasetFile || item.file || "tidak ada",
+              docId: item.id,
+              file: item.file,
+              userId: item.userId,
+              description: item.description || "No Description",
+              category: item.category || "Uncategorized",
+              assetOwnerID: item.assetOwnerID || "Asset Owner ID Not Available",
+              size: item.size || item.resolution || "size & Resolution tidak ada",
+            }));
+
+            const paymentStatusResponse = await axios.post(
+              `${apiBaseUrl}/api/transactions/payment-status`,
+              {
+                orderId,
+                assets: assetDetails,
+                selectedItems: selectedItems, // Kirim selectedItems yang akan dipindahkan
+              }
             );
-            await deletePurchasedAssets(selectedItems);
-            resetCustomerInfoAndCart();
-            setSuccessMessage("Transaction completed successfully.");
+  
+            if (paymentStatusResponse.data.status === "settlement") {
+              setSuccessMessage("Transaction completed successfully.");
+              resetCustomerInfoAndCart();
+            } else {
+              setErrorMessage("Payment not completed successfully.");
+            }
           } catch (saveError) {
             console.error("Error in transaction success handling:", saveError);
-            setErrorMessage(
-              "Transaction completed, but failed to move assets."
-            );
+            setErrorMessage("Payment successful, but failed to move assets.");
           }
         },
         onPending: async (result) => {
           try {
+            // Simpan transaksi dengan status "Pending"
             await saveTransaction(
               "Pending",
               orderId,
@@ -196,13 +225,14 @@ const Cart = () => {
               transactionData.token,
               assetDetails
             );
-            pollPaymentStatus(orderId);
+            pollPaymentStatus(orderId); // Polling status pembayaran jika status pending
           } catch (saveError) {
             console.error("Error saving pending transaction:", saveError);
           }
         },
         onError: function (result) {
           console.error("Payment error:", result);
+          setErrorMessage("Payment failed. Please try again.");
         },
       });
     } catch (error) {
@@ -212,6 +242,7 @@ const Cart = () => {
       setIsLoading(false);
     }
   };
+  
 
   const saveTransaction = async (
     status,
@@ -257,43 +288,73 @@ const Cart = () => {
 
   const moveAssetsToBuyAssets = async (assets) => {
     try {
-      const buyAssetsPromises = assets.map((asset) => {
+      if (!Array.isArray(assets) || assets.length === 0) {
+        console.error("Invalid assets array:", assets);
+        return;
+      }
+  
+      const buyAssetsPromises = assets.map(async (asset) => {
+        if (!asset.assetId) {
+          console.warn("Skipping asset without ID:", asset);
+          return; // Skip jika assetId tidak ada
+        }
+  
         const newAsset = {
           assetId: asset.assetId,
-          price: asset.price,
-          name: asset.name,
+          price: asset.price || 0,
+          name: asset.name || "No Name",
           image: asset.image || "url tidak ada",
-          datasetFile: asset.datasetFile || asset.file || "tidak ada",
-          docId: asset.docId,
-          userId: asset.userId,
+          datasetFile: asset.datasetFile || "tidak ada",
+          docId: asset.docId || "No Doc ID",
+          userId: asset.userId || "No User ID",
           description: asset.description || "No Description",
           category: asset.category || "Uncategorized",
           assetOwnerID: asset.assetOwnerID || "Asset Owner ID Not Available",
-          size: asset.size || asset.resolution || "size & Resolution tidak ada",
+          size: asset.size || "size tidak ada",
         };
-        return setDoc(
-          doc(collection(db, "buyAssets"), asset.assetId),
-          newAsset
-        );
+  
+        try {
+          await setDoc(doc(db, "buyAssets", asset.assetId), newAsset);
+          console.log(`Successfully moved asset with ID: ${asset.assetId}`);
+        } catch (error) {
+          console.error(`Error moving asset with ID: ${asset.assetId}`, error);
+        }
       });
-
+  
       await Promise.all(buyAssetsPromises);
+      console.log("All assets have been moved to buyAssets.");
     } catch (error) {
       console.error("Error moving assets to buyAssets:", error);
     }
   };
+  
+  
 
   const deletePurchasedAssets = async (selectedItems) => {
     try {
+      if (!Array.isArray(selectedItems) || selectedItems.length === 0) {
+        console.warn("No items to delete:", selectedItems);
+        return;
+      }
+  
       const deletePromises = selectedItems.map((item) => {
+        if (!item.id) {
+          console.warn("Skipping item without ID:", item);
+          return null;
+        }
         const itemDoc = doc(db, "cartAssets", item.id);
-        return deleteDoc(itemDoc);
+        return deleteDoc(itemDoc)
+          .then(() => console.log(`Deleted item with ID: ${item.id}`))
+          .catch((error) => console.error(`Error deleting item with ID: ${item.id}`, error));
       });
-      await Promise.all(deletePromises);
+  
+      await Promise.all(deletePromises.filter(Boolean)); // Pastikan hanya promise valid yang dijalankan
+      console.log("All selected items have been deleted from cartAssets.");
     } catch (error) {
       console.error("Error deleting purchased assets:", error);
     }
   };
+  
 
   const resetCustomerInfoAndCart = () => {
     setCustomerInfo({ fullName: "", email: "", phoneNumber: "" });
@@ -312,6 +373,7 @@ const Cart = () => {
         console.error("Polling timeout reached");
         return;
       }
+      
       const apiBaseUrl =
       window.location.hostname === "localhost"
         ? "http://localhost:3000"
@@ -412,19 +474,19 @@ const Cart = () => {
                   ) : (
                     <img
                       src={
+                        item.thumbnailGame?.[0] ||
+                        item.asset2DThumbnail?.[0] ||
+                        item.asset3DThumbnail?.[0] ||
+                        item.audioThumbnail ||
+                        item.datasetThumbnail ||
                         item.image ||
                         item.Image ||
                         item.Image_umum ||
                         item.uploadUrlImage ||
                         item.datasetImage ||
                         item.assetAudiosImage ||
-                        item.asset2DThumbnail?.[0] ||
                         item.asset2DImage ||
                         item.asset3DImage ||
-                        item.thumbnailGame?.[0] ||
-                        item.datasetThumbnail ||
-                        item.audioThumbnail ||
-                        item.datasetFile ||
                         CustomImage
                       }
                       alt="Asset"

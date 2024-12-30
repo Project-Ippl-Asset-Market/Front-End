@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
-// eslint-disable-next-line no-unused-vars
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { collection, query, where, getDocs } from "firebase/firestore";
@@ -16,18 +15,28 @@ function Login() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [modalMessage, setModalMessage] = useState(null);
   const [errorModal, setErrorModal] = useState("");
-
+  const [rememberMe, setRememberMe] = useState(false);
+  const navigate = useNavigate();
   const { saveUserRole } = useUserContext();
+
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("rememberedEmail");
+    if (storedEmail) {
+      setLoginEmail(storedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   const handleChange = (e) => {
     if (e.target.name === "email") {
       setLoginEmail(e.target.value);
     } else if (e.target.name === "password") {
       setLoginPassword(e.target.value);
+    } else if (e.target.name === "rememberMe") {
+      setRememberMe(e.target.checked);
     }
   };
 
@@ -35,24 +44,27 @@ function Login() {
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("email", "==", email));
     const querySnapshot = await getDocs(q);
-  
+
     if (!querySnapshot.empty) {
       const userDoc = querySnapshot.docs[0];
       return userDoc.data().role;
     }
     return null;
   };
-  
+
   const loginAction = async (e) => {
     e.preventDefault();
     setErrorModal("");
     setLoading(true);
-  
+
     try {
       const userCredential = await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
       const user = userCredential.user;
-  
-      const response = await fetch("http://localhost:3000/api/users/login", {
+      const apiBaseUrl =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://pixelstore-be.up.railway.app";
+      const response = await fetch(`${apiBaseUrl}/api/users/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -62,12 +74,18 @@ function Login() {
           password: loginPassword,
         }),
       });
-  
+
       const data = await response.json();
-  
+
       if (response.ok) {
         localStorage.setItem("authToken", data.token);
-        const adminRole = data.user.role;  
+        if (rememberMe) {
+          localStorage.setItem("rememberedEmail", loginEmail);
+        } else {
+          localStorage.removeItem("rememberedEmail");
+        }
+
+        const adminRole = data.user.role;
         if (adminRole === "superadmin") {
           setModalMessage("Login sebagai Superadmin berhasil!");
           saveUserRole("superadmin");
@@ -99,8 +117,7 @@ function Login() {
       setLoading(false);
     }
   };
-  
-  
+
   return (
     <div className="bg-neutral-20 min-h-screen h-full flex justify-center items-center font-poppins">
       <div className="flex flex-col lg:flex-row w-full max-w-[1920px] lg:h-[768px] h-auto min-h-screen">
@@ -151,7 +168,7 @@ function Login() {
                   type="email"
                   name="email"
                   placeholder="Enter email"
-                  className=" border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
+                  className="border border-neutral-90 rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] input input-bordered bg-neutral-90 text-neutral-20 text-[12px] sm:text-[12px] md:text-[12px] lg:text-[14px]  xl:text-[16px]"
                   required
                   value={loginEmail}
                   onChange={handleChange}
@@ -191,7 +208,10 @@ function Login() {
                   <label className="label cursor-pointer">
                     <input
                       type="checkbox"
-                      className="checkbox checkbox-md rounded-[2px] bg-primary-100 border-primary-100 "
+                      name="rememberMe"
+                      className="checkbox checkbox-md rounded-[2px] bg-primary-100 border-primary-100"
+                      checked={rememberMe}
+                      onChange={handleChange}
                     />
                     <span className="label-text text-[10px] sm:text-[12px] md:text-[16px] lg:text-[16px]  xl:text-[16px] sm:text-base text-primary-100 ml-2">
                       Remember me
@@ -210,9 +230,8 @@ function Login() {
               <div className="form-control mt-6">
                 <button
                   type="submit"
-                  className={`rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] text-[16px] sm:text-[16px] md:text-[16px] lg:text-[18px]  xl:text-[18px] mt-4   ${
-                    loading ? "bg-secondary-40 " : "bg-secondary-40  "
-                  } text-primary-100`}
+                  className={`rounded-md w-full h-[40px] sm:h-[48px] md:h-[48px] lg:h-[48px] xl:h-[48px] 2xl:h-[48px] text-[16px] sm:text-[16px] md:text-[16px] lg:text-[18px]  xl:text-[18px] mt-4   ${loading ? "bg-secondary-40 " : "bg-secondary-40  "
+                    } text-primary-100`}
                   disabled={loading}>
                   {loading ? (
                     <span className="loading loading-infinity loading-lg"></span>

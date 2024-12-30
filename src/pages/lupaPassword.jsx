@@ -128,6 +128,19 @@ function LupaPassword() {
                   )}
                 </button>
               </div>
+                <div className="text-2xl text-start mt-2">
+                    <span className="text-primary-100 text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-xl">
+                        Sudah ingat kata sandi?
+                    </span>
+             
+                      <Link
+                        to="/login"
+                        className="relative ml-4 inline-block text-[16px] sm:text-[16px] md:text-[16px] lg:text-[16px] xl:text-[18px] text-primary-40 hover:text-error-1 group">
+                         Login ?
+                        <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-primary-40 transition-all duration-1000 transform group-hover:left-0 group-hover:w-1/2"></span>
+                        <span className="absolute bottom-0 right-1/2 w-0 h-[2px] bg-primary-40 transition-all duration-1000 transform group-hover:right-0 group-hover:w-1/2"></span>
+                        </Link>
+                </div>
             </form>
 
             {/* Modal untuk menampilkan pesan kesalahan */}

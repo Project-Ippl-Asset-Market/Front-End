@@ -17,10 +17,10 @@ import {
   where,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import { deleteObject, ref } from "firebase/storage";
+import { deleteObject, ref, getDownloadURL } from "firebase/storage";
 import CustomImage from "../../assets/assetmanage/Iconrarzip.svg";
 
-function ManageAudio() {
+function ManageAssetAudio() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarRef = useRef(null);
   const [assets, setAssets] = useState([]);
@@ -32,13 +32,13 @@ function ManageAudio() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredAssets, setFilteredAssets] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const audioPerPage = 5;
+  const datasetPerPage = 5;
 
-  const totalPages = Math.ceil(filteredAssets.length / audioPerPage);
-  const startIndex = (currentPage - 1) * audioPerPage;
-  const currentAudios = filteredAssets.slice(
+  const totalPages = Math.ceil(filteredAssets.length / datasetPerPage);
+  const startIndex = (currentPage - 1) * datasetPerPage;
+  const currentDatasets = filteredAssets.slice(
     startIndex,
-    startIndex + audioPerPage
+    startIndex + datasetPerPage
   );
 
   const toggleSidebar = () => {
@@ -135,6 +135,8 @@ function ManageAudio() {
           });
         }
 
+        console.log("Fetched assets:", items); // Debugging line
+
         if (role === "admin") {
           const superadminQuery = query(
             collection(db, "admins"),
@@ -154,6 +156,7 @@ function ManageAudio() {
           setFilteredAssets(items);
         }
       } catch (error) {
+        console.error("Error fetching data: ", error); // Debugging line
         setAlertError(true);
       } finally {
         setIsLoading(false);
@@ -182,17 +185,43 @@ function ManageAudio() {
 
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete this audio?"
+      "Are you sure you want to delete this asset audio?"
     );
     if (confirmDelete) {
       try {
-        const ImageRef = ref(storage, `images-audio/audio-${id}.mp3`);
-        await deleteObject(ImageRef);
-        await deleteDoc(doc(db, "assetAudios", id));
-        setAssets(assets.filter((asset) => asset.id !== id));
-        setAlertSuccess(true);
+        const FileRef = ref(storage, `images-asset-audio/audio-${id}.mp3`);
+        const ImageRef = ref(storage, `images-asset-audio/thumbnail-${id}.jpg`);
+
+        // Attempt to delete the audio file
+        try {
+          await getDownloadURL(FileRef);
+          await deleteObject(FileRef); // Delete the audio file
+        } catch (error) {
+          if (error.code === 'storage/object-not-found') {
+            console.log("Audio file does not exist, skipping deletion.");
+          } else {
+            throw error; // Rethrow if it's a different error
+          }
+        }
+
+        // Attempt to delete the thumbnail image
+        // try {
+        //   await getDownloadURL(ImageRef);
+        //   await deleteObject(ImageRef); // Delete the thumbnail image
+        // } catch (error) {
+        //   if (error.code === 'storage/object-not-found') {
+        //     console.log("Thumbnail image does not exist, skipping deletion.");
+        //   } else {
+        //     throw error; // Rethrow if it's a different error
+        //   }
+        // }
+
+        await deleteDoc(doc(db, "assetAudios", id)); // Delete the document from Firestore
+        setAssets(assets.filter((asset) => asset.id !== id)); // Update local state
+        setAlertSuccess(true); // Show success alert
       } catch (error) {
-        setAlertError(true);
+        console.error("Error deleting dataset: ", error);
+        setAlertError(true); // Show error alert
       }
     } else {
       alert("Deletion cancelled");
@@ -215,11 +244,11 @@ function ManageAudio() {
         <aside
           ref={sidebarRef}
           id="sidebar-multi-level-sidebar"
-          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } sm:translate-x-0`}
-          aria-label="Sidebar">
-          <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
+          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } sm:translate-x-0`}
+          aria-label="Sidebar"
+        >
+          <div className="min-h-screen px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
             <NavigationItem />
           </div>
         </aside>
@@ -229,13 +258,15 @@ function ManageAudio() {
           <div
             role="alert"
             className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] text-[10px] sm:text-[10px] p-4 bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-            onClick={closeAlert}>
+            onClick={closeAlert}
+          >
             <div className="flex items-center justify-center space-x-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 shrink-0 stroke-current"
                 fill="none"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -243,7 +274,7 @@ function ManageAudio() {
                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <span>Audio berhasil dihapus.</span>
+              <span>Dataset berhasil dihapus.</span>
             </div>
           </div>
         )}
@@ -253,13 +284,15 @@ function ManageAudio() {
           <div
             role="alert"
             className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[340px] text-[10px] sm:text-[10px] p-4 bg-primary-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-            onClick={closeAlert}>
+            onClick={closeAlert}
+          >
             <div className="flex items-center justify-center space-x-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 shrink-0 stroke-current"
                 fill="none"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -273,8 +306,8 @@ function ManageAudio() {
         )}
 
         {/* Isi Konten */}
-        <div className="p-8 sm:ml-[280px] h-full bg-primary-100 text-neutral-10 dark:bg-neutral-20 dark:text-neutral-10 min-h-screen pt-24">
-          <div className="breadcrumbs text-sm mt-1 mb-10">
+        <div className="p-4 sm:p-6 md:p-8 lg:p-14 xl:p-14 2xl:p-14 h-full bg-primary-100 text-neutral-10 dark:bg-neutral-20 dark:text-neutral-10 min-h-screen pt-24 sm:ml-64 md:ml-72 lg:ml-60 xl:ml-[270px] 2xl:ml-[270px] -mt-2 sm:mt-14 md:mt-14 lg:mt-10 xl:mt-10 2xl:mt-10">
+          <div className="breadcrumbs text-sm mt-1 mb-6">
             <Breadcrumb />
           </div>
 
@@ -284,7 +317,8 @@ function ManageAudio() {
               <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
                 <Link
                   to="/manage-asset-audio/add"
-                  className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
+                  className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]"
+                >
                   + Add Audio
                 </Link>
               </div>
@@ -324,7 +358,7 @@ function ManageAudio() {
                       Preview
                     </th>
                     <th scope="col" className="px-6 py-3">
-                      Audio Name
+                      Asset Audio Name
                     </th>
                     <th scope="col" className="px-6 py-3">
                       Category
@@ -341,10 +375,11 @@ function ManageAudio() {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentAudios.map((asset) => (
+                  {currentDatasets.map((asset) => (
                     <tr
                       key={asset.id}
-                      className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
+                      className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9"
+                    >
                       <td className="px-6 py-4">
                         {asset.audioThumbnail ? (
                           <img
@@ -370,7 +405,8 @@ function ManageAudio() {
 
                       <th
                         scope="row"
-                        className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap">
+                        className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap"
+                      >
                         {asset.audioName}
                       </th>
                       <td className="px-6 py-4">{asset.category}</td>
@@ -403,7 +439,8 @@ function ManageAudio() {
             <button
               className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}>
+              disabled={currentPage === 1}
+            >
               «
             </button>
             <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
@@ -414,7 +451,8 @@ function ManageAudio() {
               onClick={() =>
                 setCurrentPage((prev) => Math.min(prev + 1, totalPages))
               }
-              disabled={currentPage === totalPages}>
+              disabled={currentPage === totalPages}
+            >
               »
             </button>
           </div>
@@ -424,4 +462,4 @@ function ManageAudio() {
   );
 }
 
-export default ManageAudio;
+export default ManageAssetAudio;

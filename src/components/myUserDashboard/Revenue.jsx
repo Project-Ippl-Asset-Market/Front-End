@@ -1,6 +1,11 @@
-/* eslint-disable no-unused-vars */
 import { useState, useRef, useEffect } from "react";
-import { collection, getDocs, onSnapshot } from "firebase/firestore";
+import {
+  collection,
+  onSnapshot,
+  getDocs,
+  doc,
+  setDoc, // Tambahkan import untuk setDoc dan doc
+} from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
 import { getAuth } from "firebase/auth";
 import { FaChartLine, FaDollarSign, FaThumbsUp } from "react-icons/fa";
@@ -17,6 +22,7 @@ import {
   Title,
   Tooltip,
   Legend,
+  Filler,
 } from "chart.js";
 
 ChartJS.register(
@@ -26,15 +32,14 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
 function Revenue() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [transactionCount, setTransactionCount] = useState(0);
-  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [totalSales, setTotalSales] = useState(0);
   const [totalLikes, setTotalLikes] = useState(0);
-  const [currentUserId, setCurrentUserId] = useState(null);
   const [userAssets, setUserAssets] = useState([]);
   const sidebarRef = useRef(null);
 
@@ -53,37 +58,28 @@ function Revenue() {
     const user = auth.currentUser;
 
     if (user) {
-      setCurrentUserId(user.uid);
-
       const unsubscribe = onSnapshot(
-        collection(db, "transactions"),
+        collection(db, "buyAssets"),
         (snapshot) => {
-          const orderIds = new Set();
-          let totalPrice = 0;
           const filteredAssets = [];
+          let totalPrice = 0;
 
           snapshot.forEach((doc) => {
             const data = doc.data();
 
-            if (data.status === "Success" && data.assets) {
-              data.assets.forEach((asset) => {
-                if (asset.assetOwnerID === user.uid) {
-                  filteredAssets.push({
-                    ...asset,
-                    docId: doc.id,
-                  });
-                  if (asset.price) {
-                    totalPrice += Number(asset.price);
-                  }
-                }
+            if (data.assetOwnerID === user.uid) {
+              filteredAssets.push({
+                ...data,
+                docId: doc.id,
               });
-              orderIds.add(data.orderId);
+              if (data.price) {
+                totalPrice += Number(data.price);
+              }
             }
           });
 
           setUserAssets(filteredAssets);
-          setTransactionCount(orderIds.size);
-          setTotalRevenue(totalPrice);
+          setTotalSales(totalPrice);
         }
       );
 
@@ -137,14 +133,41 @@ function Revenue() {
     }
   }, []);
 
+  useEffect(() => {
+    const updateRevenue = async () => {
+      const auth = getAuth();
+      const user = auth.currentUser;
+
+      if (user) {
+        try {
+          const revenueRef = doc(db, "revenue", user.uid); 
+          await setDoc(
+            revenueRef,
+            {
+              username: user.displayName || "User", 
+              totalPendapatan: totalSales, 
+            },
+            { merge: true } 
+          );
+          console.log("Revenue updated successfully!");
+        } catch (error) {
+          console.error("Error updating revenue: ", error);
+        }
+      }
+    };
+
+    updateRevenue();
+  }, [totalSales]); // Jalankan setiap kali totalSales berubah
+
+  // Data untuk grafik
   const chartData = {
     labels: ["Aset Terjual", "Pendapatan"],
     datasets: [
       {
         label: "Perbandingan Aset Terjual dan Pendapatan",
-        data: [userAssets.length, totalRevenue],
+        data: [userAssets.length, totalSales],
         backgroundColor: "rgba(75, 192, 192, 0.2)",
-        borderColor: "#3F83F8",
+        borderColor: "#2563EB",
         borderWidth: 2,
         fill: true,
       },
@@ -179,31 +202,30 @@ function Revenue() {
         <aside
           ref={sidebarRef}
           id="sidebar-multi-level-sidebar"
-          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } sm:translate-x-0`}
+          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } sm:translate-x-0`}
           aria-label="Sidebar">
-          <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
+          <div className="min-h-screen px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
             <NavigationItem />
           </div>
         </aside>
 
-        <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 min-h-screen pt-24">
+        <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 min-h-screen pt-24">
           <div className="breadcrumbs text-sm mt-1 mb-10">
             <Breadcrumb />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 ">
+            <div className="dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
               <FaDollarSign className="text-4xl text-green-500 mr-4" />
               <div>
                 <h3 className="text-lg font-semibold">Total Pendapatan</h3>
                 <p className="text-2xl font-bold">
-                  Rp. {totalRevenue.toLocaleString()}
+                  Rp. {totalSales.toLocaleString()}
                 </p>
               </div>
             </div>
-            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center text-neutral-10">
+            <div className="dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center text-neutral-10">
               <FaChartLine className="text-4xl text-blue-500 mr-4" />
               <div>
                 <h3 className="text-lg font-semibold text-neutral-10">
@@ -214,7 +236,7 @@ function Revenue() {
                 </p>
               </div>
             </div>
-            <div className="dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
+            <div className="dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 shadow-lg rounded-lg p-6 flex items-center">
               <FaThumbsUp className="text-4xl text-yellow-500 mr-4" />
               <div>
                 <h3 className="text-lg font-semibold text-neutral-10">

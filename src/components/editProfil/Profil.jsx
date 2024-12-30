@@ -1,5 +1,3 @@
-/* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -12,22 +10,28 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
 import { useNavigate } from "react-router-dom";
-import Headerprofil from "../headerNavBreadcrumbs/HeaderWebProfile";
+import Headerprofil from "../editProfil/HeaderWebProfile";
 import Logoprofil from "../../assets/icon/iconWebUser/profil.svg";
 import Logoprofilwhite from "../../assets/icon/iconWebUser/Profilwhite.svg";
-import Footer from "../../components/website/Footer/Footer"
 
 function Profil() {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [newProfileImage, setNewProfileImage] = useState(null);
-  const [previewImage,setPreviewImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
   const [profileImageUrl, setProfileImageUrl] = useState(null);
   const navigate = useNavigate();
-
+  const [alertMessage, setAlertMessage] = useState("");
+  const [showAlert, setShowAlert] = useState(false);
 
   useEffect(() => {
     const auth = getAuth();
@@ -47,52 +51,56 @@ function Profil() {
       const fetchUserProfile = async () => {
         const usersCollectionRef = collection(db, "users");
         const q = query(usersCollectionRef, where("uid", "==", currentUserId));
-        
+
         const unsubscribeUser = onSnapshot(q, (snapshot) => {
           if (!snapshot.empty) {
             const userData = snapshot.docs[0].data();
             setUserProfile(userData);
-  
+
             if (userData.photoURL) {
               setProfileImageUrl(userData.photoURL);
             } else {
-              fetchImageFromStorage(); 
+              fetchImageFromStorage();
             }
-            // console.log("Data ditemukan di koleksi users:", userData);
+            console.log("Data ditemukan di koleksi users:", userData);
           } else {
-            // console.log("Pengguna tidak ditemukan, mencoba mencari di koleksi admins");
-  
+            console.log(
+              "Pengguna tidak ditemukan, mencoba mencari di koleksi admins"
+            );
+
             const adminsCollectionRef = collection(db, "admins");
-            const adminsQuery = query(adminsCollectionRef, where("uid", "==", currentUserId));
-            
+            const adminsQuery = query(
+              adminsCollectionRef,
+              where("uid", "==", currentUserId)
+            );
+
             const unsubscribeAdmin = onSnapshot(adminsQuery, (snapshot) => {
               if (!snapshot.empty) {
                 const userData = snapshot.docs[0].data();
                 setUserProfile(userData);
-  
-                if (userData.photoURL || userData.profileImageUrl ||"") {
-                  setProfileImageUrl(userData.photoURL || userData.profileImageUrl ||"");
+
+                if (userData.photoURL) {
+                  setProfileImageUrl(userData.photoURL);
                 } else {
                   fetchImageFromStorage();
                 }
-                // console.log("Data ditemukan di koleksi admins:", userData);
+                console.log("Data ditemukan di koleksi admins:", userData);
               } else {
                 console.log("Profil tidak ditemukan di kedua koleksi.");
               }
             });
-  
+
             return unsubscribeAdmin;
           }
         });
-  
+
         return unsubscribeUser;
       };
-  
-      
+
       const fetchImageFromStorage = () => {
         const storage = getStorage();
         const imageRef = ref(storage, `images-user/${currentUserId}.jpg`);
-        
+
         getDownloadURL(imageRef)
           .then((url) => {
             setProfileImageUrl(url);
@@ -102,7 +110,7 @@ function Profil() {
             setProfileImageUrl("https://placehold.co/80x80");
           });
       };
-  
+
       fetchUserProfile();
     }
   }, [currentUserId]);
@@ -112,7 +120,6 @@ function Profil() {
     setShowModal(true);
   };
 
- 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file && ["image/png", "image/jpeg", "image/jpg"].includes(file.type)) {
@@ -128,28 +135,36 @@ function Profil() {
       alert("Silakan pilih gambar terlebih dahulu.");
       return;
     }
-  
+
     try {
       const storage = getStorage();
       const fileExtension = newProfileImage.name.split(".").pop();
-      const newImageRef = ref(storage, `images-user/${currentUserId}.${fileExtension}`);
-      
-     
+      const newImageRef = ref(
+        storage,
+        `images-user/${currentUserId}.${fileExtension}`
+      );
+
       const usersCollectionRef = collection(db, "users");
-      const userQuery = query(usersCollectionRef, where("uid", "==", currentUserId));
+      const userQuery = query(
+        usersCollectionRef,
+        where("uid", "==", currentUserId)
+      );
       const userSnapshot = await getDocs(userQuery);
-      
+
       let userDocRef = null;
       let existingPhotoURL = null;
-  
+
       if (!userSnapshot.empty) {
         userDocRef = userSnapshot.docs[0].ref;
         existingPhotoURL = userSnapshot.docs[0].data().photoURL;
       } else {
         const adminsCollectionRef = collection(db, "admins");
-        const adminsQuery = query(adminsCollectionRef, where("uid", "==", currentUserId));
+        const adminsQuery = query(
+          adminsCollectionRef,
+          where("uid", "==", currentUserId)
+        );
         const adminSnapshot = await getDocs(adminsQuery);
-  
+
         if (!adminSnapshot.empty) {
           userDocRef = adminSnapshot.docs[0].ref;
           existingPhotoURL = adminSnapshot.docs[0].data().photoURL;
@@ -158,38 +173,35 @@ function Profil() {
           return;
         }
       }
-  
-    
+
       if (existingPhotoURL) {
         const oldImageRef = ref(storage, existingPhotoURL);
         await deleteObject(oldImageRef);
       }
-  
+
       // Upload the new profile image
       await uploadBytes(newImageRef, newProfileImage);
       const uploadedImageUrl = await getDownloadURL(newImageRef);
-  
+
       // Update the photoURL in Firestore
       await updateDoc(userDocRef, { photoURL: uploadedImageUrl });
-  
-      alert("Foto profil berhasil diupload!");
+
+      // Set alert message and show the alert
+      setAlertMessage("Profil berhasil diperbarui!");
+      setShowAlert(true);
       setProfileImageUrl(uploadedImageUrl);
       setNewProfileImage(null);
-  
     } catch (error) {
       console.error("Error saat mengupload foto profil:", error);
-      alert("Gagal mengupload foto profil. Silakan coba lagi.");
+      setAlertMessage("Profil Gagal diperbarui!");
+      setShowAlert(true);
     }
   };
-  
-
-
-
 
   return (
     <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins mt-0 lg:mt-12 overflow-hidden">
       <Headerprofil />
-  
+
       <div className="p-4 sm:p-10 lg:p-14 flex flex-col lg:flex-row bg-primary-100 dark:bg-neutral-20">
         <aside className="bg-white dark:bg-neutral-800 drop-shadow-lg w-full lg:w-60 h-auto mt-0 lg:mt-8 p-4 rounded-lg flex flex-col items-center">
           <div className="flex justify-center mb-4">
@@ -204,12 +216,15 @@ function Profil() {
               className="hidden dark:block w-16 h-16 rounded-full border-2 border-white"
             />
           </div>
-          <h2 className="text-xl font-bold text-center mb-4">{userProfile?.username || "Username"}</h2>
+          <h2 className="text-xl font-bold text-center mb-4">
+            {userProfile?.username || "Username"}
+          </h2>
           <ul className="space-y-4 w-full">
             <li>
               <button
                 onClick={() => navigate("/")}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 text-left">
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 text-left"
+              >
                 <span className="flex items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -217,7 +232,8 @@ function Profil() {
                     viewBox="0 0 24 24"
                     strokeWidth="2"
                     stroke="currentColor"
-                    className="w-5 h-5 mr-2">
+                    className="w-5 h-5 mr-2"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -230,7 +246,7 @@ function Profil() {
             </li>
           </ul>
         </aside>
-  
+
         <main className="bg-primary-100 dark:bg-neutral-20 drop-shadow-xl mt-7 h-800 lg:h-full lg:w-3/4 p-4 rounded-lg md:ml-6 overflow-y-auto">
           <h1 className="text-3xl font-bold mb-3">My Profile</h1>
           <div className="bg-primary-100 dark:bg-neutral-20 p-4 rounded-lg mb-4">
@@ -249,8 +265,7 @@ function Profil() {
               </div>
             </div>
           </div>
-  
-        
+
           {showModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm rounded-xl">
               <div className="dark:bg-white bg-black p-6 rounded-lg animate-borderGlow w-[90%] lg:w-[50%] lg:h-auto">
@@ -271,33 +286,54 @@ function Profil() {
                 <div className="mt-4 flex justify-end">
                   <button
                     onClick={() => setShowModal(false)}
-                    className="px-4 py-2 bg-gray-500 text-white rounded-md mr-2">
+                    className="px-4 py-2 bg-gray-500 text-white rounded-md mr-2"
+                  >
                     Batal
                   </button>
                   <button
                     onClick={handleUpload}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md cursor-pointer">
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md cursor-pointer"
+                  >
                     Upload
                   </button>
                 </div>
+                {showAlert && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-11/12 sm:w-96">
+                      <p className="text-gray-800 text-center">
+                        {alertMessage}
+                      </p>
+                      <button
+                        onClick={() => {
+                          setShowAlert(false); // Menyembunyikan modal alert
+                          setShowModal(false); // Menyembunyikan modal utama (misalnya modal upload foto)
+                        }}
+                        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+                      >
+                        OK
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
-  
-      
+
           <div className="bg-primary-100 dark:bg-neutral-20 mt-5 rounded-lg lg:h-full">
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-xl font-bold">Personal Information</h2>
               <Link
                 to="/editprofil1"
-                className="flex items-center p-2 border-grey-400 bg-blue-600 rounded text-white font-bold">
+                className="flex items-center p-2 border-grey-400 bg-blue-600 rounded text-white font-bold"
+              >
                 <span>Edit</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   strokeWidth="2"
                   stroke="white"
-                  className="w-5 h-5">
+                  className="w-5 h-5"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -306,46 +342,45 @@ function Profil() {
                 </svg>
               </Link>
             </div>
-            
           </div>
-            <div className="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-10">
-             
-              <div>
-                <p className="font-bold">Nama Depan</p>
-                <p>{userProfile?.firstName || "-"}</p>
-              </div>
-              <div>
-                <p className="font-bold">Nama Belakang</p>
-                <p>{userProfile?.lastName || "-"}</p>
-              </div>
-              <div>
-                <p className="font-bold">Email</p>
-                <p>{userProfile?.email || "user@gmail.com"}</p>
-              </div>
-              <div>
-                <p className="font-bold">Nomor Telepon</p>
-                <p>{userProfile?.phone || "-"}</p>
-              </div>
-              <div>
-                <p className="font-bold">Bio</p>
-                <p>{userProfile?.bio || "Hello"}</p>
-              </div>
+          <div className="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div>
+              <p className="font-bold">Nama Depan</p>
+              <p>{userProfile?.firstName || "-"}</p>
             </div>
-  
-          
+            <div>
+              <p className="font-bold">Nama Belakang</p>
+              <p>{userProfile?.lastName || "-"}</p>
+            </div>
+            <div>
+              <p className="font-bold">Email</p>
+              <p>{userProfile?.email || "user@gmail.com"}</p>
+            </div>
+            <div>
+              <p className="font-bold">Nomor Telepon</p>
+              <p>{userProfile?.phone || "-"}</p>
+            </div>
+            <div>
+              <p className="font-bold">Bio</p>
+              <p>{userProfile?.bio || "Hello"}</p>
+            </div>
+          </div>
+
           <div className="bg-primary-100 dark:bg-neutral-20 mb-4">
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-xl font-bold">Address</h2>
               <Link
                 to="/editprofil2"
-                className="flex items-center p-2 border-grey-400 bg-blue-600 rounded text-white font-bold">
+                className="flex items-center p-2 border-grey-400 bg-blue-600 rounded text-white font-bold"
+              >
                 <span>Edit</span>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   strokeWidth="2"
                   stroke="white"
-                  className="w-5 h-5">
+                  className="w-5 h-5"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -355,7 +390,6 @@ function Profil() {
               </Link>
             </div>
             <div className="px-5 py-4 grid grid-cols-2 md:grid-cols-2 gap-10">
-           
               <div>
                 <p className="font-bold">Negara</p>
                 <p>{userProfile?.country || "-"}</p>
@@ -368,19 +402,33 @@ function Profil() {
                 <p className="font-bold">Kode Pos</p>
                 <p>{userProfile?.postalCode || "-"}</p>
               </div>
-              <div>
-                <p className="font-bold">Tax ID</p>
-                <p>{userProfile?.TaxID || "-"}</p>
-              </div>
             </div>
           </div>
         </main>
       </div>
-      <div className="mt-[200px]">
-        <Footer />
-      </div>
+      <footer className="bg-[#212121] text-white py-20 mt-10">
+        <div className="flex flex-col items-start lg:flex lg:flex-col lg:items-center">
+          <div className="flex grid grid-cols-1 ml-6 lg:mr-auto lg:ml-auto lg:flex lg:space-x-16 lg:mb-8 gap-10">
+            <a href="#" className="hover:text-gray-400 font-bold">
+              Terms And Conditions
+            </a>
+            <a href="#" className="hover:text-gray-400 font-bold">
+              File Licenses
+            </a>
+            <a href="#" className="hover:text-gray-400 font-bold">
+              Refund Policy
+            </a>
+            <a href="#" className="hover:text-gray-400 font-bold">
+              Privacy Policy
+            </a>
+          </div>
+          <p className="text-sm mb-1 mt-20 lg:mt-0 self-center">
+            Copyright &copy; 2024 All rights reserved by PixelStore
+          </p>
+        </div>
+      </footer>
     </div>
-  );  
+  );
 }
 
 export default Profil;

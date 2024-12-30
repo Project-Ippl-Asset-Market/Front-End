@@ -201,6 +201,11 @@ function ManageAssetVideo() {
     }
   };
 
+  const closeAlert = () => {
+    setAlertError(false);
+    setAlertSuccess(false);
+  };
+
   return (
     <>
       <div className="dark:bg-neutral-90 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100">
@@ -215,8 +220,9 @@ function ManageAssetVideo() {
           className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
             isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           } sm:translate-x-0`}
-          aria-label="Sidebar">
-          <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
+          aria-label="Sidebar"
+        >
+          <div className="min-h-screen px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
             <NavigationItem />
           </div>
         </aside>
@@ -226,13 +232,15 @@ function ManageAssetVideo() {
           <div
             role="alert"
             className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[300px] text-[10px] sm:text-[10px] p-4 bg-success-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-            onClick={closeAlert}>
+            onClick={closeAlert}
+          >
             <div className="flex items-center justify-center space-x-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 shrink-0 stroke-current"
                 fill="none"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -250,13 +258,15 @@ function ManageAssetVideo() {
           <div
             role="alert"
             className="fixed top-10 left-1/2 transform -translate-x-1/2 w-[340px] text-[10px] sm:text-[10px] p-4 bg-primary-60 text-white text-center shadow-lg cursor-pointer transition-transform duration-500 ease-out rounded-lg"
-            onClick={closeAlert}>
+            onClick={closeAlert}
+          >
             <div className="flex items-center justify-center space-x-2">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6 shrink-0 stroke-current"
                 fill="none"
-                viewBox="0 0 24 24">
+                viewBox="0 0 24 24"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -270,8 +280,8 @@ function ManageAssetVideo() {
         )}
 
         {/* Isi Konten */}
-        <div className="p-8 sm:ml-[280px] h-full bg-primary-100 text-neutral-10 dark:bg-neutral-20 dark:text-neutral-10 min-h-screen pt-24">
-          <div className="breadcrumbs text-sm mt-1 mb-10">
+        <div className="p-4 sm:p-6 md:p-8 lg:p-14 xl:p-14 2xl:p-14 h-full bg-primary-100 text-neutral-10 dark:bg-neutral-20 dark:text-neutral-10 min-h-screen pt-24 sm:ml-64 md:ml-72 lg:ml-60 xl:ml-[270px] 2xl:ml-[270px] -mt-2 sm:mt-14 md:mt-14 lg:mt-10 xl:mt-10 2xl:mt-10">
+          <div className="breadcrumbs text-sm mt-1 mb-6">
             <Breadcrumb />
           </div>
 
@@ -281,7 +291,8 @@ function ManageAssetVideo() {
               <div className="flex bg-primary-2 rounded-lg items-center w-full md:w-36">
                 <Link
                   to="/manage-asset-video/add"
-                  className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]">
+                  className="rounded-lg flex justify-center items-center text-[14px] bg-secondary-40 hover:bg-secondary-30 text-primary-100 dark:text-primary-100 mx-auto h-[45px] w-full md:w-[400px]"
+                >
                   + Add Video
                 </Link>
               </div>
@@ -341,7 +352,8 @@ function ManageAssetVideo() {
                   {currentAssets.map((asset) => (
                     <tr
                       key={asset.id}
-                      className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9">
+                      className="bg-primary-100 dark:bg-neutral-25 dark:text-neutral-9"
+                    >
                       <td className="px-4 py-4">
                         {asset.video ? (
                           <video
@@ -350,7 +362,8 @@ function ManageAssetVideo() {
                             controlsList=" nodownload"
                             disablePictureInPicture
                             onContextMenu={(e) => e.preventDefault()}
-                            className="w-40 h-20 rounded-md shadow-md object-cover"></video>
+                            className="w-40 h-20 rounded-md shadow-md object-cover"
+                          ></video>
                         ) : (
                           <p className="text-gray-500">No video available</p>
                         )}
@@ -358,7 +371,8 @@ function ManageAssetVideo() {
 
                       <th
                         scope="row"
-                        className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap">
+                        className="px-6 py-4 font-medium text-gray-900 dark:text-neutral-90 whitespace-nowrap"
+                      >
                         {asset.videoName}
                       </th>
                       <td className="px-4  py-4">{asset.category}</td>
@@ -390,7 +404,8 @@ function ManageAssetVideo() {
             <button
               className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}>
+              disabled={currentPage === 1}
+            >
               «
             </button>
             <button className="join-item btn dark:bg-neutral-30 bg-neutral-60 text-primary-100 hover:bg-neutral-70 hover:border-neutral-30 border-neutral-60 dark:border-neutral-30">
@@ -401,7 +416,8 @@ function ManageAssetVideo() {
               onClick={() =>
                 setCurrentPage((prev) => Math.min(prev + 1, totalPages))
               }
-              disabled={currentPage === totalPages}>
+              disabled={currentPage === totalPages}
+            >
               »
             </button>
           </div>

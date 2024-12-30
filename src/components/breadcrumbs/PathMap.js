@@ -24,6 +24,8 @@ export const nameMap = {
   "/manage-asset-audio": "Manage Asset Audio",
   "/manage-asset-audio/add": "Add New Audio",
   "/manage-asset-audio/edit/:id": "Edit Audio",
+  "/paymentSetting": "No.Rekening",
+  "/user-revenue": "User Revenue",
   "/manage-users": "Manage Users",
   "/manage-users/add": "Add New User",
   "/manage-users/edit/:id": "Edit User",

@@ -9,6 +9,7 @@ import {
 } from "firebase/firestore";
 import HeaderSidebar from "../headerNavBreadcrumbs/HeaderSidebar";
 import NavigationItem from "../sidebarDashboardAdmin/navigationItemsAdmin";
+import Breadcrumbs from "../breadcrumbs/Breadcrumbs";
 
 function AdminUserRevenue() {
   const db = getFirestore();
@@ -17,22 +18,14 @@ function AdminUserRevenue() {
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [dropdownOpen, setDropdownOpen] = useState({}); // Untuk menyimpan dropdown yang terbuka
-  const [accountDetails, setAccountDetails] = useState({}); // Menyimpan detail akun untuk pengguna yang terpilih
+  const [dropdownOpen, setDropdownOpen] = useState({});
+  const [accountDetails, setAccountDetails] = useState({});
 
   const toggleDropdown = async (userId) => {
-    setDropdownOpen((prev) => ({
-      ...prev,
-      [userId]: !prev[userId], // Toggle dropdown untuk user tertentu
-    }));
-
-    // Ambil detail rekening jika dropdown dibuka
+    setDropdownOpen((prev) => ({ ...prev, [userId]: !prev[userId] }));
     if (!dropdownOpen[userId]) {
-      const accountData = await fetchAccountDetails(userId); // Ambil detail rekening
-      setAccountDetails((prev) => ({
-        ...prev,
-        [userId]: accountData || {}, // Simpan detail rekening di state
-      }));
+      const accountData = await fetchAccountDetails(userId);
+      setAccountDetails((prev) => ({ ...prev, [userId]: accountData || {} }));
     }
   };
 
@@ -62,53 +55,69 @@ function AdminUserRevenue() {
   }, [db]);
 
   const fetchAccountDetails = async (userId) => {
-    const accountDocRef = doc(db, "aturBayaran", userId); // Mengambil detail rekening berdasarkan userId
+    const accountDocRef = doc(db, "aturBayaran", userId);
     const accountDoc = await getDoc(accountDocRef);
     if (accountDoc.exists()) {
-      return accountDoc.data(); // Mengembalikan data rekening
+      return accountDoc.data();
     } else {
       console.log("Tidak ada data rekening untuk userId:", userId);
       return null;
     }
   };
 
-  const handleWithdraw = async (userId, amount) => {
-    // Logic to handle withdrawal request
-    try {
-      const accountDocRef = doc(db, "revenue", userId);
-      const accountDoc = await getDoc(accountDocRef);
+const handleWithdraw = async (userId, amount) => {
+  if (isProcessing) return;
+  setIsProcessing(true);
 
-      if (accountDoc.exists()) {
-        const currentData = accountDoc.data();
-        if (currentData.totalPendapatan < 100000) {
-          alert("Jumlah penarikan minimal adalah Rp.100.000")
-          return;
-        }
-        const newTotal = currentData.totalPendapatan - amount;
+  try {
+    const accountDocRef = doc(db, "revenue", userId);
+    const accountDoc = await getDoc(accountDocRef);
 
-        // Update totalPendapatan setelah penarikan
-        await updateDoc(accountDocRef, {
-          totalPendapatan: newTotal,
-        });
+    if (accountDoc.exists()) {
+      const currentData = accountDoc.data();
 
-        // Update state
-        setRevenues((prev) =>
-          prev.map((revenue) =>
-            revenue.id === userId
-              ? { ...revenue, totalPendapatan: newTotal }
-              : revenue
-          )
-        );
-
-        console.log("Withdrawal successful: new total is", newTotal);
+      // Validasi
+      if (
+        typeof currentData.totalPendapatan !== "number" ||
+        isNaN(currentData.totalPendapatan)
+      ) {
+        console.error("Invalid totalPendapatan:", currentData.totalPendapatan);
+        setIsProcessing(false);
+        return;
       }
-    } catch (error) {
-      console.error("Error processing withdrawal:", error);
+
+      const newTotal = currentData.totalPendapatan - amount;
+
+      if (newTotal < 0) {
+        console.error("New totalPendapatan cannot be negative:", newTotal);
+        setIsProcessing(false);
+        return;
+      }
+
+      await updateDoc(accountDocRef, {
+        totalPendapatan: newTotal,
+      });
+
+      setRevenues((prev) =>
+        prev.map((revenue) =>
+          revenue.id === userId
+            ? { ...revenue, totalPendapatan: newTotal }
+            : revenue
+        )
+      );
+
+      console.log("Withdrawal successful: new total is", newTotal);
     }
-  };
+  } catch (error) {
+    console.error("Error processing withdrawal:", error);
+  } finally {
+    setIsProcessing(false);
+  }
+};
+
 
   return (
-    <div className="min-h-screen font-poppins dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-20">
+    <div className="min-h-screen font-poppins dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 text-neutral-20">
       <HeaderSidebar
         isSidebarOpen={isSidebarOpen}
         toggleSidebar={setIsSidebarOpen}
@@ -121,12 +130,16 @@ function AdminUserRevenue() {
         } sm:translate-x-0`}
         aria-label="Sidebar"
       >
-        <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100">
+        <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
           <NavigationItem />
         </div>
       </aside>
 
-      <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 min-h-screen pt-24">
+      <div className="p-8 sm:ml-[280px] h-full dark:bg-neutral-10 bg-primary-100 dark:text-primary-100 min-h-screen pt-24">
+        <div className="breadcrumbs text-sm mt-1 mb-10">
+          <Breadcrumbs />
+        </div>
+
         <h1 className="text-2xl font-semibold mb-6">
           Daftar Pengguna dan Pendapatan
         </h1>
@@ -142,79 +155,88 @@ function AdminUserRevenue() {
             <h2 className="text-xl font-semibold mb-4">
               Total Pendapatan: Rp. {totalRevenue.toLocaleString()}
             </h2>
-            <table className="min-w-full bg-white border rounded-lg">
-              <thead>
-                <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-                  <th className="py-3 px-6 text-left">Username</th>
-                  <th className="py-3 px-6 text-left">Total Pendapatan</th>
-                  <th className="py-3 px-6 text-left">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="text-gray-600 text-sm font-light">
-                {revenues.length > 0 ? (
-                  revenues.map((revenue) => (
-                    <React.Fragment key={revenue.id}>
-                      <tr className="border-b border-gray-200 hover:bg-gray-100">
-                        <td
-                          className="py-3 px-6"
-                          onClick={() => toggleDropdown(revenue.id)} // Memanggil toggle untuk menunjukkan detail
-                        >
-                          {revenue.username} ▼
-                        </td>
-                        <td className="py-3 px-6">
-                          Rp. {revenue.totalPendapatan.toLocaleString()}
-                        </td>
-                        <td className="py-3 px-6">
-                          <button
-                            onClick={
-                              () => handleWithdraw(revenue.id, 100000) // Cairkan Rp100.000
-                            }
-                            className="bg-blue-500 text-white px-4 py-1 rounded"
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white border rounded-lg">
+                <thead>
+                  <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+                    <th className="py-3 px-6 text-left">Username</th>
+                    <th className="py-3 px-6 text-left">Total Pendapatan</th>
+                    <th className="py-3 px-6 text-left">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-600 text-sm font-light">
+                  {revenues.length > 0 ? (
+                    revenues.map((revenue) => (
+                      <React.Fragment key={revenue.id}>
+                        <tr className="border-b border-gray-200 hover:bg-gray-100">
+                          <td
+                            className="py-3 px-6 cursor-pointer"
+                            onClick={() => toggleDropdown(revenue.id)}
                           >
-                            Cairkan Dana
-                          </button>
-                        </td>
-                      </tr>
-                      {/* Dropdown untuk menampilkan informasi rekening */}
-                      {dropdownOpen[revenue.id] && (
-                        <tr>
-                          <td colSpan="3" className="bg-gray-100 text-left p-4">
-                            <h3 className="font-semibold">Detail Rekening</h3>
-                            {accountDetails[revenue.id] ? (
-                              <>
-                                <p>
-                                  Nama Rekening:{" "}
-                                  {accountDetails[revenue.id]
-                                    .namaPemilikRekening || "Tidak Diketahui"}
-                                </p>
-                                <p>
-                                  Nomor Rekening:{" "}
-                                  {accountDetails[revenue.id].nomorRekening ||
-                                    "Tidak Diketahui"}
-                                </p>
-                                <p>
-                                  Nama Bank:{" "}
-                                  {accountDetails[revenue.id].namaBank ||
-                                    "Tidak Diketahui"}
-                                </p>
-                              </>
-                            ) : (
-                              <p>Data rekening belum tersedia.</p>
-                            )}
+                            {revenue.username}{" "}
+                            {dropdownOpen[revenue.id] ? "▲" : "▼"}
+                          </td>
+                          <td className="py-3 px-6">
+                            Rp. {revenue.totalPendapatan.toLocaleString()}
+                          </td>
+                          <td className="py-3 px-6">
+                            <button
+                              onClick={() => handleWithdraw(revenue.id, 50000)}
+                              className={`bg-blue-500 text-white px-4 py-1 rounded ${
+                                revenue.totalPendapatan < 50000
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : ""
+                              }`}
+                              disabled={revenue.totalPendapatan < 50000}
+                            >
+                              Accept
+                            </button>
                           </td>
                         </tr>
-                      )}
-                    </React.Fragment>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="3" className="py-3 px-6 text-center">
-                      Tidak ada data pendapatan yang tersedia.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+
+                        {dropdownOpen[revenue.id] && (
+                          <tr>
+                            <td
+                              colSpan="3"
+                              className="bg-gray-100 text-left p-4"
+                            >
+                              <h3 className="font-semibold">Detail Rekening</h3>
+                              {accountDetails[revenue.id] ? (
+                                <>
+                                  <p>
+                                    Nama Rekening:{" "}
+                                    {accountDetails[revenue.id]
+                                      .namaPemilikRekening || "Tidak Diketahui"}
+                                  </p>
+                                  <p>
+                                    Nomor Rekening:{" "}
+                                    {accountDetails[revenue.id].nomorRekening ||
+                                      "Tidak Diketahui"}
+                                  </p>
+                                  <p>
+                                    Nama Bank:{" "}
+                                    {accountDetails[revenue.id].namaBank ||
+                                      "Tidak Diketahui"}
+                                  </p>
+                                </>
+                              ) : (
+                                <p>Data rekening belum tersedia.</p>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="3" className="py-3 px-6 text-center">
+                        Tidak ada data pendapatan yang tersedia.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </>
         )}
       </div>

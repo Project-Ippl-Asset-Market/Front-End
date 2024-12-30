@@ -140,7 +140,7 @@ export function AssetImage() {
     if (isProcessingLike) return;
 
     if (!currentUserId) {
-      setAlertLikes("Anda perlu login untuk menyukai Asset ini");
+      setAlertLikes("Login untuk menyukai Asset ini");
       setTimeout(() => {
         setAlertLikes(false);
       }, 3000);
@@ -379,11 +379,12 @@ export function AssetImage() {
       </div>
 
       <div className="absolute ">
-        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[44%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[193px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[250px] md:w-[200px] lg:w-[400px] xl:w-[600px] 2xl:w-[1200px]">
+        <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 sm:bg-none md:bg-none lg:bg-none xl:bg-none 2xl:bg-none fixed  left-[50%] sm:left-[40%] md:left-[45%] lg:left-[50%] xl:left-[44%] 2xl:left-[50%] transform -translate-x-1/2 z-20 sm:z-40 md:z-40 lg:z-40 xl:z-40 2xl:z-40  flex justify-center top-[253px] sm:top-[20px] md:top-[20px] lg:top-[20px] xl:top-[20px] 2xl:top-[20px] w-full sm:w-[200px] md:w-[200px] lg:w-[100px] xl:w-[600px] 2xl:w-[1000px] -mt-16 sm:mt-0 md:mt-0 lg:mt-0 xl:mt-0 2xl:mt-0">
           <div className="justify-center">
             <form
-              className=" mx-auto px-20  w-[570px] sm:w-[430px] md:w-[460px] lg:w-[650px] xl:w-[800px] 2xl:w-[1200px]"
-              onSubmit={(e) => e.preventDefault()}>
+              className=" mx-auto  w-[570px] sm:w-[200px] md:w-[400px] lg:w-[500px] xl:w-[700px] 2xl:w-[1000px]"
+              onSubmit={(e) => e.preventDefault()}
+            >
               <div className="relative">
                 <input
                   type="search"
@@ -400,7 +401,8 @@ export function AssetImage() {
                     aria-hidden="true"
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
-                    viewBox="0 0 18 18">
+                    viewBox="0 0 18 18"
+                  >
                     <path
                       stroke="currentColor"
                       strokeLinecap="round"
@@ -439,29 +441,34 @@ export function AssetImage() {
       )}
 
       <div className="w-full p-12 mx-auto">
+         {/* validasi like button */}
+      <div className="fixed top-12 left-1/2 transform -translate-x-1/2 w-full max-w-md p-4 z-50">
         {alertLikes && (
           <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
             <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
             <span className="block sm:inline">{alertLikes}</span>
             <button
               className="absolute top-0 bottom-0 right-0 px-4 py-3"
-              onClick={() => setAlertLikes(false)}>
+              onClick={() => setAlertLikes(false)}
+            >
               <svg
                 className="fill-current h-6 w-6 text-red-500"
                 role="button"
                 xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20">
+                viewBox="0 0 20 20"
+              >
                 <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
               </svg>
             </button>
           </div>
         )}
-        <h1 className="text-2xl -ml-10 font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
+      </div>
+        {/* <h1 className="text-2xl -ml-10 font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
           All Category
-        </h1>
+        </h1> */}
       </div>
 
-      <div className="relative mt-40 flex items-center justify-center">
+      <div className="relative mt-40 lg:mt-96 flex items-center justify-center">
         <div className="text-center">
           {searchResults.length === 0 && searchTerm && (
             <p className="text-black text-[20px]">No assets found</p>
@@ -470,7 +477,7 @@ export function AssetImage() {
       </div>
 
       {/* Bagian untuk menampilkan aset */}
-      <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen -mt-40">
+      <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen -mt-28 lg:-mt-80">
         <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
@@ -485,7 +492,7 @@ export function AssetImage() {
                   <img
                     src={data.uploadUrlImage || CustomImage}
                     alt="Image"
-                    className="h-full w-full object-cover rounded-t-[10px] border-none"
+                    className="h-full w-full object-fill rounded-t-[10px] border-none"
                     onClick={() => openModal(data)}
                     onError={(e) => {
                       e.target.onerror = null;
@@ -542,9 +549,9 @@ export function AssetImage() {
 
       {/* Modal untuk detail aset */}
       {modalIsOpen && selectedasset && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
+        <div className="fixed inset-0 flex items-center justify-center z-50  ">
           <div className="fixed inset-0 bg-neutral-10 bg-opacity-50"></div>
-          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-full sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] mx-4 flex flex-col relative">
+          <div className="bg-primary-100 dark:bg-neutral-20 p-6 rounded-lg z-50 w-[90%] sm:w-[400px] md:w-[500px] lg:w-[550px] xl:w-[600px] 2xl:w-[750px] sm:h-[400px] md:h-[500px] lg:h-[550px] xl:h-[600px] 2xl:h-[750px] max-w-3xl mx-auto flex flex-col relative">
             <button
               className="absolute top-1 right-4 text-gray-600 dark:text-gray-400 text-4xl"
               onClick={closeModal}>
@@ -555,7 +562,7 @@ export function AssetImage() {
                 <img
                   src={selectedasset.uploadUrlImage || CustomImage}
                   alt="asset Image"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-fill"
                   onClick={() => openModal()}
                   onError={(e) => {
                     e.target.onerror = null;
@@ -599,11 +606,10 @@ export function AssetImage() {
                 </div>
                 <button
                   onClick={() => handleAddToCart(selectedasset)}
-                  className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${
-                    purchasedAssets.has(selectedasset.id)
-                      ? "bg-gray-400 pointer-events-none"
-                      : "bg-neutral-60"
-                  }`}
+                  className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 rounded-md ${purchasedAssets.has(selectedasset.id)
+                    ? "bg-gray-400 pointer-events-none"
+                    : "bg-neutral-60"
+                    }`}
                   disabled={purchasedAssets.has(selectedasset.id)}>
                   <img
                     src={IconCart}
@@ -614,11 +620,10 @@ export function AssetImage() {
                 </button>
                 <button
                   onClick={() => handleBuyNow(selectedasset)}
-                  className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 mt-2 rounded-md ${
-                    purchasedAssets.has(selectedasset.id)
-                      ? "bg-gray-400 pointer-events-none"
-                      : "bg-secondary-40"
-                  }`}
+                  className={`flex p-2 text-center items-center justify-center bg-neutral-60 w-full h-10 mt-2 rounded-md ${purchasedAssets.has(selectedasset.id)
+                    ? "bg-gray-400 pointer-events-none"
+                    : "bg-secondary-40"
+                    }`}
                   disabled={purchasedAssets.has(selectedasset.id)}>
                   <img
                     src={IconDollar}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Headerprofil from "../headerNavBreadcrumbs/HeaderWebProfile";
+import Headerprofil from "../editProfil/HeaderWebProfile";
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
@@ -13,7 +13,7 @@ import {
 import { db } from "../../firebase/firebaseConfig";
 import Logoprofil from "../../assets/icon/iconWebUser/profil.svg";
 import Logoprofilwhite from "../../assets/icon/iconWebUser/Profilwhite.svg";
-import Footer from "../../components/website/Footer/Footer"
+import Footer from "../../components/website/Footer/Footer";
 
 function EditProfil() {
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -24,10 +24,10 @@ function EditProfil() {
     phone: "",
     bio: "",
   });
-  const [alertMessage, setAlertMessage] = useState('');
+  const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
 
-  const [error,] = useState("");
+  const [error] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -53,28 +53,33 @@ function EditProfil() {
           const userData = snapshot.docs[0].data();
           setUserProfile(userData);
         } else {
-            console.log("Profil pengguna tidak ditemukan di 'users', cek di 'admins'.");
-  
-            const adminsCollectionRef = collection(db, "admins");
-            const adminsQuery = query(adminsCollectionRef, where("uid", "==", currentUserId));
-  
-            const unsubscribeAdmins = onSnapshot(adminsQuery, (snapshot) => {
-              if (!snapshot.empty) {
-                const userData = snapshot.docs[0].data(); 
-                console.log("Data pengguna ditemukan:", userData);
-                setUserProfile(userData);
-          }else{
-            console.log("Data pengguna tidak ditemukan");
-          }
-        })
-        unsubscribeList.push(unsubscribeAdmins);
-      }});
+          console.log(
+            "Profil pengguna tidak ditemukan di 'users', cek di 'admins'."
+          );
+
+          const adminsCollectionRef = collection(db, "admins");
+          const adminsQuery = query(
+            adminsCollectionRef,
+            where("uid", "==", currentUserId)
+          );
+
+          const unsubscribeAdmins = onSnapshot(adminsQuery, (snapshot) => {
+            if (!snapshot.empty) {
+              const userData = snapshot.docs[0].data();
+              console.log("Data pengguna ditemukan:", userData);
+              setUserProfile(userData);
+            } else {
+              console.log("Data pengguna tidak ditemukan");
+            }
+          });
+          unsubscribeList.push(unsubscribeAdmins);
+        }
+      });
       const unsubscribeList = [unsubscribeUsers];
 
-      
-        return () => unsubscribeList.forEach(unsub=>unsub());
-      }
-    }, [currentUserId]);
+      return () => unsubscribeList.forEach((unsub) => unsub());
+    }
+  }, [currentUserId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -101,44 +106,35 @@ function EditProfil() {
           firstName: userProfile.firstName,
           lastName: userProfile.lastName,
           email: userProfile.email,
-          phone: userProfile.phone,
-          bio: userProfile.bio,
+          phone: userProfile.phone || "", // Jika tidak ada input, set ke string kosong
+          bio: userProfile.bio || "", // Jika tidak ada input, set ke string kosong
         });
 
         setAlertMessage("Profil berhasil diperbarui!");
         setShowAlert(true);
-
       } else {
-        
         const adminsCollectionRef = collection(db, "admins");
-        const adminsQuery = query(adminsCollectionRef, where("uid", "==", currentUserId));
+        const adminsQuery = query(
+          adminsCollectionRef,
+          where("uid", "==", currentUserId)
+        );
 
         const querySnapshot = await getDocs(adminsQuery);
-  
+
         if (!querySnapshot.empty) {
-        
           const adminDoc = querySnapshot.docs[0];
           const adminDocRef = adminDoc.ref;
-  
-         
+
           const updatedData = {
-            firstName: userProfile.firstName || adminDoc.data().firstName || '',
-            lastName: userProfile.lastName || adminDoc.data().lastName || '',
-            email: userProfile.email || adminDoc.data().email || '',
+            firstName: userProfile.firstName || adminDoc.data().firstName || "",
+            lastName: userProfile.lastName || adminDoc.data().lastName || "",
+            email: userProfile.email || adminDoc.data().email || "",
+            phone: userProfile.phone || "", // Jika tidak ada input, set ke string kosong
+            bio: userProfile.bio || "", // Jika tidak ada input, set ke string kosong
           };
-  
-          
-          if (userProfile.phone !== "") {
-            updatedData.phone = userProfile.phone;
-          }
-  
-          if (userProfile.bio !== "") {
-            updatedData.bio = userProfile.bio;
-          }
-  
-          
+
           await updateDoc(adminDocRef, updatedData);
-          setAlertMessage('Profil berhasil diperbarui!');
+          setAlertMessage("Profil berhasil diperbarui!");
           setShowAlert(true);
         } else {
           console.log("Data tidak ditemukan");
@@ -146,11 +142,10 @@ function EditProfil() {
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      setAlertMessage('Gagal menyimpan profil. Silakan coba lagi.');
+      setAlertMessage("Gagal menyimpan profil. Silakan coba lagi.");
       setShowAlert(true);
     }
   };
-
 
   return (
     <div className="min-h-screen font-poppins bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90">
@@ -170,13 +165,16 @@ function EditProfil() {
               className="hidden dark:block w-16 h-16 rounded-full border-2 border-white"
             />
           </div>
-          <h2 className="text-xl font-bold text-center mb-4">{userProfile?.username}</h2>
-          
+          <h2 className="text-xl font-bold text-center mb-4">
+            {userProfile?.username}
+          </h2>
+
           <ul className="space-y-4 w-full">
             <li>
               <button
                 onClick={() => navigate("/Profil")}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 text-left">
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 text-left"
+              >
                 <span className="flex  items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -184,7 +182,8 @@ function EditProfil() {
                     viewBox="0 0 24 24"
                     strokeWidth="2"
                     stroke="currentColor"
-                    className="w-5 h-5 mr-2">
+                    className="w-5 h-5 mr-2"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -229,7 +228,7 @@ function EditProfil() {
 
             <div className="mb-4">
               <label className="block mb-2 font-bold">Email</label>
-                <input
+              <input
                 type="email"
                 name="email"
                 value={userProfile.email}
@@ -240,7 +239,9 @@ function EditProfil() {
             </div>
 
             <div className="mb-4">
-              <label className="dark:text-white block mb-2 font-bold">Telepon</label>
+              <label className="dark:text-white block mb-2 font-bold">
+                Telepon
+              </label>
               <input
                 type="text"
                 name="phone"
@@ -267,7 +268,8 @@ function EditProfil() {
           <div className="text-right mt-6">
             <button
               onClick={handleSave}
-              className="px-6 py-2 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 transition duration-300">
+              className="px-6 py-2 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 transition duration-300"
+            >
               Simpan Perubahan
             </button>
           </div>

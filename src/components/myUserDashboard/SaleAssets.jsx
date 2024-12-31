@@ -163,9 +163,6 @@ function SalesAsset() {
                 <thead>
                   <tr>
                     <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Preview
-                    </th>
-                    <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Nama Aset
                     </th>
                     <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -175,7 +172,7 @@ function SalesAsset() {
                       Harga
                     </th>
                     <th className="px-6 py-3 border-b border-gray-200 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tanggal Asset Terjual
+                      Tanggal Pembelian
                     </th>
                   </tr>
                 </thead>
@@ -183,28 +180,16 @@ function SalesAsset() {
                   {userAssets.map((asset) => (
                     <tr key={asset.docId}>
                       <td className="px-6 py-4 border-b border-gray-200">
-                        <img
-                          src={
-                            asset.image || "https://via.placeholder.com/50"
-                          }
-                          alt="Preview"
-                          className="w-10 h-10 object-cover"
-                        />
+                        {typeof asset.name === 'string' ? asset.name : asset.name?.nameAsset || "N/A"}
                       </td>
                       <td className="px-6 py-4 border-b border-gray-200">
-                        {asset.name || "N/A"}
+                        {typeof asset.category === 'string' ? asset.category : asset.category?.name || "N/A"}
                       </td>
                       <td className="px-6 py-4 border-b border-gray-200">
-                        {asset.category || "N/A"}
+                        Rp. {asset.price ? Number(asset.price).toLocaleString() : "0"}
                       </td>
                       <td className="px-6 py-4 border-b border-gray-200">
-                        Rp.{" "}
-                        {asset.price
-                          ? Number(asset.price).toLocaleString()
-                          : "0"}
-                      </td>
-                      <td className="px-6 py-4 border-b border-gray-200">
-                        {asset.createdAt ? new Date(asset.createdAt.seconds * 1000).toLocaleDateString() : "N/A"}
+                        {asset.purchasedAt ? new Date(asset.purchasedAt.seconds * 1000).toLocaleDateString() : "N/A"}
                       </td>
                     </tr>
                   ))}

@@ -65,8 +65,10 @@ export function MyAsset() {
         id: doc.id,
         ...doc.data(),
       }));
+
       const allFilteredAssets = [...buyAssetsData, ...myAssetsData];
       setAssetsData(allFilteredAssets);
+      console.log("Fetched Assets:", allFilteredAssets);
     } catch (error) {
       console.error("Error fetching assets:", error);
     }
@@ -83,8 +85,10 @@ export function MyAsset() {
     if (searchTerm) {
       const results = AssetsData.filter(
         (asset) =>
-          asset.datasetName &&
-          asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase())
+          typeof asset.datasetName === 'string' &&
+          asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (typeof asset.nameAsset === 'string' &&
+            asset.nameAsset.toLowerCase().includes(searchTerm.toLowerCase()))
       );
       setSearchResults(results);
     } else {
@@ -112,12 +116,15 @@ export function MyAsset() {
       asset.asset2DName ||
       asset.asset3DName ||
       asset.videoName ||
+      asset.name.nameAsset ||
       asset.name;
     return (
-      datasetName &&
+      typeof datasetName === 'string' &&
       datasetName.toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
+
+  console.log("filteredAssetData", filteredAssetsData);
 
   const downloadAsset = async (asset) => {
     setIsLoading(true);
@@ -157,7 +164,7 @@ export function MyAsset() {
           asset.asset2DName ||
           asset.asset3DName ||
           asset.datasetName ||
-          asset.name ||
+          asset.name?.nameAsset ||
           "asset.zip";
 
       const type = asset.uploadUrlAudio
@@ -203,8 +210,11 @@ export function MyAsset() {
         alert("Ukuran tidak valid.");
         return;
       }
-
-      const proxyUrl = `http://localhost:3000/proxy/download?fileUrl=${encodeURIComponent(
+      const apiBaseUrl =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://pixelstore-be.up.railway.app";
+      const proxyUrl = `${apiBaseUrl}/proxy/download?fileUrl=${encodeURIComponent(
         fileUrl
       )}&size=${encodeURIComponent(normalizedSize)}&type=${encodeURIComponent(
         type
@@ -290,14 +300,23 @@ export function MyAsset() {
             </form>
           </div>
         </div>
+
+        <div className="relative mt-56 flex items-center justify-center">
+          <div className="text-center">
+            {searchResults.length === 0 && searchTerm && (
+              <p className="text-black text-[20px]">No assets found</p>
+            )}
+          </div>
+        </div>
       </div>
 
-      <div className="w-full p-12 mx-auto">
+      {/* <div className="w-full p-12 mx-auto">
         <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] -ml-10">
           My Asset
         </h1>
-      </div>
-      <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen ">
+      </div> */}
+
+      <div className="pt-2  w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen mt-32 sm:mt-40 lg:mt-40 xl:mt-40 2xl:mt-32 ">
         <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 place-items-center gap-2 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {filteredAssetsData.map((data) => {
             let collectionsToFetch = "myAssets";
@@ -324,15 +343,15 @@ export function MyAsset() {
               >
                 <div
                   onClick={() => openModal(data)}
-                  className="w-full h-[300px] relative overflow-hidden aspect-video cursor-pointer z-[10]"
+                  className="w-full h-[350px] relative overflow-hidden aspect-video cursor-pointer z-[10]"
                 >
-                  <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[300px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
+                  <div className="w-full h-[200px] sm:h-[200px] md:h-[200px] lg:h-[250px] xl:h-[170px] 2xl:h-[350px] aspect-[16/9] sm:aspect-[4/3] relative mt-4">
                     {Array.isArray(data.thumbnailGame) &&
                       data.thumbnailGame.length > 0 && (
                         <img
                           src={data.thumbnailGame[0] || CustomImage}
                           alt="Asset Thumbnail"
-                          className="h-full w-full object-cover rounded-t-[10px] border-none"
+                          className="h-full w-full object-fill rounded-t-[10px] border-none"
                           onContextMenu={(e) => e.preventDefault()}
                           draggable={false}
                           onDragStart={(e) => e.preventDefault()}
@@ -347,7 +366,7 @@ export function MyAsset() {
                         <img
                           src={data.audioThumbnail[0] || CustomImage}
                           alt="Asset Thumbnail"
-                          className="h-full w-full object-cover rounded-t-[10px] border-none"
+                          className="h-full w-full object-fill rounded-t-[10px] border-none"
                           onContextMenu={(e) => e.preventDefault()}
                           draggable={false}
                           onDragStart={(e) => e.preventDefault()}
@@ -362,7 +381,8 @@ export function MyAsset() {
                       <video
                         src={data.uploadUrlVideo}
                         alt="Asset Video"
-                        className="h-full w-full object-cover rounded-t-[10px] border-none"
+                        className="h-full w-full object-fill rounded-t-[10px] border-none"
+                        controls
                         controlsList="nodownload"
                         onContextMenu={(e) => e.preventDefault()}
                         draggable={false}
@@ -372,7 +392,8 @@ export function MyAsset() {
                       <video
                         src={data.video}
                         alt="Asset Video"
-                        className="h-full w-full object-cover rounded-t-[10px] border-none"
+                        className="h-full w-full object-fill rounded-t-[10px] border-none"
+                        controls
                         controlsList="nodownload"
                         onContextMenu={(e) => e.preventDefault()}
                         draggable={false}
@@ -382,7 +403,8 @@ export function MyAsset() {
                       <video
                         src={data.image}
                         alt="Asset Video"
-                        className="h-full w-full object-cover rounded-t-[10px] border-none"
+                        className="h-full w-full object-fill rounded-t-[10px] border-none"
+                        controls
                         controlsList="nodownload"
                         onContextMenu={(e) => e.preventDefault()}
                         draggable={false}
@@ -395,7 +417,9 @@ export function MyAsset() {
                           data.asset2DThumbnail ||
                           data.asset3DThumbnail ||
                           data.audioThumbnail ||
-                          data.image
+                          data.thumbnailGame ||
+                          data.image ||
+                          CustomImage
                         }
                         alt="Asset Image"
                         onContextMenu={(e) => e.preventDefault()}
@@ -405,22 +429,24 @@ export function MyAsset() {
                           e.target.onerror = null;
                           e.target.src = CustomImage;
                         }}
-                        className="h-full w-full object-cover rounded-t-[10px] border-none"
+                        className="h-full w-full object-fill rounded-t-[10px] border-none"
                       />
                     )}
+
                   </div>
                 </div>
                 <div className="flex flex-col justify-between h-full p-2 sm:p-2">
                   <div onClick={() => openModal(data)} className="px-2 py-2">
                     <p className="text-xs text-neutral-10 font-semibold dark:text-primary-100 ">
                       {(
+                        data.nameAsset ||
                         data.audioName ||
                         data.datasetName ||
                         data.asset2DName ||
                         data.asset3DName ||
                         data.imageName ||
                         data.videoName ||
-                        data.name ||
+                        data.name?.nameAsset ||
                         "Nama Tidak Tersedia"
                       ).slice(0, 14) +
                         ((
@@ -430,6 +456,7 @@ export function MyAsset() {
                           data.asset3DName ||
                           data.imageName ||
                           data.videoName ||
+                          data.name?.nameAsset ||
                           "Nama Tidak Tersedia"
                         ).length > 14
                           ? "..."
@@ -539,16 +566,24 @@ export function MyAsset() {
             <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
               <h2 className="text-lg sm:text-xl text-neutral-10 font-semibold dark:text-primary-100 text-start">
                 {selectedasset.datasetName ||
-                  selectedasset.name ||
+                  selectedasset.nameAsset ||
                   selectedasset.asset2DName ||
                   selectedasset.asset3DName ||
                   selectedasset.audioName ||
                   selectedasset.videoName ||
+                  selectedasset.name?.nameAsset ||
                   selectedasset.imageName}
               </h2>
               <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
                 Kategori: {selectedasset.category}
               </p>
+              {selectedasset.size &&
+                selectedasset.size !== "size & Resolution tidak ada" && (
+                  <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
+                    size: {selectedasset.size}
+                  </p>
+                )}
+
               <div className="text-sm mb-2 dark:text-primary-100  text-start">
                 <label className="flex-col mt-2">Deskripsi Asset:</label>
                 <div className="mt-2 text-justify">

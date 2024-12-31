@@ -621,12 +621,19 @@ export function AssetDataset() {
             </button>
           </div>
         )}
-        <h1 className="text-2xl font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] -ml-10">
-          All Category
-        </h1>
+
+        <div className="relative mt-56 flex items-center justify-center">
+          <div className="text-center">
+            {searchResults.length === 0 && searchTerm && (
+              <p className="text-black text-[20px]">No assets found</p>
+            )}
+          </div>
+        </div>
       </div>
-      <div className="pt-2 w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen -mt-6 ">
-        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
+
+
+      <div className="pt-2  w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen -mt-44 sm:-mt-40 lg:-mt-40 xl:-mt-40 2xl:-mt-40 ">
+        <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {filteredAssetsData.map((data) => {
             const likesAsset = data.likeAsset || 0;
             const likedByCurrentUser = likedAssets.has(data.id);

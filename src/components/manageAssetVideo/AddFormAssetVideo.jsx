@@ -290,6 +290,7 @@ function AddNewVideo() {
                           multiple
                           accept="video/mp4"
                           className="hidden"
+                          key={previewVideo ? previewVideo : Date.now()}
                         />
 
                         {previewVideo && (

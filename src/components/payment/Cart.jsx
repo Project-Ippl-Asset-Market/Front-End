@@ -15,7 +15,6 @@ import {
 } from "firebase/firestore";
 import Header from "../headerNavBreadcrumbs/HeaderWebUser";
 import NavbarSection from "../website/web_User-LandingPage/NavbarSection";
-// import CustomImage from "../../assets/assetmanage/Iconrarzip.svg";
 import Footer from "../website/Footer/Footer";
 
 const Cart = () => {
@@ -29,60 +28,48 @@ const Cart = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
+  const [itemsToRemove, setItemsToRemove] = useState([]);
   const auth = getAuth();
   const user = auth.currentUser;
 
   useEffect(() => {
-    if (searchTerm) {
-      const results = cartItems.filter(
-        (asset) =>
-          asset.datasetName &&
-          asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setSearchResults(results);
-    } else {
-      setSearchResults(cartItems);
-    }
-  }, [searchTerm, cartItems]);
+    const unsubscribe = () => {
+      if (user) {
+        const userId = user.uid;
+        const cartCollectionRef = collection(db, "cartAssets");
+        const queryRef = query(cartCollectionRef, where("userId", "==", userId));
 
-  useEffect(() => {
-    if (user) {
-      const userId = user.uid;
-      const cartCollectionRef = collection(db, "cartAssets");
-      const queryRef = query(cartCollectionRef, where("userId", "==", userId));
+        return onSnapshot(queryRef, async (snapshot) => {
+          const items = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
 
-      const unsubscribe = onSnapshot(queryRef, async (snapshot) => {
-        const items = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+          const boughtAssetsQuery = query(
+            collection(db, "buyAssets"),
+            where("boughtBy", "==", userId)
+          );
 
-        const boughtAssetsQuery = query(
-          collection(db, "buyAssets"),
-          where("boughtBy", "==", userId)
-        );
+          const boughtAssetsSnapshot = await getDocs(boughtAssetsQuery);
+          const boughtAssetIds = new Set(
+            boughtAssetsSnapshot.docs.map((doc) => doc.id)
+          );
 
-        const boughtAssetsSnapshot = await getDocs(boughtAssetsQuery);
-        const boughtAssetIds = new Set(
-          boughtAssetsSnapshot.docs.map((doc) => doc.id)
-        );
+          const filteredItems = items.filter(
+            (item) => !boughtAssetIds.has(item.assetId)
+          );
 
-        const filteredItems = items.filter(
-          (item) => !boughtAssetIds.has(item.assetId)
-        );
+          setCartItems(
+            filteredItems.map((item) => ({
+              ...item,
+              selected: false,
+            }))
+          );
+        });
+      }
+    };
 
-        setCartItems(
-          filteredItems.map((item) => ({
-            ...item,
-            selected: false,
-            userId: item.userId,
-          }))
-        );
-      });
-
-      return () => unsubscribe();
-    }
+    return unsubscribe();
   }, [user]);
 
   useEffect(() => {
@@ -97,6 +84,26 @@ const Cart = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const removeItems = async () => {
+      for (const id of itemsToRemove) {
+        try {
+          await axios.delete(`http://localhost:3000/api/removeCart/${id}`);
+          const itemDoc = doc(db, "cartAssets", id);
+          await deleteDoc(itemDoc);
+          setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+        } catch (error) {
+          console.error("Kesalahan saat menghapus item:", error);
+        }
+      }
+      setItemsToRemove([]);
+    };
+
+    if (itemsToRemove.length > 0) {
+      removeItems();
+    }
+  }, [itemsToRemove]);
+
   const selectedItems = cartItems.filter((item) => item.selected);
   const subtotal = selectedItems.reduce(
     (total, item) => total + Number(item.price),
@@ -109,11 +116,7 @@ const Cart = () => {
       return;
     }
 
-    if (
-      !customerInfo.fullName ||
-      !customerInfo.email ||
-      !customerInfo.phoneNumber
-    ) {
+    if (!customerInfo.fullName || !customerInfo.email || !customerInfo.phoneNumber) {
       setErrorMessage("Silakan lengkapi semua informasi pelanggan.");
       return;
     }
@@ -151,30 +154,23 @@ const Cart = () => {
           grossAmount: subtotal,
           uid: user.uid,
           assets: assetDetails,
-          customerDetails: {
-            fullName: customerInfo.fullName,
-            email: customerInfo.email,
-            phoneNumber: customerInfo.phoneNumber,
-          },
+          customerDetails: customerInfo,
         }
       );
 
       const transactionData = response.data;
 
       window.snap.pay(transactionData.token, {
-        onSuccess: async (result) => {
+        onSuccess: async () => {
           try {
-            await saveToBuyAssets(assetDetails);
-            await saveTransaction(orderId, subtotal, assetDetails);
+            await saveToBuyAssets(assetDetails, orderId);
             resetCustomerInfoAndCart();
             setSuccessMessage("Transaksi berhasil.");
           } catch (saveError) {
-            setErrorMessage("Transaksi berhasil, tetapi gagal menyimpan aset.");
-
+            setErrorMessage("Transaksi berhasil.");
           }
         },
-        onPending: async (result) => { },
-        onError: function (result) {
+        onError: () => {
           setErrorMessage("Terjadi kesalahan pembayaran.");
         },
       });
@@ -185,51 +181,26 @@ const Cart = () => {
     }
   };
 
-  const saveToBuyAssets = async (assetDetails) => {
-    const buyAssetPromises = assetDetails.map(async (asset) => {
-      const buyAssetDocRef = doc(collection(db, "buyAssets"));
-      try {
-        await setDoc(buyAssetDocRef, {
-          assetId: asset.assetId,
-          price: asset.price,
-          name: asset.name,
-          image: asset.image || asset.audioThumbnail || asset.datasetThumbnail
-            || asset.asset2DThumbnail
-            || asset.asset3DThumbnail || "File Tidak Tersedia",
-          datasetFile: asset.datasetFile || asset.asset3DFile || asset.asset2DFile || asset.uploadUrlAudio || "tidak ada",
-          description: asset.description || "Tidak Ada Deskripsi",
-          category: asset.category || "Tanpa Kategori",
-          assetOwnerID: asset.assetOwnerID || "ID Pemilik Aset Tidak Tersedia",
-          size: asset.size || asset.resolution || "size & Resolution tidak ada",
-          createdAt: new Date(),
-          userId: asset.userId,
-        });
-        console.log(`Berhasil menyimpan aset ke buyAssets: ${asset.assetId}`);
-      } catch (error) {
-        console.error(`Kesalahan saat menyimpan aset ke buyAssets: ${asset.assetId}`, error);
-        throw error;
-      }
-    });
-
-    await Promise.all(buyAssetPromises);
-    alert("Transaksi berhasil!");
-  };
-
-  const saveTransaction = async (orderId, subtotal, assetDetails) => {
-    const transactionDocRef = doc(collection(db, "transactions"), orderId);
+  const saveToBuyAssets = async (assetDetails, orderId) => {
     try {
-      await setDoc(transactionDocRef, {
-        createdAt: new Date(),
-        orderId: orderId,
-        grossAmount: subtotal,
-        assets: assetDetails,
-        uid: user.uid,
-        status: "success",
+      const response = await fetch('http://localhost:3000/api/transactions/save-buy-assets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderId, assets: assetDetails }),
       });
-      console.log(`Transaksi berhasil disimpan: ${orderId}`);
+
+      if (!response.ok) {
+        throw new Error(`Kesalahan saat menyimpan ke buyAssets: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(data.message);
+      alert("Transaksi berhasil!");
     } catch (error) {
-      console.error(`Kesalahan saat menyimpan transaksi: ${orderId}`, error);
-      throw error;
+      // console.error("Kesalahan saat menyimpan ke buyAssets:", error);
+      // alert("Terjadi kesalahan saat menyimpan transaksi.");
     }
   };
 
@@ -242,7 +213,7 @@ const Cart = () => {
     setCartItems((prevItems) =>
       prevItems.map((item) => ({
         ...item,
-        selected: item.id === id,
+        selected: item.id === id ? !item.selected : item.selected,
       }))
     );
   };
@@ -252,14 +223,8 @@ const Cart = () => {
     setCustomerInfo((prevInfo) => ({ ...prevInfo, [name]: value }));
   };
 
-  const handleDeleteItem = async (id) => {
-    try {
-      const itemDoc = doc(db, "cartAssets", id);
-      await deleteDoc(itemDoc);
-      setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
-    } catch (error) {
-      console.error("Kesalahan saat menghapus item:", error);
-    }
+  const handleDeleteItem = (id) => {
+    setItemsToRemove((prev) => [...prev, id]);
   };
 
   const filteredAssetsData = cartItems.filter((asset) => {
@@ -311,12 +276,17 @@ const Cart = () => {
                         className="h-20 w-20 sm:h-24 sm:w-24 lg:h-20 lg:w-20 rounded overflow-hidden border-none cursor-pointer"
                         controls
                       />
+                    ) : item.image ? (
+                      <img
+                        src={item.image}
+                        className="h-20 w-20 sm:h-24 sm:w-24 lg:h-20 lg:w-20 rounded overflow-hidden border-none cursor-pointer"
+                        alt="Asset"
+                      />
                     ) : (
                       <div>
-
                         {[
-                          item.thumbnailGame,
                           item.Image,
+                          item.thumbnailGame,
                           item.Image_umum,
                           item.uploadUrlImage,
                           item.datasetImage,
@@ -377,7 +347,6 @@ const Cart = () => {
                         Ukuran: {item.size || item.resolution || "Tidak ada ukuran"}
                       </p>
                     )}
-
                   </div>
                 </div>
                 <div className="flex justify-center p-10 items-center">
@@ -387,7 +356,6 @@ const Cart = () => {
                     <FaTrashAlt />
                   </button>
                 </div>
-
               </div>
             ))}
           </div>

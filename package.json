@@ -44,6 +44,7 @@
     "react-zoom-pan-pinch": "^3.6.1",
     "recharts": "^2.13.0",
     "swiper": "^11.1.14",
+    "three": "^0.171.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

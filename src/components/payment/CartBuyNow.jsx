@@ -7,8 +7,6 @@ import {
   query,
   where,
   onSnapshot,
-  deleteDoc,
-  doc,
   getDocs,
   setDoc,
 } from "firebase/firestore";
@@ -19,6 +17,7 @@ const CartBuyNow = () => {
   const [cartItems, setCartItems] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [snapReady, setSnapReady] = useState(false);
 
@@ -103,18 +102,22 @@ const CartBuyNow = () => {
       window.snap.pay(transactionData.token, {
         onSuccess: async (result) => {
           try {
-            await saveToBuyAssets(assetDetails);
-            await saveTransaction(orderId, subtotal, assetDetails);
+            await saveToBuyAssets(assetDetails, orderId);
+            await saveTransaction(orderId, subtotal, transactionData.token, assetDetails);
             resetCustomerInfoAndCart();
             setSuccessMessage("Transaksi berhasil.");
           } catch (saveError) {
             setErrorMessage("Transaksi berhasil, tetapi gagal menyimpan aset.");
-
           }
         },
-        onPending: async (result) => { },
+        onPending: async (result) => {
+          // Handle pending payment if necessary
+        },
         onError: function (result) {
           setErrorMessage("Terjadi kesalahan pembayaran.");
+        },
+        onClose: function () {
+          navigateBack();
         },
       });
     } catch (error) {
@@ -124,55 +127,27 @@ const CartBuyNow = () => {
     }
   };
 
-  const saveToBuyAssets = async (assetDetails) => {
-    const buyAssetPromises = assetDetails.map(async (asset) => {
-      const buyAssetDocRef = doc(collection(db, "buyAssets"));
-      try {
-        await setDoc(buyAssetDocRef, {
-          assetId: asset.assetId,
-          price: asset.price,
-          name: asset.name,
-          image:
-            asset.image ||
-            asset.Image_umum ||
-            asset.video ||
-            asset.assetImageGame || asset.audioThumbnail || asset.datasetThumbnail
-            || asset.asset2DThumbnail
-            || asset.asset3DThumbnail || "url tidak ada",
-          datasetFile: asset.datasetFile || asset.asset3DFile || asset.asset2DFile || asset.uploadUrlAudio || "tidak ada",
-          userId: asset.userId,
-          description: asset.description || "Tidak Ada Deskripsi",
-          category: asset.category || "Tanpa Kategori",
-          assetOwnerID: asset.assetOwnerID || "ID Pemilik Aset Tidak Tersedia",
-          size: asset.size || asset.resolution || "size & Resolution tidak ada",
-          createdAt: new Date(),
-        });
-        console.log(`Berhasil menyimpan aset ke buyAssets: ${asset.assetId}`);
-      } catch (error) {
-        console.error(`Kesalahan saat menyimpan aset ke buyAssets: ${asset.assetId}`, error);
-        throw error;
-      }
-    });
-
-    await Promise.all(buyAssetPromises);
-    alert("Transaksi berhasil!");
-  };
-
-  const deleteCartItems = async (assetDetails) => {
-    console.log("Deleting cart items:", assetDetails);
+  const saveToBuyAssets = async (assetDetails, orderId) => {
     try {
-      await Promise.all(
-        assetDetails.map(async (asset) => {
-          const cartDocRef = doc(db, "buyNow", asset.docId);
-          await deleteDoc(cartDocRef);
-          console.log(`Deleted asset from buyNow: ${asset.docId}`);
-          await axios.delete(
-            `http://localhost:3000/api/removeCart/${asset.docId}`
-          );
-        })
-      );
+      const response = await fetch('http://localhost:3000/api/transactions/save-buy-assets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderId, assets: assetDetails }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Kesalahan saat menyimpan ke buyAssets: ${errorData.message || response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log(data.message);
+      alert("Transaksi berhasil!");
     } catch (error) {
-      console.error("Error deleting cart items:", error);
+      // console.error("Kesalahan saat menyimpan ke buyAssets:", error);
+      // alert("Terjadi kesalahan saat menyimpan transaksi: " + error.message);
     }
   };
 
@@ -222,7 +197,6 @@ const CartBuyNow = () => {
   };
 
   const saveTransaction = async (
-    status,
     orderId,
     subtotal,
     token,
@@ -235,7 +209,7 @@ const CartBuyNow = () => {
         userId: user.uid,
         grossAmount: subtotal,
         token,
-        status,
+        status: "success",
         createdAt: new Date(),
         assets: assetDetails.map((asset) => ({
           docId: asset.docId,
@@ -257,7 +231,7 @@ const CartBuyNow = () => {
         })),
       });
     } catch (error) {
-      console.error("Error saving transaction:", error);
+      // console.error("Error saving transaction:", error);
     }
   };
 
@@ -282,7 +256,10 @@ const CartBuyNow = () => {
             <div className="animate-spin rounded-full h-60 w-60 border-b-2 border-gray-900"></div>
           </div>
         ) : (
-          successMessage && <p className="text-green-500">{successMessage}</p>
+          <>
+            {successMessage && <p className="text-green-500">{successMessage}</p>}
+            {errorMessage && <p className="text-red-500">{errorMessage}</p>}
+          </>
         )}
       </div>
     </div>

@@ -33,7 +33,7 @@ const DropdownMenu = ({ onCategorySelect }) => {
     "All Category": [{ name: "See all" }],
     "3D": [
       { name: "Animations" },
-      { name: "3D Character" },
+      { name: " 3D Character" },
       { name: "3D Environment" },
       { name: "3D GUI" },
       { name: "Props" },
@@ -67,8 +67,7 @@ const DropdownMenu = ({ onCategorySelect }) => {
           onClick={() => setIsOpen(!isOpen)}>
           Tampil berdasarkan Category
           <svg
-            className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""
-              }`}
+            className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 10 6">
@@ -124,7 +123,7 @@ const DropdownMenu = ({ onCategorySelect }) => {
                   {dropdownItems[category].map(({ name }) => (
                     <button
                       key={name}
-                      className="block py-2 p-2  hover:bg-secondary-40 hover:text-primary-100 transition  rounded-md duration-200 w-full text-left"
+                      className="block py-2 p-2 hover:bg-secondary-40 hover:text-primary-100 transition rounded-md duration-200 w-full text-left"
                       onClick={() => handleClick(category, name)}>
                       {name}
                     </button>
@@ -155,7 +154,6 @@ export function AssetGame() {
   const [fetchMessage, setFetchMessage] = useState("");
   const navigate = useNavigate();
 
-  // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -168,8 +166,6 @@ export function AssetGame() {
 
     return () => unsubscribe();
   }, []);
-
-  // Menangani pengambilan aset yang telah dibeli
   useEffect(() => {
     const fetchUserPurchasedAssets = async () => {
       if (!currentUserId) return;
@@ -204,8 +200,7 @@ export function AssetGame() {
     try {
       const promises = collectionsFetch.map((collectionName) => {
         let q;
-
-        if (selectedSubCategory && selectedSubCategory != "See all") {
+        if (selectedSubCategory && selectedSubCategory !== "See all") {
           q = query(
             collection(db, collectionName),
             where("category", "==", selectedSubCategory)
@@ -229,19 +224,14 @@ export function AssetGame() {
         }));
         return [...accumulator, ...docsData];
       }, []);
-
-      const filteredAssets = allAssets
-        .flat()
-        .filter((asset) => asset.price > 0);
+      const filteredAssets = allAssets.filter((asset) => asset.price > 0);
 
       filteredAssets.sort((a, b) => (b.likeAsset || 0) - (a.likeAsset || 0));
-
       if (filteredAssets.length === 0) {
         setFetchMessage("Asset Tidak Tersedia!");
       } else {
         setFetchMessage("");
       }
-
       setAssetsData(filteredAssets);
     } catch (error) {
       console.error("Error fetching assets: ", error);
@@ -387,12 +377,12 @@ export function AssetGame() {
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
-        thumbnailGame:
+        image:
           selectedasset.audioThumbnail ||
           selectedasset.asset2DThumbnail ||
           selectedasset.asset3DThumbnail ||
           "No Thumbnail Asset",
-        image:
+        datasetFile:
           selectedasset.asset2DFile ||
           selectedasset.asset3DFile ||
           selectedasset.uploadUrlAudio ||
@@ -478,12 +468,12 @@ export function AssetGame() {
       await setDoc(cartRef, {
         userId: currentUserId,
         assetId: selectedasset.id,
-        thumbnailGame:
+        image:
           audioThumbnail ||
           asset2DThumbnail ||
           asset3DThumbnail ||
           "No Thumbnail Asset",
-        image: asset2DFile || asset3DFile || uploadUrlAudio || "No Image Asset",
+        datasetFile: asset2DFile || asset3DFile || uploadUrlAudio || "No Image Asset",
         name: audioName || asset2DName || asset3DName || "No Name Asset",
         description: selectedasset.description,
         price: selectedasset.price,

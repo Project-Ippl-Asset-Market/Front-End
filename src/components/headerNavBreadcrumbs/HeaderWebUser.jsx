@@ -41,20 +41,20 @@ function HeaderWebUser() {
     });
 
     // Fetch Cart Count
-    // const fetchCartCount = async () => {
-    //   if (user) {
-    //     const cartCollection = collection(db, "cartAssets");
-    //     // Create a query to filter by user UID
-    //     const q = query(cartCollection, where("userId", "==", user.uid));
-    //     const cartSnapshot = await getDocs(q);
+    const fetchCartCount = async () => {
+      if (user) {
+        const cartCollection = collection(db, "cartAssets");
+        // Create a query to filter by user UID
+        const q = query(cartCollection, where("userId", "==", user.uid));
+        const cartSnapshot = await getDocs(q);
 
-    //     // Set the cartCount based on the size of the cartSnapshot
-    //     setCartCount(cartSnapshot.size);
-    //   }
-    // };
+        // Set the cartCount based on the size of the cartSnapshot
+        setCartCount(cartSnapshot.size);
+      }
+    };
 
     // Fetch cart count whenever the user changes
-    // fetchCartCount();
+    fetchCartCount();
 
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
@@ -138,11 +138,11 @@ function HeaderWebUser() {
                 alt="icon cart"
                 className="w-[24px] h-[24px]"
               />
-              {/* {cartCount > 0 && (
+              {cartCount > 0 && (
                 <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
                   {cartCount}
                 </span>
-              )} */}
+              )}
               <label>Cart</label>
             </Link>
           </div>

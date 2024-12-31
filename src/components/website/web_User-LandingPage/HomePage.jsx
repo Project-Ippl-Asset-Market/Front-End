@@ -523,6 +523,7 @@ export function HomePage() {
         thumbnailGame: selectedasset.audioThumbnail || selectedasset.datasetThumbnail
           || selectedasset.asset2DThumbnail
           || selectedasset.asset3DThumbnail || "File Tidak Tersedia",
+        createdAt: new Date(),
       });
 
       alert("Asset berhasil ditambahkan ke My Asset!");

@@ -65,8 +65,10 @@ export function MyAsset() {
         id: doc.id,
         ...doc.data(),
       }));
+      
       const allFilteredAssets = [...buyAssetsData, ...myAssetsData];
       setAssetsData(allFilteredAssets);
+      console.log("Fetched Assets:", allFilteredAssets);
     } catch (error) {
       console.error("Error fetching assets:", error);
     }
@@ -83,8 +85,10 @@ export function MyAsset() {
     if (searchTerm) {
       const results = AssetsData.filter(
         (asset) =>
-          asset.datasetName &&
-          asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase())
+          typeof asset.datasetName === 'string' &&
+          asset.datasetName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (typeof asset.nameAsset === 'string' &&
+            asset.nameAsset.toLowerCase().includes(searchTerm.toLowerCase()))
       );
       setSearchResults(results);
     } else {
@@ -112,12 +116,15 @@ export function MyAsset() {
       asset.asset2DName ||
       asset.asset3DName ||
       asset.videoName ||
+      asset.name.nameAsset ||
       asset.name;
     return (
-      datasetName &&
+      typeof datasetName === 'string' &&
       datasetName.toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
+
+  console.log("filteredAssetData", filteredAssetsData);
 
   const downloadAsset = async (asset) => {
     setIsLoading(true);
@@ -157,7 +164,7 @@ export function MyAsset() {
             asset.asset2DName ||
             asset.asset3DName ||
             asset.datasetName ||
-            asset.name ||
+            asset.name?.nameAsset||  
             "asset.zip";
 
       const type = asset.uploadUrlAudio
@@ -203,8 +210,11 @@ export function MyAsset() {
         alert("Ukuran tidak valid.");
         return;
       }
-
-      const proxyUrl = `http://localhost:3000/proxy/download?fileUrl=${encodeURIComponent(
+      const apiBaseUrl =
+        window.location.hostname === "localhost"
+          ? "http://localhost:3000"
+          : "https://pixelstore-be.up.railway.app";
+      const proxyUrl = `${apiBaseUrl}/proxy/download?fileUrl=${encodeURIComponent(
         fileUrl
       )}&size=${encodeURIComponent(normalizedSize)}&type=${encodeURIComponent(
         type
@@ -395,6 +405,7 @@ export function MyAsset() {
                           data.asset2DThumbnail ||
                           data.asset3DThumbnail ||
                           data.audioThumbnail ||
+                          data.thumbnailGame ||
                           data.image
                         }
                         alt="Asset Image"
@@ -414,13 +425,14 @@ export function MyAsset() {
                   <div onClick={() => openModal(data)} className="px-2 py-2">
                     <p className="text-xs text-neutral-10 font-semibold dark:text-primary-100 ">
                       {(
+                         data.nameAsset ||
                         data.audioName ||
                         data.datasetName ||
                         data.asset2DName ||
                         data.asset3DName ||
                         data.imageName ||
                         data.videoName ||
-                        data.name ||
+                        data.name?.nameAsset ||
                         "Nama Tidak Tersedia"
                       ).slice(0, 14) +
                         ((
@@ -430,6 +442,7 @@ export function MyAsset() {
                           data.asset3DName ||
                           data.imageName ||
                           data.videoName ||
+                          data.name?.nameAsset ||
                           "Nama Tidak Tersedia"
                         ).length > 14
                           ? "..."
@@ -539,16 +552,24 @@ export function MyAsset() {
             <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
               <h2 className="text-lg sm:text-xl text-neutral-10 font-semibold dark:text-primary-100 text-start">
                 {selectedasset.datasetName ||
-                  selectedasset.name ||
+                  selectedasset.nameAsset ||
                   selectedasset.asset2DName ||
                   selectedasset.asset3DName ||
                   selectedasset.audioName ||
                   selectedasset.videoName ||
+                  selectedasset.name?.nameAsset ||
                   selectedasset.imageName}
               </h2>
               <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
                 Kategori: {selectedasset.category}
               </p>
+              {selectedasset.size &&
+                selectedasset.size !== "size & Resolution tidak ada" && (
+                  <p className="text-sm mb-2 dark:text-primary-100 mt-4 text-start">
+                    size: {selectedasset.size}
+                  </p>
+                )}
+
               <div className="text-sm mb-2 dark:text-primary-100  text-start">
                 <label className="flex-col mt-2">Deskripsi Asset:</label>
                 <div className="mt-2 text-justify">

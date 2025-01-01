@@ -29,7 +29,7 @@ function HeaderSidebar() {
   const { darkMode, toggleDarkMode } = useTheme();
   const [user, setUser] = useState(null);
   const [username, setUsername] = useState("");
-  const [isPopupVisible, setIsPopupVisible] = useState(false); // State untuk popup
+  const [isPopupVisible, setIsPopupVisible] = useState(false); 
   const navigate = useNavigate();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const displayUsername = windowWidth < 420 ? username.slice(0, 4) : username;
@@ -62,7 +62,7 @@ function HeaderSidebar() {
     const fetchData = async () => {
       if (!user) {
         console.log('No user logged in');
-        return; // Jika tidak ada pengguna yang login, tidak perlu mengambil data
+        return; 
       }
       
       try {
@@ -71,11 +71,11 @@ function HeaderSidebar() {
         const querySnapshot = await getDocs(q);
         const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   
-        setItems(data); // Simpan item ke state
-        setItemCount(querySnapshot.size); // Simpan jumlah dokumen/item
+        setItems(data); 
+        setItemCount(querySnapshot.size); 
 
         const totalPrice = data.reduce((sum, item) => {
-            return sum + (item.price || 0); // Pastikan field price ada, jika tidak, gunakan 0
+            return sum + (item.price || 0); 
           }, 0);
         const formattedTotalPrice = totalPrice.toLocaleString('id-ID');
   
@@ -92,12 +92,12 @@ function HeaderSidebar() {
   }, [user]);
 
 
-  // Handle klik di luar popup
+ 
   useEffect(() => {
     const handleClickOutside = (event) => {
-        const popup = document.querySelector("#popup-cart"); // Sesuaikan selector popup
+        const popup = document.querySelector("#popup-cart"); 
         if (popup && !popup.contains(event.target)) {
-          setIsPopupVisible(false); // Tutup popup
+          setIsPopupVisible(false); 
         }
       };
     
@@ -110,13 +110,13 @@ function HeaderSidebar() {
     };
   }, [isPopupVisible]);
 
-  // Fungsi toggle untuk mengubah status popup
+  
   const togglePopup = () => {
     setIsPopupVisible(!isPopupVisible);
   };
 
 
-  // Fungsi handleLogout
+  
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -134,22 +134,22 @@ function HeaderSidebar() {
       await deleteDoc(docRef);
       console.log(`Successfully deleted document with ID: ${id}`);
   
-      // Update item count and total price after removing an item
+
       setItems(items.filter((item) => item.id !== id));
       setItemCount(itemCount - 1);
   
-      // Pastikan itemPrice dalam bentuk angka dan kurangi dari totalPrice
-      const updatedTotalPrice = totalPrice.replace(/[^0-9]/g, "") - itemPrice; // Hapus karakter non-numeric dari totalPrice sebelum dikurangi
-      setTotalPrice(updatedTotalPrice.toLocaleString('id-ID')); // Set formatted total price
+    
+      const updatedTotalPrice = totalPrice.replace(/[^0-9]/g, "") - itemPrice; 
+      setTotalPrice(updatedTotalPrice.toLocaleString('id-ID')); 
   
     } catch (error) {
       console.error("Error deleting item: ", error);
     }
   };
   
-   // Event handler untuk tombol "Lihat Keranjang"
+   
    const handleViewCart = () => {
-    navigate('/cart'); // Mengarahkan ke halaman Cart
+    navigate('/cart'); 
   };
 
   useEffect(() => {
@@ -176,10 +176,10 @@ function HeaderSidebar() {
             const userData = snapshot.docs[0].data();
             setUserProfile(userData);
   
-            if (userData.photoURL) {
-              setProfileImageUrl(userData.photoURL);
+            if (userData.profileImageUrl) {
+              setProfileImageUrl(userData.profileImageUrl);
             } else {
-              fetchImageFromStorage(); // Fungsi terpisah untuk mengambil gambar dari Storage
+              fetchImageFromStorage(); 
             }
             console.log("Data ditemukan di koleksi users:", userData);
           } else {
@@ -193,8 +193,8 @@ function HeaderSidebar() {
                 const userData = snapshot.docs[0].data();
                 setUserProfile(userData);
   
-                if (userData.photoURL) {
-                  setProfileImageUrl(userData.photoURL);
+                if (userData.profileImageUrl) {
+                  setProfileImageUrl(userData.profileImageUrl);
                 } else {
                   fetchImageFromStorage();
                 }
@@ -211,7 +211,7 @@ function HeaderSidebar() {
         return unsubscribeUser;
       };
   
-      // Fungsi untuk mengambil gambar dari Firebase Storage jika tidak ada photoURL di Firestore
+     
       const fetchImageFromStorage = () => {
         const storage = getStorage();
         const imageRef = ref(storage, `images-user/${currentUserId}.jpg`);
@@ -222,7 +222,7 @@ function HeaderSidebar() {
           })
           .catch((error) => {
             console.error("Error saat mengambil URL gambar profil:", error);
-            setProfileImageUrl("https://placehold.co/80x80"); // Placeholder jika gagal
+            setProfileImageUrl("https://placehold.co/80x80"); 
           });
       };
   

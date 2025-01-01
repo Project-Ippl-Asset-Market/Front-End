@@ -19,14 +19,11 @@ import IconStoreDark from "../../assets/icon/iconHeaderDashboard/iconStoreDark.s
 // eslint-disable-next-line react/prop-types
 function HeaderSidebar({ toggleSidebar }) {
   const { darkMode, toggleDarkMode } = useTheme();
-  // const location = useLocation();
   const navigate = useNavigate();
-  // const currentPath = location.pathname;
-  // const pageName = nameMap[currentPath] || "Unknown Page";
   const [user, setUser] = useState(null);
   const [username, setUsername] = useState("");
 
-  // Fungsi handleLogout untuk menangani logout
+ 
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -54,7 +51,7 @@ function HeaderSidebar({ toggleSidebar }) {
     return () => unsubscribe();
   }, []);
 
-  // Menampilkan initial dari nama pengguna menggantikan foto prifile jika tidak tersedia
+  
   const getInitial = (name) => {
     const nameParts = name.split(" ");
 
@@ -177,10 +174,10 @@ function HeaderSidebar({ toggleSidebar }) {
                 className="btn btn-ghost btn-circle avatar mx-2 w-14 h-14 rounded-full  -ml-3">
                 <div className="w-14 h-14  rounded-full overflow-hidden bg-neutral-80 flex items-center justify-center text-secondary-40 font-bold text-2xl mx-auto">
                   {user ? (
-                    user.photoURL ? (
+                    user.profileImageUrl ? (
                       <img
                         alt="Avatar"
-                        src={user.photoURL}
+                        src={user.profileImageUrl}
                         className="w-full h-full object-cover rounded-full"
                       />
                     ) : (

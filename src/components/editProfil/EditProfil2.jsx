@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Headerprofil from "../headerNavBreadcrumbs/HeaderProfil";
+import Headerprofil from "../editProfil/HeaderWebProfile";
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
@@ -13,6 +13,7 @@ import {
 import { db } from "../../firebase/firebaseConfig";
 import Logoprofil from "../../assets/icon/iconWebUser/profil.svg";
 import Logoprofilwhite from "../../assets/icon/iconWebUser/Profilwhite.svg";
+import Footer from "../../components/website/Footer/Footer";
 
 function EditProfil() {
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -21,9 +22,9 @@ function EditProfil() {
     city: "",
     postalCode: "",
   });
-  const [alertMessage, setAlertMessage] = useState('');
+  const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
-  const [error,] = useState("");
+  const [error] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,24 +50,30 @@ function EditProfil() {
           const userData = snapshot.docs[0].data();
           setUserProfile(userData);
         } else {
-          console.log("Profil pengguna tidak ditemukan di 'users', cek di 'admins'.");
+          console.log(
+            "Profil pengguna tidak ditemukan di 'users', cek di 'admins'."
+          );
 
           const adminsCollectionRef = collection(db, "admins");
-          const adminsQuery = query(adminsCollectionRef, where("uid", "==", currentUserId));
+          const adminsQuery = query(
+            adminsCollectionRef,
+            where("uid", "==", currentUserId)
+          );
 
           const unsubscribeAdmins = onSnapshot(adminsQuery, (snapshot) => {
             if (!snapshot.empty) {
-              const userData = snapshot.docs[0].data(); 
+              const userData = snapshot.docs[0].data();
               console.log("Data pengguna ditemukan:", userData);
-              setUserProfile(userData); 
-        }else{
-          console.log("Data pengguna tidak ditemukan");
+              setUserProfile(userData);
+            } else {
+              console.log("Data pengguna tidak ditemukan");
+            }
+          });
+          unsubscribeList.push(unsubscribeAdmins);
         }
-      })
-      unsubscribeList.push(unsubscribeAdmins);
-    }});
-    const unsubscribeList = [unsubscribeUsers];
-    return () => unsubscribeList.forEach(unsub => unsub());
+      });
+      const unsubscribeList = [unsubscribeUsers];
+      return () => unsubscribeList.forEach((unsub) => unsub());
     }
   }, [currentUserId]);
 
@@ -77,59 +84,57 @@ function EditProfil() {
 
   const handleSave = async () => {
     if (!currentUserId) {
-        setAlertMessage("User ID tidak ditemukan.");
-        setShowAlert(true);
-        return;
+      setAlertMessage("User ID tidak ditemukan.");
+      setShowAlert(true);
+      return;
     }
 
     try {
-        const usersCollectionRef = collection(db, "users");
-        const q = query(usersCollectionRef, where("uid", "==", currentUserId));
-        const querySnapshot = await getDocs(q);
+      const usersCollectionRef = collection(db, "users");
+      const q = query(usersCollectionRef, where("uid", "==", currentUserId));
+      const querySnapshot = await getDocs(q);
 
-        if (!querySnapshot.empty) {
-            const userDoc = querySnapshot.docs[0];
-            const userDocRef = userDoc.ref;
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        const userDocRef = userDoc.ref;
 
-            await updateDoc(userDocRef, {
-                country: userProfile.country,
-                city: userProfile.city,
-                postalCode: userProfile.postalCode,
-            });
-            
-            setAlertMessage("Profil berhasil diperbarui!");
-            setShowAlert(true);
-        } else {
-           
-            const adminsCollectionRef = collection(db, "admins");
-            const adminsQuery = query(adminsCollectionRef, where("uid", "==", currentUserId));
-            const adminQuerySnapshot = await getDocs(adminsQuery);
+        await updateDoc(userDocRef, {
+          country: userProfile.country || "",
+          city: userProfile.city || "",
+          postalCode: userProfile.postalCode || "",
+        });
 
-            if (!adminQuerySnapshot.empty) {
-                
-                const adminDoc = adminQuerySnapshot.docs[0];
-                const adminDocRef = adminDoc.ref;
-
-                
-                await updateDoc(adminDocRef, {
-                country: userProfile.country,
-                city: userProfile.city,
-                postalCode: userProfile.postalCode,
-            });
-            setAlertMessage("Profil berhasil diperbarui!")
-            setShowAlert(true);
-
-            } else {
-                console.log("Data tidak ditemukan di koleksi 'admins'.");
-            }
-        }
-    } catch (error) {
-        console.error("Error updating profile:", error);
-        setAlertMessage("Gagal menyimpan profil. Silakan coba lagi.");
+        setAlertMessage("Profil berhasil diperbarui!");
         setShowAlert(true);
-    }
-};
+      } else {
+        const adminsCollectionRef = collection(db, "admins");
+        const adminsQuery = query(
+          adminsCollectionRef,
+          where("uid", "==", currentUserId)
+        );
+        const adminQuerySnapshot = await getDocs(adminsQuery);
 
+        if (!adminQuerySnapshot.empty) {
+          const adminDoc = adminQuerySnapshot.docs[0];
+          const adminDocRef = adminDoc.ref;
+
+          await updateDoc(adminDocRef, {
+            country: userProfile.country || "",
+            city: userProfile.city || "",
+            postalCode: userProfile.postalCode || "",
+          });
+          setAlertMessage("Profil berhasil diperbarui!");
+          setShowAlert(true);
+        } else {
+          console.log("Data tidak ditemukan di koleksi 'admins'.");
+        }
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      setAlertMessage("Gagal menyimpan profil. Silakan coba lagi.");
+      setShowAlert(true);
+    }
+  };
 
   return (
     <div className=" font-poppins bg-gray-50 dark:bg-neutral-900 text-neutral-10 dark:text-neutral-90">
@@ -154,7 +159,8 @@ function EditProfil() {
             <li>
               <button
                 onClick={() => navigate("/Profil")}
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 text-left">
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 text-left"
+              >
                 <span className="flex  items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -162,7 +168,8 @@ function EditProfil() {
                     viewBox="0 0 24 24"
                     strokeWidth="2"
                     stroke="currentColor"
-                    className="w-5 h-5 mr-2">
+                    className="w-5 h-5 mr-2"
+                  >
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -218,40 +225,33 @@ function EditProfil() {
             </div>
           </div>
 
-            <div className="text-right mt-20 justify-between">
-              <button
-                onClick={handleSave}
-                className="px-6 py-2 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 transition duration-300">
-                Simpan Perubahan
-              </button>
-            </div>
+          <div className="text-right mt-20 justify-between">
+            <button
+              onClick={handleSave}
+              className="px-6 py-2 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 transition duration-300"
+            >
+              Simpan Perubahan
+            </button>
+          </div>
         </main>
         {showAlert && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 w-11/12 sm:w-96">
-                <p className="text-gray-800 text-center">{alertMessage}</p>
-                <button
-                  onClick={() => setShowAlert(false)}
-                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
-                >
-                  OK
-                </button>
-              </div>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-11/12 sm:w-96">
+              <p className="text-gray-800 text-center">{alertMessage}</p>
+              <button
+                onClick={() => setShowAlert(false)}
+                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+              >
+                OK
+              </button>
             </div>
-          )}
+          </div>
+        )}
       </div>
 
-      <footer className="bg-[#212121] text-white py-20 mt-10">
-        <div className="flex flex-col items-start lg:flex lg:flex-col lg:items-center">
-          <div className="flex grid grid-cols-1 ml-6 lg:mr-auto lg:ml-auto lg:flex lg:space-x-16 lg:mb-8 gap-10">
-            <a href="#" className="hover:text-gray-400 font-bold">Terms And Conditions</a>
-            <a href="#" className="hover:text-gray-400 font-bold">File Licenses</a>
-            <a href="#" className="hover:text-gray-400 font-bold">Refund Policy</a>
-            <a href="#" className="hover:text-gray-400 font-bold">Privacy Policy</a>
-          </div>
-          <p className="text-sm mb-1 mt-20 lg:mt-0 self-center">Copyright &copy; 2024 All rights reserved by PixelStore</p>
-        </div>
-      </footer>
+      <div className="mt-[200px]">
+        <Footer />
+      </div>
     </div>
   );
 }

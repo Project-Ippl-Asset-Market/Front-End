@@ -21,7 +21,6 @@ import { useNavigate } from "react-router-dom";
 import Headerprofil from "../editProfil/HeaderWebProfile";
 import Logoprofil from "../../assets/icon/iconWebUser/profil.svg";
 import Logoprofilwhite from "../../assets/icon/iconWebUser/Profilwhite.svg";
-import Footer from "../../components/website/Footer/Footer";
 
 function Profil() {
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -33,7 +32,6 @@ function Profil() {
   const navigate = useNavigate();
   const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const auth = getAuth();
@@ -64,7 +62,12 @@ function Profil() {
             } else {
               fetchImageFromStorage();
             }
+            console.log("Data ditemukan di koleksi users:", userData);
           } else {
+            console.log(
+              "Pengguna tidak ditemukan, mencoba mencari di koleksi admins"
+            );
+
             const adminsCollectionRef = collection(db, "admins");
             const adminsQuery = query(
               adminsCollectionRef,
@@ -81,6 +84,9 @@ function Profil() {
                 } else {
                   fetchImageFromStorage();
                 }
+                console.log("Data ditemukan di koleksi admins:", userData);
+              } else {
+                console.log("Profil tidak ditemukan di kedua koleksi.");
               }
             });
 
@@ -99,7 +105,8 @@ function Profil() {
           .then((url) => {
             setProfileImageUrl(url);
           })
-          .catch(() => {
+          .catch((error) => {
+            console.error("Error saat mengambil URL gambar profil:", error);
             setProfileImageUrl("https://placehold.co/80x80");
           });
       };
@@ -108,6 +115,7 @@ function Profil() {
     }
   }, [currentUserId]);
 
+  // Fungsi untuk membuka modal
   const handleImageClick = () => {
     setShowModal(true);
   };
@@ -128,7 +136,6 @@ function Profil() {
       return;
     }
 
-    setIsLoading(true);
     try {
       const storage = getStorage();
       const fileExtension = newProfileImage.name.split(".").pop();
@@ -172,11 +179,14 @@ function Profil() {
         await deleteObject(oldImageRef);
       }
 
+      // Upload the new profile image
       await uploadBytes(newImageRef, newProfileImage);
       const uploadedImageUrl = await getDownloadURL(newImageRef);
 
+      // Update the photoURL in Firestore
       await updateDoc(userDocRef, { profileImageUrl: uploadedImageUrl });
 
+      // Set alert message and show the alert
       setAlertMessage("Profil berhasil diperbarui!");
       setShowAlert(true);
       setProfileImageUrl(uploadedImageUrl);
@@ -185,8 +195,6 @@ function Profil() {
       console.error("Error saat mengupload foto profil:", error);
       setAlertMessage("Profil Gagal diperbarui!");
       setShowAlert(true);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -269,11 +277,6 @@ function Profil() {
                   alt="Preview"
                   className="h-40 w-40 text-white dark:text-black rounded-full mb-4"
                 />
-                {isLoading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-10">
-                    <div className="loader border-t-4 border-b-4 border-blue-500 w-16 h-16 rounded-full animate-spin"></div>
-                  </div>
-                )}
                 <input
                   type="file"
                   accept="image/png, image/jpeg, image/jpg"
@@ -290,10 +293,8 @@ function Profil() {
                   <button
                     onClick={handleUpload}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md cursor-pointer"
-                    disabled={isLoading}
                   >
                     Upload
-                    {isLoading ? "" : ""}
                   </button>
                 </div>
                 {showAlert && (
@@ -304,8 +305,8 @@ function Profil() {
                       </p>
                       <button
                         onClick={() => {
-                          setShowAlert(false);
-                          setShowModal(false);
+                          setShowAlert(false); // Menyembunyikan modal alert
+                          setShowModal(false); // Menyembunyikan modal utama (misalnya modal upload foto)
                         }}
                         className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
                       >
@@ -361,7 +362,7 @@ function Profil() {
             </div>
             <div>
               <p className="font-bold">Bio</p>
-              <p>{userProfile?.bio || " "}</p>
+              <p>{userProfile?.bio || ""}</p>
             </div>
           </div>
 
@@ -405,9 +406,27 @@ function Profil() {
           </div>
         </main>
       </div>
-      <div className="mt-[200px]">
-        <Footer />
-      </div>
+      <footer className="bg-[#212121] text-white py-20 mt-10">
+        <div className="flex flex-col items-start lg:flex lg:flex-col lg:items-center">
+          <div className="flex grid grid-cols-1 ml-6 lg:mr-auto lg:ml-auto lg:flex lg:space-x-16 lg:mb-8 gap-10">
+            <a href="#" className="hover:text-gray-400 font-bold">
+              Terms And Conditions
+            </a>
+            <a href="#" className="hover:text-gray-400 font-bold">
+              File Licenses
+            </a>
+            <a href="#" className="hover:text-gray-400 font-bold">
+              Refund Policy
+            </a>
+            <a href="#" className="hover:text-gray-400 font-bold">
+              Privacy Policy
+            </a>
+          </div>
+          <p className="text-sm mb-1 mt-20 lg:mt-0 self-center">
+            Copyright &copy; 2024 All rights reserved by PixelStore
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

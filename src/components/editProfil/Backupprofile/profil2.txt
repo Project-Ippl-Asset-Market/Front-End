@@ -18,15 +18,12 @@ import Footer from "../../components/website/Footer/Footer";
 function EditProfil() {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [userProfile, setUserProfile] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    bio: "",
+    country: "",
+    city: "",
+    postalCode: "",
   });
   const [alertMessage, setAlertMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
-
   const [error] = useState("");
   const navigate = useNavigate();
 
@@ -76,7 +73,6 @@ function EditProfil() {
         }
       });
       const unsubscribeList = [unsubscribeUsers];
-
       return () => unsubscribeList.forEach((unsub) => unsub());
     }
   }, [currentUserId]);
@@ -103,11 +99,9 @@ function EditProfil() {
         const userDocRef = userDoc.ref;
 
         await updateDoc(userDocRef, {
-          firstName: userProfile.firstName,
-          lastName: userProfile.lastName,
-          email: userProfile.email,
-          phone: userProfile.phone || "",
-          bio: userProfile.bio || "",
+          country: userProfile.country || "", // Set to empty string if no input
+          city: userProfile.city || "", // Set to empty string if no input
+          postalCode: userProfile.postalCode || "", // Set to empty string if no input
         });
 
         setAlertMessage("Profil berhasil diperbarui!");
@@ -118,26 +112,21 @@ function EditProfil() {
           adminsCollectionRef,
           where("uid", "==", currentUserId)
         );
+        const adminQuerySnapshot = await getDocs(adminsQuery);
 
-        const querySnapshot = await getDocs(adminsQuery);
-
-        if (!querySnapshot.empty) {
-          const adminDoc = querySnapshot.docs[0];
+        if (!adminQuerySnapshot.empty) {
+          const adminDoc = adminQuerySnapshot.docs[0];
           const adminDocRef = adminDoc.ref;
 
-          const updatedData = {
-            firstName: userProfile.firstName || adminDoc.data().firstName || "",
-            lastName: userProfile.lastName || adminDoc.data().lastName || "",
-            email: userProfile.email || adminDoc.data().email || "",
-            phone: userProfile.phone || "",
-            bio: userProfile.bio || "",
-          };
-
-          await updateDoc(adminDocRef, updatedData);
+          await updateDoc(adminDocRef, {
+            country: userProfile.country || "", // Set to empty string if no input
+            city: userProfile.city || "", // Set to empty string if no input
+            postalCode: userProfile.postalCode || "", // Set to empty string if no input
+          });
           setAlertMessage("Profil berhasil diperbarui!");
           setShowAlert(true);
         } else {
-          console.log("Data tidak ditemukan");
+          console.log("Data tidak ditemukan di koleksi 'admins'.");
         }
       }
     } catch (error) {
@@ -148,7 +137,7 @@ function EditProfil() {
   };
 
   return (
-    <div className="min-h-screen font-poppins bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90">
+    <div className=" font-poppins bg-gray-50 dark:bg-neutral-900 text-neutral-10 dark:text-neutral-90">
       <Headerprofil />
 
       <div className="flex flex-col items-center lg:mr-0 lg:items-stretch lg:flex-row mb-5 lg:mb-10 lg:p-20">
@@ -165,10 +154,7 @@ function EditProfil() {
               className="hidden dark:block w-16 h-16 rounded-full border-2 border-white"
             />
           </div>
-          <h2 className="text-xl font-bold text-center mb-4">
-            {userProfile?.username}
-          </h2>
-
+          <h2 className="text-xl font-bold text-center mb-4">User Name</h2>
           <ul className="space-y-4 w-full">
             <li>
               <button
@@ -190,7 +176,7 @@ function EditProfil() {
                       d="M3 12l2.25-2.25M21 12l-2.25 2.25M12 3l2.25 2.25M12 21l-2.25-2.25M3.5 3.5L20.5 20.5M3.5 20.5L20.5 3.5"
                     />
                   </svg>
-                  <p className="text-center ml-6">Kembali</p>
+                  <p className="text-center ml-16">Kembali</p>
                 </span>
               </button>
             </li>
@@ -198,74 +184,48 @@ function EditProfil() {
         </aside>
 
         <main className="bg-white dark:bg-neutral-900 w-[90%] lg:w-full p-4 lg:p-6 rounded-lg mt-8 lg:mt-16 shadow-lg ml-auto mr-auto lg:mr-auto lg:ml-6">
-          <h1 className="text-3xl font-bold mb-6">Edit Profile</h1>
+          <h1 className="text-3xl font-bold mb-6">Edit Profil</h1>
           {error && <div className="text-red-500 mb-4">{error}</div>}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="mb-4">
-              <label className="block mb-2 font-bold">Nama Depan</label>
+            <div>
+              <label className="block mb-2 font-bold">Negara</label>
               <input
                 type="text"
-                name="firstName"
-                value={userProfile.firstName}
+                name="country"
+                value={userProfile.country}
                 onChange={handleChange}
                 className="dark:text-black w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Masukkan Nama Depan"
+                placeholder="Masukkan Negara"
               />
             </div>
 
-            <div className="mb-4">
-              <label className="block mb-2 font-bold">Nama Belakang</label>
+            <div>
+              <label className="block mb-2 font-bold">Kota</label>
               <input
                 type="text"
-                name="lastName"
-                value={userProfile.lastName}
+                name="city"
+                value={userProfile.city}
                 onChange={handleChange}
                 className="dark:text-black w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Masukkan Nama Belakang"
+                placeholder="Masukkan Kota"
               />
             </div>
 
-            <div className="mb-4">
-              <label className="block mb-2 font-bold">Email</label>
-              <input
-                type="email"
-                name="email"
-                value={userProfile.email}
-                readOnly
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100 cursor-not-allowed"
-                placeholder="Masukkan Email"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="dark:text-white block mb-2 font-bold">
-                Telepon
-              </label>
+            <div>
+              <label className="block mb-2 font-bold">Kode Pos</label>
               <input
                 type="text"
-                name="phone"
-                value={userProfile.phone}
+                name="postalCode"
+                value={userProfile.postalCode}
                 onChange={handleChange}
                 className="dark:text-black w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Masukkan Telepon"
-              />
-            </div>
-
-            <div className="mb-4 col-span-full">
-              <label className="block mb-2 font-bold">Bio</label>
-              <textarea
-                name="bio"
-                value={userProfile.bio}
-                onChange={handleChange}
-                className="dark:text-black w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows="4"
-                placeholder="Deskripsikan tentang diri Anda"
+                placeholder="Masukkan Kode Pos"
               />
             </div>
           </div>
 
-          <div className="text-right mt-6">
+          <div className="text-right mt-20 justify-between">
             <button
               onClick={handleSave}
               className="px-6 py-2 bg-blue-600 text-white font-bold rounded-md hover:bg-blue-700 transition duration-300"
@@ -273,20 +233,20 @@ function EditProfil() {
               Simpan Perubahan
             </button>
           </div>
-          {showAlert && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 w-11/12 sm:w-96">
-                <p className="text-gray-800 text-center">{alertMessage}</p>
-                <button
-                  onClick={() => setShowAlert(false)}
-                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          )}
         </main>
+        {showAlert && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-11/12 sm:w-96">
+              <p className="text-gray-800 text-center">{alertMessage}</p>
+              <button
+                onClick={() => setShowAlert(false)}
+                className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="mt-[200px]">

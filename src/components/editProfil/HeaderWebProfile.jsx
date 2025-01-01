@@ -95,7 +95,7 @@ function HeaderProfil() {
     }
   };
 
-  //ambil profil dari firebase
+
   useEffect(() => {
     if (currentUserId) {
       const fetchUserProfile = async () => {
@@ -110,7 +110,7 @@ function HeaderProfil() {
             if (userData.profileImageUrl) {
               setProfileImageUrl(userData.profileImageUrl);
             } else {
-              fetchImageFromStorage(); // Fungsi terpisah untuk mengambil gambar dari Storage
+              fetchImageFromStorage();
             }
             console.log("Data ditemukan di koleksi users:", userData);
           } else {
@@ -142,7 +142,7 @@ function HeaderProfil() {
         return unsubscribeUser;
       };
   
-      // Fungsi untuk mengambil gambar dari Firebase Storage jika tidak ada photoURL di Firestore
+
       const fetchImageFromStorage = () => {
         const storage = getStorage();
         const imageRef = ref(storage, `images-user/${currentUserId}.jpg`);
@@ -153,7 +153,7 @@ function HeaderProfil() {
           })
           .catch((error) => {
             console.error("Error saat mengambil URL gambar profil:", error);
-            setProfileImageUrl("https://placehold.co/80x80"); // Placeholder jika gagal
+            setProfileImageUrl("https://placehold.co/80x80");
           });
       };
   

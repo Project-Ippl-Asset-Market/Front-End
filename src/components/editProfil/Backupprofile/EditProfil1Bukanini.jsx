@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Headerprofil from "../editProfil/HeaderWebProfile";
+import Headerprofil from "../../headerNavBreadcrumbs/HeaderWebProfile";
 import { useNavigate } from "react-router-dom";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import {
@@ -10,10 +10,9 @@ import {
   where,
   onSnapshot,
 } from "firebase/firestore";
-import { db } from "../../firebase/firebaseConfig";
+import { db } from "../../../firebase/firebaseConfig";
 import Logoprofil from "../../assets/icon/iconWebUser/profil.svg";
 import Logoprofilwhite from "../../assets/icon/iconWebUser/Profilwhite.svg";
-import Footer from "../../components/website/Footer/Footer";
 
 function EditProfil() {
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -24,10 +23,8 @@ function EditProfil() {
     phone: "",
     bio: "",
   });
-  const [alertMessage, setAlertMessage] = useState("");
-  const [showAlert, setShowAlert] = useState(false);
-
-  const [error] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,36 +45,20 @@ function EditProfil() {
       const usersCollectionRef = collection(db, "users");
       const q = query(usersCollectionRef, where("uid", "==", currentUserId));
 
-      const unsubscribeUsers = onSnapshot(q, (snapshot) => {
+      const unsubscribe = onSnapshot(q, (snapshot) => {
         if (!snapshot.empty) {
           const userData = snapshot.docs[0].data();
           setUserProfile(userData);
         } else {
           console.log(
-            "Profil pengguna tidak ditemukan di 'users', cek di 'admins'."
+            "Profil pengguna tidak ditemukan untuk UID:",
+            currentUserId
           );
-
-          const adminsCollectionRef = collection(db, "admins");
-          const adminsQuery = query(
-            adminsCollectionRef,
-            where("uid", "==", currentUserId)
-          );
-
-          const unsubscribeAdmins = onSnapshot(adminsQuery, (snapshot) => {
-            if (!snapshot.empty) {
-              const userData = snapshot.docs[0].data();
-              console.log("Data pengguna ditemukan:", userData);
-              setUserProfile(userData);
-            } else {
-              console.log("Data pengguna tidak ditemukan");
-            }
-          });
-          unsubscribeList.push(unsubscribeAdmins);
         }
+        setLoading(false);
       });
-      const unsubscribeList = [unsubscribeUsers];
 
-      return () => unsubscribeList.forEach((unsub) => unsub());
+      return () => unsubscribe();
     }
   }, [currentUserId]);
 
@@ -88,8 +69,7 @@ function EditProfil() {
 
   const handleSave = async () => {
     if (!currentUserId) {
-      setAlertMessage("User ID tidak ditemukan.");
-      setShowAlert(true);
+      alert("User ID tidak ditemukan.");
       return;
     }
 
@@ -106,53 +86,30 @@ function EditProfil() {
           firstName: userProfile.firstName,
           lastName: userProfile.lastName,
           email: userProfile.email,
-          phone: userProfile.phone || "",
-          bio: userProfile.bio || "",
+          phone: userProfile.phone,
+          bio: userProfile.bio,
         });
 
-        setAlertMessage("Profil berhasil diperbarui!");
-        setShowAlert(true);
+        alert("Profil berhasil diperbarui!");
       } else {
-        const adminsCollectionRef = collection(db, "admins");
-        const adminsQuery = query(
-          adminsCollectionRef,
-          where("uid", "==", currentUserId)
-        );
-
-        const querySnapshot = await getDocs(adminsQuery);
-
-        if (!querySnapshot.empty) {
-          const adminDoc = querySnapshot.docs[0];
-          const adminDocRef = adminDoc.ref;
-
-          const updatedData = {
-            firstName: userProfile.firstName || adminDoc.data().firstName || "",
-            lastName: userProfile.lastName || adminDoc.data().lastName || "",
-            email: userProfile.email || adminDoc.data().email || "",
-            phone: userProfile.phone || "",
-            bio: userProfile.bio || "",
-          };
-
-          await updateDoc(adminDocRef, updatedData);
-          setAlertMessage("Profil berhasil diperbarui!");
-          setShowAlert(true);
-        } else {
-          console.log("Data tidak ditemukan");
-        }
+        alert("Profil pengguna tidak ditemukan untuk UID ini.");
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      setAlertMessage("Gagal menyimpan profil. Silakan coba lagi.");
-      setShowAlert(true);
+      setError("Gagal menyimpan profil. Silakan coba lagi.");
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="min-h-screen font-poppins bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90">
       <Headerprofil />
 
-      <div className="flex flex-col items-center lg:mr-0 lg:items-stretch lg:flex-row mb-5 lg:mb-10 lg:p-20">
-        <aside className=" self-stretch mr-4 ml-4 lg:mr-auto lg:ml-auto bg-white dark:bg-neutral-800 drop-shadow-lg p-6 mt:4 lg:mt-16 rounded-lg">
+      <div className="flex mb-20 p-20">
+        <aside className="bg-white dark:bg-neutral-800 drop-shadow-lg w-60 h-auto p-6 mt-16 rounded-lg flex flex-col items-center">
           <div className="flex justify-center mb-4">
             <img
               src={Logoprofil}
@@ -165,10 +122,8 @@ function EditProfil() {
               className="hidden dark:block w-16 h-16 rounded-full border-2 border-white"
             />
           </div>
-          <h2 className="text-xl font-bold text-center mb-4">
-            {userProfile?.username}
-          </h2>
-
+          <h2 className="text-xl font-bold text-center mb-4">User Name</h2>{" "}
+          {/* Optional for user name */}
           <ul className="space-y-4 w-full">
             <li>
               <button
@@ -197,8 +152,8 @@ function EditProfil() {
           </ul>
         </aside>
 
-        <main className="bg-white dark:bg-neutral-900 w-[90%] lg:w-full p-4 lg:p-6 rounded-lg mt-8 lg:mt-16 shadow-lg ml-auto mr-auto lg:mr-auto lg:ml-6">
-          <h1 className="text-3xl font-bold mb-6">Edit Profile</h1>
+        <main className="bg-white dark:bg-neutral-900 w-full p-6 rounded-lg mt-16 shadow-lg ml-6">
+          <h1 className="text-3xl font-bold mb-6">Edit Profil</h1>
           {error && <div className="text-red-500 mb-4">{error}</div>}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -209,7 +164,7 @@ function EditProfil() {
                 name="firstName"
                 value={userProfile.firstName}
                 onChange={handleChange}
-                className="dark:text-black w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Masukkan Nama Depan"
               />
             </div>
@@ -221,7 +176,7 @@ function EditProfil() {
                 name="lastName"
                 value={userProfile.lastName}
                 onChange={handleChange}
-                className="dark:text-black w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Masukkan Nama Belakang"
               />
             </div>
@@ -239,15 +194,13 @@ function EditProfil() {
             </div>
 
             <div className="mb-4">
-              <label className="dark:text-white block mb-2 font-bold">
-                Telepon
-              </label>
+              <label className="block mb-2 font-bold">Telepon</label>
               <input
                 type="text"
                 name="phone"
                 value={userProfile.phone}
                 onChange={handleChange}
-                className="dark:text-black w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Masukkan Telepon"
               />
             </div>
@@ -258,7 +211,7 @@ function EditProfil() {
                 name="bio"
                 value={userProfile.bio}
                 onChange={handleChange}
-                className="dark:text-black w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 rows="4"
                 placeholder="Deskripsikan tentang diri Anda"
               />
@@ -273,25 +226,30 @@ function EditProfil() {
               Simpan Perubahan
             </button>
           </div>
-          {showAlert && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-lg p-6 w-11/12 sm:w-96">
-                <p className="text-gray-800 text-center">{alertMessage}</p>
-                <button
-                  onClick={() => setShowAlert(false)}
-                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
-                >
-                  OK
-                </button>
-              </div>
-            </div>
-          )}
         </main>
       </div>
 
-      <div className="mt-[200px]">
-        <Footer />
-      </div>
+      <footer className="bg-[#212121] text-white py-10">
+        <div className="container mx-auto flex flex-col items-center">
+          <div className="flex space-x-8 mb-4">
+            <a href="#" className="hover:text-gray-400 font-bold">
+              Ketentuan dan Kebijakan
+            </a>
+            <a href="#" className="hover:text-gray-400 font-bold">
+              Lisensi File
+            </a>
+            <a href="#" className="hover:text-gray-400 font-bold">
+              Kebijakan Pengembalian
+            </a>
+            <a href="#" className="hover:text-gray-400 font-bold">
+              Kebijakan Privasi
+            </a>
+          </div>
+          <p className="text-sm">
+            Hak Cipta &copy; 2024 Semua hak dilindungi oleh PixelStore
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -18,16 +18,16 @@ import NavbarSection from "../web_User-LandingPage/NavbarSection";
 import { FaRegHeart, FaHeart } from "react-icons/fa";
 import CustomImage from "../../../assets/assetmanage/Iconrarzip.svg";
 import IconDownload from "../../../assets/icon/iconDownload/iconDownload.svg";
-
 import IconDollar from "../../../assets/assetWeb/iconDollarLight.svg";
 import IconCart from "../../../assets/assetWeb/iconCart.svg";
 import { AiOutlineInfoCircle } from "react-icons/ai";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Footer from "../../website/Footer/Footer";
 
 const DropdownMenu = ({ onCategorySelect }) => {
   const [isHovered, setIsHovered] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+
 
   const dropdownItems = {
     "All Category": [{ name: "See all" }],
@@ -166,6 +166,7 @@ export function AssetGame() {
 
     return () => unsubscribe();
   }, []);
+
   useEffect(() => {
     const fetchUserPurchasedAssets = async () => {
       if (!currentUserId) return;
@@ -180,11 +181,9 @@ export function AssetGame() {
         const purchasedIds = new Set();
 
         purchasedSnapshot.forEach((doc) => {
-          // Menambahkan assetId dari dokumen ke dalam Set
           purchasedIds.add(doc.data().assetId);
         });
 
-        // Mengupdate state dengan assetId yang dibeli
         setPurchasedAssets(purchasedIds);
       } catch (error) {
         console.error("Error fetching purchased assets: ", error);
@@ -242,7 +241,6 @@ export function AssetGame() {
     fetchAssets(selectedSubCategory);
   }, [selectedSubCategory]);
 
-  // Filter pencarian
   useEffect(() => {
     if (searchTerm) {
       const results = AssetsData.filter(
@@ -274,14 +272,14 @@ export function AssetGame() {
 
         setLikedAssets(userLikes);
       } catch (error) {
-        // console.error("Error fetching likes: ", error);
+        console.error("Error fetching likes: ", error);
       }
     };
 
     fetchUserLikes();
   }, [currentUserId]);
 
-  const handleLikeClick = async (id, currentLikes, collectionsToFetch) => {
+  const handleLikeClick = async (id, currentLikes, collectionsFetch) => {
     if (isProcessingLike) return;
 
     if (!currentUserId) {
@@ -295,7 +293,14 @@ export function AssetGame() {
     // Tandai bahwa kita sedang memproses
     setIsProcessingLike(true);
 
-    const assetRef = doc(db, collectionsToFetch, id);
+    // Ensure collectionsFetch is defined
+    if (!collectionsFetch) {
+      console.error("Error: collectionsFetch is undefined or empty.");
+      setIsProcessingLike(false);
+      return;
+    }
+
+    const assetRef = doc(db, collectionsFetch, id);
     const likeRef = doc(db, "likes", `${currentUserId}_${id}`);
 
     try {
@@ -313,7 +318,7 @@ export function AssetGame() {
           transaction.set(likeRef, {
             userId: currentUserId,
             id: id,
-            collectionsToFetch: collectionsToFetch,
+            collectionsToFetch: collectionsFetch,
           });
           newLikesAsset = currentLikes + 1;
           transaction.update(assetRef, { likeAsset: newLikesAsset });
@@ -323,9 +328,9 @@ export function AssetGame() {
         // Update state setelah transaksi sukses
         setLikedAssets(newLikedAssets);
       });
-      await fetchAssets();
+      await fetchAssets(selectedSubCategory);
     } catch (error) {
-      // console.error("Error updating likes: ", error);
+      console.error("Error updating likes: ", error);
     } finally {
       setIsProcessingLike(false);
     }
@@ -512,19 +517,16 @@ export function AssetGame() {
     return missingFields;
   };
 
-  // Menampilkan modal
   const openModal = (asset) => {
     setselectedasset(asset);
     setModalIsOpen(true);
   };
 
-  // Menutup modal
   const closeModal = () => {
     setModalIsOpen(false);
     setselectedasset(null);
   };
 
-  // Filter berdasarkan pencarian
   const filteredAssetsData = AssetsData.filter((asset) => {
     const audioName =
       asset.name ||
@@ -557,7 +559,6 @@ export function AssetGame() {
       return prevIndex;
     });
   };
-
 
   return (
     <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
@@ -620,8 +621,6 @@ export function AssetGame() {
         </div>
       </div>
 
-
-      {/* Validation message display */}
       {validationMessage && (
         <div className="fixed top-12 left-1/2 transform -translate-x-1/2 w-full max-w-xl px-4 md:px-8 z-50">
           <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-md animate-fade-in">
@@ -644,30 +643,29 @@ export function AssetGame() {
         </div>
       )}
 
-      <div className="w-full p-6 mx-auto">
-        {/* validasi like button */}
-        <div className="fixed top-12 left-1/2 transform -translate-x-1/2 w-full max-w-md p-4 z-50">
-          {alertLikes && (
-            <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
-              <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
-              <span className="block sm:inline">{alertLikes}</span>
-              <button
-                className="absolute top-0 bottom-0 right-0 px-4 py-3"
-                onClick={() => setAlertLikes(false)}
+      <div className="fixed top-12 left-1/2 transform -translate-x-1/2 w-full max-w-md p-4 z-50">
+        {alertLikes && (
+          <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
+            <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
+            <span className="block sm:inline">{alertLikes}</span>
+            <button
+              className="absolute top-0 bottom-0 right-0 px-4 py-3"
+              onClick={() => setAlertLikes(false)}
+            >
+              <svg
+                className="fill-current h-6 w-6 text-red-500"
+                role="button"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
               >
-                <svg
-                  className="fill-current h-6 w-6 text-red-500"
-                  role="button"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
-                </svg>
-              </button>
-            </div>
-          )}
-        </div>
+                <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
+              </svg>
+            </button>
+          </div>
+        )}
+      </div>
 
+      <div className="w-full p-12 mx-auto">
         <div className="relative mt-56 flex items-center justify-center">
           <div className="text-center">
             {searchResults.length === 0 && searchTerm && (
@@ -675,8 +673,8 @@ export function AssetGame() {
             )}
           </div>
         </div>
-
       </div>
+
       <div className="pt-2  w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12 2xl:px-14 min-h-screen -mt-20 lg:-mt-16 ">
         <div className="mb-4 mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7 place-items-center gap-4 sm:gap-6 md:gap-8 lg:gap-10 xl:gap-12 ">
           {fetchMessage && <p>{fetchMessage}</p>}
@@ -691,6 +689,8 @@ export function AssetGame() {
               collectionsToFetch = "assetImage2D";
             } else if (data.asset3DName) {
               collectionsToFetch = "assetImage3D";
+            } else {
+              console.error("Error: No valid collection found for asset", data);
             }
 
             const thumbnails = data.thumbnails || [];
@@ -720,7 +720,6 @@ export function AssetGame() {
                             onDragStart={(e) => e.preventDefault()}
                             className="h-full w-auto object-cover rounded-t-[10px] border-none"
                           />
-
                         ))}
                       </div>
                     ) : (
@@ -782,7 +781,7 @@ export function AssetGame() {
                   </div>
                   <div className="flex justify-between items-center mt-2 sm:mt-4">
                     <button
-                      onClick={() => handleLikeClick(data.id, likesAsset)}
+                      onClick={() => handleLikeClick(data.id, likesAsset, collectionsToFetch)}
                       className="flex items-center">
                       {likedByCurrentUser ? (
                         <FaHeart className="text-red-600" />
@@ -887,10 +886,8 @@ export function AssetGame() {
                       &#8594;
                     </button>
                   </>
-
                 ) : null}
               </div>
-
             </div>
 
             <div className="w-full mt-4 text-center sm:text-left max-h-[300px] sm:max-h-[400px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">

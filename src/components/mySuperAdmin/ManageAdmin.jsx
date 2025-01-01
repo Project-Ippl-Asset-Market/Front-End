@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
- 
+
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
@@ -45,7 +45,7 @@ function ManageAdmin() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await axios.get("http://localhost:3000/api/admins");
+        const response = await axios.get("https://my-asset.vercel.app/api/admins");
         setAdmins(response.data);
         setFilteredAdmins(response.data);
       } catch (error) {
@@ -100,7 +100,7 @@ function ManageAdmin() {
 
       // Hapus admin dari database
       const response = await axios.delete(
-        `http://localhost:3000/api/admins/${id}`,
+        `https://my-asset.vercel.app/api/admins/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -128,7 +128,7 @@ function ManageAdmin() {
       }
       setError(
         error.response?.data?.message ||
-          "Failed to delete admin. Please try again."
+        "Failed to delete admin. Please try again."
       );
     } finally {
       setIsLoading(false);
@@ -160,9 +160,8 @@ function ManageAdmin() {
       <aside
         ref={sidebarRef}
         id="sidebar-multi-level-sidebar"
-        className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } sm:translate-x-0`}
+        className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } sm:translate-x-0`}
         aria-label="Sidebar"
       >
         <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
@@ -260,12 +259,12 @@ function ManageAdmin() {
                     <td className="px-6 py-4">
                       {admin.createdAt
                         ? new Date(
-                            admin.createdAt._seconds * 1000
-                          ).toLocaleDateString("id-ID", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })
+                          admin.createdAt._seconds * 1000
+                        ).toLocaleDateString("id-ID", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
                         : "Unknown"}
                     </td>
                     <td className="mx-auto flex gap-4 mt-8">
@@ -328,7 +327,7 @@ function ManageAdmin() {
         )}
 
         {/* Pagination Section */}
-        <div className="flex join pt-72 justify-end">
+        <div className="flex join pt-20 justify-end">
           <button
             className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}

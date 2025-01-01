@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -14,21 +13,20 @@ import {
 import { db } from "../../firebase/firebaseConfig";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useNavigate } from "react-router-dom";
-import Headerprofil from "../editProfil/HeaderWebProfile";
+import Headerprofil from "../headerNavBreadcrumbs/HeaderWebProfile";
 import Logoprofil from "../../assets/icon/iconWebUser/profil.svg";
 import Logoprofilwhite from "../../assets/icon/iconWebUser/Profilwhite.svg";
-import Footer from "../../components/website/Footer/Footer"
 
 function Profil() {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
   const [newProfileImage, setNewProfileImage] = useState(null);
-  const [previewImage,setPreviewImage] = useState(null);
-  const [profileImageUrl, setProfileImageUrl] = useState(null);
   const navigate = useNavigate();
 
-
+  // Mengambil ID pengguna saat ini (jika ada)
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -42,68 +40,23 @@ function Profil() {
     return () => unsubscribe();
   }, []);
 
+  // Mengambil data profil pengguna secara real-time
   useEffect(() => {
     if (currentUserId) {
-      const fetchUserProfile = async () => {
-        const usersCollectionRef = collection(db, "users");
-        const q = query(usersCollectionRef, where("uid", "==", currentUserId));
-        
-        const unsubscribeUser = onSnapshot(q, (snapshot) => {
-          if (!snapshot.empty) {
-            const userData = snapshot.docs[0].data();
-            setUserProfile(userData);
-  
-            if (userData.photoURL) {
-              setProfileImageUrl(userData.photoURL);
-            } else {
-              fetchImageFromStorage(); 
-            }
-            // console.log("Data ditemukan di koleksi users:", userData);
-          } else {
-            // console.log("Pengguna tidak ditemukan, mencoba mencari di koleksi admins");
-  
-            const adminsCollectionRef = collection(db, "admins");
-            const adminsQuery = query(adminsCollectionRef, where("uid", "==", currentUserId));
-            
-            const unsubscribeAdmin = onSnapshot(adminsQuery, (snapshot) => {
-              if (!snapshot.empty) {
-                const userData = snapshot.docs[0].data();
-                setUserProfile(userData);
-  
-                if (userData.photoURL || userData.profileImageUrl ||"") {
-                  setProfileImageUrl(userData.photoURL || userData.profileImageUrl ||"");
-                } else {
-                  fetchImageFromStorage();
-                }
-                // console.log("Data ditemukan di koleksi admins:", userData);
-              } else {
-                console.log("Profil tidak ditemukan di kedua koleksi.");
-              }
-            });
-  
-            return unsubscribeAdmin;
-          }
-        });
-  
-        return unsubscribeUser;
-      };
-  
-      
-      const fetchImageFromStorage = () => {
-        const storage = getStorage();
-        const imageRef = ref(storage, `images-user/${currentUserId}.jpg`);
-        
-        getDownloadURL(imageRef)
-          .then((url) => {
-            setProfileImageUrl(url);
-          })
-          .catch((error) => {
-            console.error("Error saat mengambil URL gambar profil:", error);
-            setProfileImageUrl("https://placehold.co/80x80");
-          });
-      };
-  
-      fetchUserProfile();
+      const usersCollectionRef = collection(db, "users");
+      const q = query(usersCollectionRef, where("uid", "==", currentUserId));
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        if (!snapshot.empty) {
+          const userData = snapshot.docs[0].data();
+          setUserProfile(userData);
+          setPreviewImage(
+            userData.profileImageUrl || userData.profileImageUrl || ""
+          );
+        }
+      });
+
+      return () => unsubscribe();
     }
   }, [currentUserId]);
 
@@ -112,86 +65,74 @@ function Profil() {
     setShowModal(true);
   };
 
- 
+  // Fungsi untuk menangani perubahan file gambar
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file && ["image/png", "image/jpeg", "image/jpg"].includes(file.type)) {
-      setNewProfileImage(file);
+    if (
+      file &&
+      (file.type === "image/png" ||
+        file.type === "image/jpeg" ||
+        file.type === "image/jpg")
+    ) {
+      setSelectedImage(file);
       setPreviewImage(URL.createObjectURL(file));
     } else {
       alert("Format file tidak valid! Gunakan png, jpeg, atau jpg.");
     }
   };
 
+  const storage = getStorage();
+
+  // Fungsi untuk mengunggah gambar ke Firebase Storage
   const handleUpload = async () => {
     if (!newProfileImage) {
       alert("Silakan pilih gambar terlebih dahulu.");
       return;
     }
-  
+
     try {
-      const storage = getStorage();
-      const fileExtension = newProfileImage.name.split(".").pop();
-      const newImageRef = ref(storage, `images-user/${currentUserId}.${fileExtension}`);
-      
-     
+      const originalFileName = newProfileImage.name;
+      const fileExtension = originalFileName.split(".").pop();
+      const imageRef = ref(
+        storage,
+        `images-user/${currentUserId}.${fileExtension}`
+      );
+
+      // Upload gambar ke Firebase Storage
+      await uploadBytes(imageRef, newProfileImage);
+
+      // Mendapatkan URL gambar yang telah diupload
+      const profileImageUrl = await getDownloadURL(imageRef);
+
+      // Mencari dokumen pengguna berdasarkan uid
       const usersCollectionRef = collection(db, "users");
-      const userQuery = query(usersCollectionRef, where("uid", "==", currentUserId));
-      const userSnapshot = await getDocs(userQuery);
-      
-      let userDocRef = null;
-      let existingPhotoURL = null;
-  
-      if (!userSnapshot.empty) {
-        userDocRef = userSnapshot.docs[0].ref;
-        existingPhotoURL = userSnapshot.docs[0].data().photoURL;
+      const q = query(usersCollectionRef, where("uid", "==", currentUserId));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        const userDocRef = userDoc.ref;
+
+        // Memperbarui URL foto profil di dokumen pengguna
+        await updateDoc(userDocRef, { photoURL: profileImageUrl });
+
+        alert("Foto profil berhasil diupload!");
+        setNewProfileImage(null); // Reset state setelah upload
       } else {
-        const adminsCollectionRef = collection(db, "admins");
-        const adminsQuery = query(adminsCollectionRef, where("uid", "==", currentUserId));
-        const adminSnapshot = await getDocs(adminsQuery);
-  
-        if (!adminSnapshot.empty) {
-          userDocRef = adminSnapshot.docs[0].ref;
-          existingPhotoURL = adminSnapshot.docs[0].data().photoURL;
-        } else {
-          alert("Dokumen pengguna tidak ditemukan.");
-          return;
-        }
+        alert("Dokumen pengguna tidak ditemukan.");
       }
-  
-    
-      if (existingPhotoURL) {
-        const oldImageRef = ref(storage, existingPhotoURL);
-        await deleteObject(oldImageRef);
-      }
-  
-      // Upload the new profile image
-      await uploadBytes(newImageRef, newProfileImage);
-      const uploadedImageUrl = await getDownloadURL(newImageRef);
-  
-      // Update the photoURL in Firestore
-      await updateDoc(userDocRef, { photoURL: uploadedImageUrl });
-  
-      alert("Foto profil berhasil diupload!");
-      setProfileImageUrl(uploadedImageUrl);
-      setNewProfileImage(null);
-  
     } catch (error) {
-      console.error("Error saat mengupload foto profil:", error);
+      // console.error("Error saat mengupload foto profil:", error);
       alert("Gagal mengupload foto profil. Silakan coba lagi.");
     }
   };
-  
-
-
-
 
   return (
-    <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins mt-0 lg:mt-12 overflow-hidden">
+    <div className="bg-primary-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins mt-10 overflow-hidden">
       <Headerprofil />
-  
-      <div className="p-4 sm:p-10 lg:p-14 flex flex-col lg:flex-row bg-primary-100 dark:bg-neutral-20">
-        <aside className="bg-white dark:bg-neutral-800 drop-shadow-lg w-full lg:w-60 h-auto mt-0 lg:mt-8 p-4 rounded-lg flex flex-col items-center">
+
+      <div className="p-14 flex bg-primary-100 dark:bg-neutral-20">
+        <aside className="bg-white dark:bg-neutral-800 drop-shadow-lg w-60 h-auto mt-6  rounded-lg flex flex-col items-center">
           <div className="flex justify-center mb-4">
             <img
               src={Logoprofil}
@@ -204,13 +145,13 @@ function Profil() {
               className="hidden dark:block w-16 h-16 rounded-full border-2 border-white"
             />
           </div>
-          <h2 className="text-xl font-bold text-center mb-4">{userProfile?.username || "Username"}</h2>
+          <h2 className="text-xl font-bold text-center mb-4">User Name</h2>
           <ul className="space-y-4 w-full">
             <li>
               <button
                 onClick={() => navigate("/")}
                 className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-300 text-left">
-                <span className="flex items-center">
+                <span className="flex  items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -230,18 +171,18 @@ function Profil() {
             </li>
           </ul>
         </aside>
-  
-        <main className="bg-primary-100 dark:bg-neutral-20 drop-shadow-xl mt-7 h-800 lg:h-full lg:w-3/4 p-4 rounded-lg md:ml-6 overflow-y-auto">
+
+        <main className="bg-primary-100 dark:bg-neutral-20 drop-shadow-xl mt-4 lg:w-3/4 p-4 rounded-lg md:ml-6">
           <h1 className="text-3xl font-bold mb-3">My Profile</h1>
           <div className="bg-primary-100 dark:bg-neutral-20 p-4 rounded-lg mb-4">
-            <div className="flex flex-col sm:flex-row items-center">
+            <div className="flex items-center">
               <img
-                src={profileImageUrl || "https://placehold.co/80x80"}
+                src={previewImage || "https://placehold.co/80x80"}
                 alt="Profile"
-                className="h-[110px] w-[110px] rounded-full cursor-pointer transition duration-300 ease-in-out hover:shadow-xl hover:shadow-blue-500/100"
+                className="h-20 w-20 rounded-full cursor-pointer"
                 onClick={handleImageClick}
               />
-              <div className="ml-4 text-center sm:text-left">
+              <div className="ml-4">
                 <h2 className="text-xl font-bold">
                   {userProfile?.firstName || "John"}{" "}
                   {userProfile?.lastName || "Doe"}
@@ -249,33 +190,34 @@ function Profil() {
               </div>
             </div>
           </div>
-  
-        
+
+          {/* Modal for profile picture review and upload */}
           {showModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm rounded-xl">
-              <div className="dark:bg-white bg-black p-6 rounded-lg animate-borderGlow w-[90%] lg:w-[50%] lg:h-auto">
-                <h2 className="dark:text-black text-xl text-white font-bold mb-4">
-                  Ganti Foto Profile
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="bg-white p-6 rounded-lg">
+                <h2 className="text-xl font-bold mb-4">
+                  Review Profile Picture
                 </h2>
                 <img
-                  src={previewImage || "https://placehold.co/80x80"}
+                  src={previewImage}
                   alt="Preview"
-                  className="h-40 w-40 text-white dark:text-black rounded-full mb-4"
+                  className="h-40 w-40 rounded-full mb-4"
                 />
                 <input
                   type="file"
                   accept="image/png, image/jpeg, image/jpg"
                   onChange={handleFileChange}
-                  className="mt-2 text-white dark:text-black rounded-lg"
+                  className="mt-2"
                 />
                 <div className="mt-4 flex justify-end">
                   <button
                     onClick={() => setShowModal(false)}
                     className="px-4 py-2 bg-gray-500 text-white rounded-md mr-2">
-                    Batal
+                    Cancel
                   </button>
                   <button
                     onClick={handleUpload}
+                    disabled={!selectedImage}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md cursor-pointer">
                     Upload
                   </button>
@@ -283,9 +225,9 @@ function Profil() {
               </div>
             </div>
           )}
-  
-      
-          <div className="bg-primary-100 dark:bg-neutral-20 mt-5 rounded-lg lg:h-full">
+
+          {/* Personal Information Section */}
+          <div className="bg-primary-100 dark:bg-neutral-20 mt-5 rounded-lg">
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-xl font-bold">Personal Information</h2>
               <Link
@@ -306,33 +248,37 @@ function Profil() {
                 </svg>
               </Link>
             </div>
-            
-          </div>
-            <div className="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-10">
-             
-              <div>
-                <p className="font-bold">Nama Depan</p>
-                <p>{userProfile?.firstName || "-"}</p>
-              </div>
-              <div>
-                <p className="font-bold">Nama Belakang</p>
-                <p>{userProfile?.lastName || "-"}</p>
-              </div>
-              <div>
-                <p className="font-bold">Email</p>
-                <p>{userProfile?.email || "user@gmail.com"}</p>
-              </div>
-              <div>
-                <p className="font-bold">Nomor Telepon</p>
-                <p>{userProfile?.phone || "-"}</p>
-              </div>
-              <div>
-                <p className="font-bold">Bio</p>
-                <p>{userProfile?.bio || "Hello"}</p>
+            <div className="bg-primary-100 dark:bg-neutral-20 rounded-lg mb-4">
+              <div className="px-5 py-4 grid grid-cols-1 md:grid-cols-2 gap-10">
+                {/** Personal Information Rows **/}
+                <div>
+                  <p className="font-bold">First Name</p>
+                  <p>{userProfile?.firstName || "John"}</p>
+                </div>
+                <div>
+                  <p className="font-bold">Last Name</p>
+                  <p>{userProfile?.lastName || "Doe"}</p>
+                </div>
+                <div>
+                  <p className="font-bold">Email Address</p>
+                  <p>{userProfile?.email || "john.doe@gmail.com"}</p>
+                </div>
+                <div>
+                  <p className="font-bold">Phone</p>
+                  <p>{userProfile?.phone || "-"}</p>
+                </div>
+                <div className="col-span-2">
+                  <p className="font-bold">Bio</p>
+                  <p>
+                    {userProfile?.bio ||
+                      "An experienced web developer specializing in frontend technologies."}
+                  </p>
+                </div>
               </div>
             </div>
-  
-          
+          </div>
+
+          {/* Address Section */}
           <div className="bg-primary-100 dark:bg-neutral-20 mb-4">
             <div className="flex justify-between items-center mb-2">
               <h2 className="text-xl font-bold">Address</h2>
@@ -354,33 +300,53 @@ function Profil() {
                 </svg>
               </Link>
             </div>
-            <div className="px-5 py-4 grid grid-cols-2 md:grid-cols-2 gap-10">
-           
-              <div>
-                <p className="font-bold">Negara</p>
-                <p>{userProfile?.country || "-"}</p>
-              </div>
-              <div>
-                <p className="font-bold">Kota</p>
-                <p>{userProfile?.city || "-"}</p>
-              </div>
-              <div>
-                <p className="font-bold">Kode Pos</p>
-                <p>{userProfile?.postalCode || "-"}</p>
-              </div>
-              <div>
-                <p className="font-bold">Tax ID</p>
-                <p>{userProfile?.TaxID || "-"}</p>
+            <div className="bg-primary-100 dark:bg-neutral-20 p-4 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <p className="font-bold">Country</p>
+                  <p>{userProfile?.country || "Indonesia"}</p>
+                </div>
+                <div>
+                  <p className="font-bold">City</p>
+                  <p>{userProfile?.city || "Jakarta"}</p>
+                </div>
+                <div>
+                  <p className="font-bold">Postal Code</p>
+                  <p>{userProfile?.postalCode || "12345"}</p>
+                </div>
+                <div>
+                  <p className="font-bold">Tax ID</p>
+                  <p>{userProfile?.taxID || "123456789"}</p>
+                </div>
               </div>
             </div>
           </div>
         </main>
       </div>
-      <div className="mt-[200px]">
-        <Footer />
-      </div>
+
+      <footer className="bg-[#212121] text-white py-10">
+        <div className="container mx-auto flex flex-col items-center">
+          <div className="flex space-x-8 mb-4">
+            <a href="#" className="hover:text-gray-400 font-bold">
+              Terms And Conditions
+            </a>
+            <a href="#" className="hover:text-gray-400 font-bold">
+              File Licenses
+            </a>
+            <a href="#" className="hover:text-gray-400 font-bold">
+              Refund Policy
+            </a>
+            <a href="#" className="hover:text-gray-400 font-bold">
+              Privacy Policy
+            </a>
+          </div>
+          <p className="text-sm">
+            Copyright &copy; 2024 All rights reserved by PixelStore
+          </p>
+        </div>
+      </footer>
     </div>
-  );  
+  );
 }
 
 export default Profil;

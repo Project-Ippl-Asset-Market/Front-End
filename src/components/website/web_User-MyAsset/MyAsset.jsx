@@ -213,8 +213,8 @@ export function MyAsset() {
       const apiBaseUrl =
         window.location.hostname === "localhost"
           ? "http://localhost:3000"
-          : "https://pixelstore-be.up.railway.app";
-      const proxyUrl = `${apiBaseUrl}/proxy/download?fileUrl=${encodeURIComponent(
+          : "https://my-asset.vercel.app";
+      const proxyUrl = `${apiBaseUrl}/api/proxy/download?fileUrl=${encodeURIComponent(
         fileUrl
       )}&size=${encodeURIComponent(normalizedSize)}&type=${encodeURIComponent(
         type

@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
- 
+
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
@@ -27,7 +27,7 @@ function ManageUsers() {
   const [searchTerm, setSearchTerm] = useState("");
   // Pagination state untuk tabelnya
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 5;
+  const usersPerPage = 10;
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
@@ -49,7 +49,7 @@ function ManageUsers() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await axios.get("http://localhost:3000/api/users");
+        const response = await axios.get("https://my-asset.vercel.app/api/users");
         setUsers(response.data);
         setFilteredUsers(response.data);
       } catch (error) {
@@ -106,7 +106,7 @@ function ManageUsers() {
       const token = await auth.currentUser.getIdToken(true);
 
       const response = await axios.delete(
-        `http://localhost:3000/api/users/${id}`,
+        `https://my-asset.vercel.app/api/users/${id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -128,7 +128,7 @@ function ManageUsers() {
       }
       setError(
         error.response?.data?.message ||
-          "Failed to delete user. Please try again."
+        "Failed to delete user. Please try again."
       );
     } finally {
       setIsLoading(false);
@@ -160,9 +160,8 @@ function ManageUsers() {
       <aside
         ref={sidebarRef}
         id="sidebar-multi-level-sidebar"
-        className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
-          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } sm:translate-x-0`}
+        className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } sm:translate-x-0`}
         aria-label="Sidebar">
         <div className="h-full px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">
           <NavigationItem />
@@ -345,7 +344,7 @@ function ManageUsers() {
         )}
 
         {/* Pagination Section */}
-        <div className="flex join pt-72 justify-end">
+        <div className="flex join pt-20 justify-end">
           <button
             className="join-item w-14 text-[20px] bg-secondary-40 hover:bg-secondary-50 border-secondary-50 hover:border-neutral-40 opacity-90"
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}

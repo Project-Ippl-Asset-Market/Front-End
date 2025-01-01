@@ -129,7 +129,7 @@ const CartBuyNow = () => {
 
   const saveToBuyAssets = async (assetDetails, orderId) => {
     try {
-      const response = await fetch('http://localhost:3000/api/transactions/save-buy-assets', {
+      const response = await fetch('https://my-asset.vercel.app/api/transactions/save-buy-assets', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -180,7 +180,7 @@ const CartBuyNow = () => {
 
   const createTransaction = async (orderId, subtotal, assetDetails) => {
     const response = await axios.post(
-      "http://localhost:3000/api/transactions/create-transaction",
+      "https://my-asset.vercel.app/api/transactions/create-transaction",
       {
         orderId,
         grossAmount: subtotal,

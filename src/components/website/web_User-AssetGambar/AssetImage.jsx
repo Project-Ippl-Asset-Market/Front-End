@@ -223,7 +223,7 @@ export function AssetImage() {
     try {
       const cartSnapshot = await getDoc(cartRef);
       if (cartSnapshot.exists()) {
-        setValidationMessage("Anda sudah menambahkan asset ini ke keranjang.");
+        setValidationMessage("Asset Sudah ada di keranjang, Cek cart Anda!.");
         return;
       }
 
@@ -421,38 +421,18 @@ export function AssetImage() {
         </div>
       </div>
 
-      {/* Menampilkan pesan validasi jika ada */}
+      {/* Validation message display */}
       {validationMessage && (
-        <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
-          <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
-          <span className="block sm:inline">{validationMessage}</span>
-          <button
-            className="absolute top-0 bottom-0 right-0 px-4 py-3"
-            onClick={() => setValidationMessage("")}>
-            <svg
-              className="fill-current h-6 w-6 text-red-500"
-              role="button"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 20 20">
-              <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
-            </svg>
-          </button>
-        </div>
-      )}
-
-      <div className="w-full p-12 mx-auto">
-         {/* validasi like button */}
-      <div className="fixed top-12 left-1/2 transform -translate-x-1/2 w-full max-w-md p-4 z-50">
-        {alertLikes && (
-          <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
-            <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
-            <span className="block sm:inline">{alertLikes}</span>
+        <div className="fixed top-12 left-1/2 transform -translate-x-1/2 w-full max-w-xl px-4 md:px-8 z-50">
+          <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg shadow-md animate-fade-in">
+            <AiOutlineInfoCircle className="w-6 h-6 mr-3 flex-shrink-0" />
+            <span className="flex-1 break-words">{validationMessage}</span>
             <button
-              className="absolute top-0 bottom-0 right-0 px-4 py-3"
-              onClick={() => setAlertLikes(false)}
+              className="ml-3 text-red-500 hover:text-red-700 focus:outline-none"
+              onClick={() => setValidationMessage("")}
             >
               <svg
-                className="fill-current h-6 w-6 text-red-500"
+                className="fill-current h-6 w-6"
                 role="button"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
@@ -461,8 +441,32 @@ export function AssetImage() {
               </svg>
             </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      <div className="w-full p-12 mx-auto">
+        {/* validasi like button */}
+        <div className="fixed top-12 left-1/2 transform -translate-x-1/2 w-full max-w-md p-4 z-50">
+          {alertLikes && (
+            <div className="alert flex items-center bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative shadow-md animate-fade-in">
+              <AiOutlineInfoCircle className="w-6 h-6 mr-2" />
+              <span className="block sm:inline">{alertLikes}</span>
+              <button
+                className="absolute top-0 bottom-0 right-0 px-4 py-3"
+                onClick={() => setAlertLikes(false)}
+              >
+                <svg
+                  className="fill-current h-6 w-6 text-red-500"
+                  role="button"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M14.348 14.849a1 1 0 01-1.415 0L10 11.414 6.707 14.707a1 1 0 01-1.414-1.414L8.586 10 5.293 6.707a1 1 0 011.414-1.414L10 8.586l3.293-3.293a1 1 0 011.414 1.414L11.414 10l3.293 3.293a1 1 0 010 1.415z" />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
         {/* <h1 className="text-2xl -ml-10 font-semibold text-neutral-10 dark:text-primary-100  pt-[100px] ">
           All Category
         </h1> */}

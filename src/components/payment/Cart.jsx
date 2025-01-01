@@ -88,7 +88,7 @@ const Cart = () => {
     const removeItems = async () => {
       for (const id of itemsToRemove) {
         try {
-          await axios.delete(`http://localhost:3000/api/removeCart/${id}`);
+          await axios.delete(`https://my-asset.vercel.app/api/removeCart/${id}`);
           const itemDoc = doc(db, "cartAssets", id);
           await deleteDoc(itemDoc);
           setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
@@ -148,7 +148,7 @@ const Cart = () => {
       }));
 
       const response = await axios.post(
-        "http://localhost:3000/api/transactions/create-transaction",
+        "https://my-asset.vercel.app/api/transactions/create-transaction",
         {
           orderId,
           grossAmount: subtotal,
@@ -183,7 +183,7 @@ const Cart = () => {
 
   const saveToBuyAssets = async (assetDetails, orderId) => {
     try {
-      const response = await fetch('http://localhost:3000/api/transactions/save-buy-assets', {
+      const response = await fetch('https://my-asset.vercel.app/api/transactions/save-buy-assets', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -203,6 +203,22 @@ const Cart = () => {
       // alert("Terjadi kesalahan saat menyimpan transaksi.");
     }
   };
+
+  // const saveToBuyAssets = async (assetDetails, orderId) => {
+  //   try {
+  //     const response = await axios.post('https://my-asset.vercel.app/api/transactions/save-buy-assets', {
+  //       orderId,
+  //       assets: assetDetails,
+  //     });
+
+  //     // console.log(response.data.message);
+  //     alert("Transaksi berhasil!");
+  //   } catch (error) {
+  //     // console.error("Kesalahan saat menyimpan ke buyAssets:", error);
+  //     // alert("Terjadi kesalahan saat menyimpan transaksi.");
+  //   }
+  // };
+
 
   const resetCustomerInfoAndCart = () => {
     setCustomerInfo({ fullName: "", email: "", phoneNumber: "" });

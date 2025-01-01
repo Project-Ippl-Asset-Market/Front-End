@@ -28,7 +28,7 @@ function EditAdmin() {
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/admins/${id}`);
+        const response = await fetch(`https://my-asset.vercel.app/api/admins/${id}`);
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
@@ -90,7 +90,7 @@ function EditAdmin() {
         formData.append("profileImage", admin.profileImage);
       }
 
-      const response = await fetch(`http://localhost:3000/api/admins/${id}`, {
+      const response = await fetch(`https://my-asset.vercel.app/api/admins/${id}`, {
         method: "PUT",
         body: formData,
       });
@@ -473,9 +473,8 @@ function EditAdmin() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`btn ${
-                  loading ? "bg-gray-400" : "bg-secondary-40"
-                } border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg font-semibold leading-[24px] text-primary-100 text-center text-[10px] sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px] w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]`}
+                className={`btn ${loading ? "bg-gray-400" : "bg-secondary-40"
+                  } border-secondary-40 hover:bg-secondary-40 hover:border-secondary-40 rounded-lg font-semibold leading-[24px] text-primary-100 text-center text-[10px] sm:text-[14px] md:text-[18px] lg:text-[20px] xl:text-[14px] 2xl:text-[14px] w-[90px] sm:w-[150px] md:w-[200px] xl:w-[200px] 2xl:w-[200px] h-[30px] sm:h-[50px] md:h-[60px] lg:w-[200px] lg:h-[60px] xl:h-[60px] 2xl:h-[60px]`}
               >
                 {loading ? "Saving..." : "Save"}
               </button>

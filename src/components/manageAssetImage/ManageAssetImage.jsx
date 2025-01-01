@@ -32,7 +32,7 @@ function ManageAssetImage() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const assetsPerPage = 5; // Jumlah aset yang ditampilkan per halaman
+  const assetsPerPage = 5;
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -56,13 +56,13 @@ function ManageAssetImage() {
     };
   }, [isSidebarOpen]);
 
-  // Mengamati status autentikasi pengguna
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
 
-        // Periksa apakah pengguna adalah admin atau superadmin
+
         const adminQuery = query(
           collection(db, "admins"),
           where("uid", "==", currentUser.uid)
@@ -71,9 +71,9 @@ function ManageAssetImage() {
 
         if (!adminSnapshot.empty) {
           const adminData = adminSnapshot.docs[0].data();
-          setRole(adminData.role); // Role bisa 'admin' atau 'superadmin'
+          setRole(adminData.role);
         } else {
-          // Jika bukan admin atau superadmin, cek apakah pengguna adalah user biasa
+
           const userQuery = query(
             collection(db, "users"),
             where("uid", "==", currentUser.uid)
@@ -91,7 +91,6 @@ function ManageAssetImage() {
     return () => unsubscribe();
   }, []);
 
-  // Fungsi untuk mengambil data sesuai role pengguna
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -103,13 +102,10 @@ function ManageAssetImage() {
       try {
         let q;
         if (role === "superadmin") {
-          // Superadmin dapat melihat semua aset
           q = query(collection(db, "assetImages"));
         } else if (role === "admin") {
-          // Ambil semua aset yang diupload oleh user dan admin
           q = query(collection(db, "assetImages"));
         } else if (role === "user") {
-          // User hanya bisa melihat aset yang dia unggah sendiri
           q = query(
             collection(db, "assetImages"),
             where("userId", "==", user.uid)
@@ -139,8 +135,6 @@ function ManageAssetImage() {
             userId: data.userId,
           });
         }
-
-        // Jika role admin, filter hasil untuk menghapus yang diupload oleh superadmin
         if (role === "admin") {
           const superadminQuery = query(
             collection(db, "admins"),
@@ -151,7 +145,6 @@ function ManageAssetImage() {
             (doc) => doc.data().uid
           );
 
-          // Filter items untuk mengeluarkan yang diupload oleh superadmin
           const filteredItems = items.filter(
             (item) => !superadminIds.includes(item.userId)
           );
@@ -171,14 +164,12 @@ function ManageAssetImage() {
     }
   }, [user, role]);
 
-  // Filtered assets based on search term
   const filteredAssets = assets.filter(
     (asset) =>
       asset.imageName &&
       asset.imageName.toLowerCase().startsWith(searchTerm.toLowerCase())
   );
 
-  // Pagination logic
   const totalPages = Math.ceil(filteredAssets.length / assetsPerPage);
   const startIndex = (currentPage - 1) * assetsPerPage;
   const currentAssets = filteredAssets.slice(
@@ -186,7 +177,6 @@ function ManageAssetImage() {
     startIndex + assetsPerPage
   );
 
-  // Fungsi hapus gambar
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this image?"
@@ -211,7 +201,7 @@ function ManageAssetImage() {
     setAlertError(false);
   };
 
-  // Function to handle page change
+
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);
   };
@@ -227,9 +217,8 @@ function ManageAssetImage() {
         <aside
           ref={sidebarRef}
           id="sidebar-multi-level-sidebar"
-          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${
-            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } sm:translate-x-0`}
+          className={`fixed top-0 left-0 z-40 w-[280px] transition-transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            } sm:translate-x-0`}
           aria-label="Sidebar"
         >
           <div className="min-h-screen px-3 py-4 overflow-y-auto dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 text-neutral-10 pt-10">

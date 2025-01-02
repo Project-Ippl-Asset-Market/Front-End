@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { auth } from "../../firebase/firebaseConfig";
+import { auth } from "../../../firebase/firebaseConfig";
 import { signOut } from "firebase/auth";
-import { db } from "../../firebase/firebaseConfig";
-import { useTheme } from "../../contexts/ThemeContext";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { onAuthStateChanged, getAuth } from "firebase/auth";
-import { getStorage, ref, getDownloadURL } from "firebase/storage";
+import { useTheme } from "../../../contexts/ThemeContext";
+import { onAuthStateChanged } from "firebase/auth";
 // import { nameMap } from "../breadcrumbs/PathMap";
 import { useNavigate } from "react-router-dom";
 import IconToggelMenu from "../../assets/icon/iconHeader/iconMenu.svg";
@@ -18,6 +15,7 @@ import IconLogoutDark from "../../assets/icon/iconDarkMode&LigthMode/logOutDark.
 import IconLogoutLight from "../../assets/icon/iconDarkMode&LigthMode/logOutLight.svg";
 import IconStoreLight from "../../assets/icon/iconHeaderDashboard/iconStoreLight.svg";
 import IconStoreDark from "../../assets/icon/iconHeaderDashboard/iconStoreDark.svg";
+import { doc, getDoc, getFirestore } from "firebase/firestore";
 
 // eslint-disable-next-line react/prop-types
 function HeaderSidebar({ toggleSidebar }) {
@@ -25,9 +23,8 @@ function HeaderSidebar({ toggleSidebar }) {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [username, setUsername] = useState("");
-  const [currentUserId, setCurrentUserId] = useState(null);
-  const [, setUserProfile] = useState(null);
   const [profileImageUrl, setProfileImageUrl] = useState(null);
+  const firestore = getFirestore();
 
   const handleLogout = async () => {
     try {
@@ -41,28 +38,28 @@ function HeaderSidebar({ toggleSidebar }) {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
         setUsername(
           currentUser.displayName || currentUser.email.split("@")[0] || "User"
         );
+
+        // Ambil URL foto profil dari Firestore atau properti pengguna
+        const userDocRef = doc(firestore, "users", currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setProfileImageUrl(userData.profileImageUrl || null);
+        } else {
+          console.warn("User document not found.");
+          setProfileImageUrl(currentUser.profileImageUrl || null);
+        }
       } else {
         setUser(null);
         setUsername("");
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setCurrentUserId(user.uid);
-      } else {
-        setCurrentUserId(null);
+        setProfileImageUrl(null);
       }
     });
 
@@ -71,6 +68,7 @@ function HeaderSidebar({ toggleSidebar }) {
 
   const getInitial = (name) => {
     const nameParts = name.split(" ");
+
     if (nameParts.length === 1) {
       return nameParts[0].substring(0, 2).toUpperCase();
     } else {
@@ -79,75 +77,6 @@ function HeaderSidebar({ toggleSidebar }) {
       return firstInitial + secondInitial;
     }
   };
-
-  useEffect(() => {
-    if (currentUserId) {
-      const fetchUserProfile = async () => {
-        const usersCollectionRef = collection(db, "users");
-        const q = query(usersCollectionRef, where("uid", "==", currentUserId));
-
-        const unsubscribeUser = onSnapshot(q, (snapshot) => {
-          if (!snapshot.empty) {
-            const userData = snapshot.docs[0].data();
-            setUserProfile(userData);
-
-            if (userData.profileImageUrl) {
-              setProfileImageUrl(userData.profileImageUrl);
-            } else {
-              fetchImageFromStorage();
-            }
-            console.log("Data ditemukan di koleksi users:", userData);
-          } else {
-            console.log(
-              "Pengguna tidak ditemukan, mencoba mencari di koleksi admins"
-            );
-
-            const adminsCollectionRef = collection(db, "admins");
-            const adminsQuery = query(
-              adminsCollectionRef,
-              where("uid", "==", currentUserId)
-            );
-
-            const unsubscribeAdmin = onSnapshot(adminsQuery, (snapshot) => {
-              if (!snapshot.empty) {
-                const userData = snapshot.docs[0].data();
-                setUserProfile(userData);
-
-                if (userData.profileImageUrl) {
-                  setProfileImageUrl(userData.profileImageUrl);
-                } else {
-                  fetchImageFromStorage();
-                }
-                console.log("Data ditemukan di koleksi admins:", userData);
-              } else {
-                console.log("Profil tidak ditemukan di kedua koleksi.");
-              }
-            });
-
-            return unsubscribeAdmin;
-          }
-        });
-
-        return unsubscribeUser;
-      };
-
-      const fetchImageFromStorage = () => {
-        const storage = getStorage();
-        const imageRef = ref(storage, `images-user/${currentUserId}.jpg`);
-
-        getDownloadURL(imageRef)
-          .then((url) => {
-            setProfileImageUrl(url);
-          })
-          .catch((error) => {
-            console.error("Error saat mengambil URL gambar profil:", error);
-            setProfileImageUrl("https://placehold.co/80x80");
-          });
-      };
-
-      fetchUserProfile();
-    }
-  }, [currentUserId]);
 
   return (
     <section className="navbar h-24 fixed z-40 top-0 left-0 pt-0 text-neutral-10 shadow-md font-poppins font-semibold dark:text-primary-100 bg-neutral-90 dark:bg-neutral-20 dark:shadow-lg dark:shadow-neutral-10 gap-6">
@@ -261,15 +190,16 @@ function HeaderSidebar({ toggleSidebar }) {
                 role="button"
                 className="btn btn-ghost btn-circle avatar mx-2 w-14 h-14 rounded-full  -ml-3"
               >
-                <div className="w-[100%] h-[100%] rounded-full bg-neutral-80 flex items-center justify-center text-secondary-40 font-bold text-2xl mx-auto ">
-                  <img
-                    src={profileImageUrl || "https://placehold.co/80x80"}
-                    alt="Profile"
-                    className="h-[100%] w-[100%] rounded-full cursor-pointer"
-                  />
-                  <span className="text-[22px] text-center mx-auto -ml-1">
-                    {getInitial(username)}
-                  </span>
+                <div className="w-14 h-14 rounded-full overflow-hidden bg-neutral-80 flex items-center justify-center text-secondary-40 font-bold text-2xl mx-auto">
+                  {profileImageUrl ? (
+                    <img
+                      alt="Avatar"
+                      src={profileImageUrl}
+                      className="w-full h-full object-cover rounded-full"
+                    />
+                  ) : (
+                    <span>{getInitial(username)}</span>
+                  )}
                 </div>
               </div>
             </div>

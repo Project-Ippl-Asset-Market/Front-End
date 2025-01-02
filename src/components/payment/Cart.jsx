@@ -1,334 +1,472 @@
 import React, { useState, useEffect } from "react";
-import Logo from "../../assets/logo/logoLogin.png";
-import IconHapus from "../../assets/icon/iconCRUD/iconHapus.png";
-import { collection, getDocs,addDoc,deleteDoc,doc,query,where } from 'firebase/firestore';
-import {db, auth} from "../../firebase/firebaseConfig";
-import { onAuthStateChanged } from 'firebase/auth';
-import Header from "../../components/headerNavBreadcrumbs/HeaderWebUser";
-import NavbarSection from "../../components/website/web_User-LandingPage/NavbarSection";
-import CustomImage from "../../assets/assetmanage/Iconrarzip.svg"
+import { FaTrashAlt } from "react-icons/fa";
+import { getAuth } from "firebase/auth";
+import { db } from "../../firebase/firebaseConfig";
+import axios from "axios";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  deleteDoc,
+  doc,
+  getDocs,
+  setDoc,
+} from "firebase/firestore";
+import Header from "../headerNavBreadcrumbs/HeaderWebUser";
+import NavbarSection from "../website/web_User-LandingPage/NavbarSection";
+import Footer from "../website/Footer/Footer";
 
-// Payment Component
-function Cart() {
+const Cart = () => {
+  const [cartItems, setCartItems] = useState([]);
+  const [customerInfo, setCustomerInfo] = useState({
+    fullName: "",
+    email: "",
+    phoneNumber: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [itemsToRemove, setItemsToRemove] = useState([]);
+  const auth = getAuth();
+  const user = auth.currentUser;
 
-  const [items, setItems] = useState([]);
-  const [itemCount, setItemCount] = useState(0);
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [user, setUser] = useState([0]);
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [username, setUsername] = useState("");
-  const [totalPrice, setTotalPrice] = useState(0);
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const displayUsername = windowWidth < 420 ? username.slice(0, 4) : username;
-  const [isAllSelected, setIsAllSelected] = useState(true);
-
-  // Fungsi untuk menangani pengiriman form
-  const handleSubmit = async (e) => {
-    e.preventDefault(); // Mencegah refresh halaman
-    try {
-      // Menambahkan data ke koleksi 'users' di Firestore
-      await addDoc(collection(db, "users"), {
-        firstName,
-        lastName,
-        email,
-        phoneNumber,
-      });
-      alert("Payment and user details submitted successfully!");
-      // Reset form setelah submit
-      setFirstName("");
-      setLastName("");
-      setEmail("");
-      setPhoneNumber("");
-    } catch (error) {
-      console.error("Error submitting form data: ", error);
-    }
-  };
-
-  //Isi Chart
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        setUsername(
-          currentUser.displayName || currentUser.email.split("@")[0] || "User"
+    const unsubscribe = () => {
+      if (user) {
+        const userId = user.uid;
+        const cartCollectionRef = collection(db, "cartAssets");
+        const queryRef = query(
+          cartCollectionRef,
+          where("userId", "==", userId)
         );
-      } else {
-        setUser(null);
-        setUsername("");
-      }
-    });
 
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener("resize", handleResize);
+        return onSnapshot(queryRef, async (snapshot) => {
+          const items = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+
+          const boughtAssetsQuery = query(
+            collection(db, "buyAssets"),
+            where("boughtBy", "==", userId)
+          );
+
+          const boughtAssetsSnapshot = await getDocs(boughtAssetsQuery);
+          const boughtAssetIds = new Set(
+            boughtAssetsSnapshot.docs.map((doc) => doc.id)
+          );
+
+          const filteredItems = items.filter(
+            (item) => !boughtAssetIds.has(item.assetId)
+          );
+
+          setCartItems(
+            filteredItems.map((item) => ({
+              ...item,
+              selected: false,
+            }))
+          );
+        });
+      }
+    };
+
+    return unsubscribe();
+  }, [user]);
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://app.sandbox.midtrans.com/snap/snap.js";
+    script.setAttribute("data-client-key", "SB-Mid-client-QM4rGhnfcyjCT3LL");
+    script.async = true;
+    document.body.appendChild(script);
 
     return () => {
-      unsubscribe();
-      window.removeEventListener("resize", handleResize);
+      document.body.removeChild(script);
     };
   }, []);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!user) {
-        console.log('No user logged in');
-        return; // Jika tidak ada pengguna yang login, tidak perlu mengambil data
+    const removeItems = async () => {
+      for (const id of itemsToRemove) {
+        try {
+          await axios.delete(
+            `https://pixelstore-be.up.railway.app/api/removeCart/${id}`
+          );
+          const itemDoc = doc(db, "cartAssets", id);
+          await deleteDoc(itemDoc);
+          setCartItems((prevItems) =>
+            prevItems.filter((item) => item.id !== id)
+          );
+        } catch (error) {
+          console.error("Kesalahan saat menghapus item:", error);
+        }
       }
-      
-      try {
-        console.log('Logged in user UID:', user.uid);
-        const q = query(collection(db, 'cartAssets'), where('userId', '==', user.uid));
-        const querySnapshot = await getDocs(q);
-        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  
-        setItems(data); // Simpan item ke state
-        setItemCount(querySnapshot.size); // Simpan jumlah dokumen/item
-
-        const totalPrice = data.reduce((sum, item) => {
-            return sum + (item.price || 0); // Pastikan field price ada, jika tidak, gunakan 0
-          }, 0);
-        const formattedTotalPrice = totalPrice.toLocaleString('id-ID');
-  
-        setTotalPrice(formattedTotalPrice);
-
-      } catch (error) {
-        console.error('Error fetching data: ', error);
-      }
+      setItemsToRemove([]);
     };
 
-    if (user) {
-      fetchData();
+    if (itemsToRemove.length > 0) {
+      removeItems();
     }
-  }, [user]);
+  }, [itemsToRemove]);
 
-  // Fungsi untuk menghapus item dari Firestore dan state
-  const handleRemove = async (id) => {
+  const selectedItems = cartItems.filter((item) => item.selected);
+  const subtotal = selectedItems.reduce(
+    (total, item) => total + Number(item.price),
+    0
+  );
+
+  const handlePayment = async () => {
+    if (selectedItems.length === 0) {
+      setErrorMessage("Silakan pilih setidaknya satu item untuk melanjutkan.");
+      return;
+    }
+
+    if (
+      !customerInfo.fullName ||
+      !customerInfo.email ||
+      !customerInfo.phoneNumber
+    ) {
+      setErrorMessage("Silakan lengkapi semua informasi pelanggan.");
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage("");
+    setSuccessMessage("");
+
     try {
-      const docRef = doc(db, 'cartAssets', id);
-      await deleteDoc(docRef);
-      setItems(items.filter((item) => item.id !== id));
-      setSelectedItems(selectedItems.filter((item) => item.id !== id)); // Hapus dari selectedItems jika dihapus
-      updateItemCountAndTotalPrice(selectedItems.filter((item) => item.id !== id)); // Perbarui itemCount dan totalPrice
+      const orderId = `order_${Date.now()}`;
+      const assetDetails = selectedItems.map((item) => ({
+        assetId: item.assetId,
+        price: item.price,
+        name: item.name || "Nama Item Tidak Tersedia",
+        image:
+          item.image ||
+          item.Image_umum ||
+          item.video ||
+          item.assetImageGame ||
+          item.audioThumbnail ||
+          item.datasetThumbnail ||
+          item.asset2DThumbnail ||
+          item.asset3DThumbnail ||
+          "url tidak ada",
+        datasetFile:
+          item.datasetFile ||
+          item.asset3DFile ||
+          item.asset2DFile ||
+          item.uploadUrlAudio ||
+          "tidak ada",
+        docId: item.docId,
+        userId: item.userId,
+        description: item.description || "Tidak Ada Deskripsi",
+        category: item.category || "Tanpa Kategori",
+        assetOwnerID: item.assetOwnerID || "ID Pemilik Aset Tidak Tersedia",
+        size: item.size || item.resolution || "size & Resolution tidak ada",
+      }));
+
+      const response = await axios.post(
+        "https://pixelstore-be.up.railway.app/api/transactions/create-transaction",
+        {
+          orderId,
+          grossAmount: subtotal,
+          uid: user.uid,
+          assets: assetDetails,
+          customerDetails: customerInfo,
+        }
+      );
+
+      const transactionData = response.data;
+
+      window.snap.pay(transactionData.token, {
+        onSuccess: async () => {
+          try {
+            await saveToBuyAssets(assetDetails, orderId);
+            resetCustomerInfoAndCart();
+            setSuccessMessage("Transaksi berhasil.");
+          } catch (saveError) {
+            setErrorMessage("Transaksi berhasil.");
+          }
+        },
+        onError: () => {
+          setErrorMessage("Terjadi kesalahan pembayaran.");
+        },
+      });
     } catch (error) {
-      console.error("Error deleting item: ", error);
+      setErrorMessage("Gagal memproses pembayaran.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Fungsi untuk menangani perubahan checkbox 'Pilih Semua'
-  const handleSelectAllChange = () => {
-    if (isAllSelected) {
-      setSelectedItems([]); // Kosongkan semua jika 'Pilih Semua' dinonaktifkan
-    } else {
-      setSelectedItems(items); // Pilih semua item jika 'Pilih Semua' diaktifkan
+  const saveToBuyAssets = async (assetDetails, orderId) => {
+    try {
+      const response = await fetch(
+        "https://pixelstore-be.up.railway.app/api/transactions/save-buy-assets",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ orderId, assets: assetDetails }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Kesalahan saat menyimpan ke buyAssets: ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      console.log(data.message);
+      alert("Transaksi berhasil!");
+    } catch (error) {
+      // console.error("Kesalahan saat menyimpan ke buyAssets:", error);
+      // alert("Terjadi kesalahan saat menyimpan transaksi.");
     }
-    setIsAllSelected(!isAllSelected); // Toggle status 'Pilih Semua'
-    updateItemCountAndTotalPrice(!isAllSelected ? items : []); // Update itemCount dan totalPrice
   };
 
-  // Fungsi untuk mengubah status checkbox dan memperbarui item terpilih
-  const handleCheckboxChange = (item) => {
-    let updatedSelectedItems;
+  // const saveToBuyAssets = async (assetDetails, orderId) => {
+  //   try {
+  //     const response = await axios.post('https://pixelstore-be.up.railway.app/api/transactions/save-buy-assets', {
+  //       orderId,
+  //       assets: assetDetails,
+  //     });
 
-    if (selectedItems.includes(item)) {
-      updatedSelectedItems = selectedItems.filter((selectedItem) => selectedItem.id !== item.id);
-    } else {
-      updatedSelectedItems = [...selectedItems, item];
-    }
+  //     // console.log(response.data.message);
+  //     alert("Transaksi berhasil!");
+  //   } catch (error) {
+  //     // console.error("Kesalahan saat menyimpan ke buyAssets:", error);
+  //     // alert("Terjadi kesalahan saat menyimpan transaksi.");
+  //   }
+  // };
 
-    setSelectedItems(updatedSelectedItems);
-    updateItemCountAndTotalPrice(updatedSelectedItems);
-
-    // Cek apakah semua item sudah dipilih untuk memperbarui status 'Pilih Semua'
-    setIsAllSelected(updatedSelectedItems.length === items.length);
+  const resetCustomerInfoAndCart = () => {
+    setCustomerInfo({ fullName: "", email: "", phoneNumber: "" });
+    setCartItems((prevItems) => prevItems.filter((item) => !item.selected));
   };
 
-   // Fungsi untuk memperbarui itemCount dan totalPrice
-   const updateItemCountAndTotalPrice = (selectedItems) => {
-    setItemCount(selectedItems.length);
-    const totalPrice = selectedItems.reduce((sum, item) => sum + (item.price || 0), 0);
-    setTotalPrice(totalPrice); // Update totalPrice as number
+  const handleCheckboxChange = (id) => {
+    setCartItems((prevItems) =>
+      prevItems.map((item) => ({
+        ...item,
+        selected: item.id === id ? !item.selected : item.selected,
+      }))
+    );
   };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setCustomerInfo((prevInfo) => ({ ...prevInfo, [name]: value }));
+  };
+
+  const handleDeleteItem = (id) => {
+    setItemsToRemove((prev) => [...prev, id]);
+  };
+
+  const filteredAssetsData = cartItems.filter((asset) => {
+    const datasetName =
+      asset.name ||
+      asset.audioName ||
+      asset.asset2DName ||
+      asset.asset3DName ||
+      "";
+    return (
+      datasetName &&
+      datasetName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
 
   return (
-    //Header     
-    <div className="bg-white dark:bg-[#212121]">
-      <div className="w-full shadow-md bg-white dark:text-white relative z-40 ">
-        <div className="pt-[80px]  w-full">
+    <div className="dark:bg-neutral-20 text-neutral-10 dark:text-neutral-90 min-h-screen font-poppins bg-primary-100 ">
+      <div className="w-full shadow-lg bg-primary-100 dark:text-primary-100 relative z-40 ">
+        <div className="-mt-10 pt-[2px] sm:pt-[60px] md:pt-[70px] lg:pt-[70px] xl:pt-[70px] 2xl:pt-[70px] w-full">
           <Header />
         </div>
-        <NavbarSection />
+        <div className="mt-0 sm:mt-10 md:mt-10 lg:mt-10 xl:mt-10 2xl:mt-10">
+          <NavbarSection />
+        </div>
       </div>
 
-      {/* Content */}
-      <main className="mt-[10%] justify-items-center flex-col md:flex-row flex justify-center px-4 md:">
-        {/* Cart Items */}
-        <div className="w-full">
-          <h1 className="text-lg text-2xl font-semibold mb-3 text-black text-3xl dark:text-white">Keranjang Belanja</h1>
-          <div className="border-t border-gray-600 mb-4"></div>
-          <p className='mt-4 text-black dark:text-white'>Anda mempunyai 3 item dalam keranjang</p>
-          <div className='h-[700px] rounded-lg overflow-y-auto h-3'>
-            <div className='flex font-medium w-40 h-8 mt-6 items-center p-2.5 shadow-lg border rounded-lg ml-[5%] text-black dark:text-white'>
-              <input
-                type="checkbox"
-                className="flex w-5 h-5 mr-4 text-green-500 bg-gray-100 border-gray-300 rounded focus:ring-black dark:focus:ring-black dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
-                checked={isAllSelected} // Checkbox 'Pilih Semua' dicentang jika semua item terpilih
-                onChange={handleSelectAllChange} // Panggil fungsi saat status berubah
-              />
-              <p>Pilih Semua</p>
-            </div>
-            <div className="mt-5 space-y-[26px]">
-            {items.map((item, index) => (
-              <div key={index} className="w-[90%] h-[165px] mx-auto flex flex-col align-middle justify-between md:flex-row bg-transparent shadow-lg text-black dark:text-white border p-4 rounded-lg">
-                {/* Content for each item */}
-                <div className="flex items-center">
-                <input
-                      id={`checkbox-${index}`}
-                      type="checkbox"
-                      className="w-4 h-4 text-green-500 bg-gray-100 border-gray-300 rounded focus:ring-black dark:focus:ring-black dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600 cursor-pointer"
-                      checked={selectedItems.includes(item)} // Checkbox tercentang jika item terpilih
-                      onChange={() => handleCheckboxChange(item)} // Mengubah status checkbox
-                    />
-                  <label htmlFor="red-checkbox" className='ms-2 text-sm font-medium text-gray-900 dark:text-gray-300'></label>
-                  <img src={item.uploadUrlImage||CustomImage} alt="Product" className="w-14 h-14 mr-4" />
+      <div className="container mx-auto py-20">
+        <h2 className="text-2xl font-semibold mb-4 mt-16">Keranjang Belanja</h2>
+        <p className="mb-4">
+          Anda mempunyai {cartItems.length} item dalam keranjang
+        </p>
+        <div className="flex flex-col md:flex-row md:justify-center p-4 max-w-screen mx-auto">
+          <div className="md:w-2/3 space-y-4">
+            {filteredAssetsData.map((item) => (
+              <div
+                key={item.id}
+                className="flex flex-col sm:flex-row items-center sm:items-start justify-between bg-gray-100 dark:bg-neutral-20 text-neutral-10 dark:text-neutral-20 p-3 rounded-lg shadow-md mb-4"
+              >
+                <div className="flex flex-row items-center sm:w-full">
+                  <input
+                    type="checkbox"
+                    className="mr-2 sm:mr-4"
+                    checked={item.selected}
+                    onChange={() => handleCheckboxChange(item.id)}
+                  />
                   <div>
-                    {/* Pastikan mengakses properti spesifik dari objek */}
-                    <h2 className="font-semibold truncate overflow-hidden whitespace-nowrap w-[450px]">{item.datasetName || item.imageName} - {item.description}</h2>
-                    <p className="text-sm">PixelStoreID</p>
+                    {item.video ? (
+                      <video
+                        src={item.video}
+                        className="h-20 w-20 sm:h-24 sm:w-24 lg:h-20 lg:w-20 rounded overflow-hidden border-none cursor-pointer"
+                        controls
+                      />
+                    ) : item.image ? (
+                      <img
+                        src={item.image}
+                        className="h-20 w-20 sm:h-24 sm:w-24 lg:h-20 lg:w-20 rounded overflow-hidden border-none cursor-pointer"
+                        alt="Asset"
+                      />
+                    ) : (
+                      <div>
+                        {[
+                          item.Image,
+                          item.thumbnailGame,
+                          item.Image_umum,
+                          item.uploadUrlImage,
+                          item.datasetImage,
+                          item.assetAudiosImage,
+                          item.asset2DImage,
+                          item.asset3DImage,
+                          item.datasetThumbnail,
+                          item.datasetFile,
+                        ].find((src) => src) ? (
+                          <img
+                            src={[
+                              item.Image,
+                              item.thumbnailGame,
+                              item.Image_umum,
+                              item.uploadUrlImage,
+                              item.datasetImage,
+                              item.assetAudiosImage,
+                              item.asset2DImage,
+                              item.asset3DImage,
+                              item.datasetThumbnail,
+                              item.datasetFile,
+                            ].find((src) => src)}
+                            alt="Asset"
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = "";
+                            }}
+                            className="h-20 w-20 sm:h-24 sm:w-24 lg:h-20 lg:w-20 rounded overflow-hidden"
+                          />
+                        ) : (
+                          <p>No image available</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="ml-2 sm:ml-4 w-full">
+                    <h3 className="font-semibold text-sm sm:text-base truncate">
+                      {item.name ||
+                        item.datasetName ||
+                        item.videoName ||
+                        item.assetNameGame ||
+                        item.imageName ||
+                        item.asset2DName ||
+                        item.asset3DName ||
+                        "Tidak ada nama"}
+                    </h3>
+                    <p className="text-sm sm:text-base">
+                      Kategori: {item.category || "Kategori Tidak Dikenal"}
+                    </p>
+                    <p className="text-gray-700 mt-1 text-sm sm:text-base">
+                      Rp. {(item.price || 0).toLocaleString("id-ID")}
+                    </p>
+                    {(item.size || item.resolution) && (
+                      <p className="text-sm sm:text-base">
+                        Ukuran:{" "}
+                        {item.size || item.resolution || "Tidak ada ukuran"}
+                      </p>
+                    )}
                   </div>
                 </div>
-                <div className='my-auto'>
-                  {/* Akses properti price dari objek */}
-                  <p className='dark:text-white ml-3 mt-1 text-[#141414] justify-self-end text-sm'>
-                    {item.price?.toLocaleString('id-ID', {
-                      style: 'currency',
-                      currency: 'IDR'
-                    })}
-                  </p>
-
-                </div>
-                {/* Tombol Hapus */}
-                <div className="flex flex-col items-start">
-                  <button 
-                  onClick={() => handleRemove(item.id)}
-                  className='my-auto bg-grey hidden md:block'>
-                    <img src={IconHapus} alt="IconHapus"/>
-                  </button>
-                  <button 
-                  onClick={() => handleRemove(item.id)}
-                  className='my-auto block md:hidden hover:text-red-500 hover:underline'>
-                    <p className="text-base">Delete</p>
+                <div className="flex justify-center p-10 items-center">
+                  <button
+                    className="text-red-500 mt-2 sm:mt-0 sm:ml-auto"
+                    onClick={() => handleDeleteItem(item.id)}
+                  >
+                    <FaTrashAlt />
                   </button>
                 </div>
               </div>
             ))}
-            </div> 
-          </div> 
-        </div>     
+          </div>
 
-        {/* Payment Details */}
-        <div className="w-[80%] md:w-[600px] h-[20%] mx-auto overflow-hidden mt-[4%] bg-transparent shadow-lg border border-grey p-4 sm:p-2 rounded-lg text-black dark:text-white">
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label htmlFor="cardType" className="block mb-2 text-xl font-bold">
-                Detail Pembayaran
-              </label>
-              <label className="block mb-2 text-sm">({itemCount}) item terpilih</label>
-            </div>
-            {/*Nama*/}
-            <div className='mb-4 flex justify-between items-center'>
-            {/* Input Nama Depan */}
-              <div className='mr-2'>
-                <label htmlFor="firstName" className="block mb-2 text-sm">Nama Depan</label>
-                <input
-                  type="text"
-                  id="firstName"
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                />
-              </div>
-
-              {/* Input Nama Belakang */}
-              <div>
-                <label htmlFor="lastName" className="block mb-2 text-sm">Nama Belakang</label>
-                <input
-                  type="text"
-                  id="lastName"
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Input Email */}
-            <div className="mb-4">
-              <label htmlFor="email" className="block mb-2 text-sm">Email</label>
+          <div className="bg-gray-200 p-5 rounded-lg shadow-md w-full md:w-[320px] text-primary-100 bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100 mt-4 md:mt-0 mx-auto">
+            <h4 className="text-gray-950 font-semibold mb-2 text-sm md:text-base bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100">
+              Detail Pembayaran
+            </h4>
+            <p className="text-gray-700 bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100">
+              Harga ({selectedItems.length} item): Rp.{" "}
+              {subtotal.toLocaleString("id-ID")}
+            </p>
+            <div className="mt-4">
+              <input
+                type="text"
+                name="fullName"
+                placeholder="Nama Lengkap"
+                value={customerInfo.fullName}
+                onChange={handleInputChange}
+                className="block w-full mb-2 p-2 border rounded text-sm md:text-base bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100"
+                required
+              />
               <input
                 type="email"
-                id="email"
-                className="w-full p-2 border border-gray-300 rounded-md"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                name="email"
+                placeholder="Email"
+                value={customerInfo.email}
+                onChange={handleInputChange}
+                className="block w-full mb-2 p-2 border rounded text-sm md:text-base bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100"
                 required
               />
-            </div>
-            
-            {/* Input Nomor HP */}
-            <div className="mb-4">
-              <label htmlFor="phoneNumber" className="block mb-2 text-sm">Nomor HP</label>
               <input
                 type="tel"
-                id="phoneNumber"
-                className="w-full p-2 border border-gray-300 rounded-md"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
+                name="phoneNumber"
+                placeholder="Nomor Telepon"
+                value={customerInfo.phoneNumber}
+                onChange={handleInputChange}
+                className="block w-full mb-4 p-2 border rounded text-sm md:text-base bg-neutral-100 dark:bg-neutral-10 bg-neutral-100 dark:text-primary-100"
                 required
               />
             </div>
-
-            {/* Bagian Ringkasan dan Total */}
-            <div className="text-black dark:text-white">
-              <div className="border-t border-gray-600 mb-4"></div>
-              <div className="flex justify-between items-center">
-                <p className="w-[70px] h-[24px] text-sm font-bold text-xl">subtotal</p>
-                <p className="text-sm font-semibold">Rp.{totalPrice}</p>
-              </div>
-              <div className="flex justify-between items-center">
-                <p className="w-[172px] h-[24px] text-sm font-semi-bold mt-2">
-                  Total <span className="font-normal">(termasuk PPN)</span>
-                </p>
-                <p className="text-sm font-semibold mt-2">Rp.{totalPrice}</p>
-              </div>
-            </div>
-
-            {/* Tombol Submit */}
+            {isLoading && (
+              <p className="text-blue-600 text-sm md:text-base">
+                Memproses pembayaran, harap tunggu...
+              </p>
+            )}
+            {errorMessage && (
+              <p className="text-red-500 text-sm md:text-base">
+                {errorMessage}
+              </p>
+            )}
+            {successMessage && (
+              <p className="text-green-500 text-sm md:text-base">
+                {successMessage}
+              </p>
+            )}
             <button
-              type="submit"
-              className="w-full h-[43px] mt-6 bg-green-500 justify-center p-2 rounded-md text-white flex"
+              className="mt-6 w-full bg-blue-600 text-white py-2 rounded-md text-sm md:text-base"
+              onClick={handlePayment}
             >
-              <div>Proses ke Pembayaran</div>
+              Proses Ke Pembayaran
             </button>
-          </form>
+          </div>
         </div>
-      </main>
+      </div>
 
-      {/* Footer */}
-      <footer className="bg-[#ECECEC] text-black dark:bg-[#201E43] mt-[100px] dark:text-white text-sm py-6 font-roboto">
-        <div className="container mx-auto flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-8 text-center font-semibold">
-          <a href="#" className="hover:underline">Terms And Conditions</a>
-          <a href="#" className="hover:underline">File Licenses</a>
-          <a href="#" className="hover:underline">Refund Policy</a>
-          <a href="#" className="hover:underline">Privacy Policy</a>
-        </div>
-        <p className="text-center mt-4">Copyright © 2024 - All rights reserved by ACME Industries Ltd</p>
-      </footer>
+      <div className="mt-96">
+        <Footer />
+      </div>
     </div>
   );
-}
+};
 
 export default Cart;

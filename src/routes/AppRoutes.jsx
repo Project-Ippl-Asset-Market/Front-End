@@ -7,9 +7,9 @@ import SearchResults from "../components/searchResults/SearchResults";
 import Register from "../pages/register";
 import Login from "../pages/login";
 import LupaPassword from "../pages/lupaPassword";
-import Profil from "../components/editProfil/Profil"
-import EditProfil1 from "../components/editProfil/EditProfil1"
-import EditProfil2 from "../components/editProfil/EditProfil2"
+import Profil from "../components/editProfil/Profil";
+import EditProfil1 from "../components/editProfil/EditProfil1";
+import EditProfil2 from "../components/editProfil/EditProfil2";
 // Import Halaman Dashboard start
 import AdminDashboard from "../components/myAdmin/AdminDashboard";
 import ManageAssetVideo from "../components/manageAssetVideo/ManageAssetVideo";

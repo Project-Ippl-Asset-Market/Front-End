@@ -1,11 +1,11 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
-import { db } from "../../firebase/firebaseConfig";
+import { db } from "../../../firebase/firebaseConfig";
 import { useNavigate, Link } from "react-router-dom";
 import { onAuthStateChanged, signOut, getAuth } from "firebase/auth";
-import { auth } from "../../firebase/firebaseConfig";
-import { useTheme } from "../../contexts/ThemeContext";
+import { auth } from "../../../firebase/firebaseConfig";
+import { useTheme } from "../../../contexts/ThemeContext";
 import IconLightMode from "../../assets/icon/iconDarkMode&LigthMode/ligth_mode.svg";
 import IconDarkMode from "../../assets/icon/iconDarkMode&LigthMode/dark_mode.svg";
 import IconUserDark from "../../assets/icon/iconDarkMode&LigthMode/iconUserDark.svg";
